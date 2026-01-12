@@ -1,0 +1,130 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Java/Maven
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# STS (Spring Tool Suite)
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# IntelliJ IDEA
+*.iws
+*.iml
+*.ipr
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+
+# Exception: Don't ignore frontend source lib directory
+!frontend/src/lib/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.cache
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+*.tfvars
+terraform.tfvars
+.terraform/modules/
+.terraform/providers/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+.env.staging
+*.pem
+*.key
+
+# Logs
+logs/
+*.log
+
+# Exception: Don't ignore frontend logs component directory
+!frontend/src/components/logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# AWS
+.aws/
+
+# Docker
+.dockerignore
+
+# Node.js (if any frontend parts)
+node_modules/
+
+# Other
+.java-version
+backend/verification/src/main/resources/application.properties
+
+.roo
