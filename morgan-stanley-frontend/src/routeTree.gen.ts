@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TradesIndexRouteImport } from './routes/trades/index'
+import { Route as ExceptionsIndexRouteImport } from './routes/exceptions/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,30 +23,39 @@ const TradesIndexRoute = TradesIndexRouteImport.update({
   path: '/trades/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExceptionsIndexRoute = ExceptionsIndexRouteImport.update({
+  id: '/exceptions/',
+  path: '/exceptions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/exceptions': typeof ExceptionsIndexRoute
   '/trades': typeof TradesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/exceptions': typeof ExceptionsIndexRoute
   '/trades': typeof TradesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/exceptions/': typeof ExceptionsIndexRoute
   '/trades/': typeof TradesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/trades'
+  fullPaths: '/' | '/exceptions' | '/trades'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/trades'
-  id: '__root__' | '/' | '/trades/'
+  to: '/' | '/exceptions' | '/trades'
+  id: '__root__' | '/' | '/exceptions/' | '/trades/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExceptionsIndexRoute: typeof ExceptionsIndexRoute
   TradesIndexRoute: typeof TradesIndexRoute
 }
 
@@ -65,11 +75,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TradesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/exceptions/': {
+      id: '/exceptions/'
+      path: '/exceptions'
+      fullPath: '/exceptions'
+      preLoaderRoute: typeof ExceptionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExceptionsIndexRoute: ExceptionsIndexRoute,
   TradesIndexRoute: TradesIndexRoute,
 }
 export const routeTree = rootRouteImport
