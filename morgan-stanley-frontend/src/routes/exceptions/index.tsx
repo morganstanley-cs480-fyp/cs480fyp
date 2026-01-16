@@ -658,7 +658,7 @@ function ExceptionsPage() {
                           }
                         >
                           <Eye className="size-4 mr-2" />
-                          View Associated Transaction
+                          View Associated Trade
                         </Button>
                         <Button
                           className="w-full"
