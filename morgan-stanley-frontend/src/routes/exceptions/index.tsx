@@ -1,7 +1,20 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { AlertTriangle, CheckCircle, XCircle, Clock, Eye, Check, ChevronLeft, ChevronRight, AlertCircle, Search, ArrowUpDown, Filter } from 'lucide-react';
+import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import {
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Eye,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+  Search,
+  ArrowUpDown,
+  Filter,
+} from "lucide-react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -9,20 +22,32 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   flexRender,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 import type {
   ColumnDef,
   SortingState,
   VisibilityState,
   ColumnFiltersState,
-} from '@tanstack/react-table';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+} from "@tanstack/react-table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -30,7 +55,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -38,231 +63,148 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
+import { mockExceptions, type Exception } from "@/lib/mockData";
 
-interface Exception {
-  id: string;
-  event: string;
-  status: 'PENDING' | 'CLOSED';
-  exceptionMsg: string;
-  exceptionTime: string;
-  comments: string;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
-  updateTime: string;
-}
-
-interface Solution {
-  id: string;
-  title: string;
-  exceptionDescription: string;
-  referenceEvent: string;
-  solutionDescription: string;
-  createTime: string;
-  scores: number;
-}
-
-const mockExceptions: Exception[] = [
-  {
-    id: '51253968',
-    event: '69690882',
-    status: 'PENDING',
-    exceptionMsg: 'MISSING BIC',
-    exceptionTime: '2025-08-15 10:23:45',
-    comments: 'NO BIC',
-    priority: 'HIGH',
-    updateTime: '2025-08-15 10:25:12',
-  },
-  {
-    id: '50155689',
-    event: '48712564',
-    status: 'PENDING',
-    exceptionMsg: 'INSUFFICIENT MARGIN',
-    exceptionTime: '2025-09-03 14:12:33',
-    comments: 'RETRY LIMIT EXCEEDED',
-    priority: 'HIGH',
-    updateTime: '2025-09-03 15:41:22',
-  },
-  {
-    id: '62847123',
-    event: '67447216',
-    status: 'PENDING',
-    exceptionMsg: 'MAPPING ISSUE',
-    exceptionTime: '2025-09-18 08:45:11',
-    comments: 'NO MAPPING FOR BLM',
-    priority: 'MEDIUM',
-    updateTime: '2025-09-18 09:12:05',
-  },
-  {
-    id: '73921456',
-    event: '67515456',
-    status: 'PENDING',
-    exceptionMsg: 'TIME OUT OF RANGE',
-    exceptionTime: '2025-10-02 16:33:27',
-    comments: 'RETRY LIMIT EXCEEDED',
-    priority: 'LOW',
-    updateTime: '2025-10-02 17:02:18',
-  },
-  {
-    id: '84562390',
-    event: '69755320',
-    status: 'PENDING',
-    exceptionMsg: 'MAPPING ISSUE',
-    exceptionTime: '2025-10-14 11:22:08',
-    comments: 'NO MAPPING FOR MARC',
-    priority: 'MEDIUM',
-    updateTime: '2025-10-14 12:15:33',
-  },
-  {
-    id: '95678123',
-    event: '71234567',
-    status: 'PENDING',
-    exceptionMsg: 'DATA VALIDATION ERROR',
-    exceptionTime: '2025-10-20 14:30:22',
-    comments: 'INVALID FORMAT',
-    priority: 'LOW',
-    updateTime: '2025-10-20 15:10:45',
-  },
-  {
-    id: '91234567',
-    event: '17194044',
-    status: 'CLOSED',
-    exceptionMsg: 'MISSING BIC',
-    exceptionTime: '2025-08-22 09:15:42',
-    comments: 'NO BIC',
-    priority: 'HIGH',
-    updateTime: '2025-08-23 10:30:15',
-  },
-  {
-    id: '82345678',
-    event: '60724962',
-    status: 'CLOSED',
-    exceptionMsg: 'INSUFFICIENT MARGIN',
-    exceptionTime: '2025-09-10 13:45:20',
-    comments: 'RETRY LIMIT EXCEEDED',
-    priority: 'MEDIUM',
-    updateTime: '2025-09-11 08:22:44',
-  },
-];
-
-export const Route = createFileRoute('/exceptions/')({
+export const Route = createFileRoute("/exceptions/")({
   component: ExceptionsPage,
-})
+});
 
 function ExceptionsPage() {
   const navigate = useNavigate();
   const [exceptions, setExceptions] = useState<Exception[]>(mockExceptions);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
-  const [results, setResults] = useState<Exception[]>(mockExceptions.filter(e => e.status === 'PENDING'));
+  const [results, setResults] = useState<Exception[]>(mockExceptions);
   const [selectedException, setSelectedException] = useState<Exception | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'CLOSED'>('ALL');
-  const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'HIGH' | 'MEDIUM' | 'LOW'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "CLOSED">("ALL");
+  const [priorityFilter, setPriorityFilter] = useState<"ALL" | "HIGH" | "MEDIUM" | "LOW">("ALL");
 
   const getPriorityColor = (priority: string) => {
-    if (priority === 'HIGH') return 'destructive';
-    if (priority === 'MEDIUM') return 'default';
-    return 'secondary';
+    if (priority === "HIGH") return "destructive";
+    if (priority === "MEDIUM") return "default";
+    return "secondary";
   };
 
   const getPriorityIcon = (priority: string) => {
-    if (priority === 'HIGH') return <AlertTriangle className="size-4 text-red-600" />;
-    if (priority === 'MEDIUM') return <AlertCircle className="size-4 text-orange-600" />;
+    if (priority === "HIGH")
+      return <AlertTriangle className="size-4 text-red-600" />;
+    if (priority === "MEDIUM")
+      return <AlertCircle className="size-4 text-orange-600" />;
     return <Clock className="size-4 text-yellow-600" />;
   };
 
   const getStatusBadgeVariant = (status: string) => {
-    return status === 'CLOSED' ? 'default' : 'secondary';
+    return status === "CLOSED" ? "default" : "secondary";
   };
 
   const columns: ColumnDef<Exception>[] = [
     {
-      accessorKey: 'id',
-      header: 'Exception ID',
-      cell: ({ row }) => (
-        <div className="font-medium text-slate-900">{row.getValue('id')}</div>
-      ),
-    },
-    {
-      accessorKey: 'event',
+      accessorKey: "exception_id",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 p-0 hover:bg-transparent"
           >
-            Event Reference
+            Exception ID
             <ArrowUpDown className="ml-2 size-4" />
           </Button>
         );
       },
-    },
-    {
-      accessorKey: 'exceptionMsg',
-      header: 'Exception Type',
       cell: ({ row }) => (
-        <div className="text-sm">{row.getValue('exceptionMsg')}</div>
+        <div className="font-medium text-slate-900">{row.getValue("exception_id")}</div>
       ),
+      enableColumnFilter: true,
     },
     {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => {
-        const status = row.getValue('status') as string;
+      accessorKey: "trade_id",
+      header: ({ column }) => {
         return (
-          <Badge variant={getStatusBadgeVariant(status)}>
-            {status}
-          </Badge>
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-8 p-0 hover:bg-transparent"
+          >
+            Trade ID
+            <ArrowUpDown className="ml-2 size-4" />
+          </Button>
         );
       },
+      cell: ({ row }) => (
+        <div className="font-medium text-slate-900">{row.getValue("trade_id")}</div>
+      ),
+      enableColumnFilter: true,
     },
     {
-      accessorKey: 'priority',
-      header: 'Priority',
+      accessorKey: "msg",
+      header: "Exception Message / Type",
+      cell: ({ row }) => (
+        <div className="text-sm">{row.getValue("msg")}</div>
+      ),
+      enableColumnFilter: true,
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
       cell: ({ row }) => {
-        const priority = row.getValue('priority') as string;
+        const status = row.getValue("status") as string;
+        return <Badge className="mr-2" variant={getStatusBadgeVariant(status)}>{status}</Badge>;
+      },
+      enableColumnFilter: false, // Disable text filter for status
+    },
+    {
+      accessorKey: "priority",
+      header: "Priority",
+      cell: ({ row }) => {
+        const priority = row.getValue("priority") as string;
         return (
           <div className="flex items-center gap-2">
             {getPriorityIcon(priority)}
-            <Badge variant={getPriorityColor(priority)}>
-              {priority}
-            </Badge>
+            <Badge variant={getPriorityColor(priority)}>{priority}</Badge>
           </div>
         );
       },
+      enableColumnFilter: false, // Disable text filter for priority
     },
     {
-      accessorKey: 'comments',
-      header: 'Comments',
+      accessorKey: "comment",
+      header: "Comments",
       cell: ({ row }) => (
-        <div className="text-sm text-slate-600">{row.getValue('comments')}</div>
+        <div className="text-sm text-slate-600">{row.getValue("comment")}</div>
       ),
+      enableColumnFilter: true,
     },
     {
-      accessorKey: 'exceptionTime',
+      accessorKey: "create_time",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 p-0 hover:bg-transparent"
           >
-            Exception Time
-            <ArrowUpDown className="ml-2 size-4" />
+            Create Time
+            <ArrowUpDown className="size-4 ml-2" />
           </Button>
         );
       },
+      cell: ({ row }) => (
+        <div className="text-sm text-slate-600">{row.getValue("create_time")}</div>
+      ),
+      enableColumnFilter: true,
     },
     {
-      accessorKey: 'updateTime',
+      accessorKey: "update_time",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 p-0 hover:bg-transparent"
           >
             Update Time
@@ -270,6 +212,10 @@ function ExceptionsPage() {
           </Button>
         );
       },
+      cell: ({ row }) => (
+        <div className="text-sm text-slate-600">{row.getValue("update_time")}</div>
+      ),
+      enableColumnFilter: true,
     },
   ];
 
@@ -297,43 +243,50 @@ function ExceptionsPage() {
 
   const handleSearch = () => {
     setSearching(true);
-    
-    // Simulate search with filters
+
     setTimeout(() => {
       let filtered = [...exceptions];
-      
-      // Apply status filter
-      if (statusFilter !== 'ALL') {
-        filtered = filtered.filter(exc => exc.status === statusFilter);
+
+      if (statusFilter !== "ALL") {
+        filtered = filtered.filter((exc) => exc.status === statusFilter);
       }
-      
-      // Apply priority filter
-      if (priorityFilter !== 'ALL') {
-        filtered = filtered.filter(exc => exc.priority === priorityFilter);
+
+      if (priorityFilter !== "ALL") {
+        filtered = filtered.filter((exc) => exc.priority === priorityFilter);
       }
-      
-      // Apply search query
+
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        filtered = filtered.filter(exc => 
-          exc.id.toLowerCase().includes(query) ||
-          exc.event.toLowerCase().includes(query) ||
-          exc.exceptionMsg.toLowerCase().includes(query) ||
-          exc.comments.toLowerCase().includes(query)
+        filtered = filtered.filter(
+          (exc) =>
+            exc.exception_id.toLowerCase().includes(query) ||
+            exc.trade_id.toLowerCase().includes(query) ||
+            exc.msg.toLowerCase().includes(query) ||
+            exc.comment.toLowerCase().includes(query)
         );
       }
-      
+
       setResults(filtered);
       setSearching(false);
     }, 500);
   };
 
+  useEffect(() => {
+    handleSearch();
+  }, [statusFilter, priorityFilter]);
+
   const stats = {
-    total: exceptions.filter(e => e.status === 'PENDING').length,
-    high: exceptions.filter(e => e.status === 'PENDING' && e.priority === 'HIGH').length,
-    medium: exceptions.filter(e => e.status === 'PENDING' && e.priority === 'MEDIUM').length,
-    low: exceptions.filter(e => e.status === 'PENDING' && e.priority === 'LOW').length,
-    closed: exceptions.filter(e => e.status === 'CLOSED').length,
+    total: exceptions.filter((e) => e.status === "PENDING").length,
+    high: exceptions.filter(
+      (e) => e.status === "PENDING" && e.priority === "HIGH"
+    ).length,
+    medium: exceptions.filter(
+      (e) => e.status === "PENDING" && e.priority === "MEDIUM"
+    ).length,
+    low: exceptions.filter(
+      (e) => e.status === "PENDING" && e.priority === "LOW"
+    ).length,
+    closed: exceptions.filter((e) => e.status === "CLOSED").length,
   };
 
   return (
@@ -342,41 +295,47 @@ function ExceptionsPage() {
       <div className="grid grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-600">Pending Exceptions</CardTitle>
+            <CardTitle className="text-sm text-slate-600">
+              Pending Exceptions
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl">{stats.total}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-600">High Priority</CardTitle>
+            <CardTitle className="text-sm text-slate-600">
+              High Priority
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl text-red-600">{stats.high}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-600">Medium Priority</CardTitle>
+            <CardTitle className="text-sm text-slate-600">
+              Medium Priority
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl text-orange-600">{stats.medium}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-600">Low Priority</CardTitle>
+            <CardTitle className="text-sm text-slate-600">
+              Low Priority
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl text-yellow-600">{stats.low}</div>
           </CardContent>
         </Card>
-        
-
       </div>
 
       {/* Filters */}
@@ -388,59 +347,30 @@ function ExceptionsPage() {
                 <CardTitle>Advanced Filters</CardTitle>
                 <CardDescription>Refine your exception search</CardDescription>
               </div>
-              <Button variant="outline" size="sm" onClick={() => {
-                setStatusFilter('ALL');
-                setPriorityFilter('ALL');
-                setSearchQuery('');
-                setResults(exceptions.filter(e => e.status === 'PENDING'));
-                setColumnFilters([]);
-              }}>
-                Clear All Filters
-              </Button>
+              
             </div>
           </CardHeader>
           <CardContent>
             <div className="flex items-start gap-4">
-              <div>
-                <Label className="text-xs text-slate-600 mb-2 block">Status</Label>
-                <Select value={statusFilter} onValueChange={(v: any) => {
-                  setStatusFilter(v);
-                  handleSearch();
-                }}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">All Statuses</SelectItem>
-                    <SelectItem value="PENDING">Pending</SelectItem>
-                    <SelectItem value="CLOSED">Closed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex-1">
-                <Label className="text-xs text-slate-600 mb-2 block">Priority</Label>
-                <Select value={priorityFilter} onValueChange={(v: any) => {
-                  setPriorityFilter(v);
-                  handleSearch();
-                }}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">All Priorities</SelectItem>
-                    <SelectItem value="HIGH">High</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="LOW">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setStatusFilter("ALL");
+                  setPriorityFilter("ALL");
+                  setSearchQuery("");
+                  setResults(mockExceptions);
+                  setColumnFilters([]);
+                }}
+              >
+                Clear All Filters
+              </Button>
 
-              <div>
+              <div className="">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                      <Filter className="size-4 mr-2" />
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Filter className="mr-2" />
                       Column Visibility
                     </Button>
                   </DropdownMenuTrigger>
@@ -456,7 +386,9 @@ function ExceptionsPage() {
                             key={column.id}
                             className="capitalize"
                             checked={column.getIsVisible()}
-                            onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                            onCheckedChange={(value) =>
+                              column.toggleVisibility(!!value)
+                            }
                             onSelect={(event) => {
                               event.preventDefault();
                             }}
@@ -472,7 +404,6 @@ function ExceptionsPage() {
           </CardContent>
         </Card>
       )}
-      
 
       {/* Results Table */}
       {results.length > 0 && (
@@ -484,7 +415,8 @@ function ExceptionsPage() {
                   <div>
                     <CardTitle>Exception Results</CardTitle>
                     <CardDescription>
-                      Found {results.length} exception{results.length !== 1 ? 's' : ''}
+                      Found {results.length} exception
+                      {results.length !== 1 ? "s" : ""}
                     </CardDescription>
                   </div>
                 </div>
@@ -497,7 +429,7 @@ function ExceptionsPage() {
                       {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
                           {headerGroup.headers.map((header) => (
-                            <TableHead key={header.id}>
+                            <TableHead key={header.id} className="px-4">
                               {header.isPlaceholder
                                 ? null
                                 : flexRender(
@@ -511,12 +443,60 @@ function ExceptionsPage() {
                       {/* Filter Row */}
                       <TableRow>
                         {table.getHeaderGroups()[0].headers.map((header) => (
-                          <TableHead key={`filter-${header.id}`} className="py-2">
-                            {header.column.getCanFilter() && (
+                          <TableHead
+                            key={`filter-${header.id}`}
+                            className="py-2 px-4"
+                          >
+                            {/* Status Column - Dropdown */}
+                            {header.column.id === "status" && (
+                              <Select
+                                value={statusFilter}
+                                onValueChange={(v: any) => setStatusFilter(v)}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder="All" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="ALL">All</SelectItem>
+                                  <SelectItem value="PENDING">Pending</SelectItem>
+                                  <SelectItem value="CLOSED">Closed</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                            
+                            {/* Priority Column - Dropdown */}
+                            {header.column.id === "priority" && (
+                              <Select
+                                value={priorityFilter}
+                                onValueChange={(v: any) => setPriorityFilter(v)}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder="All" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="ALL">All</SelectItem>
+                                  <SelectItem value="HIGH">High</SelectItem>
+                                  <SelectItem value="MEDIUM">Medium</SelectItem>
+                                  <SelectItem value="LOW">Low</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                            
+                            {/* Other Columns - Text Input */}
+                            {header.column.id !== "status" && 
+                             header.column.id !== "priority" && 
+                             header.column.getCanFilter() && (
                               <Input
                                 placeholder="Filter..."
-                                value={(header.column.getFilterValue() as string) ?? ''}
-                                onChange={(event) => header.column.setFilterValue(event.target.value)}
+                                value={
+                                  (header.column.getFilterValue() as string) ??
+                                  ""
+                                }
+                                onChange={(event) =>
+                                  header.column.setFilterValue(
+                                    event.target.value
+                                  )
+                                }
                                 className="h-8 text-xs"
                               />
                             )}
@@ -529,22 +509,30 @@ function ExceptionsPage() {
                         table.getRowModel().rows.map((row) => (
                           <TableRow
                             key={row.id}
-                            data-state={row.getIsSelected() && 'selected'}
+                            data-state={row.getIsSelected() && "selected"}
                             className={`cursor-pointer ${
-                              selectedException?.id === row.original.id ? 'bg-blue-50' : ''
+                              selectedException?.exception_id === row.original.exception_id
+                                ? "bg-blue-50"
+                                : ""
                             }`}
                             onClick={() => setSelectedException(row.original)}
                           >
                             {row.getVisibleCells().map((cell) => (
-                              <TableCell key={cell.id}>
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              <TableCell key={cell.id} className="px-4">
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext()
+                                )}
                               </TableCell>
                             ))}
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={columns.length} className="h-24 text-center">
+                          <TableCell
+                            colSpan={columns.length}
+                            className="h-24 text-center"
+                          >
                             No results found.
                           </TableCell>
                         </TableRow>
@@ -552,15 +540,20 @@ function ExceptionsPage() {
                     </TableBody>
                   </Table>
                 </div>
-                
+
                 {/* Pagination */}
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-slate-600">
-                    Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
+                    Showing{" "}
+                    {table.getState().pagination.pageIndex *
+                      table.getState().pagination.pageSize +
+                      1}{" "}
+                    to{" "}
                     {Math.min(
-                      (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+                      (table.getState().pagination.pageIndex + 1) *
+                        table.getState().pagination.pageSize,
                       results.length
-                    )}{' '}
+                    )}{" "}
                     of {results.length} results
                   </div>
                   <div className="flex gap-2">
@@ -609,68 +602,77 @@ function ExceptionsPage() {
                   <div className="space-y-4">
                     <div>
                       <p className="text-sm text-slate-600 mb-1">Exception ID</p>
-                      <p className="text-slate-900">{selectedException.id}</p>
+                      <p className="text-slate-900">{selectedException.exception_id}</p>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">Event Reference</p>
-                      <p className="text-slate-900">{selectedException.event}</p>
+                      <p className="text-sm text-slate-600 mb-1">Trade ID</p>
+                      <p className="text-slate-900">{selectedException.trade_id}</p>
                     </div>
-                    
+
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">Exception Type</p>
-                      <p className="text-slate-900">{selectedException.exceptionMsg}</p>
+                      <p className="text-sm text-slate-600 mb-1">Transaction ID</p>
+                      <p className="text-slate-900">{selectedException.trans_id}</p>
                     </div>
-                    
+
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Exception Message</p>
+                      <p className="text-slate-900">{selectedException.msg}</p>
+                    </div>
+
                     <div>
                       <p className="text-sm text-slate-600 mb-1">Priority</p>
                       <Badge variant={getPriorityColor(selectedException.priority)}>
                         {selectedException.priority}
                       </Badge>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div>
                       <p className="text-sm text-slate-600 mb-1">Comments</p>
-                      <p className="text-sm text-slate-900">{selectedException.comments}</p>
+                      <p className="text-sm text-slate-900">{selectedException.comment}</p>
                     </div>
 
                     <div>
                       <p className="text-sm text-slate-600 mb-1">Exception Time</p>
-                      <p className="text-sm text-slate-900">{selectedException.exceptionTime}</p>
+                      <p className="text-sm text-slate-900">{selectedException.create_time}</p>
                     </div>
 
                     <div>
                       <p className="text-sm text-slate-600 mb-1">Last Update</p>
-                      <p className="text-sm text-slate-900">{selectedException.updateTime}</p>
+                      <p className="text-sm text-slate-900">{selectedException.update_time}</p>
                     </div>
-                    
+
                     <Separator />
-                    
-                    {selectedException.status === 'PENDING' && (
+
+                    {selectedException.status === "PENDING" && (
                       <>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="w-full mb-2"
-                          onClick={() => console.log('View transaction:', selectedException.event)}
+                          onClick={() =>
+                            console.log("View transaction:", selectedException.trans_id)
+                          }
                         >
                           <Eye className="size-4 mr-2" />
                           View Associated Transaction
                         </Button>
-                        <Button 
+                        <Button
                           className="w-full"
-                          onClick={() => console.log('Resolve exception:', selectedException.id)}
+                          onClick={() =>
+                            console.log("Resolve exception:", selectedException.exception_id)
+                          }
                         >
                           <Check className="size-4 mr-2" />
                           Resolve Exception
                         </Button>
                       </>
                     )}
-                    
-                    {selectedException.status === 'CLOSED' && (
+
+                    {selectedException.status === "CLOSED" && (
                       <Badge className="w-full justify-center py-2" variant="default">
                         <CheckCircle className="size-4 mr-2" />
                         Closed

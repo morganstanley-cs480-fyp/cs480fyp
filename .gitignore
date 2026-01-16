@@ -128,3 +128,4 @@ node_modules/
 backend/verification/src/main/resources/application.properties
 
 .roo
+.tanstack/

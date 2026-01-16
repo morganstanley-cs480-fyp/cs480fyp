@@ -41,121 +41,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { mockTrades, type Trade } from '@/lib/mockData';
 
-const mockSearchResults = [
-  {
-    id: '69690882',
-    account: 'ACC084',
-    assetType: 'CDS',
-    bookingSystem: 'HIGHGARDEN',
-    affirmationSystem: 'TRAI',
-    clearingHouse: 'LCH',
-    createTime: '2025-01-06 10:33:00',
-    updateTime: '2025-09-17 06:13:44',
-    status: 'ALLEGED',
-  },
-  {
-    id: '48712564',
-    account: 'ACC054',
-    assetType: 'CDS',
-    bookingSystem: 'KINGSLANDING',
-    affirmationSystem: 'MARC',
-    clearingHouse: 'CME',
-    createTime: '2025-05-04 09:45:44',
-    updateTime: '2025-09-22 21:34:55',
-    status: 'ALLEGED',
-  },
-  {
-    id: '67447216',
-    account: 'ACC071',
-    assetType: 'CDS',
-    bookingSystem: 'WINTERFELL',
-    affirmationSystem: 'FIRELINK',
-    clearingHouse: 'OTCCHK',
-    createTime: '2025-02-05 03:01:52',
-    updateTime: '2025-08-10 14:53:23',
-    status: 'ALLEGED',
-  },
-  {
-    id: '67515456',
-    account: 'ACC046',
-    assetType: 'CDS',
-    bookingSystem: 'KINGSLANDING',
-    affirmationSystem: 'BLM',
-    clearingHouse: 'CME',
-    createTime: '2025-04-03 02:22:13',
-    updateTime: '2025-09-20 19:30:02',
-    status: 'ALLEGED',
-  },
-  {
-    id: '69755320',
-    account: 'ACC045',
-    assetType: 'CDS',
-    bookingSystem: 'WINTERFELL',
-    affirmationSystem: 'FIRELINK',
-    clearingHouse: 'LCH',
-    createTime: '2025-06-09 04:32:02',
-    updateTime: '2025-09-07 08:09:03',
-    status: 'ALLEGED',
-  },
-  {
-    id: '17194044',
-    account: 'ACC040',
-    assetType: 'IRS',
-    bookingSystem: 'KINGSLANDING',
-    affirmationSystem: 'MARC',
-    clearingHouse: 'LCH',
-    createTime: '2025-06-20 11:44:53',
-    updateTime: '2025-08-19 19:46:50',
-    status: 'REJECTED',
-  },
-  {
-    id: '60724962',
-    account: 'ACC023',
-    assetType: 'IRS',
-    bookingSystem: 'RED KEEP',
-    affirmationSystem: 'BLM',
-    clearingHouse: 'OTCCHK',
-    createTime: '2025-06-11 02:27:23',
-    updateTime: '2025-10-19 12:18:51',
-    status: 'REJECTED',
-  },
-  {
-    id: '35821903',
-    account: 'ACC133',
-    assetType: 'FX',
-    bookingSystem: 'HIGHGARDEN',
-    affirmationSystem: 'TRAI',
-    clearingHouse: 'ISCC',
-    createTime: '2025-03-15 08:15:22',
-    updateTime: '2025-08-25 16:42:11',
-    status: 'CLEARED',
-  },
-  {
-    id: '42198745',
-    account: 'ACC0466',
-    assetType: 'IRS',
-    bookingSystem: 'WINTERFELL',
-    affirmationSystem: 'FIRELINK',
-    clearingHouse: 'CME',
-    createTime: '2025-02-28 14:20:45',
-    updateTime: '2025-09-05 10:33:18',
-    status: 'CLEARED',
-  },
-  {
-    id: '58392014',
-    account: 'ACC0982',
-    assetType: 'CDS',
-    bookingSystem: 'RED KEEP',
-    affirmationSystem: 'MARC',
-    clearingHouse: 'LCH',
-    createTime: '2025-07-12 18:55:30',
-    updateTime: '2025-10-02 22:14:05',
-    status: 'CANCELLED',
-  },
-];
+// Map Trade type to match component's expected format
+  // type TradeResult = {
+  //   id: string;
+  //   account: string;
+  //   assetType: string;
+  //   bookingSystem: string;
+  //   affirmationSystem: string;
+  //   clearingHouse: string;
+  //   createTime: string;
+  //   updateTime: string;
+  //   status: string;
+  // };
 
-type TradeResult = typeof mockSearchResults[0];
+  // const mockSearchResults: TradeResult[] = mockTrades.map(trade => ({
+  //   id: trade.trade_id,
+  //   account: trade.account,
+  //   assetType: trade.asset_type,
+  //   bookingSystem: trade.booking_system,
+  //   affirmationSystem: trade.affirmation_system,
+  //   clearingHouse: trade.clearing_house,
+  //   createTime: trade.create_time,
+  //   updateTime: trade.update_time,
+  //   status: trade.status,
+  // }));
 
 interface RecentSearch {
   id: string;
@@ -173,17 +84,17 @@ function TradeSearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [results, setResults] = useState<TradeResult[]>(mockSearchResults);
+  const [results, setResults] = useState<Trade[]>(mockTrades);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-const columns: ColumnDef<TradeResult>[] = [
+const columns: ColumnDef<Trade>[] = [
   {
-    accessorKey: 'id',
+    accessorKey: 'trade_id',
     header: 'Trade ID',
     cell: ({ row }) => (
-      <div className="font-medium text-slate-900">{row.getValue('id')}</div>
+      <div className="font-medium text-slate-900 ml-2">{row.getValue('trade_id')}</div>
     ),
   },
   {
@@ -200,9 +111,12 @@ const columns: ColumnDef<TradeResult>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <div className="text-sm ml-2">{row.getValue('asset_type')}</div>
+    )
   },
   {
-    accessorKey: 'assetType',
+    accessorKey: 'asset_type',
     header: ({ column }) => {
       return (
         <Button
@@ -216,11 +130,11 @@ const columns: ColumnDef<TradeResult>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="text-sm">{row.getValue('assetType')}</div>
+      <div className="text-sm ml-2">{row.getValue('asset_type')}</div>
     ),
   },
   {
-    accessorKey: 'bookingSystem',
+    accessorKey: 'booking_system',
     header: ({ column }) => {
       return (
         <Button
@@ -233,9 +147,12 @@ const columns: ColumnDef<TradeResult>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <div className="text-sm ml-2">{row.getValue('booking_system')}</div>
+    )
   },
   {
-    accessorKey: 'affirmationSystem',
+    accessorKey: 'affirmation_system',
     header: ({ column }) => {
       return (
         <Button
@@ -248,9 +165,12 @@ const columns: ColumnDef<TradeResult>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <div className="text-sm ml-2">{row.getValue('affirmation_system')}</div>
+    )    
   },
   {
-    accessorKey: 'clearingHouse',
+    accessorKey: 'clearing_house',
     header: ({ column }) => {
       return (
         <Button
@@ -263,9 +183,12 @@ const columns: ColumnDef<TradeResult>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <div className="text-sm ml-2">{row.getValue('clearing_house')}</div>
+    )    
   },
   {
-    accessorKey: 'createTime',
+    accessorKey: 'create_time',
     header: ({ column }) => {
       return (
         <Button
@@ -278,9 +201,12 @@ const columns: ColumnDef<TradeResult>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <div className="text-sm ml-2">{row.getValue('create_time')}</div>
+    )    
   },
   {
-    accessorKey: 'updateTime',
+    accessorKey: 'update_time',
     header: ({ column }) => {
       return (
         <Button
@@ -293,6 +219,9 @@ const columns: ColumnDef<TradeResult>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => (
+      <div className="text-sm ml-2">{row.getValue('update_time')}</div>
+    )    
   },
   {
     accessorKey: 'status',
@@ -300,7 +229,7 @@ const columns: ColumnDef<TradeResult>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string;
       const variant = status === 'CLEARED' ? 'default' : 'secondary';
-      return <Badge variant={variant}>{status}</Badge>;
+      return <Badge className="mr-2" variant={variant}>{status}</Badge>;
     },
   },
 ];
@@ -333,7 +262,7 @@ const columns: ColumnDef<TradeResult>[] = [
     setSearching(true);
     // Simulate search
     setTimeout(() => {
-      setResults(mockSearchResults);
+      setResults(mockTrades);
       setSearching(false);
       // Add to recent searches
       const newSearch: RecentSearch = {
@@ -351,7 +280,7 @@ const columns: ColumnDef<TradeResult>[] = [
     
     setSearching(true);
     setTimeout(() => {
-      setResults(mockSearchResults);
+      setResults(mockTrades);
       setSearching(false);
     }, 800);
   };
@@ -590,7 +519,7 @@ const columns: ColumnDef<TradeResult>[] = [
                     table.getRowModel().rows.map((row) => (
                       <TableRow
                         key={row.id}
-                        onClick={() => console.log('Navigate to trade:', row.original.id)}
+                        onClick={() => console.log('Navigate to trade:', row.original.trade_id)}
                         className="cursor-pointer hover:bg-blue-50"
                       >
                         {row.getVisibleCells().map((cell) => (
@@ -668,7 +597,7 @@ const columns: ColumnDef<TradeResult>[] = [
             <div className="text-center py-8 text-slate-500">
               <Clock className="size-12 mx-auto mb-3 text-slate-300" />
               <p>No recent searches yet</p>
-              <p className="text-sm mt-1">Your search history will appear here</p>
+              <p className="text-sm mt-1 text-red-700">Your search history will appear here. NOTE JUST A PLACEHODLER NOT IMPLEMENETED YET</p>
             </div>
           ) : (
             <div className="space-y-2">
