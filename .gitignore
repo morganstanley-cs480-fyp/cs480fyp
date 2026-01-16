@@ -62,7 +62,7 @@ lib64/
 parts/
 
 # Exception: Don't ignore frontend source lib directory
-!frontend/src/lib/
+!morgan-stanley-frontend/src/lib/
 sdist/
 var/
 wheels/
