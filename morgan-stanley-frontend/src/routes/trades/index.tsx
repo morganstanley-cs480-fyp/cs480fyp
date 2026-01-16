@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react';
-import { Search, Sparkles, Filter, Download, Calendar, Building2, DollarSign, Tag, ArrowUpDown, ChevronDown, X, Clock, Trash2 } from 'lucide-react';
+import { Search, Sparkles, Filter, Calendar, Building2, DollarSign, Tag, ArrowUpDown, ChevronDown, X, Clock, Trash2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import {
   useReactTable,
@@ -370,7 +370,7 @@ const columns: ColumnDef<TradeResult>[] = [
   };
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto space-y-6">
+    <div className="p-6 max-w-[90vw] mx-auto space-y-6">
       {/* Search Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-8 text-white">
         <div className="flex items-center gap-2 mb-4">
