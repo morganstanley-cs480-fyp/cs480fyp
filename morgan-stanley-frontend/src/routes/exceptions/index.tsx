@@ -76,12 +76,18 @@ function ExceptionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<Exception[]>(mockExceptions);
-  const [selectedException, setSelectedException] = useState<Exception | null>(null);
+  const [selectedException, setSelectedException] = useState<Exception | null>(
+    null
+  );
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "CLOSED">("ALL");
-  const [priorityFilter, setPriorityFilter] = useState<"ALL" | "HIGH" | "MEDIUM" | "LOW">("ALL");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "PENDING" | "CLOSED"
+  >("ALL");
+  const [priorityFilter, setPriorityFilter] = useState<
+    "ALL" | "HIGH" | "MEDIUM" | "LOW"
+  >("ALL");
 
   const getPriorityColor = (priority: string) => {
     if (priority === "HIGH") return "destructive";
@@ -117,7 +123,9 @@ function ExceptionsPage() {
         );
       },
       cell: ({ row }) => (
-        <div className="font-medium text-slate-900">{row.getValue("exception_id")}</div>
+        <div className="font-medium text-slate-900">
+          {row.getValue("exception_id")}
+        </div>
       ),
       enableColumnFilter: true,
     },
@@ -136,16 +144,16 @@ function ExceptionsPage() {
         );
       },
       cell: ({ row }) => (
-        <div className="font-medium text-slate-900">{row.getValue("trade_id")}</div>
+        <div className="font-medium text-slate-900">
+          {row.getValue("trade_id")}
+        </div>
       ),
       enableColumnFilter: true,
     },
     {
       accessorKey: "msg",
       header: "Exception Message / Type",
-      cell: ({ row }) => (
-        <div className="text-sm">{row.getValue("msg")}</div>
-      ),
+      cell: ({ row }) => <div className="text-sm">{row.getValue("msg")}</div>,
       enableColumnFilter: true,
     },
     {
@@ -153,7 +161,11 @@ function ExceptionsPage() {
       header: "Status",
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
-        return <Badge className="mr-2" variant={getStatusBadgeVariant(status)}>{status}</Badge>;
+        return (
+          <Badge className="mr-2" variant={getStatusBadgeVariant(status)}>
+            {status}
+          </Badge>
+        );
       },
       enableColumnFilter: false, // Disable text filter for status
     },
@@ -194,7 +206,9 @@ function ExceptionsPage() {
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm text-slate-600">{row.getValue("create_time")}</div>
+        <div className="text-sm text-slate-600">
+          {row.getValue("create_time")}
+        </div>
       ),
       enableColumnFilter: true,
     },
@@ -213,7 +227,9 @@ function ExceptionsPage() {
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm text-slate-600">{row.getValue("update_time")}</div>
+        <div className="text-sm text-slate-600">
+          {row.getValue("update_time")}
+        </div>
       ),
       enableColumnFilter: true,
     },
@@ -347,7 +363,6 @@ function ExceptionsPage() {
                 <CardTitle>Advanced Filters</CardTitle>
                 <CardDescription>Refine your exception search</CardDescription>
               </div>
-              
             </div>
           </CardHeader>
           <CardContent>
@@ -458,12 +473,14 @@ function ExceptionsPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="ALL">All</SelectItem>
-                                  <SelectItem value="PENDING">Pending</SelectItem>
+                                  <SelectItem value="PENDING">
+                                    Pending
+                                  </SelectItem>
                                   <SelectItem value="CLOSED">Closed</SelectItem>
                                 </SelectContent>
                               </Select>
                             )}
-                            
+
                             {/* Priority Column - Dropdown */}
                             {header.column.id === "priority" && (
                               <Select
@@ -481,25 +498,25 @@ function ExceptionsPage() {
                                 </SelectContent>
                               </Select>
                             )}
-                            
+
                             {/* Other Columns - Text Input */}
-                            {header.column.id !== "status" && 
-                             header.column.id !== "priority" && 
-                             header.column.getCanFilter() && (
-                              <Input
-                                placeholder="Filter..."
-                                value={
-                                  (header.column.getFilterValue() as string) ??
-                                  ""
-                                }
-                                onChange={(event) =>
-                                  header.column.setFilterValue(
-                                    event.target.value
-                                  )
-                                }
-                                className="h-8 text-xs"
-                              />
-                            )}
+                            {header.column.id !== "status" &&
+                              header.column.id !== "priority" &&
+                              header.column.getCanFilter() && (
+                                <Input
+                                  placeholder="Filter..."
+                                  value={
+                                    (header.column.getFilterValue() as string) ??
+                                    ""
+                                  }
+                                  onChange={(event) =>
+                                    header.column.setFilterValue(
+                                      event.target.value
+                                    )
+                                  }
+                                  className="h-8 text-xs"
+                                />
+                              )}
                           </TableHead>
                         ))}
                       </TableRow>
@@ -511,7 +528,8 @@ function ExceptionsPage() {
                             key={row.id}
                             data-state={row.getIsSelected() && "selected"}
                             className={`cursor-pointer ${
-                              selectedException?.exception_id === row.original.exception_id
+                              selectedException?.exception_id ===
+                              row.original.exception_id
                                 ? "bg-blue-50"
                                 : ""
                             }`}
@@ -601,30 +619,44 @@ function ExceptionsPage() {
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">Exception ID</p>
-                      <p className="text-slate-900">{selectedException.exception_id}</p>
+                      <p className="text-sm text-slate-600 mb-1">
+                        Exception ID
+                      </p>
+                      <p className="text-slate-900">
+                        {selectedException.exception_id}
+                      </p>
                     </div>
 
                     <Separator />
 
                     <div>
                       <p className="text-sm text-slate-600 mb-1">Trade ID</p>
-                      <p className="text-slate-900">{selectedException.trade_id}</p>
+                      <p className="text-slate-900">
+                        {selectedException.trade_id}
+                      </p>
                     </div>
 
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">Transaction ID</p>
-                      <p className="text-slate-900">{selectedException.trans_id}</p>
+                      <p className="text-sm text-slate-600 mb-1">
+                        Transaction ID
+                      </p>
+                      <p className="text-slate-900">
+                        {selectedException.trans_id}
+                      </p>
                     </div>
 
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">Exception Message</p>
+                      <p className="text-sm text-slate-600 mb-1">
+                        Exception Message
+                      </p>
                       <p className="text-slate-900">{selectedException.msg}</p>
                     </div>
 
                     <div>
                       <p className="text-sm text-slate-600 mb-1">Priority</p>
-                      <Badge variant={getPriorityColor(selectedException.priority)}>
+                      <Badge
+                        variant={getPriorityColor(selectedException.priority)}
+                      >
                         {selectedException.priority}
                       </Badge>
                     </div>
@@ -633,17 +665,25 @@ function ExceptionsPage() {
 
                     <div>
                       <p className="text-sm text-slate-600 mb-1">Comments</p>
-                      <p className="text-sm text-slate-900">{selectedException.comment}</p>
+                      <p className="text-sm text-slate-900">
+                        {selectedException.comment}
+                      </p>
                     </div>
 
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">Exception Time</p>
-                      <p className="text-sm text-slate-900">{selectedException.create_time}</p>
+                      <p className="text-sm text-slate-600 mb-1">
+                        Exception Time
+                      </p>
+                      <p className="text-sm text-slate-900">
+                        {selectedException.create_time}
+                      </p>
                     </div>
 
                     <div>
                       <p className="text-sm text-slate-600 mb-1">Last Update</p>
-                      <p className="text-sm text-slate-900">{selectedException.update_time}</p>
+                      <p className="text-sm text-slate-900">
+                        {selectedException.update_time}
+                      </p>
                     </div>
 
                     <Separator />
@@ -654,7 +694,10 @@ function ExceptionsPage() {
                           variant="outline"
                           className="w-full mb-2"
                           onClick={() =>
-                            console.log("View transaction:", selectedException.trans_id)
+                            navigate({
+                              to: "/trades/$tradeId",
+                              params: { tradeId: selectedException.trade_id },
+                            })
                           }
                         >
                           <Eye className="size-4 mr-2" />
@@ -663,7 +706,10 @@ function ExceptionsPage() {
                         <Button
                           className="w-full"
                           onClick={() =>
-                            console.log("Resolve exception:", selectedException.exception_id)
+                            navigate({
+                              to: "/exceptions/$exceptionId",
+                              params: { exceptionId: selectedException.exception_id },
+                            })
                           }
                         >
                           <Check className="size-4 mr-2" />
@@ -673,7 +719,10 @@ function ExceptionsPage() {
                     )}
 
                     {selectedException.status === "CLOSED" && (
-                      <Badge className="w-full justify-center py-2" variant="default">
+                      <Badge
+                        className="w-full justify-center py-2"
+                        variant="default"
+                      >
                         <CheckCircle className="size-4 mr-2" />
                         Closed
                       </Badge>

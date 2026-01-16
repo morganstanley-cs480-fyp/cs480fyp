@@ -158,16 +158,19 @@ function TradeDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate({ to: "/trades" })}
+                onClick={() => window.history.back()}
               >
                 <ArrowLeft className="size-4 mr-2" />
-                Back to Trades
+                Back
               </Button>
               <div>
                 <CardTitle>Trade Clearing Flow Visualization</CardTitle>
                 <CardDescription className="mt-2">
-                  Interactive flow diagram and transaction timeline for Trade{" "}
-                  {trade.trade_id}
+                  Interactive flow diagram and transaction timeline for{" "}
+                  <span className="font-extrabold">
+                    {" "}
+                    Trade {trade.trade_id}{" "}
+                  </span>
                 </CardDescription>
               </div>
             </div>
@@ -704,7 +707,10 @@ function TradeDetailPage() {
                                   <Button
                                     className="w-full"
                                     onClick={() =>
-                                      navigate({ to: "/exceptions" })
+                                      navigate({
+                              to: "/exceptions/$exceptionId",
+                              params: { exceptionId: exception.exception_id},
+                                       })
                                     }
                                   >
                                     <Check className="size-4 mr-2" />

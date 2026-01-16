@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TradesIndexRouteImport } from './routes/trades/index'
 import { Route as ExceptionsIndexRouteImport } from './routes/exceptions/index'
 import { Route as TradesTradeIdRouteImport } from './routes/trades/$tradeId'
+import { Route as ExceptionsExceptionIdRouteImport } from './routes/exceptions/$exceptionId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,15 +35,22 @@ const TradesTradeIdRoute = TradesTradeIdRouteImport.update({
   path: '/trades/$tradeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExceptionsExceptionIdRoute = ExceptionsExceptionIdRouteImport.update({
+  id: '/exceptions/$exceptionId',
+  path: '/exceptions/$exceptionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/exceptions/$exceptionId': typeof ExceptionsExceptionIdRoute
   '/trades/$tradeId': typeof TradesTradeIdRoute
   '/exceptions': typeof ExceptionsIndexRoute
   '/trades': typeof TradesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/exceptions/$exceptionId': typeof ExceptionsExceptionIdRoute
   '/trades/$tradeId': typeof TradesTradeIdRoute
   '/exceptions': typeof ExceptionsIndexRoute
   '/trades': typeof TradesIndexRoute
@@ -50,20 +58,38 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/exceptions/$exceptionId': typeof ExceptionsExceptionIdRoute
   '/trades/$tradeId': typeof TradesTradeIdRoute
   '/exceptions/': typeof ExceptionsIndexRoute
   '/trades/': typeof TradesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/trades/$tradeId' | '/exceptions' | '/trades'
+  fullPaths:
+    | '/'
+    | '/exceptions/$exceptionId'
+    | '/trades/$tradeId'
+    | '/exceptions'
+    | '/trades'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/trades/$tradeId' | '/exceptions' | '/trades'
-  id: '__root__' | '/' | '/trades/$tradeId' | '/exceptions/' | '/trades/'
+  to:
+    | '/'
+    | '/exceptions/$exceptionId'
+    | '/trades/$tradeId'
+    | '/exceptions'
+    | '/trades'
+  id:
+    | '__root__'
+    | '/'
+    | '/exceptions/$exceptionId'
+    | '/trades/$tradeId'
+    | '/exceptions/'
+    | '/trades/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExceptionsExceptionIdRoute: typeof ExceptionsExceptionIdRoute
   TradesTradeIdRoute: typeof TradesTradeIdRoute
   ExceptionsIndexRoute: typeof ExceptionsIndexRoute
   TradesIndexRoute: typeof TradesIndexRoute
@@ -99,11 +125,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TradesTradeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/exceptions/$exceptionId': {
+      id: '/exceptions/$exceptionId'
+      path: '/exceptions/$exceptionId'
+      fullPath: '/exceptions/$exceptionId'
+      preLoaderRoute: typeof ExceptionsExceptionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExceptionsExceptionIdRoute: ExceptionsExceptionIdRoute,
   TradesTradeIdRoute: TradesTradeIdRoute,
   ExceptionsIndexRoute: ExceptionsIndexRoute,
   TradesIndexRoute: TradesIndexRoute,
