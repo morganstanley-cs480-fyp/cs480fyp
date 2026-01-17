@@ -1,3 +1,7 @@
+/* Environment Variables
+AWS_REGION, QUEUE_URL, DB_HOST,DB_NAME, DB_PASSWORD, DB_USER, DB_PORT
+*/
+
 import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from "@aws-sdk/client-sqs";
 import { Client } from 'pg';
 
