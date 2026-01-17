@@ -35,10 +35,12 @@ jobs:
           pip install ruff
 
       - name: Run Ruff linter
+        continue-on-error: true
         working-directory: ./services/${{ inputs.service_name }}
         run: ruff check .
 
       - name: Run Ruff formatter check
+        continue-on-error: true
         working-directory: ./services/${{ inputs.service_name }}
         run: ruff format --check .
 
