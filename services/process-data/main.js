@@ -2,6 +2,7 @@ import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from "@aws-sdk
 import { Client } from 'pg';
 
 const queueUrl = process.env.QUEUE_URL;
+
 // Check if we are pointing to LocalStack
 const isLocal = queueUrl && (queueUrl.includes("localstack") || queueUrl.includes("localhost"));
 
@@ -28,9 +29,63 @@ const db = new Client({
   port: 5432,
 });
 
+async function initDB() {
+  const createTablesQuery = `
+    CREATE TABLE IF NOT EXISTS trades (
+      trade_id TEXT PRIMARY KEY, 
+      account TEXT, 
+      asset_type TEXT, 
+      booking_system TEXT, 
+      affirmation_system TEXT, 
+      clearing_house TEXT, 
+      create_time TIMESTAMP, 
+      update_time TIMESTAMP, 
+      status TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS transactions (
+      trans_id TEXT PRIMARY KEY, 
+      trade_id TEXT REFERENCES trades(trade_id), 
+      create_time TIMESTAMP, 
+      entity TEXT, 
+      direction TEXT, 
+      type TEXT, 
+      status TEXT, 
+      update_time TIMESTAMP, 
+      step TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS exceptions (
+      excep_id TEXT PRIMARY KEY, 
+      trade_id TEXT REFERENCES trades(trade_id), 
+      trans_id TEXT, 
+      event TEXT, 
+      status TEXT, 
+      msg TEXT, 
+      create_time TIMESTAMP, 
+      comment TEXT, 
+      priority TEXT, 
+      update_time TIMESTAMP
+    );
+  `;
+
+  try {
+    await db.query(createTablesQuery);
+    console.log("Database tables verified/created successfully.");
+  } catch (err) {
+    console.error("Failed to initialize database tables:", err);
+    throw err; // Stop the app if we can't create tables
+  }
+}
+
 async function processData() {
+  //connect to DB
   await db.connect();
-  console.log("Connected to DB and listening for SQS messages...");
+  console.log("Connected to DB");
+
+
+  // Initialise DB tables if they don'y exist
+  await initDB();
 
   const params = {
     QueueUrl: queueUrl,
@@ -40,7 +95,7 @@ async function processData() {
 
   while (true) {
     try {
-      console.log("Connected to SQS queue");
+      console.log("Listening to messages");
       const response = await sqs.send(new ReceiveMessageCommand(params));
       console.log(response);
 
@@ -54,6 +109,7 @@ async function processData() {
           const body = JSON.parse(message.Body);
           const { type, data } = body;
 
+          // handles messages
           try {
             switch (type) {
               case "trade":
@@ -88,7 +144,7 @@ async function processData() {
   }
 }
 
-// FIX 1: Corrected Placeholders ($1 to $9)
+// handle trade data
 async function handleTrade(trade) {
   const query = `
     INSERT INTO trades (trade_id, account, asset_type, booking_system, affirmation_system, clearing_house, create_time, update_time, status)
@@ -105,7 +161,7 @@ async function handleTrade(trade) {
   console.log(result.rowCount === 0 ? `Trade ${trade.trade_id} exists.` : `Inserted Trade ${trade.trade_id}`);
 }
 
-// FIX 2: Fixed variable mapping (trans.status vs trans.trans_status)
+// Handle transaction data (to add push to websocket)
 async function handleTransaction(trans) {
   try {
     await db.query('BEGIN');
@@ -134,7 +190,7 @@ async function handleTransaction(trans) {
   }
 }
 
-// FIX 3: Consistent column names
+// Hanlde exception data (to add push to websocket)
 async function handleException(excep) {
   try {
     await db.query('BEGIN');
