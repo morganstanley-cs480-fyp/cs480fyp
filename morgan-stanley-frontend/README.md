@@ -16,3 +16,4 @@ To run the project, remember to `cd morgan-stanley-frontend` before running `npm
   - In `index.css`, `@theme` defines custom CSS attributes you can use. 
   - For example, `@theme` defines `--radius--sm` as `calc(var(--radius) - 4px)`.
   - It can be used like so in a div class`div <className=rounded-[var(--radius-sm)]> Using small radius!</div>`
+  
