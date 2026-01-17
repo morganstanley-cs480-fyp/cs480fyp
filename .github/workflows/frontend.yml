@@ -3,12 +3,12 @@ name: Frontend CI/CD
 on:
   push:
     paths:
-      - "frontend/**"
+      - "morgan-stanley-frontend/**"
       - ".github/workflows/frontend.yml"
   pull_request:
     branches: ["main"]
     paths:
-      - "frontend/**"
+      - "morgan-stanley-frontend/**"
       - ".github/workflows/frontend.yml"
 
 permissions:
