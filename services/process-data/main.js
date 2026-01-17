@@ -5,10 +5,13 @@ AWS_REGION, QUEUE_URL, DB_HOST,DB_NAME, DB_PASSWORD, DB_USER, DB_PORT
 import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from "@aws-sdk/client-sqs";
 import { Client } from 'pg';
 
+// Config
 const queueUrl = process.env.QUEUE_URL;
+const awsRegion =  process.env.AWS_REGION || "ap-southeast-1"
 
+// AWS Clients
 const sqs = new SQSClient({
-  region: process.env.AWS_REGION,
+  region: awsRegion,
 });
 
 const db = new Client({
@@ -17,8 +20,12 @@ const db = new Client({
   password: process.env.DB_PASSWORD,
   user: process.env.DB_USER, 
   port: parseInt(process.env.DB_PORT || "5432"),
+  ssl: {
+    rejectUnauthorized: false // This allows self-signed RDS certificates (safest for standard use)
+  }
 });
 
+// Initalise DB & Tables if not yet created
 async function initDB() {
   const createTablesQuery = `
     CREATE TABLE IF NOT EXISTS trades (
@@ -74,7 +81,7 @@ async function processData() {
   console.log("Connected to DB");
 
 
-  // Initialise DB tables if they don'y exist
+  // initialise DB tables if they don'y exist
   await initDB();
 
   const params = {
@@ -113,7 +120,7 @@ async function processData() {
                 break;
               default:
                 console.error(`Unhandled message type: ${type}`);
-                continue; // Skip to next message instead of killing loop
+                continue; 
             }
 
             // Success: Delete message
@@ -123,7 +130,6 @@ async function processData() {
             }));
           } catch (e) {
             console.error(`Failed to process message [${type}]:`, e.message);
-            // We DON'T delete the message here so SQS retries it
           }
         }
       }
