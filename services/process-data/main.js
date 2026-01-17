@@ -7,9 +7,6 @@ import { Client } from 'pg';
 
 const queueUrl = process.env.QUEUE_URL;
 
-// Check if we are pointing to LocalStack
-const isLocal = queueUrl && (queueUrl.includes("localstack") || queueUrl.includes("localhost"));
-
 const sqs = new SQSClient({
   region: process.env.AWS_REGION,
 });
