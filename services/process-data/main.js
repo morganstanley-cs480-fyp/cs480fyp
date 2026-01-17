@@ -7,18 +7,7 @@ const queueUrl = process.env.QUEUE_URL;
 const isLocal = queueUrl && (queueUrl.includes("localstack") || queueUrl.includes("localhost"));
 
 const sqs = new SQSClient({
-  region: "ap-southeast-1",
-  ...(isLocal && {
-    // FIX A: Endpoint must be the BASE URL only (no queue path)
-    endpoint: "http://localstack:4566", 
-    credentials: {
-      accessKeyId: "test",
-      secretAccessKey: "test",
-      sessionToken: undefined
-    },
-    // FIX B: This silences the "QueueUrl differs" warning
-    useQueueUrlAsEndpoint: true
-  })
+  region: process.env.AWS_REGION,
 });
 
 const db = new Client({
@@ -26,7 +15,7 @@ const db = new Client({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   user: process.env.DB_USER, 
-  port: 5432,
+  port: parseInt(process.env.DB_PORT || "5432"),
 });
 
 async function initDB() {
