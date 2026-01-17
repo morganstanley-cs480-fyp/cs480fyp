@@ -2,7 +2,20 @@ name: Services CI/CD
 
 on:
   push:
+    paths:
+      - "services/**"
+      - ".github/workflows/services.yml"
+      - ".github/workflows/build-service.yml"
+  pull_request:
     branches: ["main"]
+    paths:
+      - "services/**"
+      - ".github/workflows/services.yml"
+      - ".github/workflows/build-service.yml"
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   filter:
