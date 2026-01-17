@@ -1,1 +1,1 @@
-This is an example app to test CI/CD functionality
+This is an example app to test CI/CD functionality.
