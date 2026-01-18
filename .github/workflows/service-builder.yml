@@ -1,0 +1,204 @@
+name: Service Builder
+
+on:
+  push:
+    paths:
+      - "services/**"
+      - ".github/workflows/service-builder.yml"
+      - ".github/workflows/build-python-service.yml"
+      - ".github/workflows/build-js-service.yml"
+
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "services/**"
+      - ".github/workflows/service-builder.yml"
+      - ".github/workflows/build-python-service.yml"
+      - ".github/workflows/build-js-service.yml"
+
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  filter:
+    runs-on: ubuntu-latest
+    outputs:
+      example-service: ${{ steps.filter.outputs.example-service }}
+      query-suggestion-service: ${{ steps.filter.outputs.query-suggestion-service }}
+      search-service: ${{ steps.filter.outputs.search-service }}
+      exception-service: ${{ steps.filter.outputs.exception-service }}
+      solution-service: ${{ steps.filter.outputs.solution-service }}
+      rag-service: ${{ steps.filter.outputs.rag-service }}
+      gateway-service: ${{ steps.filter.outputs.gateway-service }}
+      trade-flow-service: ${{ steps.filter.outputs.trade-flow-service }}
+      ingestion-service: ${{ steps.filter.outputs.ingestion-service }}
+      data-processing-service: ${{ steps.filter.outputs.data-processing-service }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Filter changed services
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            example-service:
+              - 'services/example-service/**'
+            query-suggestion-service:
+              - 'services/query-suggestion-service/**'
+            search-service:
+              - 'services/search-service/**'
+            exception-service:
+              - 'services/exception-service/**'
+            solution-service:
+              - 'services/solution-service/**'
+            rag-service:
+              - 'services/rag-service/**'
+            gateway-service:
+              - 'services/gateway-service/**'
+            trade-flow-service:
+              - 'services/trade-flow-service/**'
+            ingestion-service:
+              - 'services/ingestion-service/**'
+            data-processing-service:
+              - 'services/data-processing-service/**'
+
+  build-example-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.example-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-python-service.yml
+    with:
+      service_name: example-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  query-suggestion-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.query-suggestion-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-python-service.yml
+    with:
+      service_name: query-suggestion-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  search-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.search-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-python-service.yml
+    with:
+      service_name: search-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  exception-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.exception-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-python-service.yml
+    with:
+      service_name: exception-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  solution-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.solution-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-python-service.yml
+    with:
+      service_name: solution-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  rag-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.rag-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-python-service.yml
+    with:
+      service_name: rag-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  gateway-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.gateway-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-js-service.yml
+    with:
+      service_name: gateway-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  trade-flow-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.trade-flow-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-js-service.yml
+    with:
+      service_name: trade-flow-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  ingestion-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.ingestion-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-js-service.yml
+    with:
+      service_name: ingestion-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  data-processing-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.data-processing-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-js-service.yml
+    with:
+      service_name: data-processing-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
