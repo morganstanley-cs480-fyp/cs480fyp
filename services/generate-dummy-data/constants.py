@@ -1,0 +1,62 @@
+from datetime import datetime
+
+
+DBNAME="database123.db"
+CREATE_TRADE_TABLE="""
+    CREATE TABLE IF NOT EXISTS TRADE(
+        trade_id INT PRIMARY KEY,
+        create_time DATETIME NOT NULL,
+        update_time DATETIME NOT NULL,
+        status VARCHAR(255) NOT NULL
+    );
+"""
+CREATE_TRANSACTIONS_TABLE= """
+    CREATE TABLE IF NOT EXISTS TRANSACTIONS(
+        trans_id INT PRIMARY KEY,
+        trade_id INT,
+        create_time DATETIME NOT NULL,
+        update_time DATETIME NOT NULL,
+        step INT NOT NULL,
+        FOREIGN KEY (trade_id) REFERENCES TRADE(trade_id)
+        UNIQUE(trade_id, step)
+    );
+"""
+CREATE_EXCEPTION_TABLE= """
+    CREATE TABLE IF NOT EXISTS EXCEPTION(
+        exception_id INT PRIMARY KEY,
+        trade_id INT,
+        trans_id INT,
+        create_time DATETIME NOT NULL,
+        update_time DATETIME NOT NULL,
+        status VARCHAR(255) NOT NULL,
+        FOREIGN KEY (trade_id) REFERENCES TRADE(trade_id),
+        FOREIGN KEY (trans_id) REFERENCES TRANSACTIONS(trans_id)
+    );
+"""
+CREATE_SOLUTION_TABLE = """
+    CREATE TABLE SOLUTION(
+        sol_id INT NOT NULL,
+        trans_id INT, 
+        FOREIGN KEY (trans_id) REFERENCES TRANSACTIONS(trans_id)
+    );
+"""
+
+# Trade 
+ASSET_TYPE_LS= ["CDS", "FX", "IRS"]
+BOOKING_SYSTEM_LS=["RED KEEP", "KINGSLANDING", "WINTERFELL", "HIGHGARDEN"]
+AFFIRMATION_SYSTEM_LS=["BLM", "TRAI", "MARC", "FIRELNK"]
+CLEARING_HOUSE_LS=["CME", "JSCC", "LCH", "OTCCHK"]
+# Transaction
+ENTITY_LS=ASSET_TYPE_LS+BOOKING_SYSTEM_LS+AFFIRMATION_SYSTEM_LS+CLEARING_HOUSE_LS
+TRANS_TYPE_LS=["REQUEST_CONSENT", "CREDIT_CHECK", "CREDIT_APPROVE", "CREDIT_REJECT", "CONSENT_GRANTED", "CONSENT_REJECTED", "STATUS_UPDATE", \
+               "CLEARING_CONFIRMED", "CLEARING_REFUSED", "CLEARED_TRADE" ,"SEND_TRADE_ID"]
+TRADE_STATUS_LS=["ALLEGED", "CLEARED", "REJECTED", "CANCELLED"]
+TRANSACTION_STATUS_LS= ["ALLEGED", "CLEARED", "REJECTED", "CANCELLED", "EXCEPTION"]
+# Exception
+EXCEPTION_MSG_LS=["MISSING BIC", "INSUFFICIENT MARGIN", "TIME OUT OF RANGE", "MAPPING ISSUE"]
+EXCEPTION_COMMENT_LS=["RETRY LIMIT EXCEEDED", "NO BIC", "NO MAPPING"]
+EXCEPTION_PRIORITY_LS=["LOW","HIGH"]
+JAN2025=datetime.fromisoformat("2025-01-01").isoformat()
+JUL2025=datetime.fromisoformat("2025-07-01").isoformat()
+AUG2025=datetime.fromisoformat("2025-08-01").isoformat()
+OCT2025=datetime.fromisoformat("2025-10-01").isoformat()
