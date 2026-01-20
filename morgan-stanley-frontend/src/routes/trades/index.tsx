@@ -60,7 +60,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { mockTrades, type Trade } from "@/lib/mockData";
+import { 
+  mockTrades, 
+  type Trade,
+  getUniqueAssetTypes,
+  getUniqueAccounts,
+  getUniqueBookingSystems,
+  getUniqueAffirmationSystems,
+  getUniqueClearingHouses,
+  getUniqueStatuses,
+} from "@/lib/mockData";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Map Trade type to match component's expected format
 // type TradeResult = {
@@ -93,6 +103,21 @@ interface RecentSearch {
   timestamp: number;
 }
 
+interface ManualSearchFilters {
+  tradeId: string;
+  account: string;
+  assetType: string;
+  bookingSystem: string;
+  affirmationSystem: string;
+  clearingHouse: string;
+  status: string[];
+  dateType: 'create_time' | 'update_time';
+  dateFrom: string;
+  dateTo: string;
+  withExceptionsOnly: boolean;
+  clearedTradesOnly: boolean;
+}
+
 export const Route = createFileRoute("/trades/")({
   component: TradeSearchPage,
 });
@@ -107,6 +132,22 @@ function TradeSearchPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  
+  // Manual search filter state
+  const [filters, setFilters] = useState<ManualSearchFilters>({
+    tradeId: '',
+    account: '',
+    assetType: '',
+    bookingSystem: '',
+    affirmationSystem: '',
+    clearingHouse: '',
+    status: [],
+    dateType: 'update_time',
+    dateFrom: '',
+    dateTo: '',
+    withExceptionsOnly: false,
+    clearedTradesOnly: false,
+  });
 
   const columns: ColumnDef<Trade>[] = [
     {
@@ -281,6 +322,103 @@ function TradeSearchPage() {
     },
   });
 
+  // Helper function to set quick date ranges
+  const setQuickDateRange = (range: string) => {
+    const today = new Date();
+    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+    
+    setFilters(prev => {
+      const newFilters = { ...prev };
+      newFilters.dateTo = formatDate(today);
+      
+      switch(range) {
+        case 'today':
+          newFilters.dateFrom = formatDate(today);
+          break;
+        case '3days':
+          newFilters.dateFrom = formatDate(new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000));
+          break;
+        case '1week':
+          newFilters.dateFrom = formatDate(new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000));
+          break;
+        case '2weeks':
+          newFilters.dateFrom = formatDate(new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000));
+          break;
+        case '1month':
+          newFilters.dateFrom = formatDate(new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000));
+          break;
+      }
+      
+      return newFilters;
+    });
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setFilters({
+      tradeId: '',
+      account: '',
+      assetType: '',
+      bookingSystem: '',
+      affirmationSystem: '',
+      clearingHouse: '',
+      status: [],
+      dateType: 'update_time',
+      dateFrom: '',
+      dateTo: '',
+      withExceptionsOnly: false,
+      clearedTradesOnly: false,
+    });
+  };
+
+  // Handle manual search with filters
+  const handleManualSearch = () => {
+    setSearching(true);
+    
+    setTimeout(() => {
+      let filtered = [...mockTrades];
+      
+      // Apply filters
+      if (filters.tradeId) {
+        filtered = filtered.filter(t => t.trade_id.includes(filters.tradeId));
+      }
+      if (filters.account) {
+        filtered = filtered.filter(t => t.account === filters.account);
+      }
+      if (filters.assetType) {
+        filtered = filtered.filter(t => t.asset_type === filters.assetType);
+      }
+      if (filters.bookingSystem) {
+        filtered = filtered.filter(t => t.booking_system === filters.bookingSystem);
+      }
+      if (filters.affirmationSystem) {
+        filtered = filtered.filter(t => t.affirmation_system === filters.affirmationSystem);
+      }
+      if (filters.clearingHouse) {
+        filtered = filtered.filter(t => t.clearing_house === filters.clearingHouse);
+      }
+      if (filters.status.length > 0) {
+        filtered = filtered.filter(t => filters.status.includes(t.status));
+      }
+      if (filters.clearedTradesOnly) {
+        filtered = filtered.filter(t => t.status === 'CLEARED');
+      }
+      
+      // Date filtering
+      if (filters.dateFrom || filters.dateTo) {
+        filtered = filtered.filter(t => {
+          const tradeDate = new Date(t[filters.dateType]);
+          const fromDate = filters.dateFrom ? new Date(filters.dateFrom) : new Date('2000-01-01');
+          const toDate = filters.dateTo ? new Date(filters.dateTo) : new Date('2099-12-31');
+          return tradeDate >= fromDate && tradeDate <= toDate;
+        });
+      }
+      
+      setResults(filtered);
+      setSearching(false);
+    }, 800);
+  };
+
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
 
@@ -371,79 +509,290 @@ function TradeSearchPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="size-5" />
-              Manual Search Criteria
+              Advanced Search Filters
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Tag className="size-4" />
-                  Trade ID
-                </Label>
-                <Input placeholder="TRD-2024-xxxxx" />
+          <CardContent className="space-y-6">
+            {/* DATE RANGE SECTION */}
+            <div className="space-y-4 p-4 bg-slate-50 rounded-lg">
+              <div className="flex items-center gap-4">
+                <Label className="font-semibold text-base">Date Range</Label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="dateType"
+                      checked={filters.dateType === 'update_time'}
+                      onChange={() => setFilters(prev => ({ ...prev, dateType: 'update_time' }))}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm">Update Date</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="dateType"
+                      checked={filters.dateType === 'create_time'}
+                      onChange={() => setFilters(prev => ({ ...prev, dateType: 'create_time' }))}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm">Create Date</span>
+                  </label>
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Building2 className="size-4" />
-                  Counterparty
-                </Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select counterparty" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gs">Goldman Sachs</SelectItem>
-                    <SelectItem value="jpm">JP Morgan</SelectItem>
-                    <SelectItem value="barc">Barclays</SelectItem>
-                    <SelectItem value="citi">Citi</SelectItem>
-                  </SelectContent>
-                </Select>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm text-slate-600">From</Label>
+                  <Input
+                    type="date"
+                    value={filters.dateFrom}
+                    onChange={(e) => setFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm text-slate-600">To</Label>
+                  <Input
+                    type="date"
+                    value={filters.dateTo}
+                    onChange={(e) => setFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                    className="h-9"
+                  />
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <DollarSign className="size-4" />
-                  Product Type
-                </Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select product" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="irs">Interest Rate Swap</SelectItem>
-                    <SelectItem value="cds">Credit Default Swap</SelectItem>
-                    <SelectItem value="fx">FX Derivative</SelectItem>
-                    <SelectItem value="eq">Equity Derivative</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Calendar className="size-4" />
-                  Date Range
-                </Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="week">Last 7 days</SelectItem>
-                    <SelectItem value="month">Last 30 days</SelectItem>
-                    <SelectItem value="custom">Custom range</SelectItem>
-                  </SelectContent>
-                </Select>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickDateRange('today')}
+                  className="h-8"
+                >
+                  Today
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickDateRange('3days')}
+                  className="h-8"
+                >
+                  3 Days
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickDateRange('1week')}
+                  className="h-8"
+                >
+                  1 Week
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickDateRange('2weeks')}
+                  className="h-8"
+                >
+                  2 Weeks
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickDateRange('1month')}
+                  className="h-8"
+                >
+                  1 Month
+                </Button>
               </div>
             </div>
 
-            <Separator className="my-4" />
+            {/* TRADE ATTRIBUTES SECTION */}
+            <div className="space-y-4">
+              <Label className="font-semibold text-base">Trade Attributes</Label>
+              
+              {/* Filter Fields - Four Columns Grid */}
+              <div className="grid grid-cols-4 gap-4">
+                {/* Row 1 */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-sm">
+                    <Tag className="size-4" />
+                    Trade ID
+                  </Label>
+                  <Input
+                    placeholder="Enter trade ID..."
+                    value={filters.tradeId}
+                    onChange={(e) => setFilters(prev => ({ ...prev, tradeId: e.target.value }))}
+                    className="h-9"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-sm">
+                    <Building2 className="size-4" />
+                    Account
+                  </Label>
+                  <Select
+                    value={filters.account}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, account: value }))}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Select account..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Accounts</SelectItem>
+                      {getUniqueAccounts().map(account => (
+                        <SelectItem key={account} value={account}>
+                          {account}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-sm">Booking System</Label>
+                  <Select
+                    value={filters.bookingSystem}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, bookingSystem: value }))}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Systems</SelectItem>
+                      {getUniqueBookingSystems().map(system => (
+                        <SelectItem key={system} value={system}>
+                          {system}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-sm">Affirmation System</Label>
+                  <Select
+                    value={filters.affirmationSystem}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, affirmationSystem: value }))}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Systems</SelectItem>
+                      {getUniqueAffirmationSystems().map(system => (
+                        <SelectItem key={system} value={system}>
+                          {system}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="flex justify-between items-center">
-              <Button variant="ghost">Clear All Filters</Button>
-              <Button onClick={handleSearch}>Search with Filters</Button>
+                {/* Row 2 */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-sm">
+                    <DollarSign className="size-4" />
+                    Asset Type
+                  </Label>
+                  <Select
+                    value={filters.assetType}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, assetType: value }))}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Select asset type..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Asset Types</SelectItem>
+                      {getUniqueAssetTypes().map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-sm">Clearing House</Label>
+                  <Select
+                    value={filters.clearingHouse}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, clearingHouse: value }))}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Clearing Houses</SelectItem>
+                      {getUniqueClearingHouses().map(house => (
+                        <SelectItem key={house} value={house}>
+                          {house}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Row 3 - Status spanning 2 columns */}
+                <div className="col-span-2 space-y-2">
+                  <Label className="text-sm">Trade Status (Multi-select)</Label>
+                  <div className="border rounded-md p-3 bg-white">
+                    <div className="grid grid-cols-2 gap-2">
+                      {getUniqueStatuses().map(status => (
+                        <label key={status} className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox
+                            checked={filters.status.includes(status)}
+                            onCheckedChange={(checked) => {
+                              setFilters(prev => ({
+                                ...prev,
+                                status: checked
+                                  ? [...prev.status, status]
+                                  : prev.status.filter(s => s !== status)
+                              }));
+                            }}
+                          />
+                          <span className="text-sm">{status}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* BOTTOM OPTIONS */}
+            <div className="flex items-center justify-between">
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={filters.withExceptionsOnly}
+                    onCheckedChange={(checked) => 
+                      setFilters(prev => ({ ...prev, withExceptionsOnly: checked as boolean }))
+                    }
+                  />
+                  <span className="text-sm">With Exceptions Only</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={filters.clearedTradesOnly}
+                    onCheckedChange={(checked) => 
+                      setFilters(prev => ({ ...prev, clearedTradesOnly: checked as boolean }))
+                    }
+                  />
+                  <span className="text-sm">Cleared Trades Only</span>
+                </label>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={clearAllFilters}>
+                  Clear All Filters
+                </Button>
+                <Button onClick={handleManualSearch} disabled={searching}>
+                  {searching ? 'Searching...' : 'Search Now'}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
