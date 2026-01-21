@@ -362,3 +362,30 @@ export function getExceptionById(exceptionId: string): Exception | undefined {
 export function getTransactionById(transId: string): Transaction | undefined {
   return mockTransactions.find(t => t.trans_id === transId);
 }
+
+/**
+ * Get unique values for filter dropdowns
+ */
+export function getUniqueAssetTypes(): string[] {
+  return [...new Set(mockTrades.map(t => t.asset_type))].sort();
+}
+
+export function getUniqueAccounts(): string[] {
+  return [...new Set(mockTrades.map(t => t.account))].sort();
+}
+
+export function getUniqueBookingSystems(): string[] {
+  return [...new Set(mockTrades.map(t => t.booking_system))].sort();
+}
+
+export function getUniqueAffirmationSystems(): string[] {
+  return [...new Set(mockTrades.map(t => t.affirmation_system))].sort();
+}
+
+export function getUniqueClearingHouses(): string[] {
+  return [...new Set(mockTrades.map(t => t.clearing_house))].sort();
+}
+
+export function getUniqueStatuses(): string[] {
+  return [...new Set(mockTrades.map(t => t.status))].sort();
+}
