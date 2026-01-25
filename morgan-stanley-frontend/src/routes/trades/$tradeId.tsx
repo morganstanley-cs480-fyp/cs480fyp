@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, AlertTriangle, AlertCircle, Clock } from "lucide-react";
+import { ArrowLeft, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,13 +9,22 @@ import {
   getTransactionsForTrade,
   getExceptionsForTrade,
   type Transaction,
-  type Exception,
 } from "@/lib/mockData";
 
 // Component imports
 import { TradeInfoCard } from "@/components/trades-individual/TradeInfoCard";
 import { FlowVisualization } from "@/components/trades-individual/FlowVisualization";
 import { TransactionDetailPanel } from "@/components/trades-individual/TransactionDetailPanel";
+
+// Utility imports
+import {
+  getStatusColor,
+  getTransactionStatusColor,
+  getPriorityColor,
+  getPriorityIcon,
+  getTransactionBackgroundColor,
+  getRelatedExceptions,
+} from "./tradeDetailUtils";
 
 export const Route = createFileRoute("/trades/$tradeId")({
   component: TradeDetailPage,
@@ -32,75 +41,6 @@ function TradeDetailPage() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [showTradeInfo, setShowTradeInfo] = useState(true);
   const [activeTab, setActiveTab] = useState<"timeline" | "system">("system");
-
-  const getStatusColor = (status: string): "default" | "destructive" | "secondary" | "outline" => {
-    switch (status) {
-      case "CLEARED":
-        return "default";
-      case "ALLEGED":
-        return "secondary";
-      case "REJECTED":
-        return "destructive";
-      case "CANCELLED":
-        return "outline";
-      default:
-        return "secondary";
-    }
-  };
-
-  const getTransactionStatusColor = (status: string): "default" | "destructive" | "secondary" => {
-    switch (status) {
-      case "COMPLETED":
-        return "default";
-      case "PENDING":
-        return "secondary";
-      case "FAILED":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
-
-  const getPriorityColor = (priority: string): "default" | "destructive" | "secondary" => {
-    if (priority === "HIGH") return "destructive";
-    if (priority === "MEDIUM") return "default";
-    return "secondary";
-  };
-
-  const getPriorityIcon = (priority: string) => {
-    if (priority === "HIGH")
-      return <AlertTriangle className="size-4 text-red-600" />;
-    if (priority === "MEDIUM")
-      return <AlertTriangle className="size-4 text-orange-600" />;
-    return <Clock className="size-4 text-yellow-600" />;
-  };
-
-  const getTransactionBackgroundColor = (transaction: Transaction) => {
-    // Check if this transaction has an associated exception
-    const hasException = exceptions.some((exc) => exc.trans_id === transaction.trans_id);
-
-    if (hasException) {
-      return "bg-red-50 border-red-300";
-    }
-
-    if (transaction.status === "COMPLETED") {
-      return "bg-green-50 border-green-300";
-    }
-
-    if (transaction.status === "PENDING") {
-      return "bg-slate-100 border-slate-300";
-    }
-
-    if (transaction.status === "FAILED") {
-      return "bg-red-50 border-red-300";
-    }
-
-    return "bg-slate-100 border-slate-300";
-  };
-
-  const getRelatedExceptions = (transId: string): Exception[] => {
-    return exceptions.filter((exc) => exc.trans_id === transId);
-  };
 
   const handleResolveException = (exceptionId: string) => {
     navigate({
@@ -174,8 +114,8 @@ function TradeDetailPage() {
             transactions={transactions}
             selectedTransaction={selectedTransaction}
             onTransactionSelect={setSelectedTransaction}
-            getRelatedExceptions={getRelatedExceptions}
-            getTransactionBackgroundColor={getTransactionBackgroundColor}
+            getRelatedExceptions={(transId) => getRelatedExceptions(transId, exceptions)}
+            getTransactionBackgroundColor={(transaction) => getTransactionBackgroundColor(transaction, exceptions)}
             getTransactionStatusColor={getTransactionStatusColor}
           />
         </div>
@@ -196,7 +136,7 @@ function TradeDetailPage() {
           <TransactionDetailPanel
             selectedTransaction={selectedTransaction}
             relatedExceptions={
-              selectedTransaction ? getRelatedExceptions(selectedTransaction.trans_id) : []
+              selectedTransaction ? getRelatedExceptions(selectedTransaction.trans_id, exceptions) : []
             }
             getTransactionStatusColor={getTransactionStatusColor}
             getPriorityColor={getPriorityColor}
