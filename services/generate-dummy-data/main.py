@@ -3,6 +3,7 @@ from random import randint
 from constants import * 
 from classes import *
 from sqlQuery import *
+from config import *
 import random
 import time
 from datetime import datetime
@@ -59,6 +60,7 @@ def createTrade(cursor):
                   random.choice(AFFIRMATION_SYSTEM_LS), random.choice(CLEARING_HOUSE_LS), create_date,create_date, "ALLEGED")
     CURRENT_CREATED_TRADE.append(trade)
     insertTrade(cursor, trade)
+    print(f"Trade {trade_id} created")
     return trade_id
 
 def addTransactionToTrade(cursor, trade_id):
@@ -71,21 +73,26 @@ def addTransactionToTrade(cursor, trade_id):
     if not trans_create_time:
         trans_create_time = getTradeUpdateTime(cursor, trade_id)
     if isException(cursor, trade_id):
-        print("Exception for:", trade_id, " Not generating exception")
+        print("Exception for:", trade_id, " Not generating transaction")
         # createException(cursor, trans_create_time, trade_id, trans_id)
-        return
+        return -1
     step = getNextStep(cursor, trade_id)
     status = random.choice(TRANSACTION_STATUS_LS)
     trans = Transaction(trans_id, trade_id, trans_create_time, random.choice(ENTITY_LS), random.choice(["RECEIVE", "SEND"]), \
                         random.choice(TRANS_TYPE_LS),status, trans_create_time, step)
     CURRENT_CREATED_TRANSACTIONS.append(trans)
     insertTransaction(cursor,trans)
-    if(status == "EXCEPTION"):
-        createException(cursor, trans_create_time, trade_id, trans_id)
+
+    print(f"Transaction '{trans_id}' added to Trade {trade_id}")
     return trans_id
 
 def createException(cursor,create_time ,trade_id, trans_id):
     global CURRENT_CREATED_EXCEPTION
+
+    if isException(cursor, trade_id):
+        print("Trade id:", trade_id , "already has a exception")
+        return -1
+
     expt_id = RandNum(8)
     msg = random.choice(EXCEPTION_MSG_LS)
     comment = random.choice(EXCEPTION_COMMENT_LS)
@@ -95,11 +102,14 @@ def createException(cursor,create_time ,trade_id, trans_id):
     update_time = create_time  # initial update time of the exception is same as create time 
     expt = TransException(trade_id, trans_id, expt_id, "PENDING",msg, create_time, comment, random.choice(EXCEPTION_PRIORITY_LS), update_time)
     CURRENT_CREATED_EXCEPTION.append(expt)
+
+    print(f"Exception created for trade id:{trade_id}, transaction_id:{trans_id}")
     insertException(cursor, expt)
     return expt_id
 
 def writeToXML(root, ls, fname):
     fname = next_available_xml(fname)
+
     for n in ls:
         root.append(n.getXMLTreeRoot())
     tree = et.ElementTree(root)
@@ -123,49 +133,44 @@ def writeExceptionsToXML():
         return
     root = et.Element("Exceptions")
     writeToXML(root, CURRENT_CREATED_EXCEPTION, "Exceptions.xml")
-cursor = connectToDb(DBNAME)
-# cursor.execute("DROP TABLE IF EXISTS TRADE")
-# cursor.execute("DROP TABLE IF EXISTS TRANSACTIONS")
-# cursor.execute("DROP TABLE IF EXISTS EXCEPTION")
-cursor.execute(CREATE_TRADE_TABLE)
-cursor.execute(CREATE_TRANSACTIONS_TABLE)
-cursor.execute(CREATE_EXCEPTION_TABLE)
+
+def main():
+    cursor = connectToDb(DBNAME)
+    # cursor.execute("DROP TABLE IF EXISTS TRADE")
+    # cursor.execute("DROP TABLE IF EXISTS TRANSACTIONS")
+    # cursor.execute("DROP TABLE IF EXISTS EXCEPTION")
+    cursor.execute(CREATE_TRADE_TABLE)
+    cursor.execute(CREATE_TRANSACTIONS_TABLE)
+    cursor.execute(CREATE_EXCEPTION_TABLE)
+
+    num_trades = NUM_TRADES
+    num_transactions = NUM_TRANSACTIONS
+    num_exceptions = NUM_EXCEPTIONS
 
 
+    for _ in range(num_trades):
+        createTrade(cursor)
 
-num_trades = 3
-num_transactions = num_trades * 8
+    all_trades = getAllTradeIDs(cursor)
+    if len(all_trades) > 0:
+        for _ in range(num_transactions):
+            # addTransactionToTrade(cursor, random.choice(CURRENT_CREATED_TRADE).trade_id)
+            addTransactionToTrade(cursor, random.choice(all_trades)[0])
+    else:
+        print("No trades found")
 
-for i in range(num_trades):
-    createTrade(cursor)
+    all_transactions = getAllTransactionsIDs(cursor)
+    if len(all_transactions) > 0:
+        for _ in range(num_exceptions):
+            trns = random.choice(all_transactions)
+            createException(cursor, trns[2], trns[0], trns[1])
+    else:
+        print("Not transactions found")
 
-for i in range(num_transactions):
-    addTransactionToTrade(cursor, random.choice(CURRENT_CREATED_TRADE).trade_id)
+    writeTradeToXML()
+    writeTransactionsToXML()
+    writeExceptionsToXML()
+    # getAllTradeIDs(cursor)
 
-cursor.execute("SELECT * FROM trade")
-rows = cursor.fetchall()
-print("printing trade rows")
-for row in rows:
-    print(row)
-
-
-cursor.execute("SELECT * FROM transactions")
-rows = cursor.fetchall()
-print("printing transactions rows")
-for row in rows:
-    print(row)
-
-cursor.execute("SELECT * FROM exception")
-rows = cursor.fetchall()
-print("printing exception rows")
-for row in rows:
-    print(row)
-# CURRENT_CREATED_TRADE[0].printstuff()
-writeTradeToXML()
-writeTransactionsToXML()
-writeExceptionsToXML()
-
-
-
-
-
+if __name__ == "__main__":
+    main()
