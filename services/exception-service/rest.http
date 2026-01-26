@@ -1,0 +1,158 @@
+### Variables
+@baseUrl = http://localhost:8001
+@contentType = application/json
+
+### Health Check - Root
+GET {{baseUrl}}/
+
+### Health Check - Health Endpoint
+GET {{baseUrl}}/health
+
+### Get All Exceptions
+GET {{baseUrl}}/exceptions/
+
+### Get Single Exception by ID
+GET {{baseUrl}}/exceptions/1
+
+### Get Non-existent Exception (should return 404)
+GET {{baseUrl}}/exceptions/99999
+
+### Create New Exception
+POST {{baseUrl}}/exceptions/
+Content-Type: {{contentType}}
+
+{
+  "trade_id": 1234,
+  "trans_id": 56789,
+  "msg": "Settlement failed due to insufficient funds",
+  "priority": "High",
+  "status": "Pending",
+  "comment": "Needs urgent attention"
+}
+
+### Create Exception without Comment (optional field)
+POST {{baseUrl}}/exceptions/
+Content-Type: {{contentType}}
+
+{
+  "trade_id": 5678,
+  "trans_id": 98765,
+  "msg": "Trade confirmation timeout",
+  "priority": "Medium",
+  "status": "Pending"
+}
+
+### Create Exception with Closed Status
+POST {{baseUrl}}/exceptions/
+Content-Type: {{contentType}}
+
+{
+  "trade_id": 9999,
+  "trans_id": 11111,
+  "msg": "Resolved exception",
+  "priority": "Low",
+  "status": "Closed",
+  "comment": "Issue was resolved automatically"
+}
+
+### Update Exception (Full Update)
+PUT {{baseUrl}}/exceptions/1
+Content-Type: {{contentType}}
+
+{
+  "trade_id": 1234,
+  "trans_id": 56789,
+  "msg": "Settlement failed - Updated message",
+  "priority": "Critical",
+  "status": "Closed",
+  "comment": "Issue resolved by manual intervention"
+}
+
+### Update Exception (Partial Update - Only Priority)
+PUT {{baseUrl}}/exceptions/1
+Content-Type: {{contentType}}
+
+{
+  "priority": "Low"
+}
+
+### Update Exception (Change Status to Closed)
+PUT {{baseUrl}}/exceptions/1
+Content-Type: {{contentType}}
+
+{
+  "status": "Closed",
+  "comment": "Resolved after review"
+}
+
+### Update Non-existent Exception (should return 404)
+PUT {{baseUrl}}/exceptions/99999
+Content-Type: {{contentType}}
+
+{
+  "priority": "High"
+}
+
+### Delete Exception
+DELETE {{baseUrl}}/exceptions/1
+
+### Delete Non-existent Exception (should return 404)
+DELETE {{baseUrl}}/exceptions/99999
+
+### Bulk Create - Create Multiple Exceptions
+POST {{baseUrl}}/exceptions/
+Content-Type: {{contentType}}
+
+{
+  "trade_id": 2001,
+  "trans_id": 30001,
+  "msg": "Exception 1",
+  "priority": "High",
+  "status": "Pending"
+}
+
+###
+POST {{baseUrl}}/exceptions/
+Content-Type: {{contentType}}
+
+{
+  "trade_id": 2002,
+  "trans_id": 30002,
+  "msg": "Exception 2",
+  "priority": "Medium",
+  "status": "Pending"
+}
+
+###
+POST {{baseUrl}}/exceptions/
+Content-Type: {{contentType}}
+
+{
+  "trade_id": 2003,
+  "trans_id": 30003,
+  "msg": "Exception 3",
+  "priority": "Low",
+  "status": "Closed",
+  "comment": "Already resolved"
+}
+
+### Test Invalid Status (should fail validation)
+POST {{baseUrl}}/exceptions/
+Content-Type: {{contentType}}
+
+{
+  "trade_id": 1234,
+  "trans_id": 56789,
+  "msg": "Test exception",
+  "priority": "High",
+  "status": "InvalidStatus"
+}
+
+### Test Missing Required Fields (should fail validation)
+POST {{baseUrl}}/exceptions/
+Content-Type: {{contentType}}
+
+{
+  "trade_id": 1234,
+  "msg": "Missing trans_id"
+}
