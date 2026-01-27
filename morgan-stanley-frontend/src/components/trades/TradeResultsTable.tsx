@@ -164,22 +164,38 @@ export function TradeResultsTable({
                           onKeyDown={(event) => {
                             if (event.key === "Escape") setOpenFilter(null);
                           }}
-                          className="h-8 text-xs pr-7"
+                          className="h-8 text-xs pr-16"
                         />
-                        {optionMap[header.id]?.length ? (
-                          <button
-                            type="button"
-                            className="absolute inset-y-0 right-1 flex items-center px-1 text-slate-500 hover:text-slate-700"
-                            onMouseDown={(event) => {
-                              event.preventDefault();
-                              setOpenFilter((prev) =>
-                                prev === header.id ? null : header.id
-                              );
-                            }}
-                          >
-                            <ChevronDown className="size-4" />
-                          </button>
-                        ) : null}
+                        <div className="absolute inset-y-0 right-1 flex items-center gap-1">
+                          {(header.column.getFilterValue() as string) && (
+                            <button
+                              type="button"
+                              className="flex items-center px-1 text-slate-500 hover:text-red-600"
+                              onMouseDown={(event) => {
+                                event.preventDefault();
+                                header.column.setFilterValue("");
+                                setOpenFilter(null);
+                              }}
+                              title="Clear filter"
+                            >
+                              <X className="size-4" />
+                            </button>
+                          )}
+                          {optionMap[header.id]?.length ? (
+                            <button
+                              type="button"
+                              className="flex items-center px-1 text-slate-500 hover:text-slate-700"
+                              onMouseDown={(event) => {
+                                event.preventDefault();
+                                setOpenFilter((prev) =>
+                                  prev === header.id ? null : header.id
+                                );
+                              }}
+                            >
+                              <ChevronDown className="size-4" />
+                            </button>
+                          ) : null}
+                        </div>
                         {openFilter === header.id && optionMap[header.id]?.length ? (
                           <div className="absolute left-0 right-auto top-full z-30 mt-1 max-h-64 min-w-[12rem] overflow-y-auto overflow-x-hidden rounded-md border border-slate-200 bg-white shadow-md flex flex-col">
                             {optionMap[header.id].map((option) => (
