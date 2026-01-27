@@ -11,10 +11,11 @@ import  {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Landmark, ShieldCheck, ArrowRightLeft, Cpu, Activity } from 'lucide-react';
-import ReactFlowManualAlgorithm from '@/components/visualisations-prototype/ReactFlowManualAlgorithm1';
+//import ReactFlowManualAlgorithm from '@/components/visualisations-prototype/ReactFlowManualAlgorithm1';
+import ReactFlowWithElkAutoLayout from '@/components/visualisations-prototype/ReactFlowWithElkAutoLayout';
 
 // To use - just throw in a component from visualisations-prototype
 
 export const Route = createFileRoute('/visualisation/')({
-  component: ReactFlowManualAlgorithm,
+  component: ReactFlowWithElkAutoLayout,
 })

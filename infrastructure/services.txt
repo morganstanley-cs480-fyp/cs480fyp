@@ -1,0 +1,9 @@
+Data Processing Done
+Exception Done (To confirm what iam accesses needed - Bedrock) 3001
+Gateway Done 3002
+Ingestion Done 
+Query Suggestion Done 3003
+RAG Done 3004
+Search Done 3005
+Solution Done 3006
+Trade Flow Done 3007
