@@ -69,7 +69,7 @@ async function ingestData() {
             QueueUrl: queueUrl,
             MessageBody: JSON.stringify({ type, data: cleanFields }),
             MessageGroupId: String(tradeId), 
-            MessageDeduplicationId: `${type}-${tradeId}-${Date.now()}` // Optional: Unique ID to prevent dupes
+            MessageDeduplicationId: `${type}-${tradeId}-${Date.now()}`
           }));
 
           lastPos++;
