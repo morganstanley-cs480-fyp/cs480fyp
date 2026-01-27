@@ -2,6 +2,7 @@
 
 import { ChevronDown, X } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import {
   flexRender,
   type Table as TableType,
@@ -40,6 +41,24 @@ export function TradeResultsTable({
   columnFiltersCount,
 }: TradeResultsTableProps) {
   const navigate = useNavigate();
+  const [openFilter, setOpenFilter] = useState<string | null>(null);
+
+  const optionMap = useMemo(() => {
+    const rows = table.getPreFilteredRowModel().flatRows;
+    const collect = (key: keyof Trade) =>
+      Array.from(new Set(rows.map((r) => String(r.original[key])))).sort();
+    return {
+      trade_id: collect("trade_id"),
+      account: collect("account"),
+      asset_type: collect("asset_type"),
+      booking_system: collect("booking_system"),
+      affirmation_system: collect("affirmation_system"),
+      clearing_house: collect("clearing_house"),
+      create_time: collect("create_time"),
+      update_time: collect("update_time"),
+      status: collect("status"),
+    } as Record<string, string[]>;
+  }, [table]);
 
   return (
     <Card>
@@ -122,18 +141,64 @@ export function TradeResultsTable({
               {/* Filter Row */}
               <TableRow>
                 {table.getHeaderGroups()[0].headers.map((header) => (
-                  <TableHead key={`filter-${header.id}`} className="py-2">
+                  <TableHead key={`filter-${header.id}`} className="py-2 overflow-visible">
                     {header.column.getCanFilter() && (
-                      <Input
-                        placeholder="Filter..."
-                        value={
-                          (header.column.getFilterValue() as string) ?? ""
-                        }
-                        onChange={(event) =>
-                          header.column.setFilterValue(event.target.value)
-                        }
-                        className="h-8 text-xs"
-                      />
+                      <div className="relative">
+                        <Input
+                          placeholder="Filter..."
+                          value={
+                            (header.column.getFilterValue() as string) ?? ""
+                          }
+                          onChange={(event) =>
+                            header.column.setFilterValue(event.target.value)
+                          }
+                          onFocus={() =>
+                            optionMap[header.id]?.length
+                              ? setOpenFilter(header.id)
+                              : setOpenFilter(null)
+                          }
+                          onBlur={() => {
+                            // Defer to allow option click via mousedown
+                            setTimeout(() => setOpenFilter(null), 120);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Escape") setOpenFilter(null);
+                          }}
+                          className="h-8 text-xs pr-7"
+                        />
+                        {optionMap[header.id]?.length ? (
+                          <button
+                            type="button"
+                            className="absolute inset-y-0 right-1 flex items-center px-1 text-slate-500 hover:text-slate-700"
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              setOpenFilter((prev) =>
+                                prev === header.id ? null : header.id
+                              );
+                            }}
+                          >
+                            <ChevronDown className="size-4" />
+                          </button>
+                        ) : null}
+                        {openFilter === header.id && optionMap[header.id]?.length ? (
+                          <div className="absolute left-0 right-auto top-full z-30 mt-1 max-h-64 min-w-[12rem] overflow-y-auto overflow-x-hidden rounded-md border border-slate-200 bg-white shadow-md flex flex-col">
+                            {optionMap[header.id].map((option) => (
+                              <button
+                                key={option}
+                                type="button"
+                                className="w-full px-3 py-2 text-left text-xs hover:bg-slate-100"
+                                onMouseDown={(event) => {
+                                  event.preventDefault();
+                                  header.column.setFilterValue(option);
+                                  setOpenFilter(null);
+                                }}
+                              >
+                                {option}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     )}
                   </TableHead>
                 ))}

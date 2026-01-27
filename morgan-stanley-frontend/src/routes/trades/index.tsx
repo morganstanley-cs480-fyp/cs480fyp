@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -37,30 +37,97 @@ export const Route = createFileRoute("/trades/")({
 });
 
 function TradeSearchPage() {
-  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [searching, setSearching] = useState(false);
-  const [results, setResults] = useState<Trade[]>(mockTrades);
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  
-  // Manual search filter state
-  const [filters, setFilters] = useState<ManualSearchFilters>({
-    tradeId: '',
-    account: '',
-    assetType: '',
-    bookingSystem: '',
-    affirmationSystem: '',
-    clearingHouse: '',
+  const STORAGE_KEY = "tradeFilters:v1";
+  const TABLE_STATE_KEY = "tradeTableState:v1";
+  const SEARCH_KEY = "tradeSearchQuery:v1";
+
+  const getDefaultFilters = (): ManualSearchFilters => ({
+    tradeId: "",
+    account: "",
+    assetType: "",
+    bookingSystem: "",
+    affirmationSystem: "",
+    clearingHouse: "",
     status: [],
-    dateType: 'update_time',
-    dateFrom: '',
-    dateTo: '',
+    dateType: "update_time",
+    dateFrom: "",
+    dateTo: "",
     withExceptionsOnly: false,
     clearedTradesOnly: false,
   });
+
+  const loadFilters = (): ManualSearchFilters => {
+    if (typeof window === "undefined") return getDefaultFilters();
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+    try {
+      return saved ? (JSON.parse(saved) as ManualSearchFilters) : getDefaultFilters();
+    } catch (error) {
+      console.warn("Failed to parse saved trade filters", error);
+      return getDefaultFilters();
+    }
+  };
+
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (typeof window === "undefined") return "";
+    const saved = sessionStorage.getItem(SEARCH_KEY);
+    return saved ?? "";
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [results, setResults] = useState<Trade[]>(mockTrades);
+  const [sorting, setSorting] = useState<SortingState>(() => {
+    if (typeof window === "undefined") return [];
+    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved) as { sorting?: SortingState };
+      return parsed.sorting ?? [];
+    } catch {
+      return [];
+    }
+  });
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
+    if (typeof window === "undefined") return {};
+    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+    if (!saved) return {};
+    try {
+      const parsed = JSON.parse(saved) as { columnVisibility?: VisibilityState };
+      return parsed.columnVisibility ?? {};
+    } catch {
+      return {};
+    }
+  });
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+    if (typeof window === "undefined") return [];
+    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved) as { columnFilters?: ColumnFiltersState };
+      return parsed.columnFilters ?? [];
+    } catch {
+      return [];
+    }
+  });
+  const [pagination, setPagination] = useState<PaginationState>(() => {
+    if (typeof window === "undefined") return { pageIndex: 0, pageSize: 10 };
+    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+    if (!saved) return { pageIndex: 0, pageSize: 10 };
+    try {
+      const parsed = JSON.parse(saved) as { pagination?: PaginationState };
+      return parsed.pagination ?? { pageIndex: 0, pageSize: 10 };
+    } catch {
+      return { pageIndex: 0, pageSize: 10 };
+    }
+  });
+  
+  // Manual search filter state
+  const [filters, setFilters] = useState<ManualSearchFilters>(loadFilters);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+  }, [filters]);
 
   const columns = useTradeColumns();
 
@@ -75,34 +142,18 @@ function TradeSearchPage() {
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
     onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
     state: {
       sorting,
       columnVisibility,
       columnFilters,
-    },
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
+      pagination,
     },
   });
 
   // Clear all filters
   const clearAllFilters = () => {
-    setFilters({
-      tradeId: '',
-      account: '',
-      assetType: '',
-      bookingSystem: '',
-      affirmationSystem: '',
-      clearingHouse: '',
-      status: [],
-      dateType: 'update_time',
-      dateFrom: '',
-      dateTo: '',
-      withExceptionsOnly: false,
-      clearedTradesOnly: false,
-    });
+    setFilters(getDefaultFilters());
   };
 
   // Handle manual search with filters
