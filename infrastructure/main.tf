@@ -47,8 +47,10 @@ module "xml_pointer" {
 # Data Processing SQS (Ingestion service TO Data Processing Service)
 module "data_processing_queue" {
   source = "./modules/sqs"
-  sqs_name = var.data_processing_queue_name
+  sqs_name = var.data_processing_queue_name # Needs to end with .fifo
+  is_fifo  = true
   visibility_timeout_seconds = 240
+
 }
 
 # RDS-SG
