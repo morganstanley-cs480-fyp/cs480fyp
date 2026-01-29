@@ -28,8 +28,14 @@ def next_available_xml(fname: str) -> str:
 CURRENT_CREATED_TRANSACTIONS=[]
 CURRENT_CREATED_TRADE=[]
 CURRENT_CREATED_EXCEPTION=[]
+def setup_tables(cursor):
+    cursor.execute(CREATE_TRADE_TABLE)
+    cursor.execute(CREATE_TRANSACTIONS_TABLE)
+    cursor.execute(CREATE_EXCEPTION_TABLE)
 def connectToDb(name):
-    return sqlite3.connect(name).cursor()
+    cursor = sqlite3.connect(name).cursor()
+    setup_tables(cursor)
+    return cursor
 
 def str_time_prop(start, end, time_format, prop):
     stime = time.mktime(time.strptime(start, time_format))
@@ -44,6 +50,12 @@ def random_date(start, end, prop=None):
     prop = random.random()
     return str_time_prop(start, end, '%Y-%m-%dT%H:%M:%S', prop)
     
+def add_seconds(start, seconds):
+    time_format = '%Y-%m-%dT%H:%M:%S'
+    stime = time.mktime(time.strptime(start, time_format))
+    ptime = stime + seconds
+    return time.strftime(time_format, time.localtime(ptime))
+
 def RandNum(n):
     start = 10 ** (n-1)
     end = (10 ** n)-1
@@ -61,7 +73,7 @@ def createTrade(cursor):
     CURRENT_CREATED_TRADE.append(trade)
     insertTrade(cursor, trade)
     print(f"Trade {trade_id} created")
-    return trade_id
+    return trade 
 
 def addTransactionToTrade(cursor, trade_id):
     global CURRENT_CREATED_TRANSACTIONS
@@ -84,7 +96,7 @@ def addTransactionToTrade(cursor, trade_id):
     insertTransaction(cursor,trans)
 
     print(f"Transaction '{trans_id}' added to Trade {trade_id}")
-    return trans_id
+    return trans 
 
 def createException(cursor,create_time ,trade_id, trans_id):
     global CURRENT_CREATED_EXCEPTION
@@ -105,34 +117,33 @@ def createException(cursor,create_time ,trade_id, trans_id):
 
     print(f"Exception created for trade id:{trade_id}, transaction_id:{trans_id}")
     insertException(cursor, expt)
-    return expt_id
+    return expt 
 
-def writeToXML(root, ls, fname):
+# def writeToXML(root, ls, fname):
+#     fname = next_available_xml(fname)
+#
+#     for n in ls:
+#         root.append(n.getXMLTreeRoot())
+#     tree = et.ElementTree(root)
+#     et.indent(tree, space="\t", level=0)
+#     tree.write(fname, encoding="utf-8")
+
+def writeToXML(root, fname):
     fname = next_available_xml(fname)
-
-    for n in ls:
-        root.append(n.getXMLTreeRoot())
     tree = et.ElementTree(root)
     et.indent(tree, space="\t", level=0)
     tree.write(fname, encoding="utf-8")
 
-def writeTradeToXML():
-    global CURRENT_CREATED_TRADE
-    root = et.Element("Trades")
-    writeToXML(root, CURRENT_CREATED_TRADE, "Trades.xml")
-
-def writeTransactionsToXML():
-    global CURRENT_CREATED_TRANSACTIONS 
-    root = et.Element("Transactions")
-    writeToXML(root, CURRENT_CREATED_TRANSACTIONS, "Transactions.xml")
-
-def writeExceptionsToXML():
-    global CURRENT_CREATED_EXCEPTION
-    if len(CURRENT_CREATED_EXCEPTION) == 0:
-        print("No exceptions generated")
-        return
-    root = et.Element("Exceptions")
-    writeToXML(root, CURRENT_CREATED_EXCEPTION, "Exceptions.xml")
+def appendRoot(root, ls):
+    for child in ls:
+        root.append(child.getXMLTreeRoot())
+def writeAll(fname):
+    global CURRENT_CREATED_TRADE, CURRENT_CREATED_TRANSACTIONS, CURRENT_CREATED_EXCEPTION
+    root = et.Element("Root")
+    appendRoot(root, CURRENT_CREATED_TRADE)
+    appendRoot(root, CURRENT_CREATED_TRANSACTIONS)
+    appendRoot(root, CURRENT_CREATED_EXCEPTION)
+    writeToXML(root, fname)
 
 def main():
     cursor = connectToDb(DBNAME)
@@ -167,9 +178,10 @@ def main():
     else:
         print("Not transactions found")
 
-    writeTradeToXML()
-    writeTransactionsToXML()
-    writeExceptionsToXML()
+    writeAll("ALL.xml")
+    # writeTradeToXML()
+    # writeTransactionsToXML()
+    # writeExceptionsToXML()
     # getAllTradeIDs(cursor)
 
 if __name__ == "__main__":
