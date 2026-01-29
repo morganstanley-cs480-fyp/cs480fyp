@@ -8,7 +8,8 @@ from enum import Enum
 # Note: Tentative model. Might change
 class Solution(models.Model):
     id = fields.IntField(pk=True)
-    exception_id = fields.IntField()
+    # Foreign key from exception-service (different microservice)
+    exception_id = fields.IntField(index=True)
     title = fields.TextField()
     exception_description = fields.TextField(null=True)
     reference_event = fields.TextField(null=True)

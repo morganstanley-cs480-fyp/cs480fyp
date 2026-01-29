@@ -14,7 +14,7 @@ compose-down:
 	docker compose down
 
 aerich-update:
-	aerich migrate --namecle
+	aerich migrate
 	aerich upgrade
 
 aerich-downgrade:
