@@ -11,8 +11,9 @@ class ExceptionStatus(str, Enum):
 # Note: Tentative model. Might change
 class Exception(models.Model):
     id = fields.IntField(pk=True)
-    trade_id = fields.IntField()
-    trans_id = fields.IntField()
+    # Foreign keys from trade-flow-service (different microservice)
+    trade_id = fields.IntField(index=True)
+    trans_id = fields.IntField(index=True)
     status = fields.CharEnumField(ExceptionStatus, max_length=10, default=ExceptionStatus.PENDING)
     msg = fields.TextField()
     comment = fields.TextField(null=True)
@@ -23,3 +24,5 @@ class Exception(models.Model):
     # This class specifies the table name and other ORM options
     class Meta:
         table = "exceptions"
+        # Composite index for common queries filtering by trade_id and trans_id
+        indexes = [("trade_id", "trans_id")]
