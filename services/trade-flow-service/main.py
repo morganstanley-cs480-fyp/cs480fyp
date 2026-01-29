@@ -56,7 +56,7 @@ async def health_check():
     raise HTTPException(status_code =500, detail="Database connection failed")
     
 
-@app.get("/trade/{id}")
+@app.get("/trades/{id}")
 async def get_trade_by_id(id: int):
   try:
     async with app.state.pool.connection() as conn:
@@ -73,7 +73,24 @@ async def get_trade_by_id(id: int):
     print(f"Error: {e}")
     raise HTTPException(status_code=500, detail="Server Error")
   
-@app.get("/transaction/{id}")
+@app.get("/trades")
+async def get_trades(limit: int = 100, offset: int = 0):
+  try:
+    async with app.state.pool.connection() as conn:
+      async with conn.cursor(row_factory=dict_row) as cur:
+        await cur.execute(
+            "SELECT * FROM trades LIMIT %s OFFSET %s", 
+            (limit, offset)
+        )
+        trades = await cur.fetchall()
+        
+      return trades
+      
+  except Exception as e:
+    print(f"Error: {e}")
+    raise HTTPException(status_code=500, detail="Server Error")
+  
+@app.get("/transactions/{id}")
 async def get_transaction_by_id(id: int):
   try:
     async with app.state.pool.connection() as conn:
@@ -90,7 +107,7 @@ async def get_transaction_by_id(id: int):
     print(f"Error: {e}")
     raise HTTPException(status_code=500, detail="Server Error")
   
-@app.get("/trade/{trade_id}/transactions")
+@app.get("/trades/{trade_id}/transactions")
 async def get_transactions_by_trade_id(trade_id: int):
   try:
     async with app.state.pool.connection() as conn:
