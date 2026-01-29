@@ -9,6 +9,7 @@ export default defineConfig({
     plugins: [tanstackRouter({
         target: 'react',
         autoCodeSplitting: true,
+        routeFileIgnorePattern: '(test|spec)\\.(ts|tsx)$',
     }), react(), tailwindcss()],
     resolve: {
         alias: {
