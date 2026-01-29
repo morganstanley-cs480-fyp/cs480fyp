@@ -61,4 +61,5 @@ EXCEPTION_PRIORITY_LS=["LOW","MEDIUM","HIGH"]
 JAN2025=datetime.fromisoformat("2025-01-01").isoformat()
 JUL2025=datetime.fromisoformat("2025-07-01").isoformat()
 AUG2025=datetime.fromisoformat("2025-08-01").isoformat()
+SEP2025=datetime.fromisoformat("2025-09-01").isoformat()
 OCT2025=datetime.fromisoformat("2025-10-01").isoformat()
