@@ -268,8 +268,17 @@ export function TradeResultsTable({
         {/* Pagination */}
         <div className="flex items-center justify-between space-x-2 py-4">
           <div className="text-sm text-slate-500">
-            Showing {table.getRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} result(s)
+            {(() => {
+              const total = table.getFilteredRowModel().rows.length;
+              const { pageIndex, pageSize } = table.getState().pagination;
+              const start = total === 0 ? 0 : pageIndex * pageSize;
+              const end = total === 0 ? 0 : Math.min(start + pageSize, total);
+              return (
+                <>
+                  Showing results {start}-{end} out of {total}
+                </>
+              );
+            })()}
           </div>
           <div className="flex gap-2">
             <Button

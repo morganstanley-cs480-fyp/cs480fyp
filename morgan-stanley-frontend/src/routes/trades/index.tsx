@@ -260,13 +260,11 @@ function TradeSearchPage() {
         />
       )}
 
-      {results.length > 0 && (
-        <TradeResultsTable
-          table={table}
-          resultsCount={results.length}
-          columnFiltersCount={columnFilters.length}
-        />
-      )}
+      <TradeResultsTable
+        table={table}
+        resultsCount={results.length}
+        columnFiltersCount={columnFilters.length}
+      />
 
       <RecentSearches
         searches={recentSearches}
