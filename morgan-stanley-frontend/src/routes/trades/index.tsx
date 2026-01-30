@@ -32,6 +32,21 @@ import { TradeResultsTable } from "@/components/trades/TradeResultsTable";
 import { RecentSearches, type RecentSearch } from "@/components/trades/RecentSearches";
 import { useTradeColumns } from "@/components/trades/useTradeColumns";
 
+interface ManualSearchFilters {
+  tradeId: string;
+  account: string;
+  assetType: string;
+  bookingSystem: string;
+  affirmationSystem: string;
+  clearingHouse: string;
+  status: string[];
+  dateType: 'create_time' | 'update_time';
+  dateFrom: string;
+  dateTo: string;
+  withExceptionsOnly: boolean;
+  clearedTradesOnly: boolean;
+}
+
 export const Route = createFileRoute("/trades/")({
   component: TradeSearchPage,
 });
