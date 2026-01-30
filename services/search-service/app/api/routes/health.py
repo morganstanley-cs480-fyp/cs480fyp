@@ -168,7 +168,7 @@ async def readiness_check():
     
     # Check if Redis client is initialized (optional)
     try:
-        if redis_manager._redis is None:
+        if redis_manager._client is None:
             readiness_status["checks"]["cache"] = {
                 "ready": False,
                 "reason": "Redis client not initialized"

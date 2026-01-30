@@ -52,9 +52,9 @@ class TestHealthEndpoints:
     @pytest.mark.asyncio
     async def test_readiness_probe(self, client):
         """Test GET /health/ready."""
-        # Mock the internal pool/redis attributes that readiness check inspects
+        # Mock the internal pool/client attributes that readiness check inspects
         with patch('app.api.routes.health.db_manager._pool') as mock_db_pool, \
-             patch('app.api.routes.health.redis_manager._redis') as mock_redis, \
+             patch('app.api.routes.health.redis_manager._client') as mock_redis, \
              patch('app.api.routes.health.db_manager.health_check', new_callable=AsyncMock, return_value=True), \
              patch('app.api.routes.health.redis_manager.health_check', new_callable=AsyncMock, return_value=True):
             
