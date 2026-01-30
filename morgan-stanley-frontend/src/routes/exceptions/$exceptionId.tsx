@@ -11,7 +11,7 @@ import { NewSolutionForm } from '@/components/exceptions-individual/NewSolutionF
 import { AIGeneratorPanel } from '@/components/exceptions-individual/AIGeneratorPanel';
 
 // Hook import
-import { useExceptionResolver } from './useExceptionResolver';
+import { useExceptionResolver } from './-useExceptionResolver';
 
 export const Route = createFileRoute('/exceptions/$exceptionId')({
   component: ResolveExceptionPage,

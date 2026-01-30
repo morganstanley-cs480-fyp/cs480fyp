@@ -1,5 +1,6 @@
 import { User, Search, AlertTriangle, LogOut, Bug } from 'lucide-react';
 import { Link, useRouterState } from '@tanstack/react-router';
+import { useAuth } from 'react-oidc-context';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { cn } from '../lib/utils';
@@ -7,12 +8,25 @@ import { cn } from '../lib/utils';
 const navItems = [
   { id: 'search', label: 'Trade Search', icon: Search, path: '/trades' },
   { id: 'exceptions', label: 'Exceptions', icon: AlertTriangle, path: '/exceptions' },
-  { id: 'testing', label: 'Visualisation Testing Page', icon: Bug, path: '/visualisation'}
+  { id: 'testing', label: 'Visualisation Testing Page', icon: Bug, path: '/visualisation'},
 ];
 
 export const Header = () => {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
+  const auth = useAuth();
+
+  const handleLogout = () => {
+    // Clear local auth state
+    auth.removeUser();
+    
+    // Redirect to Cognito logout
+    const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID;
+    const logoutUri = import.meta.env.VITE_COGNITO_LOGOUT_URI;
+    const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;
+    
+    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+  };
 
   return (
     <header className="bg-white border-b-4 border-slate-300 px-6 py-4">
@@ -62,16 +76,18 @@ export const Header = () => {
               </AvatarFallback>
             </Avatar>
             <div className="text-left">
-              <p className="text-sm text-slate-900">John Trader</p>
-              <p className="text-xs text-slate-500">Operations</p>
+              <p className="text-sm text-slate-900">
+                {auth.user?.profile?.email || 'John Trader'}
+              </p>
+              <p className="text-xs text-slate-500">{auth.user?.profile.family_name} {auth.user?.profile.given_name}</p>
             </div>
           </div>
 
-          {/* Logout Button - Uncomment after implementing user management */}
-          {/* <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
+          {/* Logout Button */}
+          <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
             <LogOut className="size-4" />
             Logout
-          </Button> */}
+          </Button>
         </div>
       </div>
     </header>

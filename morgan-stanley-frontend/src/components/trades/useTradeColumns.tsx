@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Trade } from "@/lib/mockData";
 import { formatDateShort } from "@/lib/utils";
-import { getStatusBadgeClassName } from "@/routes/trades/tradeDetailUtils";
+import { getStatusBadgeClassName } from "@/routes/trades/-tradeDetailUtils";
 
 export function useTradeColumns(): ColumnDef<Trade>[] {
   return [
