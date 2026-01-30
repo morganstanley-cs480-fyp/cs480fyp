@@ -52,8 +52,8 @@ class TestHealthEndpoints:
     @pytest.mark.asyncio
     async def test_readiness_probe(self, client):
         """Test GET /health/ready."""
-        with patch('app.api.routes.health.db_manager.is_ready', return_value=True), \
-             patch('app.api.routes.health.redis_manager.is_ready', return_value=True):
+        with patch('app.api.routes.health.db_manager.health_check', new_callable=AsyncMock, return_value=True), \
+             patch('app.api.routes.health.redis_manager.health_check', new_callable=AsyncMock, return_value=True):
             
             response = await client.get("/health/ready")
             
