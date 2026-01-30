@@ -52,11 +52,14 @@ class TestHealthEndpoints:
     @pytest.mark.asyncio
     async def test_readiness_probe(self, client):
         """Test GET /health/ready."""
-        response = await client.get("/health/ready")
-        
-        assert response.status_code in [200, 503]
-        data = response.json()
-        assert "ready" in data
+        with patch('app.api.routes.health.db_manager.is_ready', return_value=True), \
+             patch('app.api.routes.health.redis_manager.is_ready', return_value=True):
+            
+            response = await client.get("/health/ready")
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert data["ready"] is True
     
     @pytest.mark.asyncio
     async def test_liveness_probe(self, client):
@@ -202,16 +205,18 @@ class TestHistoryEndpoints:
                 "query_id": 1,
                 "user_id": "test_user",
                 "is_saved": True,
-                "query_name": "My Saved Query"
+                "query_name": "My Saved Query",
+                "query_text": "test query",
+                "create_time": "2025-01-18T10:00:00",
+                "last_use_time": "2025-01-20T09:00:00"
             }
             
             request_data = {
-                "user_id": "test_user",
                 "is_saved": True,
                 "query_name": "My Saved Query"
             }
             
-            response = await client.put("/history/1", json=request_data)
+            response = await client.put("/history/1?user_id=test_user", json=request_data)
             
             assert response.status_code == 200
             data = response.json()

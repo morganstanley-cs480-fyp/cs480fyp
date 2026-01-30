@@ -7,6 +7,7 @@ import pytest
 from app.models.domain import Trade, QueryHistory
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 class TestDatabaseIntegration:
     """Test database operations with PostgreSQL"""
@@ -23,6 +24,7 @@ class TestDatabaseIntegration:
         assert "PostgreSQL" in result
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 class TestRedisIntegration:
     """Test Redis caching operations"""
@@ -80,6 +82,7 @@ class TestDataModels:
         assert trade["status"] == "CLEARED"
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 class TestEndToEnd:
     """End-to-end integration tests"""
