@@ -110,14 +110,14 @@ function TradeSearchPage() {
     }
   });
   const [pagination, setPagination] = useState<PaginationState>(() => {
-    if (typeof window === "undefined") return { pageIndex: 0, pageSize: 10 };
+    if (typeof window === "undefined") return { pageIndex: 0, pageSize: 20 };
     const saved = sessionStorage.getItem(TABLE_STATE_KEY);
-    if (!saved) return { pageIndex: 0, pageSize: 10 };
+    if (!saved) return { pageIndex: 0, pageSize: 20 };
     try {
       const parsed = JSON.parse(saved) as { pagination?: PaginationState };
-      return parsed.pagination ?? { pageIndex: 0, pageSize: 10 };
+      return parsed.pagination ?? { pageIndex: 0, pageSize: 20 };
     } catch {
-      return { pageIndex: 0, pageSize: 10 };
+      return { pageIndex: 0, pageSize: 20 };
     }
   });
   
