@@ -5,6 +5,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Trade } from "@/lib/mockData";
+import { formatDateShort } from "@/lib/utils";
+import { getStatusBadgeClassName } from "@/routes/trades/tradeDetailUtils";
 
 export function useTradeColumns(): ColumnDef<Trade>[] {
   return [
@@ -122,8 +124,12 @@ export function useTradeColumns(): ColumnDef<Trade>[] {
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm ml-2">{row.getValue("create_time")}</div>
+        <div className="text-sm ml-2">{formatDateShort(row.getValue("create_time") as string)}</div>
       ),
+      filterFn: (row, columnId, filterValue) => {
+        const formatted = formatDateShort(row.getValue(columnId) as string);
+        return formatted.toLowerCase().includes(String(filterValue ?? "").toLowerCase());
+      },
     },
     {
       accessorKey: "update_time",
@@ -140,17 +146,20 @@ export function useTradeColumns(): ColumnDef<Trade>[] {
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm ml-2">{row.getValue("update_time")}</div>
+        <div className="text-sm ml-2">{formatDateShort(row.getValue("update_time") as string)}</div>
       ),
+      filterFn: (row, columnId, filterValue) => {
+        const formatted = formatDateShort(row.getValue(columnId) as string);
+        return formatted.toLowerCase().includes(String(filterValue ?? "").toLowerCase());
+      },
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
-        const variant = status === "CLEARED" ? "default" : "secondary";
         return (
-          <Badge className="mr-2" variant={variant}>
+          <Badge className={`mr-2 ${getStatusBadgeClassName(status)}`} variant="secondary">
             {status}
           </Badge>
         );

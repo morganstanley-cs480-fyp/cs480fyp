@@ -18,7 +18,7 @@ import { TransactionDetailPanel } from "@/components/trades-individual/Transacti
 
 // Utility imports
 import {
-  getStatusColor,
+  getStatusBadgeClassName,
   getTransactionStatusColor,
   getPriorityColor,
   getPriorityIcon,
@@ -95,8 +95,8 @@ function TradeDetailPage() {
               </div>
             </div>
             <Badge
-              variant={getStatusColor(trade.status)}
-              className="text-lg px-4 py-2"
+              variant="secondary"
+              className={`text-lg px-4 py-2 ${getStatusBadgeClassName(trade.status)}`}
             >
               {trade.status}
             </Badge>
@@ -129,7 +129,7 @@ function TradeDetailPage() {
             exceptions={exceptions}
             showTradeInfo={showTradeInfo}
             onToggle={() => setShowTradeInfo(!showTradeInfo)}
-            getStatusColor={getStatusColor}
+            getStatusBadgeClassName={getStatusBadgeClassName}
           />
 
           {/* Transaction Details */}

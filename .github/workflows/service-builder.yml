@@ -168,7 +168,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
-    uses: ./.github/workflows/build-js-service.yml
+    uses: ./.github/workflows/build-python-service.yml
     with:
       service_name: trade-flow-service
     secrets:

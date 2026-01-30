@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowDownRight, AlertCircle } from "lucide-react";
 import type { Transaction, Exception } from "@/lib/mockData";
+import { formatDateShort } from "@/lib/utils";
 
 interface TimelineTransactionCardProps {
   transaction: Transaction;
@@ -93,7 +94,7 @@ export function TimelineTransactionCard({
 
           <div className="flex items-center gap-1 mt-2 text-xs text-slate-500">
             <Clock className="size-3" />
-            <span>{transaction.create_time}</span>
+            <span>{formatDateShort(transaction.create_time)}</span>
           </div>
         </div>
       </div>

@@ -1,0 +1,180 @@
+### Variables
+@baseUrl = http://localhost:8001
+@contentType = application/json
+
+### Health Check - Root
+GET {{baseUrl}}/
+
+### Health Check - Health Endpoint
+GET {{baseUrl}}/health
+
+### Get All Solutions
+GET {{baseUrl}}/solutions/
+
+### Get Single Solution by ID
+GET {{baseUrl}}/solutions/1
+
+### Get Non-existent Solution (should return 404)
+GET {{baseUrl}}/solutions/99999
+
+### Create New Solution
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 1,
+  "title": "Fix settlement issue by verifying account balance",
+  "exception_description": "Settlement failed due to insufficient funds",
+  "reference_event": "Similar issue occurred on 2025-12-15",
+  "solution_description": "Contact counterparty to confirm available balance before retry",
+  "scores": 15
+}
+
+### Create Solution without Optional Fields
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 2,
+  "title": "Retry trade confirmation",
+  "scores": 10
+}
+
+### Create Solution with All Fields
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 3,
+  "title": "Manual intervention required for blocked transaction",
+  "exception_description": "Transaction blocked by compliance system",
+  "reference_event": "Previous case #12345 handled similarly",
+  "solution_description": "Escalate to compliance team for review and approval",
+  "scores": 25
+}
+
+### Create Solution with Minimum Score (0)
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 4,
+  "title": "Low priority solution",
+  "scores": 0
+}
+
+### Create Solution with Maximum Score (27)
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 5,
+  "title": "Critical solution with highest priority",
+  "exception_description": "Critical trading system failure",
+  "solution_description": "Immediate system restart and failover to backup",
+  "scores": 27
+}
+
+### Update Solution (Full Update)
+PUT {{baseUrl}}/solutions/1
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 1,
+  "title": "Updated: Fix settlement issue",
+  "exception_description": "Updated description of the exception",
+  "reference_event": "Updated reference event",
+  "solution_description": "Updated solution description",
+  "scores": 20
+}
+
+### Update Solution (Partial Update - Only Title and Scores)
+PUT {{baseUrl}}/solutions/1
+Content-Type: {{contentType}}
+
+{
+  "title": "Partially updated title",
+  "scores": 18
+}
+
+### Update Solution (Change Only Scores)
+PUT {{baseUrl}}/solutions/1
+Content-Type: {{contentType}}
+
+{
+  "scores": 12
+}
+
+### Update Non-existent Solution (should return 404)
+PUT {{baseUrl}}/solutions/99999
+Content-Type: {{contentType}}
+
+{
+  "scores": 15
+}
+
+### Delete Solution
+DELETE {{baseUrl}}/solutions/1
+
+### Delete Non-existent Solution (should return 404)
+DELETE {{baseUrl}}/solutions/99999
+
+### Bulk Create - Create Multiple Solutions
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 10,
+  "title": "Solution 1 for batch test",
+  "scores": 5
+}
+
+###
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 11,
+  "title": "Solution 2 for batch test",
+  "scores": 10
+}
+
+###
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 12,
+  "title": "Solution 3 for batch test",
+  "exception_description": "Test exception description",
+  "solution_description": "Test solution description",
+  "scores": 15
+}
+
+### Test Invalid Score - Too High (should fail validation)
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 20,
+  "title": "Invalid score test",
+  "scores": 30
+}
+
+### Test Invalid Score - Negative (should fail validation)
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 21,
+  "title": "Negative score test",
+  "scores": -5
+}
+
+### Test Missing Required Fields (should fail validation)
+POST {{baseUrl}}/solutions/
+Content-Type: {{contentType}}
+
+{
+  "exception_id": 22
+}
