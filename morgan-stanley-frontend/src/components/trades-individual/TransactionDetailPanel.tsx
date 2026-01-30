@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight, AlertCircle, Check } from "lucide-react";
 import type { Transaction, Exception } from "@/lib/mockData";
+import { formatDateShort } from "@/lib/utils";
 
 interface TransactionDetailPanelProps {
   selectedTransaction: Transaction | null;
@@ -104,11 +105,11 @@ export function TransactionDetailPanel({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-slate-600 mb-1">Created</p>
-              <p className="text-sm text-slate-900">{selectedTransaction.create_time}</p>
+              <p className="text-sm text-slate-900">{formatDateShort(selectedTransaction.create_time)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-600 mb-1">Last Updated</p>
-              <p className="text-sm text-slate-900">{selectedTransaction.update_time}</p>
+              <p className="text-sm text-slate-900">{formatDateShort(selectedTransaction.update_time)}</p>
             </div>
           </div>
 

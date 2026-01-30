@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ChevronDown, ChevronUp, Info, Calendar, Clock, Activity, AlertTriangle } from "lucide-react";
 import type { Trade, Transaction, Exception } from "@/lib/mockData";
+import { formatDateShort } from "@/lib/utils";
 
 interface TradeInfoCardProps {
   trade: Trade;
@@ -13,7 +14,7 @@ interface TradeInfoCardProps {
   exceptions: Exception[];
   showTradeInfo: boolean;
   onToggle: () => void;
-  getStatusColor: (status: string) => "default" | "destructive" | "secondary" | "outline";
+  getStatusBadgeClassName: (status: string) => string;
 }
 
 export function TradeInfoCard({
@@ -22,7 +23,7 @@ export function TradeInfoCard({
   exceptions,
   showTradeInfo,
   onToggle,
-  getStatusColor,
+  getStatusBadgeClassName,
 }: TradeInfoCardProps) {
   return (
     <Card>
@@ -69,7 +70,7 @@ export function TradeInfoCard({
             </div>
             <div>
               <p className="text-sm text-slate-600 mb-1">Status</p>
-              <Badge variant={getStatusColor(trade.status)}>
+              <Badge variant="secondary" className={getStatusBadgeClassName(trade.status)}>
                 {trade.status}
               </Badge>
             </div>
@@ -99,14 +100,14 @@ export function TradeInfoCard({
               <p className="text-sm text-slate-600 mb-1">Created</p>
               <div className="flex items-center gap-2">
                 <Calendar className="size-4 text-slate-500" />
-                <p className="text-sm text-slate-900">{trade.create_time}</p>
+                <p className="text-sm text-slate-900">{formatDateShort(trade.create_time)}</p>
               </div>
             </div>
             <div>
               <p className="text-sm text-slate-600 mb-1">Last Updated</p>
               <div className="flex items-center gap-2">
                 <Clock className="size-4 text-slate-500" />
-                <p className="text-sm text-slate-900">{trade.update_time}</p>
+                <p className="text-sm text-slate-900">{formatDateShort(trade.update_time)}</p>
               </div>
             </div>
           </div>

@@ -17,6 +17,21 @@ export function getStatusColor(status: string): "default" | "destructive" | "sec
   }
 }
 
+export function getStatusBadgeClassName(status: string): string {
+  switch (status) {
+    case "CLEARED":
+      return "bg-green-600 text-white border-green-600";
+    case "ALLEGED":
+      return "bg-yellow-400 text-slate-900 border-yellow-400";
+    case "CANCELLED":
+      return "bg-black text-white border-black";
+    case "REJECTED":
+      return "bg-red-600 text-white border-red-600";
+    default:
+      return "bg-slate-200 text-slate-900 border-slate-200";
+  }
+}
+
 export function getTransactionStatusColor(status: string): "default" | "destructive" | "secondary" {
   switch (status) {
     case "COMPLETED":

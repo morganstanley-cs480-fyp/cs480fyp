@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Trade } from "@/lib/mockData";
+import { formatDateShort } from "@/lib/utils";
 
 interface TradeResultsTableProps {
   table: TableType<Trade>;
@@ -45,8 +46,15 @@ export function TradeResultsTable({
 
   const optionMap = useMemo(() => {
     const rows = table.getPreFilteredRowModel().flatRows;
-    const collect = (key: keyof Trade) =>
-      Array.from(new Set(rows.map((r) => String(r.original[key])))).sort();
+    const collect = (key: keyof Trade, formatter?: (value: Trade[keyof Trade]) => string) =>
+      Array.from(
+        new Set(
+          rows.map((r) => {
+            const value = r.original[key];
+            return formatter ? formatter(value) : String(value);
+          })
+        )
+      ).sort();
     return {
       trade_id: collect("trade_id"),
       account: collect("account"),
@@ -54,8 +62,8 @@ export function TradeResultsTable({
       booking_system: collect("booking_system"),
       affirmation_system: collect("affirmation_system"),
       clearing_house: collect("clearing_house"),
-      create_time: collect("create_time"),
-      update_time: collect("update_time"),
+      create_time: collect("create_time", (value) => formatDateShort(String(value))),
+      update_time: collect("update_time", (value) => formatDateShort(String(value))),
       status: collect("status"),
     } as Record<string, string[]>;
   }, [table]);
