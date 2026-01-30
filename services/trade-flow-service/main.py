@@ -13,7 +13,7 @@ DB_PORT = os.getenv("DB_PORT", "5432")
 
 DATABASE_URL = (
     f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+    )
 
 
 @contextlib.asynccontextmanager
@@ -22,17 +22,11 @@ async def lifespan(app: FastAPI):
         conninfo=DATABASE_URL,
         min_size=1,
         max_size=20,
-        kwargs={
-            "autocommit": True,
-            # "sslmode": "require"
-        },
+        kwargs={"autocommit": True}
     )
-
     await app.state.pool.open()
-    print("Connected to Databse")
-
+    print("Connected to Database")
     yield
-
     await app.state.pool.close()
     print("Database connection closed")
 
@@ -44,7 +38,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS", "PATCH", "DELETE"],
-    allow_headers=["Content_Type", "Authorization"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 
@@ -73,9 +67,10 @@ async def get_trade_by_id(id: int):
             if not trade:
                 raise HTTPException(status_code=404,
                                     detail=f"Trade {id} not found")
-
             return trade
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
@@ -90,9 +85,7 @@ async def get_trades(limit: int = 100, offset: int = 0):
                     "SELECT * FROM trades LIMIT %s OFFSET %s", (limit, offset)
                 )
                 trades = await cur.fetchall()
-
             return trades
-
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
@@ -104,16 +97,16 @@ async def get_transaction_by_id(id: int):
         async with app.state.pool.connection() as conn:
             async with conn.cursor(row_factory=dict_row) as cur:
                 await cur.execute(
-                  "SELECT * FROM transactions WHERE id=%s", (id,))
+                    "SELECT * FROM transactions WHERE id=%s", (id,))
                 transaction = await cur.fetchone()
 
                 if not transaction:
                     raise HTTPException(
                         status_code=404, detail=f"Transaction {id} not found"
                     )
-
                 return transaction
-
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
@@ -133,11 +126,12 @@ async def get_transactions_by_trade_id(trade_id: int):
                     raise HTTPException(
                         status_code=404,
                         detail=(
-                          f"Transctions with trade_id {trade_id} not found"),
+                            f"Transctions with trade_id {trade_id} not found"
+                            ),
                     )
-
                 return transactions
-
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
