@@ -1,0 +1,71 @@
+version: '3.8'
+
+# Docker Compose configuration for LocalStack testing environment
+# This runs LocalStack, PostgreSQL, and Redis for integration testing
+
+services:
+  # LocalStack - AWS service emulator
+  localstack:
+    image: localstack/localstack:latest
+    container_name: fyp-localstack-test
+    ports:
+      - "4566:4566"            # LocalStack edge port (all AWS services)
+      - "4510-4559:4510-4559"  # External service ports
+    environment:
+      - SERVICES=bedrock,s3,sqs,secretsmanager,iam
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - PERSISTENCE=0
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./localstack-data}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # PostgreSQL Database (for test data)
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: fyp-postgres-test
+    environment:
+      POSTGRES_DB: trading_db_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"  # Using 5433 to avoid conflict with dev DB
+    volumes:
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - test-network
+
+  # Redis Cache (for test caching)
+  redis-test:
+    image: redis:7-alpine
+    container_name: fyp-redis-test
+    ports:
+      - "6380:6379"  # Using 6380 to avoid conflict with dev Redis
+    command: redis-server --appendonly no  # No persistence for tests
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge

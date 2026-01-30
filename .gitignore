@@ -129,3 +129,6 @@ backend/verification/src/main/resources/application.properties
 
 .roo
 .tanstack/
+
+# Localstack
+services/localstack-data
