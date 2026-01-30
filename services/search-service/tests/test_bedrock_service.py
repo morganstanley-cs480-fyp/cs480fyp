@@ -67,13 +67,8 @@ class TestBedrockServiceExtractParameters:
         """Test that cache failures don't break extraction."""
         query_text = "show me IRS trades"
         
-        # Mock cache failure but still allow bedrock to work
-        async def mock_get_from_cache_with_error(key):
-            # Simulate cache error but don't propagate it
-            logger.warning("Cache failure simulated")
-            return None
-        
-        with patch.object(bedrock_service, '_get_from_cache', new_callable=AsyncMock, side_effect=mock_get_from_cache_with_error), \
+        # Mock cache returning None (simulating failure handled gracefully)
+        with patch.object(bedrock_service, '_get_from_cache', new_callable=AsyncMock, return_value=None), \
              patch.object(bedrock_service, '_invoke_bedrock', new_callable=AsyncMock) as mock_bedrock, \
              patch.object(bedrock_service, '_save_to_cache', new_callable=AsyncMock):
             
@@ -82,7 +77,7 @@ class TestBedrockServiceExtractParameters:
             
             result = await bedrock_service.extract_parameters(query_text, "user123")
             
-            # Should still work despite cache failure
+            # Should work with cache miss (no exception propagated)
             assert isinstance(result, ExtractedParams)
             assert result.asset_types == ["IRS"]
             mock_bedrock.assert_called_once()
