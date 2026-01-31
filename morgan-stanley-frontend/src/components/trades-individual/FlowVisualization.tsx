@@ -254,10 +254,18 @@ const EntityNode = ({ data }: any) => {
   const isHub = data.isHub;
   const width = data.width || NODE_WIDTH;
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (data.onEntitySelect) {
+      data.onEntitySelect(data.label, isHub);
+    }
+  };
+
   return (
     <div
-      className={`p-3 rounded-lg border-2 shadow-md bg-white flex flex-col justify-center cursor-grab active:cursor-grabbing text-center ${
-        isHub ? 'border-blue-500' : 'border-slate-300'
+      onClick={handleClick}
+      className={`p-3 rounded-lg border-2 shadow-md bg-white flex flex-col justify-center cursor-pointer hover:shadow-lg transition-all text-center ${
+        isHub ? 'border-blue-500 hover:border-blue-600' : 'border-slate-300 hover:border-slate-400'
       }`}
       style={{ width, height: NODE_HEIGHT, boxSizing: 'border-box' }}
     >
@@ -289,7 +297,12 @@ interface TransactionFlow {
   to: string;
 }
 
-async function generateElkLayout(participants: string[], transactions: TransactionFlow[]) {
+async function generateElkLayout(
+  participants: string[], 
+  transactions: TransactionFlow[], 
+  clearingHouse: string,
+  onEntitySelect: (entityName: string, isHub: boolean) => void
+) {
   const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
   const bottomCount = participants.length - topCount;
 
@@ -363,7 +376,12 @@ async function generateElkLayout(participants: string[], transactions: Transacti
       id: n.id!,
       type: 'entity',
       position: { x, y },
-      data: { label: isHub ? 'Central Clearing House' : n.id, isHub, width },
+      data: { 
+        label: isHub ? clearingHouse : n.id, 
+        isHub, 
+        width,
+        onEntitySelect 
+      },
       draggable: true,
       selectable: true,
     });
@@ -415,8 +433,10 @@ interface FlowVisualizationProps {
   activeTab: "timeline" | "system";
   onTabChange: (tab: "timeline" | "system") => void;
   transactions: Transaction[];
+  clearingHouse: string;
   selectedTransaction: Transaction | null;
   onTransactionSelect: (transaction: Transaction) => void;
+  onEntitySelect: (entityName: string, isHub: boolean) => void;
   getRelatedExceptions: (transId: string) => Exception[];
   getTransactionBackgroundColor: (transaction: Transaction) => string;
   getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
@@ -426,8 +446,10 @@ export function FlowVisualization({
   activeTab,
   onTabChange,
   transactions,
+  clearingHouse,
   selectedTransaction,
   onTransactionSelect,
+  onEntitySelect,
   getRelatedExceptions,
   getTransactionBackgroundColor,
   getTransactionStatusColor,
@@ -435,50 +457,54 @@ export function FlowVisualization({
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Generate mock data for the system flow visualization
+  // Generate dynamic flow visualization based on actual transaction data
   useEffect(() => {
-    const entities = [
-      'Investment Bank A',
-      'Hedge Fund X',
-      'Broker Dealer C',
-      'Pension Fund Y',
-      'Asset Manager Z',
-      'Insurance Corp',
-    ];
+    if (!transactions || transactions.length === 0) {
+      setIsLoading(false);
+      return;
+    }
 
-    const flows: TransactionFlow[] = [
-      { from: 'Investment Bank A', to: 'CCP' },
-      { from: 'CCP', to: 'Investment Bank A' },
-      { from: 'Investment Bank A', to: 'CCP' },
-      { from: 'CCP', to: 'Investment Bank A' },
+    // Extract unique entities from transactions (excluding CCP)
+    const entities = [...new Set(
+      transactions
+        .map(t => t.entity)
+        .filter(e => e && e !== 'CCP' && e !== 'Central Clearing House')
+    )];
 
-      { from: 'Hedge Fund X', to: 'CCP' },
-      { from: 'CCP', to: 'Hedge Fund X' },
-      { from: 'Hedge Fund X', to: 'CCP' },
-      { from: 'CCP', to: 'Hedge Fund X' },
+    // Sort transactions by step to maintain order
+    const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
 
-      { from: 'Broker Dealer C', to: 'CCP' },
-      { from: 'CCP', to: 'Broker Dealer C' },
-      { from: 'Broker Dealer C', to: 'CCP' },
-      { from: 'CCP', to: 'Broker Dealer C' },
+    // Build flows based on transaction direction
+    const flows: TransactionFlow[] = sortedTransactions.map(tx => {
+      const direction = tx.direction?.toUpperCase() || '';
+      
+      // Map direction to flow (from -> to)
+      if (direction.includes('TO_CCP') || direction === 'TO CCP' || direction === 'SEND') {
+        return { from: tx.entity, to: HUB_ID };
+      } else if (direction.includes('FROM_CCP') || direction === 'FROM CCP' || direction === 'RECEIVE') {
+        return { from: HUB_ID, to: tx.entity };
+      } else if (direction.includes('INTERNAL') || direction === 'PROCESS') {
+        // For internal processing, show as CCP to CCP (self-loop handled by layout)
+        return { from: HUB_ID, to: HUB_ID };
+      } else {
+        // Default: assume it's going to CCP
+        return { from: tx.entity, to: HUB_ID };
+      }
+    });
 
-      { from: 'Pension Fund Y', to: 'CCP' },
-      { from: 'CCP', to: 'Pension Fund Y' },
-      { from: 'Pension Fund Y', to: 'CCP' },
-      { from: 'CCP', to: 'Pension Fund Y' },
+    // Filter out invalid flows and self-loops to CCP
+    const validFlows = flows.filter(f => 
+      f.from && f.to && !(f.from === HUB_ID && f.to === HUB_ID)
+    );
 
-      { from: 'Asset Manager Z', to: 'CCP' },
-      { from: 'CCP', to: 'Asset Manager Z' },
-      { from: 'Asset Manager Z', to: 'CCP' },
-      { from: 'CCP', to: 'Asset Manager Z' },
+    if (entities.length === 0 && validFlows.length === 0) {
+      // No valid data to display
+      setLayoutData({ nodes: [], edges: [] });
+      setIsLoading(false);
+      return;
+    }
 
-      { from: 'Insurance Corp', to: 'CCP' },
-      { from: 'CCP', to: 'Insurance Corp' },
-      { from: 'Insurance Corp', to: 'CCP' },
-      { from: 'CCP', to: 'Insurance Corp' },
-    ];
-
-    generateElkLayout(entities, flows)
+    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect)
       .then((result) => {
         setLayoutData(result);
         setIsLoading(false);
@@ -487,7 +513,7 @@ export function FlowVisualization({
         console.error('ELK layout failed:', error);
         setIsLoading(false);
       });
-  }, []);
+  }, [transactions, clearingHouse, onEntitySelect]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setLayoutData((prev) => ({
