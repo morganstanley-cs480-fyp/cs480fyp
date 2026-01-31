@@ -128,6 +128,7 @@ function TradeDetailPage() {
             selectedTransaction={selectedTransaction}
             onTransactionSelect={handleTransactionSelect}
             onEntitySelect={handleEntitySelect}
+            exceptions={exceptions}
             getRelatedExceptions={(transId) => getRelatedExceptions(transId, exceptions)}
             getTransactionBackgroundColor={(transaction) => getTransactionBackgroundColor(transaction, exceptions)}
             getTransactionStatusColor={getTransactionStatusColor}

@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, Network } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
 import type { Transaction, Exception } from "@/lib/mockData";
+import { getTransactionBackgroundColor } from "@/routes/trades/tradeDetailUtils";
 import { useEffect, useState, useCallback } from 'react';
 import {
   ReactFlow,
@@ -253,6 +254,34 @@ function WorkflowEdge(props: EdgeProps) {
 const EntityNode = ({ data }: any) => {
   const isHub = data.isHub;
   const width = data.width || NODE_WIDTH;
+  const status = data.status || 'PENDING';
+
+  // Get background color based on status
+  const getStatusBgColor = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'bg-green-50';
+      case 'PENDING':
+        return 'bg-slate-50';
+      case 'FAILED':
+        return 'bg-red-50';
+      default:
+        return 'bg-slate-50';
+    }
+  };
+
+  const getStatusBorderColor = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'border-green-400';
+      case 'PENDING':
+        return 'border-slate-300';
+      case 'FAILED':
+        return 'border-red-400';
+      default:
+        return 'border-slate-300';
+    }
+  };
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -264,8 +293,9 @@ const EntityNode = ({ data }: any) => {
   return (
     <div
       onClick={handleClick}
-      className={`p-3 rounded-lg border-2 shadow-md bg-white flex flex-col justify-center cursor-pointer hover:shadow-lg transition-all text-center ${
-        isHub ? 'border-blue-500 hover:border-blue-600' : 'border-slate-300 hover:border-slate-400'
+      className={`p-3 rounded-lg border-2 shadow-md flex flex-col justify-center cursor-pointer hover:shadow-lg transition-all text-center ${
+        getStatusBgColor(status)} ${getStatusBorderColor(status)} ${
+        isHub ? 'hover:border-blue-600' : 'hover:border-slate-400'
       }`}
       style={{ width, height: NODE_HEIGHT, boxSizing: 'border-box' }}
     >
@@ -299,9 +329,11 @@ interface TransactionFlow {
 
 async function generateElkLayout(
   participants: string[], 
-  transactions: TransactionFlow[], 
+  transactionFlows: TransactionFlow[], 
   clearingHouse: string,
-  onEntitySelect: (entityName: string, isHub: boolean) => void
+  onEntitySelect: (entityName: string, isHub: boolean) => void,
+  allTransactions: Transaction[],
+  exceptions: Exception[]
 ) {
   const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
   const bottomCount = participants.length - topCount;
@@ -335,7 +367,7 @@ async function generateElkLayout(
     });
   }
 
-  const elkEdges = transactions.map((tx, i) => ({
+  const elkEdges = transactionFlows.map((tx, i) => ({
     id: `e-${i}`,
     sources: [tx.from],
     targets: [tx.to],
@@ -363,12 +395,21 @@ async function generateElkLayout(
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
+  // Map entity names to their most recent transaction status
+  const entityStatusMap: Record<string, string> = {};
+  allTransactions.forEach((tx) => {
+    if (tx.entity && tx.entity !== 'CCP') {
+      entityStatusMap[tx.entity] = tx.status; // Latest status (transactions are ordered by step)
+    }
+  });
+
   const nodeLookup: Record<string, any> = {};
   layout.children?.forEach((n) => {
     const isHub = n.id === HUB_ID;
     const x = (n.x ?? 0) - xCenter;
     const y = n.y ?? 0;
     const width = isHub ? hubWidth : NODE_WIDTH;
+    const status = isHub ? 'COMPLETED' : (entityStatusMap[n.id!] || 'PENDING');
 
     nodeLookup[n.id!] = { x, y, width };
 
@@ -380,6 +421,7 @@ async function generateElkLayout(
         label: isHub ? clearingHouse : n.id, 
         isHub, 
         width,
+        status,
         onEntitySelect 
       },
       draggable: true,
@@ -437,6 +479,7 @@ interface FlowVisualizationProps {
   selectedTransaction: Transaction | null;
   onTransactionSelect: (transaction: Transaction) => void;
   onEntitySelect: (entityName: string, isHub: boolean) => void;
+  exceptions: Exception[];
   getRelatedExceptions: (transId: string) => Exception[];
   getTransactionBackgroundColor: (transaction: Transaction) => string;
   getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
@@ -450,6 +493,7 @@ export function FlowVisualization({
   selectedTransaction,
   onTransactionSelect,
   onEntitySelect,
+  exceptions,
   getRelatedExceptions,
   getTransactionBackgroundColor,
   getTransactionStatusColor,
@@ -504,7 +548,7 @@ export function FlowVisualization({
       return;
     }
 
-    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect)
+    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, exceptions)
       .then((result) => {
         setLayoutData(result);
         setIsLoading(false);
@@ -513,7 +557,7 @@ export function FlowVisualization({
         console.error('ELK layout failed:', error);
         setIsLoading(false);
       });
-  }, [transactions, clearingHouse, onEntitySelect]);
+  }, [transactions, clearingHouse, onEntitySelect, exceptions]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setLayoutData((prev) => ({
