@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VisualisationIndexRouteImport } from './routes/visualisation/index'
 import { Route as TradesIndexRouteImport } from './routes/trades/index'
-import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ExceptionsIndexRouteImport } from './routes/exceptions/index'
 import { Route as CallbackIndexRouteImport } from './routes/callback/index'
 import { Route as TradesTradeIdRouteImport } from './routes/trades/$tradeId'
@@ -31,11 +30,6 @@ const VisualisationIndexRoute = VisualisationIndexRouteImport.update({
 const TradesIndexRoute = TradesIndexRouteImport.update({
   id: '/trades/',
   path: '/trades/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginIndexRoute = LoginIndexRouteImport.update({
-  id: '/login/',
-  path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExceptionsIndexRoute = ExceptionsIndexRouteImport.update({
@@ -65,7 +59,6 @@ export interface FileRoutesByFullPath {
   '/trades/$tradeId': typeof TradesTradeIdRoute
   '/callback': typeof CallbackIndexRoute
   '/exceptions': typeof ExceptionsIndexRoute
-  '/login': typeof LoginIndexRoute
   '/trades': typeof TradesIndexRoute
   '/visualisation': typeof VisualisationIndexRoute
 }
@@ -75,7 +68,6 @@ export interface FileRoutesByTo {
   '/trades/$tradeId': typeof TradesTradeIdRoute
   '/callback': typeof CallbackIndexRoute
   '/exceptions': typeof ExceptionsIndexRoute
-  '/login': typeof LoginIndexRoute
   '/trades': typeof TradesIndexRoute
   '/visualisation': typeof VisualisationIndexRoute
 }
@@ -86,7 +78,6 @@ export interface FileRoutesById {
   '/trades/$tradeId': typeof TradesTradeIdRoute
   '/callback/': typeof CallbackIndexRoute
   '/exceptions/': typeof ExceptionsIndexRoute
-  '/login/': typeof LoginIndexRoute
   '/trades/': typeof TradesIndexRoute
   '/visualisation/': typeof VisualisationIndexRoute
 }
@@ -98,7 +89,6 @@ export interface FileRouteTypes {
     | '/trades/$tradeId'
     | '/callback'
     | '/exceptions'
-    | '/login'
     | '/trades'
     | '/visualisation'
   fileRoutesByTo: FileRoutesByTo
@@ -108,7 +98,6 @@ export interface FileRouteTypes {
     | '/trades/$tradeId'
     | '/callback'
     | '/exceptions'
-    | '/login'
     | '/trades'
     | '/visualisation'
   id:
@@ -118,7 +107,6 @@ export interface FileRouteTypes {
     | '/trades/$tradeId'
     | '/callback/'
     | '/exceptions/'
-    | '/login/'
     | '/trades/'
     | '/visualisation/'
   fileRoutesById: FileRoutesById
@@ -129,7 +117,6 @@ export interface RootRouteChildren {
   TradesTradeIdRoute: typeof TradesTradeIdRoute
   CallbackIndexRoute: typeof CallbackIndexRoute
   ExceptionsIndexRoute: typeof ExceptionsIndexRoute
-  LoginIndexRoute: typeof LoginIndexRoute
   TradesIndexRoute: typeof TradesIndexRoute
   VisualisationIndexRoute: typeof VisualisationIndexRoute
 }
@@ -155,13 +142,6 @@ declare module '@tanstack/react-router' {
       path: '/trades'
       fullPath: '/trades'
       preLoaderRoute: typeof TradesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login/': {
-      id: '/login/'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/exceptions/': {
@@ -201,7 +181,6 @@ const rootRouteChildren: RootRouteChildren = {
   TradesTradeIdRoute: TradesTradeIdRoute,
   CallbackIndexRoute: CallbackIndexRoute,
   ExceptionsIndexRoute: ExceptionsIndexRoute,
-  LoginIndexRoute: LoginIndexRoute,
   TradesIndexRoute: TradesIndexRoute,
   VisualisationIndexRoute: VisualisationIndexRoute,
 }
