@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { AlertTriangle, Clock } from "lucide-react";
 import { type Transaction, type Exception } from "@/lib/mockData";
 
@@ -22,13 +22,13 @@ export function getStatusBadgeClassName(status: string): string {
     case "CLEARED":
       return "bg-green-600 text-white border-green-600";
     case "ALLEGED":
-      return "bg-yellow-400 text-slate-900 border-yellow-400";
+      return "bg-yellow-400 text-black border-yellow-400";
     case "CANCELLED":
       return "bg-black text-white border-black";
     case "REJECTED":
       return "bg-red-600 text-white border-red-600";
     default:
-      return "bg-slate-200 text-slate-900 border-slate-200";
+      return "bg-slate-200 text-black border-slate-200";
   }
 }
 

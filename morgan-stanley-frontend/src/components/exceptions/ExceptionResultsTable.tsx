@@ -158,7 +158,7 @@ export function ExceptionResultsTable({
                     data-state={row.getIsSelected() && "selected"}
                     className={`cursor-pointer ${
                       selectedExceptionId === row.original.exception_id
-                        ? "bg-blue-50"
+                        ? "bg-[#002B51]/5"
                         : ""
                     }`}
                     onClick={() => onRowClick(row.original)}
@@ -189,7 +189,7 @@ export function ExceptionResultsTable({
 
         {/* Pagination */}
         <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-slate-600">
+          <div className="text-sm text-black/75">
             Showing{" "}
             {table.getState().pagination.pageIndex *
               table.getState().pagination.pageSize +

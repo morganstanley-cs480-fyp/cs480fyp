@@ -28,7 +28,7 @@ export function AIGeneratorPanel({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="size-5 text-purple-600" />
-          <h3 className="font-semibold text-slate-900">
+          <h3 className="font-semibold text-black">
             AI Suggested Solution
           </h3>
         </div>
@@ -36,7 +36,7 @@ export function AIGeneratorPanel({
 
       <div>
         <Label>Solution Type</Label>
-        <p className="text-sm text-slate-900 mt-1">RETRY MEMO</p>
+        <p className="text-sm text-black mt-1">RETRY MEMO</p>
       </div>
 
       <div>
@@ -71,11 +71,11 @@ export function AIGeneratorPanel({
             <div className="flex items-start gap-2 mb-3">
               <Lightbulb className="size-5 text-purple-600 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-slate-900 mb-2">
+                <p className="text-sm font-medium text-black mb-2">
                   AI-generated solution based on exception details and your requirements. 
                   You can copy this to use in "Create New Solution" or reference it here.
                 </p>
-                <pre className="text-xs text-slate-700 bg-white border border-purple-200 rounded p-3 whitespace-pre-wrap font-mono">
+                <pre className="text-xs text-black/75 bg-white border border-purple-200 rounded p-3 whitespace-pre-wrap font-mono">
                   {aiGeneratedSolution}
                 </pre>
               </div>

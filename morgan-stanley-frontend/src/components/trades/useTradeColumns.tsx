@@ -14,7 +14,7 @@ export function useTradeColumns(): ColumnDef<Trade>[] {
       accessorKey: "trade_id",
       header: "Trade ID",
       cell: ({ row }) => (
-        <div className="font-medium text-slate-900 ml-2">
+        <div className="font-medium text-black ml-2">
           {row.getValue("trade_id")}
         </div>
       ),

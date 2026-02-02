@@ -19,7 +19,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
     <div className="grid grid-cols-5 gap-4">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-slate-600">
+          <CardTitle className="text-sm text-black/75">
             Pending Exceptions
           </CardTitle>
         </CardHeader>
@@ -30,7 +30,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-slate-600">
+          <CardTitle className="text-sm text-black/75">
             High Priority
           </CardTitle>
         </CardHeader>
@@ -41,7 +41,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-slate-600">
+          <CardTitle className="text-sm text-black/75">
             Medium Priority
           </CardTitle>
         </CardHeader>
@@ -52,7 +52,7 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-slate-600">
+          <CardTitle className="text-sm text-black/75">
             Low Priority
           </CardTitle>
         </CardHeader>
@@ -63,12 +63,12 @@ export function StatsOverview({ stats }: StatsOverviewProps) {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-slate-600">
+          <CardTitle className="text-sm text-black/75">
             Closed
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl text-slate-600">{stats.closed}</div>
+          <div className="text-2xl text-black/75">{stats.closed}</div>
         </CardContent>
       </Card>
     </div>

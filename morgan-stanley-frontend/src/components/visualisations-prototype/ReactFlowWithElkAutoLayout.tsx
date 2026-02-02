@@ -17,7 +17,7 @@ import {
   type NodeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Landmark, ShieldCheck, Activity } from 'lucide-react';
+import { Landmark, ShieldCheck } from 'lucide-react';
 import ELK, { type ElkNode } from 'elkjs/lib/elk.bundled.js';
 
 const elk = new ELK();
@@ -27,7 +27,7 @@ const HUB_ID = 'CCP';
 const NODE_WIDTH = 140;
 const NODE_HEIGHT = 96;
 const HUB_MIN_WIDTH = NODE_WIDTH * 10; // elongated hub (doubled)
-const EDGE_COLOR = '#2563eb';
+const EDGE_COLOR = '#002B51';
 const EDGE_OFFSET = 22; // spacing between parallel edges on hub/participant borders
 const PARTICIPANT_MARGIN = 16;
 const HUB_MARGIN = 40;
@@ -265,7 +265,7 @@ function WorkflowEdge(props: EdgeProps) {
             pointerEvents: 'none',
           }}
         >
-          <div className="w-6 h-6 rounded-full bg-white border border-slate-300 text-[11px] font-semibold text-slate-700 flex items-center justify-center shadow-sm">
+          <div className="w-6 h-6 rounded-full bg-white border border-slate-300 text-[11px] font-semibold text-black/75 flex items-center justify-center shadow-sm">
             {data?.step ?? ''}
           </div>
         </div>
@@ -274,28 +274,28 @@ function WorkflowEdge(props: EdgeProps) {
   );
 }
 
-const EntityNode = ({ data }: any) => {
+const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; label: string } }) => {
   const isHub = data.isHub;
   const width = data.width || NODE_WIDTH;
 
   return (
     <div
       className={`p-3 rounded-lg border-2 shadow-md bg-white flex flex-col justify-center cursor-grab active:cursor-grabbing text-center ${
-        isHub ? 'border-blue-500' : 'border-slate-300'
+        isHub ? 'border-[#002B51]' : 'border-slate-300'
       }`}
       style={{ width, height: NODE_HEIGHT, boxSizing: 'border-box' }}
     >
       <div className="flex items-center gap-2 mb-1 justify-center">
         {isHub ? (
-          <ShieldCheck className="text-blue-500" size={14} />
+          <ShieldCheck className="text-[#002B51]" size={14} />
         ) : (
-          <Landmark className="text-slate-400" size={14} />
+          <Landmark className="text-black/50" size={14} />
         )}
-        <span className="text-[8px] font-bold uppercase tracking-tight text-slate-400">
+        <span className="text-[8px] font-bold uppercase tracking-tight text-black/50">
           {isHub ? 'Central Clearing' : 'Participant'}
         </span>
       </div>
-      <div className="text-xs font-bold text-slate-900 uppercase truncate">{data.label}</div>
+      <div className="text-xs font-bold text-black uppercase truncate">{data.label}</div>
 
       {/* hidden handles; geometry-based anchoring */}
       <Handle type="target" position={Position.Top} id="in-top" className="opacity-0" />
@@ -328,7 +328,7 @@ async function generateElkLayout(participants: string[], transactions: Transacti
   const rowWidth = (count: number) => (count > 0 ? count * NODE_WIDTH + (count - 1) * 40 : 0);
   const hubWidth = Math.max(HUB_MIN_WIDTH, rowWidth(topCount), rowWidth(bottomCount));
 
-  const elkNodes: any[] = [
+  const elkNodes: { id: string; width: number; height: number; layoutOptions?: Record<string, string> }[] = [
     {
       id: HUB_ID,
       width: hubWidth,
@@ -383,7 +383,12 @@ async function generateElkLayout(participants: string[], transactions: Transacti
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
-  const nodeLookup: Record<string, any> = {};
+  interface NodeLookupEntry {
+    x: number;
+    y: number;
+    width: number;
+  }
+  const nodeLookup: Record<string, NodeLookupEntry> = {};
   layout.children?.forEach((n) => {
     const isHub = n.id === HUB_ID;
     const x = (n.x ?? 0) - xCenter;
@@ -514,17 +519,29 @@ export default function ReactFlowWithElkAutoLayout() {
     }));
   }, []);
 
-  const handleNodeClick = useCallback((_: any, node: Node) => {
+  interface EntityNodeData {
+    label: string;
+    isHub: boolean;
+  }
+
+  const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
+    const nodeData = node.data as EntityNodeData;
     setSelection({
       kind: 'node',
       id: node.id,
-      label: (node.data as any)?.label ?? node.id,
-      role: (node.data as any)?.isHub ? 'Central Clearing House' : 'Participant',
+      label: nodeData?.label ?? node.id,
+      role: nodeData?.isHub ? 'Central Clearing House' : 'Participant',
     });
   }, []);
 
-  const handleEdgeClick = useCallback((_: any, edge: Edge) => {
-    const data: any = edge.data ?? {};
+  interface EdgeData {
+    sourceId?: string;
+    targetId?: string;
+    step?: number;
+  }
+
+  const handleEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
+    const data = (edge.data as EdgeData) ?? {};
     setSelection({
       kind: 'edge',
       id: edge.id,
@@ -541,25 +558,13 @@ export default function ReactFlowWithElkAutoLayout() {
   if (isLoading) {
     return (
       <div className="h-screen w-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-slate-600 font-bold">Computing ELK Layout...</div>
+        <div className="text-black/75 font-bold">Computing ELK Layout...</div>
       </div>
     );
   }
 
   return (
     <div className="h-screen w-screen bg-slate-50">
-      <div className="absolute top-10 left-10 z-10">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tighter flex items-center gap-3">
-          <div className="bg-blue-600 p-2 rounded-lg">
-            <Activity className="text-white" size={24} />
-          </div>
-          Trade Flow Visualization
-        </h1>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 ml-11">
-          ELK Auto Layout • Top-Bottom Constraint
-        </p>
-      </div>
-
       <ReactFlow
         nodes={layoutData.nodes}
         edges={layoutData.edges}
@@ -585,7 +590,7 @@ export default function ReactFlowWithElkAutoLayout() {
       {selection && (
         <div className="absolute top-0 right-0 h-full w-80 max-w-xs bg-white border-l border-slate-200 shadow-xl z-20 p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Details</div>
+            <div className="text-xs font-semibold text-black/50 uppercase tracking-wide">Details</div>
             <button
               className="text-xs font-semibold text-blue-600 hover:text-blue-700"
               onClick={() => setSelection(null)}
@@ -596,14 +601,14 @@ export default function ReactFlowWithElkAutoLayout() {
 
           {selection.kind === 'node' ? (
             <div className="space-y-2">
-              <div className="text-sm font-bold text-slate-900 truncate">{selection.label}</div>
-              <div className="text-xs text-slate-600">Role: {selection.role}</div>
+              <div className="text-sm font-bold text-black truncate">{selection.label}</div>
+              <div className="text-xs text-black/75">Role: {selection.role}</div>
             </div>
           ) : (
             <div className="space-y-2">
-              <div className="text-sm font-bold text-slate-900">Edge {selection.step ?? selection.id}</div>
-              <div className="text-xs text-slate-600">From: {selection.from}</div>
-              <div className="text-xs text-slate-600">To: {selection.to}</div>
+              <div className="text-sm font-bold text-black">Edge {selection.step ?? selection.id}</div>
+              <div className="text-xs text-black/75">From: {selection.from}</div>
+              <div className="text-xs text-black/75">To: {selection.to}</div>
             </div>
           )}
         </div>

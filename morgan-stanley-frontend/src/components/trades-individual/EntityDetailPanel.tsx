@@ -36,9 +36,9 @@ export function EntityDetailPanel({ entityName, isHub, transactions }: EntityDet
       <CardHeader>
         <div className="flex items-center gap-3">
           {isHub ? (
-            <ShieldCheck className="size-8 text-blue-500" />
+            <ShieldCheck className="size-8 text-[#002B51]" />
           ) : (
-            <Landmark className="size-8 text-slate-500" />
+            <Landmark className="size-8 text-black/50" />
           )}
           <div className="flex-1">
             <CardTitle className="text-xl">{entityName}</CardTitle>
@@ -52,21 +52,21 @@ export function EntityDetailPanel({ entityName, isHub, transactions }: EntityDet
       <CardContent className="space-y-6">
         {/* Transaction Statistics */}
         <div>
-          <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-black/75 mb-3 flex items-center gap-2">
             <Activity className="size-4" />
             Transaction Activity
           </h3>
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-slate-50 rounded-lg p-3 text-center border border-slate-200">
-              <div className="text-2xl font-bold text-slate-900">{entityTransactions.length}</div>
-              <div className="text-xs text-slate-600 mt-1">Total</div>
+              <div className="text-2xl font-bold text-black">{entityTransactions.length}</div>
+              <div className="text-xs text-black/75 mt-1">Total</div>
             </div>
-            <div className="bg-blue-50 rounded-lg p-3 text-center border border-blue-200">
-              <div className="text-2xl font-bold text-blue-700 flex items-center justify-center gap-1">
+            <div className="bg-[#002B51]/5 rounded-lg p-3 text-center border border-[#002B51]/20">
+              <div className="text-2xl font-bold text-[#002B51] flex items-center justify-center gap-1">
                 <ArrowLeft className="size-4" />
                 {inboundCount}
               </div>
-              <div className="text-xs text-blue-600 mt-1">Inbound</div>
+              <div className="text-xs text-[#002B51] mt-1">Inbound</div>
             </div>
             <div className="bg-green-50 rounded-lg p-3 text-center border border-green-200">
               <div className="text-2xl font-bold text-green-700 flex items-center justify-center gap-1">
@@ -80,14 +80,14 @@ export function EntityDetailPanel({ entityName, isHub, transactions }: EntityDet
 
         {/* Status Breakdown */}
         <div>
-          <h3 className="text-sm font-semibold text-slate-700 mb-3">Status Breakdown</h3>
+          <h3 className="text-sm font-semibold text-black/75 mb-3">Status Breakdown</h3>
           <div className="space-y-2">
             {Object.entries(statusCounts).map(([status, count]) => (
               <div key={status} className="flex items-center justify-between p-2 bg-slate-50 rounded border border-slate-200">
                 <Badge variant="secondary" className="text-xs">
                   {status}
                 </Badge>
-                <span className="text-sm font-semibold text-slate-700">{count}</span>
+                <span className="text-sm font-semibold text-black/75">{count}</span>
               </div>
             ))}
           </div>
@@ -95,7 +95,7 @@ export function EntityDetailPanel({ entityName, isHub, transactions }: EntityDet
 
         {/* Recent Transactions */}
         <div>
-          <h3 className="text-sm font-semibold text-slate-700 mb-3">Recent Transactions</h3>
+          <h3 className="text-sm font-semibold text-black/75 mb-3">Recent Transactions</h3>
           <div className="space-y-2 max-h-[200px] overflow-y-auto">
             {entityTransactions.slice(0, 5).map((transaction) => (
               <div 
@@ -103,12 +103,12 @@ export function EntityDetailPanel({ entityName, isHub, transactions }: EntityDet
                 className="p-2 bg-white rounded border border-slate-200 hover:border-slate-300 transition-colors"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-mono text-slate-600">{transaction.trans_id}</span>
+                  <span className="text-xs font-mono text-black/75">{transaction.trans_id}</span>
                   <Badge variant="secondary" className="text-xs">
                     {transaction.status}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-500">
+                <div className="flex items-center gap-2 text-xs text-black/50">
                   <span className="capitalize">{transaction.type}</span>
                   <span>•</span>
                   <span>Step {transaction.step}</span>

@@ -606,6 +606,7 @@ function SidebarMenuSkeleton({
 }) {
   // Random width between 50 to 90%.
   const width = React.useMemo(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return `${Math.floor(Math.random() * 40) + 50}%`
   }, [])
 
@@ -696,6 +697,7 @@ function SidebarMenuSubButton({
   )
 }
 
+/* eslint-disable react-refresh/only-export-components */
 export {
   Sidebar,
   SidebarContent,
@@ -722,3 +724,5 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+/* eslint-enable react-refresh/only-export-components */
+

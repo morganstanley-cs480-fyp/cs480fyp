@@ -12,6 +12,7 @@ import type {
   SortingState,
   VisibilityState,
   ColumnFiltersState,
+  PaginationState,
 } from "@tanstack/react-table";
 
 import { 
@@ -26,26 +27,10 @@ import {
 } from "@/lib/mockData";
 
 // Component imports
-import { SearchHeader } from "@/components/trades/SearchHeader";
+import { SearchHeader, type RecentSearch } from "@/components/trades/SearchHeader";
 import { TradeFilters, type ManualSearchFilters } from "@/components/trades/TradeFilters";
 import { TradeResultsTable } from "@/components/trades/TradeResultsTable";
-import { RecentSearches, type RecentSearch } from "@/components/trades/RecentSearches";
 import { useTradeColumns } from "@/components/trades/useTradeColumns";
-
-interface ManualSearchFilters {
-  tradeId: string;
-  account: string;
-  assetType: string;
-  bookingSystem: string;
-  affirmationSystem: string;
-  clearingHouse: string;
-  status: string[];
-  dateType: 'create_time' | 'update_time';
-  dateFrom: string;
-  dateTo: string;
-  withExceptionsOnly: boolean;
-  clearedTradesOnly: boolean;
-}
 
 export const Route = createFileRoute("/trades/")({
   component: TradeSearchPage,
@@ -57,18 +42,18 @@ function TradeSearchPage() {
   const SEARCH_KEY = "tradeSearchQuery:v1";
 
   const getDefaultFilters = (): ManualSearchFilters => ({
-    tradeId: "",
+    trade_id: "",
     account: "",
-    assetType: "",
-    bookingSystem: "",
-    affirmationSystem: "",
-    clearingHouse: "",
+    asset_type: "",
+    booking_system: "",
+    affirmation_system: "",
+    clearing_house: "",
     status: [],
-    dateType: "update_time",
-    dateFrom: "",
-    dateTo: "",
-    withExceptionsOnly: false,
-    clearedTradesOnly: false,
+    date_type: "update_time",
+    date_from: "",
+    date_to: "",
+    with_exceptions_only: false,
+    cleared_trades_only: false,
   });
 
   const loadFilters = (): ManualSearchFilters => {
@@ -179,37 +164,37 @@ function TradeSearchPage() {
       let filtered = [...mockTrades];
       
       // Apply filters
-      if (filters.tradeId) {
-        filtered = filtered.filter(t => t.trade_id.includes(filters.tradeId));
+      if (filters.trade_id) {
+        filtered = filtered.filter(t => t.trade_id.toString().includes(filters.trade_id));
       }
       if (filters.account) {
         filtered = filtered.filter(t => t.account === filters.account);
       }
-      if (filters.assetType) {
-        filtered = filtered.filter(t => t.asset_type === filters.assetType);
+      if (filters.asset_type) {
+        filtered = filtered.filter(t => t.asset_type === filters.asset_type);
       }
-      if (filters.bookingSystem) {
-        filtered = filtered.filter(t => t.booking_system === filters.bookingSystem);
+      if (filters.booking_system) {
+        filtered = filtered.filter(t => t.booking_system === filters.booking_system);
       }
-      if (filters.affirmationSystem) {
-        filtered = filtered.filter(t => t.affirmation_system === filters.affirmationSystem);
+      if (filters.affirmation_system) {
+        filtered = filtered.filter(t => t.affirmation_system === filters.affirmation_system);
       }
-      if (filters.clearingHouse) {
-        filtered = filtered.filter(t => t.clearing_house === filters.clearingHouse);
+      if (filters.clearing_house) {
+        filtered = filtered.filter(t => t.clearing_house === filters.clearing_house);
       }
       if (filters.status.length > 0) {
         filtered = filtered.filter(t => filters.status.includes(t.status));
       }
-      if (filters.clearedTradesOnly) {
+      if (filters.cleared_trades_only) {
         filtered = filtered.filter(t => t.status === 'CLEARED');
       }
       
       // Date filtering
-      if (filters.dateFrom || filters.dateTo) {
+      if (filters.date_from || filters.date_to) {
         filtered = filtered.filter(t => {
-          const tradeDate = new Date(t[filters.dateType]);
-          const fromDate = filters.dateFrom ? new Date(filters.dateFrom) : new Date('2000-01-01');
-          const toDate = filters.dateTo ? new Date(filters.dateTo) : new Date('2099-12-31');
+          const tradeDate = new Date(t[filters.date_type]);
+          const fromDate = filters.date_from ? new Date(filters.date_from) : new Date('2000-01-01');
+          const toDate = filters.date_to ? new Date(filters.date_to) : new Date('2099-12-31');
           return tradeDate >= fromDate && tradeDate <= toDate;
         });
       }
@@ -254,9 +239,13 @@ function TradeSearchPage() {
         searchQuery={searchQuery}
         searching={searching}
         showFilters={showFilters}
+        recentSearches={recentSearches}
         onSearchQueryChange={setSearchQuery}
         onSearch={handleSearch}
         onToggleFilters={() => setShowFilters(!showFilters)}
+        onRecentSearchClick={handleRecentSearchClick}
+        onDeleteSearch={(id) => setRecentSearches((prev) => prev.filter((s) => s.id !== id))}
+        onClearAllSearches={() => setRecentSearches([])}
       />
 
       {showFilters && (
@@ -279,13 +268,6 @@ function TradeSearchPage() {
         table={table}
         resultsCount={results.length}
         columnFiltersCount={columnFilters.length}
-      />
-
-      <RecentSearches
-        searches={recentSearches}
-        onSearchClick={handleRecentSearchClick}
-        onDeleteSearch={(id) => setRecentSearches((prev) => prev.filter((s) => s.id !== id))}
-        onClearAll={() => setRecentSearches([])}
       />
     </div>
   );

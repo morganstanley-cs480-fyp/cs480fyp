@@ -166,13 +166,13 @@
 //         {isHub ? (
 //           <ShieldCheck className="text-blue-500" size={14} />
 //         ) : (
-//           <Landmark className="text-slate-400" size={14} />
+//           <Landmark className="text-black/50" size={14} />
 //         )}
-//         <span className="text-[8px] font-bold uppercase tracking-tight text-slate-400">
+//         <span className="text-[8px] font-bold uppercase tracking-tight text-black/50">
 //           {isHub ? 'Central Clearing' : 'Participant'}
 //         </span>
 //       </div>
-//       <div className="text-xs font-bold text-slate-900 uppercase truncate">
+//       <div className="text-xs font-bold text-black uppercase truncate">
 //         {data.label}
 //       </div>
 
@@ -382,13 +382,13 @@
 //   return (
 //     <div className="h-screen w-screen bg-slate-50">
 //       <div className="absolute top-10 left-10 z-10">
-//         <h1 className="text-3xl font-black text-slate-900 tracking-tighter flex items-center gap-3">
+//         <h1 className="text-3xl font-black text-black tracking-tighter flex items-center gap-3">
 //           <div className="bg-blue-600 p-2 rounded-lg">
 //             <Activity className="text-white" size={24} />
 //           </div>
 //           Trade Flow Visualization
 //         </h1>
-//         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 ml-11">
+//         <p className="text-[10px] font-bold text-black/50 uppercase tracking-widest mt-1 ml-11">
 //           Clean Top-to-Bottom Layout • No Overlapping Edges
 //         </p>
 //       </div>

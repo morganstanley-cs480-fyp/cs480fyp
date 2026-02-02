@@ -8,18 +8,18 @@ import { TradeAttributesFilters } from "./TradeAttributesFilters";
 import { FilterOptions } from "./FilterOptions";
 
 export interface ManualSearchFilters {
-  tradeId: string;
+  trade_id: string;
   account: string;
-  assetType: string;
-  bookingSystem: string;
-  affirmationSystem: string;
-  clearingHouse: string;
+  asset_type: string;
+  booking_system: string;
+  affirmation_system: string;
+  clearing_house: string;
   status: string[];
-  dateType: 'create_time' | 'update_time';
-  dateFrom: string;
-  dateTo: string;
-  withExceptionsOnly: boolean;
-  clearedTradesOnly: boolean;
+  date_type: 'create_time' | 'update_time';
+  date_from: string;
+  date_to: string;
+  with_exceptions_only: boolean;
+  cleared_trades_only: boolean;
 }
 
 interface TradeFiltersProps {
@@ -54,23 +54,23 @@ export function TradeFilters({
     const formatDate = (date: Date) => date.toISOString().split('T')[0];
     
     const newFilters = { ...filters };
-    newFilters.dateTo = formatDate(today);
+    newFilters.date_to = formatDate(today);
     
     switch(range) {
       case 'today':
-        newFilters.dateFrom = formatDate(today);
+        newFilters.date_from = formatDate(today);
         break;
       case '3days':
-        newFilters.dateFrom = formatDate(new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000));
+        newFilters.date_from = formatDate(new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000));
         break;
       case '1week':
-        newFilters.dateFrom = formatDate(new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000));
+        newFilters.date_from = formatDate(new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000));
         break;
       case '2weeks':
-        newFilters.dateFrom = formatDate(new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000));
+        newFilters.date_from = formatDate(new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000));
         break;
       case '1month':
-        newFilters.dateFrom = formatDate(new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000));
+        newFilters.date_from = formatDate(new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000));
         break;
     }
     
@@ -87,29 +87,29 @@ export function TradeFilters({
       </CardHeader>
       <CardContent className="space-y-6">
         <DateRangeFilter
-          dateType={filters.dateType}
-          dateFrom={filters.dateFrom}
-          dateTo={filters.dateTo}
-          onDateTypeChange={(type) => onFiltersChange({ ...filters, dateType: type })}
-          onDateFromChange={(date) => onFiltersChange({ ...filters, dateFrom: date })}
-          onDateToChange={(date) => onFiltersChange({ ...filters, dateTo: date })}
+          dateType={filters.date_type}
+          dateFrom={filters.date_from}
+          dateTo={filters.date_to}
+          onDateTypeChange={(type) => onFiltersChange({ ...filters, date_type: type })}
+          onDateFromChange={(date) => onFiltersChange({ ...filters, date_from: date })}
+          onDateToChange={(date) => onFiltersChange({ ...filters, date_to: date })}
           onQuickDateRange={setQuickDateRange}
         />
 
         <TradeAttributesFilters
-          tradeId={filters.tradeId}
+          tradeId={filters.trade_id}
           account={filters.account}
-          assetType={filters.assetType}
-          bookingSystem={filters.bookingSystem}
-          affirmationSystem={filters.affirmationSystem}
-          clearingHouse={filters.clearingHouse}
+          assetType={filters.asset_type}
+          bookingSystem={filters.booking_system}
+          affirmationSystem={filters.affirmation_system}
+          clearingHouse={filters.clearing_house}
           status={filters.status}
-          onTradeIdChange={(value) => onFiltersChange({ ...filters, tradeId: value })}
+          onTradeIdChange={(value) => onFiltersChange({ ...filters, trade_id: value })}
           onAccountChange={(value) => onFiltersChange({ ...filters, account: value })}
-          onAssetTypeChange={(value) => onFiltersChange({ ...filters, assetType: value })}
-          onBookingSystemChange={(value) => onFiltersChange({ ...filters, bookingSystem: value })}
-          onAffirmationSystemChange={(value) => onFiltersChange({ ...filters, affirmationSystem: value })}
-          onClearingHouseChange={(value) => onFiltersChange({ ...filters, clearingHouse: value })}
+          onAssetTypeChange={(value) => onFiltersChange({ ...filters, asset_type: value })}
+          onBookingSystemChange={(value) => onFiltersChange({ ...filters, booking_system: value })}
+          onAffirmationSystemChange={(value) => onFiltersChange({ ...filters, affirmation_system: value })}
+          onClearingHouseChange={(value) => onFiltersChange({ ...filters, clearing_house: value })}
           onStatusChange={(status) => onFiltersChange({ ...filters, status })}
           getUniqueAccounts={getUniqueAccounts}
           getUniqueAssetTypes={getUniqueAssetTypes}
@@ -122,11 +122,11 @@ export function TradeFilters({
         <Separator />
 
         <FilterOptions
-          withExceptionsOnly={filters.withExceptionsOnly}
-          clearedTradesOnly={filters.clearedTradesOnly}
+          withExceptionsOnly={filters.with_exceptions_only}
+          clearedTradesOnly={filters.cleared_trades_only}
           searching={searching}
-          onWithExceptionsChange={(checked) => onFiltersChange({ ...filters, withExceptionsOnly: checked })}
-          onClearedTradesChange={(checked) => onFiltersChange({ ...filters, clearedTradesOnly: checked })}
+          onWithExceptionsChange={(checked) => onFiltersChange({ ...filters, with_exceptions_only: checked })}
+          onClearedTradesChange={(checked) => onFiltersChange({ ...filters, cleared_trades_only: checked })}
           onClearFilters={onClearFilters}
           onSearch={onSearch}
         />

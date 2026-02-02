@@ -29,7 +29,7 @@ export function AISuggestionCard({ suggestion, onClick }: AISuggestionCardProps)
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <Sparkles className="size-4 text-purple-600" />
-            <h4 className="font-medium text-slate-900">
+            <h4 className="font-medium text-black">
               {suggestion.title}
             </h4>
           </div>
@@ -46,20 +46,20 @@ export function AISuggestionCard({ suggestion, onClick }: AISuggestionCardProps)
           </Badge>
         </div>
 
-        <p className="text-sm text-slate-700 mb-3">
+        <p className="text-sm text-black/75 mb-3">
           {suggestion.description}
         </p>
 
         <div className="bg-slate-50 border border-slate-200 rounded p-3 mb-3">
-          <p className="text-xs font-semibold text-slate-700 mb-1">
+          <p className="text-xs font-semibold text-black/75 mb-1">
             AI Reasoning:
           </p>
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-black/75">
             {suggestion.reasoning}
           </p>
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-slate-600">
+        <div className="flex items-center gap-4 text-xs text-black/75">
           <div className="flex items-center gap-1">
             <Users className="size-3" />
             <span>Based on {suggestion.similarCases} similar cases</span>

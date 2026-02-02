@@ -73,7 +73,7 @@ export function TradeResultsTable({
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Search Results</CardTitle>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-black/50 mt-1">
             Found {resultsCount} matching trades
           </p>
         </div>
@@ -178,7 +178,7 @@ export function TradeResultsTable({
                           {(header.column.getFilterValue() as string) && (
                             <button
                               type="button"
-                              className="flex items-center px-1 text-slate-500 hover:text-red-600"
+                              className="flex items-center px-1 text-black/50 hover:text-red-600"
                               onMouseDown={(event) => {
                                 event.preventDefault();
                                 header.column.setFilterValue("");
@@ -192,7 +192,7 @@ export function TradeResultsTable({
                           {optionMap[header.id]?.length ? (
                             <button
                               type="button"
-                              className="flex items-center px-1 text-slate-500 hover:text-slate-700"
+                              className="flex items-center px-1 text-black/50 hover:text-black/75"
                               onMouseDown={(event) => {
                                 event.preventDefault();
                                 setOpenFilter((prev) =>
@@ -239,7 +239,7 @@ export function TradeResultsTable({
                         params: { tradeId: row.original.trade_id },
                       })
                     }
-                    className="cursor-pointer hover:bg-blue-50"
+                    className="cursor-pointer hover:bg-[#002B51]/5"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="px-4">
@@ -267,7 +267,7 @@ export function TradeResultsTable({
 
         {/* Pagination */}
         <div className="flex items-center justify-between space-x-2 py-4">
-          <div className="text-sm text-slate-500">
+          <div className="text-sm text-black/50">
             {(() => {
               const total = table.getFilteredRowModel().rows.length;
               const { pageIndex, pageSize } = table.getState().pagination;
