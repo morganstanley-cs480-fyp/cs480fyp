@@ -432,6 +432,12 @@ module "rag_log_group" {
   retention_in_days   = 14
 }
 
+module "rag_task_role" {
+  source       = "./modules/rag_task_role"
+  service_name = "rag-service"
+  region       = var.region
+}
+
 # rag_ecs
 module "rag_service" {
   source                  = "./modules/ecs"
@@ -442,7 +448,7 @@ module "rag_service" {
   log_group               = module.rag_log_group.log_group_name 
   region                  = var.region
   execution_role_arn      = module.ecs_execution_role.role_arn
-  task_role_arn           = ""
+  task_role_arn           = module.rag_task_role.role_arn
   service_name            = var.rag_service_name
   cluster_id              = module.ecs_cluster.cluster_id 
   desired_count           = 1
