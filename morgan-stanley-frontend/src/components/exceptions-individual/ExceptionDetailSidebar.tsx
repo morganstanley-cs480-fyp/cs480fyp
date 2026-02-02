@@ -19,40 +19,40 @@ export function ExceptionDetailSidebar({ exception, getPriorityColor }: Exceptio
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-slate-600 mb-1">Exception ID</p>
-            <p className="font-medium text-slate-900">{exception.exception_id}</p>
+            <p className="text-sm text-black/75 mb-1">Exception ID</p>
+            <p className="font-medium text-black">{exception.exception_id}</p>
           </div>
 
           <Separator />
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Trade ID</p>
-            <p className="font-medium text-slate-900">{exception.trade_id}</p>
+            <p className="text-sm text-black/75 mb-1">Trade ID</p>
+            <p className="font-medium text-black">{exception.trade_id}</p>
           </div>
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Transaction ID</p>
-            <p className="font-medium text-slate-900">{exception.trans_id}</p>
-          </div>
-
-          <Separator />
-
-          <div>
-            <p className="text-sm text-slate-600 mb-1">Exception Type</p>
-            <p className="font-medium text-slate-900">{exception.msg}</p>
+            <p className="text-sm text-black/75 mb-1">Transaction ID</p>
+            <p className="font-medium text-black">{exception.trans_id}</p>
           </div>
 
           <Separator />
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Priority</p>
+            <p className="text-sm text-black/75 mb-1">Exception Type</p>
+            <p className="font-medium text-black">{exception.msg}</p>
+          </div>
+
+          <Separator />
+
+          <div>
+            <p className="text-sm text-black/75 mb-1">Priority</p>
             <Badge variant={getPriorityColor(exception.priority)}>
               {exception.priority}
             </Badge>
           </div>
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Status</p>
+            <p className="text-sm text-black/75 mb-1">Status</p>
             <Badge variant={exception.status === 'CLOSED' ? 'default' : 'secondary'}>
               {exception.status}
             </Badge>
@@ -61,20 +61,20 @@ export function ExceptionDetailSidebar({ exception, getPriorityColor }: Exceptio
           <Separator />
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Comments</p>
-            <p className="text-sm text-slate-900">{exception.comment}</p>
+            <p className="text-sm text-black/75 mb-1">Comments</p>
+            <p className="text-sm text-black">{exception.comment}</p>
           </div>
 
           <Separator />
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Exception Time</p>
-            <p className="text-sm text-slate-900">{exception.create_time}</p>
+            <p className="text-sm text-black/75 mb-1">Exception Time</p>
+            <p className="text-sm text-black">{exception.create_time}</p>
           </div>
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Last Update</p>
-            <p className="text-sm text-slate-900">{exception.update_time}</p>
+            <p className="text-sm text-black/75 mb-1">Last Update</p>
+            <p className="text-sm text-black">{exception.update_time}</p>
           </div>
         </CardContent>
       </Card>

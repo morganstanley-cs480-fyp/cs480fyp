@@ -48,7 +48,7 @@ export function RecentSearches({
             variant="ghost"
             size="sm"
             onClick={onClearAll}
-            className="text-slate-500 hover:text-slate-700"
+            className="text-black/50 hover:text-black/75"
           >
             Clear All
           </Button>
@@ -56,8 +56,8 @@ export function RecentSearches({
       </CardHeader>
       <CardContent>
         {searches.length === 0 ? (
-          <div className="text-center py-8 text-slate-500">
-            <Clock className="size-12 mx-auto mb-3 text-slate-300" />
+          <div className="text-center py-8 text-black/50">
+            <Clock className="size-12 mx-auto mb-3 text-white/50" />
             <p>No recent searches yet</p>
             <p className="text-sm mt-1 text-red-700">
               Your search history will appear here. NOTE JUST A PLACEHODLER
@@ -69,17 +69,17 @@ export function RecentSearches({
             {searches.map((search) => (
               <div
                 key={search.id}
-                className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
+                className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:border-[#002B51] hover:bg-[#002B51]/5 transition-colors group"
               >
                 <Button
                   variant="ghost"
                   className="flex-1 justify-start h-auto py-2 px-3 hover:bg-transparent"
                   onClick={() => onSearchClick(search.query)}
                 >
-                  <Search className="size-4 mr-3 text-slate-400 shrink-0" />
+                  <Search className="size-4 mr-3 text-black/50 shrink-0" />
                   <div className="flex-1 text-left">
-                    <div className="text-slate-900">{search.query}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">
+                    <div className="text-black">{search.query}</div>
+                    <div className="text-xs text-black/50 mt-0.5">
                       {formatTimestamp(search.timestamp)}
                     </div>
                   </div>
@@ -91,7 +91,7 @@ export function RecentSearches({
                     e.stopPropagation();
                     onDeleteSearch(search.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-600"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-black/50 hover:text-red-600"
                 >
                   <Trash2 className="size-4" />
                 </Button>

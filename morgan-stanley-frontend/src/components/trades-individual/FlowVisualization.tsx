@@ -5,7 +5,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, Network } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
 import type { Transaction, Exception } from "@/lib/mockData";
-import { getTransactionBackgroundColor } from "@/routes/trades/tradeDetailUtils";
 import { useEffect, useState, useCallback } from 'react';
 import {
   ReactFlow,
@@ -33,7 +32,7 @@ const HUB_ID = 'CCP';
 const NODE_WIDTH = 140;
 const NODE_HEIGHT = 96;
 const HUB_MIN_WIDTH = NODE_WIDTH * 10;
-const EDGE_COLOR = '#2563eb';
+const EDGE_COLOR = '#002B51';
 const EDGE_OFFSET = 22;
 const PARTICIPANT_MARGIN = 16;
 const HUB_MARGIN = 40;
@@ -242,7 +241,7 @@ function WorkflowEdge(props: EdgeProps) {
             pointerEvents: 'none',
           }}
         >
-          <div className="w-6 h-6 rounded-full bg-white border border-slate-300 text-[11px] font-semibold text-slate-700 flex items-center justify-center shadow-sm">
+          <div className="w-6 h-6 rounded-full bg-white border border-slate-300 text-[11px] font-semibold text-black/75 flex items-center justify-center shadow-sm">
             {data?.step ?? ''}
           </div>
         </div>
@@ -251,7 +250,7 @@ function WorkflowEdge(props: EdgeProps) {
   );
 }
 
-const EntityNode = ({ data }: any) => {
+const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?: string; label: string; onEntitySelect?: () => void } }) => {
   const isHub = data.isHub;
   const width = data.width || NODE_WIDTH;
   const status = data.status || 'PENDING';
@@ -295,21 +294,21 @@ const EntityNode = ({ data }: any) => {
       onClick={handleClick}
       className={`p-3 rounded-lg border-2 shadow-md flex flex-col justify-center cursor-pointer hover:shadow-lg transition-all text-center ${
         getStatusBgColor(status)} ${getStatusBorderColor(status)} ${
-        isHub ? 'hover:border-blue-600' : 'hover:border-slate-400'
+        isHub ? 'hover:border-[#002B51]' : 'hover:border-slate-400'
       }`}
       style={{ width, height: NODE_HEIGHT, boxSizing: 'border-box' }}
     >
       <div className="flex items-center gap-2 mb-1 justify-center">
         {isHub ? (
-          <ShieldCheck className="text-blue-500" size={14} />
+          <ShieldCheck className="text-[#002B51]" size={14} />
         ) : (
-          <Landmark className="text-slate-400" size={14} />
+          <Landmark className="text-black/50" size={14} />
         )}
-        <span className="text-[8px] font-bold uppercase tracking-tight text-slate-400">
+        <span className="text-[8px] font-bold uppercase tracking-tight text-black/50">
           {isHub ? 'Central Clearing' : 'Participant'}
         </span>
       </div>
-      <div className="text-xs font-bold text-slate-900 uppercase truncate">{data.label}</div>
+      <div className="text-xs font-bold text-black uppercase truncate">{data.label}</div>
 
       <Handle type="target" position={Position.Top} id="in-top" className="opacity-0" />
       <Handle type="source" position={Position.Top} id="out-top" className="opacity-0" />
@@ -341,7 +340,7 @@ async function generateElkLayout(
   const rowWidth = (count: number) => (count > 0 ? count * NODE_WIDTH + (count - 1) * 40 : 0);
   const hubWidth = Math.max(HUB_MIN_WIDTH, rowWidth(topCount), rowWidth(bottomCount));
 
-  const elkNodes: any[] = [
+  const elkNodes: { id: string; width: number; height: number; layoutOptions?: Record<string, string> }[] = [
     {
       id: HUB_ID,
       width: hubWidth,
@@ -403,7 +402,7 @@ async function generateElkLayout(
     }
   });
 
-  const nodeLookup: Record<string, any> = {};
+  const nodeLookup: Record<string, { x: number; y: number; width: number }> = {};
   layout.children?.forEach((n) => {
     const isHub = n.id === HUB_ID;
     const x = (n.x ?? 0) - xCenter;
@@ -499,12 +498,11 @@ export function FlowVisualization({
   getTransactionStatusColor,
 }: FlowVisualizationProps) {
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!transactions || transactions.length === 0 ? false : true);
 
   // Generate dynamic flow visualization based on actual transaction data
   useEffect(() => {
     if (!transactions || transactions.length === 0) {
-      setIsLoading(false);
       return;
     }
 
@@ -543,8 +541,12 @@ export function FlowVisualization({
 
     if (entities.length === 0 && validFlows.length === 0) {
       // No valid data to display
-      setLayoutData({ nodes: [], edges: [] });
-      setIsLoading(false);
+      // Initialize empty state outside of effect to avoid cascading renders
+      const initializeEmptyState = () => {
+        setLayoutData({ nodes: [], edges: [] });
+        setIsLoading(false);
+      };
+      initializeEmptyState();
       return;
     }
 
@@ -619,7 +621,7 @@ export function FlowVisualization({
             <div className="h-[800px] border rounded-lg bg-slate-50 relative">
               {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-slate-600 font-bold">Computing ELK Layout...</div>
+                  <div className="text-black/75 font-bold">Computing ELK Layout...</div>
                 </div>
               ) : (
                 <ReactFlow

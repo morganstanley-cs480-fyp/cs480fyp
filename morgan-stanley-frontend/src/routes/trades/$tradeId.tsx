@@ -35,9 +35,9 @@ function TradeDetailPage() {
   const { tradeId } = Route.useParams();
   const navigate = useNavigate();
 
-  const trade = getTradeById(tradeId);
-  const transactions = getTransactionsForTrade(tradeId);
-  const exceptions = getExceptionsForTrade(tradeId);
+  const trade = getTradeById(Number(tradeId));
+  const transactions = getTransactionsForTrade(Number(tradeId));
+  const exceptions = getExceptionsForTrade(Number(tradeId));
 
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<{ name: string; isHub: boolean } | null>(null);
@@ -66,7 +66,7 @@ function TradeDetailPage() {
       <div className="p-6 w-full mx-auto">
         <Card>
           <CardContent className="py-12">
-            <div className="text-center text-slate-500">
+            <div className="text-center text-black/50">
               <AlertCircle className="size-12 mx-auto mb-3 opacity-50" />
               <p className="text-lg font-medium mb-2">Trade Not Found</p>
               <p className="text-sm mb-4">

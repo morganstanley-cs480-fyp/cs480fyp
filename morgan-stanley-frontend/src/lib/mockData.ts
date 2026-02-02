@@ -5,7 +5,7 @@
 // ============================================================================
 
 export interface Trade {
-  trade_id: string;
+  trade_id: number;  // Changed from string to number to match backend
   account: string;
   asset_type: string;
   booking_system: string;
@@ -17,8 +17,8 @@ export interface Trade {
 }
 
 export interface Transaction {
-  trade_id: string;
-  trans_id: string;
+  trade_id: number;  // Changed from string to number to match backend
+  trans_id: number;  // Changed from string to number to match backend
   create_time: string;
   entity: string;
   direction: string;
@@ -29,9 +29,9 @@ export interface Transaction {
 }
 
 export interface Exception {
-  trade_id: string;
-  trans_id: string;
-  exception_id: string;
+  trade_id: number;  // Changed from string to number to match backend
+  trans_id: number;  // Changed from string to number to match backend
+  exception_id: number;  // Changed from string to number to match backend
   status: 'PENDING' | 'CLOSED';
   msg: string;
   create_time: string;
@@ -46,7 +46,7 @@ export interface Exception {
 
 export const mockTrades: Trade[] = [
   {
-    trade_id: '69690882',
+    trade_id: 69690882,
     account: 'ACC084',
     asset_type: 'CDS',
     booking_system: 'HIGHGARDEN',
@@ -57,7 +57,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '48712564',
+    trade_id: 48712564,
     account: 'ACC054',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -68,7 +68,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67447216',
+    trade_id: 67447216,
     account: 'ACC071',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -79,7 +79,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67515456',
+    trade_id: 67515456,
     account: 'ACC046',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -90,7 +90,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '69755320',
+    trade_id: 69755320,
     account: 'ACC045',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -101,7 +101,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '17194044',
+    trade_id: 17194044,
     account: 'ACC040',
     asset_type: 'IRS',
     booking_system: 'KINGSLANDING',
@@ -112,7 +112,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '60724962',
+    trade_id: 60724962,
     account: 'ACC023',
     asset_type: 'IRS',
     booking_system: 'RED KEEP',
@@ -123,7 +123,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '35821903',
+    trade_id: 35821903,
     account: 'ACC133',
     asset_type: 'FX',
     booking_system: 'HIGHGARDEN',
@@ -134,7 +134,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '42198745',
+    trade_id: 42198745,
     account: 'ACC0466',
     asset_type: 'IRS',
     booking_system: 'WINTERFELL',
@@ -145,7 +145,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '58392014',
+    trade_id: 58392014,
     account: 'ACC0982',
     asset_type: 'CDS',
     booking_system: 'RED KEEP',
@@ -156,7 +156,7 @@ export const mockTrades: Trade[] = [
     status: 'CANCELLED',
   },
     {
-    trade_id: '69690882',
+    trade_id: 69690882,
     account: 'ACC084',
     asset_type: 'CDS',
     booking_system: 'HIGHGARDEN',
@@ -167,7 +167,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '48712564',
+    trade_id: 48712564,
     account: 'ACC054',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -178,7 +178,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67447216',
+    trade_id: 67447216,
     account: 'ACC071',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -189,7 +189,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67515456',
+    trade_id: 67515456,
     account: 'ACC046',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -200,7 +200,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '69755320',
+    trade_id: 69755320,
     account: 'ACC045',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -211,7 +211,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '17194044',
+    trade_id: 17194044,
     account: 'ACC040',
     asset_type: 'IRS',
     booking_system: 'KINGSLANDING',
@@ -222,7 +222,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '60724962',
+    trade_id: 60724962,
     account: 'ACC023',
     asset_type: 'IRS',
     booking_system: 'RED KEEP',
@@ -233,7 +233,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '35821903',
+    trade_id: 35821903,
     account: 'ACC133',
     asset_type: 'FX',
     booking_system: 'HIGHGARDEN',
@@ -244,7 +244,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '42198745',
+    trade_id: 42198745,
     account: 'ACC0466',
     asset_type: 'IRS',
     booking_system: 'WINTERFELL',
@@ -255,7 +255,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '58392014',
+    trade_id: 58392014,
     account: 'ACC0982',
     asset_type: 'CDS',
     booking_system: 'RED KEEP',
@@ -266,7 +266,7 @@ export const mockTrades: Trade[] = [
     status: 'CANCELLED',
   },
     {
-    trade_id: '69690882',
+    trade_id: 69690882,
     account: 'ACC084',
     asset_type: 'CDS',
     booking_system: 'HIGHGARDEN',
@@ -277,7 +277,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '48712564',
+    trade_id: 48712564,
     account: 'ACC054',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -288,7 +288,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67447216',
+    trade_id: 67447216,
     account: 'ACC071',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -299,7 +299,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67515456',
+    trade_id: 67515456,
     account: 'ACC046',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -310,7 +310,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '69755320',
+    trade_id: 69755320,
     account: 'ACC045',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -321,7 +321,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '17194044',
+    trade_id: 17194044,
     account: 'ACC040',
     asset_type: 'IRS',
     booking_system: 'KINGSLANDING',
@@ -332,7 +332,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '60724962',
+    trade_id: 60724962,
     account: 'ACC023',
     asset_type: 'IRS',
     booking_system: 'RED KEEP',
@@ -343,7 +343,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '35821903',
+    trade_id: 35821903,
     account: 'ACC133',
     asset_type: 'FX',
     booking_system: 'HIGHGARDEN',
@@ -354,7 +354,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '42198745',
+    trade_id: 42198745,
     account: 'ACC0466',
     asset_type: 'IRS',
     booking_system: 'WINTERFELL',
@@ -365,7 +365,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '58392014',
+    trade_id: 58392014,
     account: 'ACC0982',
     asset_type: 'CDS',
     booking_system: 'RED KEEP',
@@ -376,7 +376,7 @@ export const mockTrades: Trade[] = [
     status: 'CANCELLED',
   },
     {
-    trade_id: '69690882',
+    trade_id: 69690882,
     account: 'ACC084',
     asset_type: 'CDS',
     booking_system: 'HIGHGARDEN',
@@ -387,7 +387,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '48712564',
+    trade_id: 48712564,
     account: 'ACC054',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -398,7 +398,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67447216',
+    trade_id: 67447216,
     account: 'ACC071',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -409,7 +409,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67515456',
+    trade_id: 67515456,
     account: 'ACC046',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -420,7 +420,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '69755320',
+    trade_id: 69755320,
     account: 'ACC045',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -431,7 +431,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '17194044',
+    trade_id: 17194044,
     account: 'ACC040',
     asset_type: 'IRS',
     booking_system: 'KINGSLANDING',
@@ -442,7 +442,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '60724962',
+    trade_id: 60724962,
     account: 'ACC023',
     asset_type: 'IRS',
     booking_system: 'RED KEEP',
@@ -453,7 +453,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '35821903',
+    trade_id: 35821903,
     account: 'ACC133',
     asset_type: 'FX',
     booking_system: 'HIGHGARDEN',
@@ -464,7 +464,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '42198745',
+    trade_id: 42198745,
     account: 'ACC0466',
     asset_type: 'IRS',
     booking_system: 'WINTERFELL',
@@ -475,7 +475,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '58392014',
+    trade_id: 58392014,
     account: 'ACC0982',
     asset_type: 'CDS',
     booking_system: 'RED KEEP',
@@ -486,7 +486,7 @@ export const mockTrades: Trade[] = [
     status: 'CANCELLED',
   },
     {
-    trade_id: '69690882',
+    trade_id: 69690882,
     account: 'ACC084',
     asset_type: 'CDS',
     booking_system: 'HIGHGARDEN',
@@ -497,7 +497,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '48712564',
+    trade_id: 48712564,
     account: 'ACC054',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -508,7 +508,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67447216',
+    trade_id: 67447216,
     account: 'ACC071',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -519,7 +519,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67515456',
+    trade_id: 67515456,
     account: 'ACC046',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -530,7 +530,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '69755320',
+    trade_id: 69755320,
     account: 'ACC045',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -541,7 +541,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '17194044',
+    trade_id: 17194044,
     account: 'ACC040',
     asset_type: 'IRS',
     booking_system: 'KINGSLANDING',
@@ -552,7 +552,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '60724962',
+    trade_id: 60724962,
     account: 'ACC023',
     asset_type: 'IRS',
     booking_system: 'RED KEEP',
@@ -563,7 +563,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '35821903',
+    trade_id: 35821903,
     account: 'ACC133',
     asset_type: 'FX',
     booking_system: 'HIGHGARDEN',
@@ -574,7 +574,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '42198745',
+    trade_id: 42198745,
     account: 'ACC0466',
     asset_type: 'IRS',
     booking_system: 'WINTERFELL',
@@ -585,7 +585,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '58392014',
+    trade_id: 58392014,
     account: 'ACC0982',
     asset_type: 'CDS',
     booking_system: 'RED KEEP',
@@ -596,7 +596,7 @@ export const mockTrades: Trade[] = [
     status: 'CANCELLED',
   },
     {
-    trade_id: '69690882',
+    trade_id: 69690882,
     account: 'ACC084',
     asset_type: 'CDS',
     booking_system: 'HIGHGARDEN',
@@ -607,7 +607,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '48712564',
+    trade_id: 48712564,
     account: 'ACC054',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -618,7 +618,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67447216',
+    trade_id: 67447216,
     account: 'ACC071',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -629,7 +629,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67515456',
+    trade_id: 67515456,
     account: 'ACC046',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -640,7 +640,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '69755320',
+    trade_id: 69755320,
     account: 'ACC045',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -651,7 +651,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '17194044',
+    trade_id: 17194044,
     account: 'ACC040',
     asset_type: 'IRS',
     booking_system: 'KINGSLANDING',
@@ -662,7 +662,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '60724962',
+    trade_id: 60724962,
     account: 'ACC023',
     asset_type: 'IRS',
     booking_system: 'RED KEEP',
@@ -673,7 +673,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '35821903',
+    trade_id: 35821903,
     account: 'ACC133',
     asset_type: 'FX',
     booking_system: 'HIGHGARDEN',
@@ -684,7 +684,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '42198745',
+    trade_id: 42198745,
     account: 'ACC0466',
     asset_type: 'IRS',
     booking_system: 'WINTERFELL',
@@ -695,7 +695,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '58392014',
+    trade_id: 58392014,
     account: 'ACC0982',
     asset_type: 'CDS',
     booking_system: 'RED KEEP',
@@ -706,7 +706,7 @@ export const mockTrades: Trade[] = [
     status: 'CANCELLED',
   },
     {
-    trade_id: '69690882',
+    trade_id: 69690882,
     account: 'ACC084',
     asset_type: 'CDS',
     booking_system: 'HIGHGARDEN',
@@ -717,7 +717,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '48712564',
+    trade_id: 48712564,
     account: 'ACC054',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -728,7 +728,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67447216',
+    trade_id: 67447216,
     account: 'ACC071',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -739,7 +739,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67515456',
+    trade_id: 67515456,
     account: 'ACC046',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -750,7 +750,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '69755320',
+    trade_id: 69755320,
     account: 'ACC045',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -761,7 +761,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '17194044',
+    trade_id: 17194044,
     account: 'ACC040',
     asset_type: 'IRS',
     booking_system: 'KINGSLANDING',
@@ -772,7 +772,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '60724962',
+    trade_id: 60724962,
     account: 'ACC023',
     asset_type: 'IRS',
     booking_system: 'RED KEEP',
@@ -783,7 +783,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '35821903',
+    trade_id: 35821903,
     account: 'ACC133',
     asset_type: 'FX',
     booking_system: 'HIGHGARDEN',
@@ -794,7 +794,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '42198745',
+    trade_id: 42198745,
     account: 'ACC0466',
     asset_type: 'IRS',
     booking_system: 'WINTERFELL',
@@ -805,7 +805,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '58392014',
+    trade_id: 58392014,
     account: 'ACC0982',
     asset_type: 'CDS',
     booking_system: 'RED KEEP',
@@ -816,7 +816,7 @@ export const mockTrades: Trade[] = [
     status: 'CANCELLED',
   },
     {
-    trade_id: '69690882',
+    trade_id: 69690882,
     account: 'ACC084',
     asset_type: 'CDS',
     booking_system: 'HIGHGARDEN',
@@ -827,7 +827,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '48712564',
+    trade_id: 48712564,
     account: 'ACC054',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -838,7 +838,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67447216',
+    trade_id: 67447216,
     account: 'ACC071',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -849,7 +849,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67515456',
+    trade_id: 67515456,
     account: 'ACC046',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -860,7 +860,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '69755320',
+    trade_id: 69755320,
     account: 'ACC045',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -871,7 +871,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '17194044',
+    trade_id: 17194044,
     account: 'ACC040',
     asset_type: 'IRS',
     booking_system: 'KINGSLANDING',
@@ -882,7 +882,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '60724962',
+    trade_id: 60724962,
     account: 'ACC023',
     asset_type: 'IRS',
     booking_system: 'RED KEEP',
@@ -893,7 +893,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '35821903',
+    trade_id: 35821903,
     account: 'ACC133',
     asset_type: 'FX',
     booking_system: 'HIGHGARDEN',
@@ -904,7 +904,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '42198745',
+    trade_id: 42198745,
     account: 'ACC0466',
     asset_type: 'IRS',
     booking_system: 'WINTERFELL',
@@ -915,7 +915,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '58392014',
+    trade_id: 58392014,
     account: 'ACC0982',
     asset_type: 'CDS',
     booking_system: 'RED KEEP',
@@ -926,7 +926,7 @@ export const mockTrades: Trade[] = [
     status: 'CANCELLED',
   },
     {
-    trade_id: '69690882',
+    trade_id: 69690882,
     account: 'ACC084',
     asset_type: 'CDS',
     booking_system: 'HIGHGARDEN',
@@ -937,7 +937,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '48712564',
+    trade_id: 48712564,
     account: 'ACC054',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -948,7 +948,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67447216',
+    trade_id: 67447216,
     account: 'ACC071',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -959,7 +959,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67515456',
+    trade_id: 67515456,
     account: 'ACC046',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -970,7 +970,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '69755320',
+    trade_id: 69755320,
     account: 'ACC045',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -981,7 +981,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '17194044',
+    trade_id: 17194044,
     account: 'ACC040',
     asset_type: 'IRS',
     booking_system: 'KINGSLANDING',
@@ -992,7 +992,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '60724962',
+    trade_id: 60724962,
     account: 'ACC023',
     asset_type: 'IRS',
     booking_system: 'RED KEEP',
@@ -1003,7 +1003,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '35821903',
+    trade_id: 35821903,
     account: 'ACC133',
     asset_type: 'FX',
     booking_system: 'HIGHGARDEN',
@@ -1014,7 +1014,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '42198745',
+    trade_id: 42198745,
     account: 'ACC0466',
     asset_type: 'IRS',
     booking_system: 'WINTERFELL',
@@ -1025,7 +1025,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '58392014',
+    trade_id: 58392014,
     account: 'ACC0982',
     asset_type: 'CDS',
     booking_system: 'RED KEEP',
@@ -1036,7 +1036,7 @@ export const mockTrades: Trade[] = [
     status: 'CANCELLED',
   },
       {
-    trade_id: '69690882',
+    trade_id: 69690882,
     account: 'ACC084',
     asset_type: 'CDS',
     booking_system: 'HIGHGARDEN',
@@ -1047,7 +1047,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '48712564',
+    trade_id: 48712564,
     account: 'ACC054',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -1058,7 +1058,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67447216',
+    trade_id: 67447216,
     account: 'ACC071',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -1069,7 +1069,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '67515456',
+    trade_id: 67515456,
     account: 'ACC046',
     asset_type: 'CDS',
     booking_system: 'KINGSLANDING',
@@ -1080,7 +1080,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '69755320',
+    trade_id: 69755320,
     account: 'ACC045',
     asset_type: 'CDS',
     booking_system: 'WINTERFELL',
@@ -1091,7 +1091,7 @@ export const mockTrades: Trade[] = [
     status: 'ALLEGED',
   },
   {
-    trade_id: '17194044',
+    trade_id: 17194044,
     account: 'ACC040',
     asset_type: 'IRS',
     booking_system: 'KINGSLANDING',
@@ -1102,7 +1102,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '60724962',
+    trade_id: 60724962,
     account: 'ACC023',
     asset_type: 'IRS',
     booking_system: 'RED KEEP',
@@ -1113,7 +1113,7 @@ export const mockTrades: Trade[] = [
     status: 'REJECTED',
   },
   {
-    trade_id: '35821903',
+    trade_id: 35821903,
     account: 'ACC133',
     asset_type: 'FX',
     booking_system: 'HIGHGARDEN',
@@ -1124,7 +1124,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '42198745',
+    trade_id: 42198745,
     account: 'ACC0466',
     asset_type: 'IRS',
     booking_system: 'WINTERFELL',
@@ -1135,7 +1135,7 @@ export const mockTrades: Trade[] = [
     status: 'CLEARED',
   },
   {
-    trade_id: '58392014',
+    trade_id: 58392014,
     account: 'ACC0982',
     asset_type: 'CDS',
     booking_system: 'RED KEEP',
@@ -1149,8 +1149,8 @@ export const mockTrades: Trade[] = [
 
 export const mockTransactions: Transaction[] = [
   {
-    trade_id: '69690882',
-    trans_id: '10001234',
+    trade_id: 69690882,
+    trans_id: 10001234,
     create_time: '2025-01-06 10:35:00',
     entity: 'MORGAN STANLEY',
     direction: 'BUY',
@@ -1160,8 +1160,8 @@ export const mockTransactions: Transaction[] = [
     step: 1,
   },
   {
-    trade_id: '69690882',
-    trans_id: '10001235',
+    trade_id: 69690882,
+    trans_id: 10001235,
     create_time: '2025-01-06 11:00:00',
     entity: 'GOLDMAN SACHS',
     direction: 'SELL',
@@ -1171,8 +1171,8 @@ export const mockTransactions: Transaction[] = [
     step: 2,
   },
   {
-    trade_id: '48712564',
-    trans_id: '10002341',
+    trade_id: 48712564,
+    trans_id: 10002341,
     create_time: '2025-05-04 09:50:00',
     entity: 'JP MORGAN',
     direction: 'BUY',
@@ -1182,8 +1182,8 @@ export const mockTransactions: Transaction[] = [
     step: 1,
   },
   {
-    trade_id: '67447216',
-    trans_id: '10003456',
+    trade_id: 67447216,
+    trans_id: 10003456,
     create_time: '2025-02-05 03:15:00',
     entity: 'BARCLAYS',
     direction: 'SELL',
@@ -1193,8 +1193,8 @@ export const mockTransactions: Transaction[] = [
     step: 1,
   },
   {
-    trade_id: '67515456',
-    trans_id: '10004567',
+    trade_id: 67515456,
+    trans_id: 10004567,
     create_time: '2025-04-03 02:30:00',
     entity: 'CITIBANK',
     direction: 'BUY',
@@ -1204,8 +1204,8 @@ export const mockTransactions: Transaction[] = [
     step: 1,
   },
   {
-    trade_id: '69755320',
-    trans_id: '10005678',
+    trade_id: 69755320,
+    trans_id: 10005678,
     create_time: '2025-06-09 04:45:00',
     entity: 'HSBC',
     direction: 'SELL',
@@ -1218,9 +1218,9 @@ export const mockTransactions: Transaction[] = [
 
 export const mockExceptions: Exception[] = [
   {
-    trade_id: '69690882',
-    trans_id: '10001234',
-    exception_id: '51253968',
+    trade_id: 69690882,
+    trans_id: 10001234,
+    exception_id: 51253968,
     status: 'PENDING',
     msg: 'MISSING BIC',
     create_time: '2025-08-15 10:23:45',
@@ -1229,9 +1229,9 @@ export const mockExceptions: Exception[] = [
     update_time: '2025-08-15 10:25:12',
   },
   {
-    trade_id: '48712564',
-    trans_id: '10002341',
-    exception_id: '50155689',
+    trade_id: 48712564,
+    trans_id: 10002341,
+    exception_id: 50155689,
     status: 'PENDING',
     msg: 'INSUFFICIENT MARGIN',
     create_time: '2025-09-03 14:12:33',
@@ -1240,9 +1240,9 @@ export const mockExceptions: Exception[] = [
     update_time: '2025-09-03 15:41:22',
   },
   {
-    trade_id: '67447216',
-    trans_id: '10003456',
-    exception_id: '62847123',
+    trade_id: 67447216,
+    trans_id: 10003456,
+    exception_id: 62847123,
     status: 'PENDING',
     msg: 'MAPPING ISSUE',
     create_time: '2025-09-18 08:45:11',
@@ -1251,9 +1251,9 @@ export const mockExceptions: Exception[] = [
     update_time: '2025-09-18 09:12:05',
   },
   {
-    trade_id: '67515456',
-    trans_id: '10004567',
-    exception_id: '73921456',
+    trade_id: 67515456,
+    trans_id: 10004567,
+    exception_id: 73921456,
     status: 'PENDING',
     msg: 'TIME OUT OF RANGE',
     create_time: '2025-10-02 16:33:27',
@@ -1262,9 +1262,9 @@ export const mockExceptions: Exception[] = [
     update_time: '2025-10-02 17:02:18',
   },
   {
-    trade_id: '69755320',
-    trans_id: '10005678',
-    exception_id: '84562390',
+    trade_id: 69755320,
+    trans_id: 10005678,
+    exception_id: 84562390,
     status: 'PENDING',
     msg: 'MAPPING ISSUE',
     create_time: '2025-10-14 11:22:08',
@@ -1273,9 +1273,9 @@ export const mockExceptions: Exception[] = [
     update_time: '2025-10-14 12:15:33',
   },
   {
-    trade_id: '35821903',
-    trans_id: '10006789',
-    exception_id: '95678123',
+    trade_id: 35821903,
+    trans_id: 10006789,
+    exception_id: 95678123,
     status: 'PENDING',
     msg: 'DATA VALIDATION ERROR',
     create_time: '2025-10-20 14:30:22',
@@ -1284,9 +1284,9 @@ export const mockExceptions: Exception[] = [
     update_time: '2025-10-20 15:10:45',
   },
   {
-    trade_id: '17194044',
-    trans_id: '10007890',
-    exception_id: '91234567',
+    trade_id: 17194044,
+    trans_id: 10007890,
+    exception_id: 91234567,
     status: 'CLOSED',
     msg: 'MISSING BIC',
     create_time: '2025-08-22 09:15:42',
@@ -1295,9 +1295,9 @@ export const mockExceptions: Exception[] = [
     update_time: '2025-08-23 10:30:15',
   },
   {
-    trade_id: '60724962',
-    trans_id: '10008901',
-    exception_id: '82345678',
+    trade_id: 60724962,
+    trans_id: 10008901,
+    exception_id: 82345678,
     status: 'CLOSED',
     msg: 'INSUFFICIENT MARGIN',
     create_time: '2025-09-10 13:45:20',
@@ -1315,42 +1315,42 @@ export const mockExceptions: Exception[] = [
 /**
  * Get all transactions for a specific trade
  */
-export function getTransactionsForTrade(tradeId: string): Transaction[] {
+export function getTransactionsForTrade(tradeId: number): Transaction[] {
   return mockTransactions.filter(t => t.trade_id === tradeId);
 }
 
 /**
  * Get all exceptions for a specific trade
  */
-export function getExceptionsForTrade(tradeId: string): Exception[] {
+export function getExceptionsForTrade(tradeId: number): Exception[] {
   return mockExceptions.filter(e => e.trade_id === tradeId);
 }
 
 /**
  * Get all exceptions for a specific transaction
  */
-export function getExceptionsForTransaction(transId: string): Exception[] {
+export function getExceptionsForTransaction(transId: number): Exception[] {
   return mockExceptions.filter(e => e.trans_id === transId);
 }
 
 /**
  * Get a trade by ID
  */
-export function getTradeById(tradeId: string): Trade | undefined {
+export function getTradeById(tradeId: number): Trade | undefined {
   return mockTrades.find(t => t.trade_id === tradeId);
 }
 
 /**
  * Get an exception by ID
  */
-export function getExceptionById(exceptionId: string): Exception | undefined {
+export function getExceptionById(exceptionId: number): Exception | undefined {
   return mockExceptions.find(e => e.exception_id === exceptionId);
 }
 
 /**
  * Get a transaction by ID
  */
-export function getTransactionById(transId: string): Transaction | undefined {
+export function getTransactionById(transId: number): Transaction | undefined {
   return mockTransactions.find(t => t.trans_id === transId);
 }
 
@@ -1380,3 +1380,4 @@ export function getUniqueClearingHouses(): string[] {
 export function getUniqueStatuses(): string[] {
   return [...new Set(mockTrades.map(t => t.status))].sort();
 }
+

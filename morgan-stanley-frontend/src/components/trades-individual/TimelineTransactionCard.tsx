@@ -52,7 +52,7 @@ export function TimelineTransactionCard({
         {/* Transaction Card */}
         <div
           className={`border rounded-lg p-3 ${bgColor} ${borderColor} ${
-            isSelected ? "ring-2 ring-blue-500" : ""
+            isSelected ? "ring-2 ring-[#002B51]" : ""
           }`}
         >
           <div className="flex items-start justify-between mb-2">
@@ -63,7 +63,7 @@ export function TimelineTransactionCard({
                   Step {index + 1}
                 </Badge>
               </div>
-              <p className="text-xs text-slate-600">{transaction.entity}</p>
+              <p className="text-xs text-black/75">{transaction.entity}</p>
             </div>
             <Badge
               variant={transaction.direction === "SEND" ? "default" : "secondary"}
@@ -74,8 +74,8 @@ export function TimelineTransactionCard({
           </div>
 
           <div className="flex items-center gap-2 mb-2">
-            <ArrowDownRight className="size-3 text-slate-500" />
-            <p className="text-xs text-slate-700">{transaction.type}</p>
+            <ArrowDownRight className="size-3 text-black/50" />
+            <p className="text-xs text-black/75">{transaction.type}</p>
           </div>
 
           <div className="flex items-center justify-between">
@@ -92,7 +92,7 @@ export function TimelineTransactionCard({
             )}
           </div>
 
-          <div className="flex items-center gap-1 mt-2 text-xs text-slate-500">
+          <div className="flex items-center gap-1 mt-2 text-xs text-black/50">
             <Clock className="size-3" />
             <span>{formatDateShort(transaction.create_time)}</span>
           </div>

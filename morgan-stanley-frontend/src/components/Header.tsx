@@ -1,6 +1,5 @@
-import { User, Search, AlertTriangle, LogOut, Bug } from 'lucide-react';
+import { User, Search, AlertTriangle, Bug } from 'lucide-react';
 import { Link, useRouterState } from '@tanstack/react-router';
-import { Button } from './ui/button';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { cn } from '../lib/utils';
 
@@ -19,12 +18,12 @@ export const Header = () => {
       <div className="flex items-center justify-between">
         {/* Left side - Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-[#002B51] rounded-lg flex items-center justify-center">
             <span className="text-white text-lg">MS</span>
           </div>
           <div>
-            <h2 className="text-md text-slate-700">Morgan Stanley</h2>
-            <p className="text-xs text-slate-600">OTC Clearing</p>
+            <h2 className="text-md text-black/75">Morgan Stanley</h2>
+            <p className="text-xs text-black/75">OTC Clearing</p>
           </div>
         </div>
 
@@ -43,8 +42,8 @@ export const Header = () => {
                   className={cn(
                     'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm',
                     isActive
-                      ? 'bg-blue-600 text-white'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-[#002B51] text-white'
+                      : 'text-black/75 hover:bg-slate-100 hover:text-black'
                   )}
                 >
                   <Icon className="size-4" />
@@ -57,13 +56,13 @@ export const Header = () => {
           {/* User Profile */}
           <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
             <Avatar className="size-8">
-              <AvatarFallback className="bg-blue-600 text-white text-sm">
+              <AvatarFallback className="bg-[#002B51] text-white text-sm">
                 <User className="size-4" />
               </AvatarFallback>
             </Avatar>
             <div className="text-left">
-              <p className="text-sm text-slate-900">John Trader</p>
-              <p className="text-xs text-slate-500">Operations</p>
+              <p className="text-sm text-black">John Trader</p>
+              <p className="text-xs text-black/50">Operations</p>
             </div>
           </div>
 
