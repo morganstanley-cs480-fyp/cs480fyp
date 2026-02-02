@@ -77,7 +77,12 @@ variable "s3_data_bucket_name" {
 
 variable "data_processing_queue_name" {
   type    = string
-  default = "data-processing-queue"
+  default = "data-processing-queue.fifo"
+}
+
+variable "update_gateway_queue_name" {
+  type    = string
+  default = "update-gateway-queue.fifo"
 }
 
 variable "main_db_identifier" {

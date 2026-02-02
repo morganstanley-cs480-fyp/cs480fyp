@@ -50,7 +50,13 @@ module "data_processing_queue" {
   sqs_name = var.data_processing_queue_name # Needs to end with .fifo
   is_fifo  = true
   visibility_timeout_seconds = 240
+}
 
+module "update_gateway_queue" {
+  source = "./modules/sqs"
+  sqs_name = var.update_gateway_queue_name # Needs to end with .fifo
+  is_fifo  = true
+  visibility_timeout_seconds = 240
 }
 
 # RDS-SG
@@ -75,6 +81,14 @@ module "main_rds" {
   db_username            = var.db_username
   db_password            = var.db_password 
   db_name                = "main_db"
+}
+
+module "redis_cache" {
+  source     = "./modules/elasticache"
+  cluster_id = "main-redis-cache"
+  vpc_id     = module.networking.vpc_id
+  subnet_ids = module.networking.public_subnet_ids
+  ecs_sg_id  = module.ecs_security_group.ecs_service_sg_id
 }
 
 # ECS-SG
@@ -107,7 +121,8 @@ module "data_processing_service_ecr" {
 module "data_processing_task_role" {
   source        = "./modules/data_processing_task_role"
   service_name  = var.data_processing_service_name
-  sqs_queue_arn = module.data_processing_queue.sqs_queue_arn
+  data_processing_queue_arn = module.data_processing_queue.sqs_queue_arn
+  update_gateway_queue_arn = module.update_gateway_queue.sqs_queue_arn
 }
 
 # data_processing_cloudwatch
@@ -142,6 +157,7 @@ module "data_processing_service" {
   ]
   sqs_environment = [
     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
+    { name = "UPDATE_GATEWAY_QUEUE_URL", value = module.update_gateway_queue.sqs_queue_url },
   ]
   other_environment = [
     {name = "MIGRATE", value = "true"}
@@ -242,6 +258,13 @@ module "gateway_log_group" {
   retention_in_days   = 14
 }
 
+# gateway_task_role
+module "gateway_task_role" {
+  source        = "./modules/gateway_task_role"
+  service_name  = var.gateway_service_name
+  update_gateway_queue_arn = module.update_gateway_queue.sqs_queue_arn
+}
+
 # gateway_ecs
 module "gateway_service" {
   source                  = "./modules/ecs"
@@ -252,7 +275,7 @@ module "gateway_service" {
   log_group               = module.gateway_log_group.log_group_name 
   region                  = var.region
   execution_role_arn      = module.ecs_execution_role.role_arn
-  task_role_arn           = "" # To Edit
+  task_role_arn           = module.gateway_task_role.role_arn
   service_name            = var.gateway_service_name
   cluster_id              = module.ecs_cluster.cluster_id 
   desired_count           = 1
@@ -261,7 +284,9 @@ module "gateway_service" {
   assign_public_ip        = true
   target_group_arn        = module.gateway_target_group.target_group_arn 
   rds_environment  = []
-  sqs_environment = []
+  sqs_environment = [
+     { name = "UPDATE_GATEWAY_QUEUE_URL", value = module.update_gateway_queue.sqs_queue_url }
+  ]
   other_environment = [
     { name = "ALB_URL", value = "http://${module.alb.alb_dns_name}" }
   ]

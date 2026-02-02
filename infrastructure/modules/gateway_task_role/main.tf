@@ -31,13 +31,8 @@ resource "aws_iam_policy" "processing_policy" {
           "sqs:DeleteMessage",       # Remove after processing (ACK)
           "sqs:GetQueueAttributes"   # Check queue status
         ]
-        Resource = var.data_processing_queue_arn
-      },
-       {
-        Effect = "Allow"
-        Action = ["sqs:SendMessage"]
         Resource = var.update_gateway_queue_arn
-      },
+      }
     ]
   })
 }
