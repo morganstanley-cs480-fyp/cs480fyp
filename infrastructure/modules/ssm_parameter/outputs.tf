@@ -2,6 +2,6 @@ output "arn" {
   value = aws_ssm_parameter.this.arn
 }
 
-output "name" {
+output "parameter_name" {
   value = aws_ssm_parameter.this.name
 }

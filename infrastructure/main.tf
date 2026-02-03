@@ -34,6 +34,7 @@ module "frontend_s3" {
 module "s3_data" {
   source           = "./modules/s3_data"
   bucket_name      = var.s3_data_bucket_name
+  file_key         = var.s3_data_file_key 
 }
 
 # SSM Parameter Store
@@ -52,6 +53,7 @@ module "data_processing_queue" {
   visibility_timeout_seconds = 240
 }
 
+# Update Gateway Queue SQS (Data Processing Service to Gateway Service)
 module "update_gateway_queue" {
   source = "./modules/sqs"
   sqs_name = var.update_gateway_queue_name # Needs to end with .fifo
@@ -338,7 +340,11 @@ module "ingestion_service" {
     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
   ]
   other_environment = [
-    {name = "MIGRATE", value = "true"}
+    {name = "MIGRATE", value = "true"},
+    { name = "S3_BUCKET_NAME", value = module.s3_data.bucket_name },
+    { name = "S3_FILE_KEY",    value = module.s3_data.file_key },
+    { name = "SSM_PARAM_NAME", value = module.xml_pointer.parameter_name },
+    { name = "AWS_REGION", value = var.region }
   ]
 }
 

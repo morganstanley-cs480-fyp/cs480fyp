@@ -75,6 +75,11 @@ variable "s3_data_bucket_name" {
   default = "data-bucket"
 }
 
+variable "s3_data_file_key" {
+  type    = string
+  default = "data.xml"
+}
+
 variable "data_processing_queue_name" {
   type    = string
   default = "data-processing-queue.fifo"
