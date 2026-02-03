@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, Network } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
 import type { Transaction, Exception } from "@/lib/mockData";
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -168,62 +168,96 @@ function WorkflowEdge(props: EdgeProps) {
 
   if (!sourceNode || !targetNode) return null;
 
-  const sourceId: string = data?.sourceId;
-  const targetId: string = data?.targetId;
-
-  const sourceIsHub = sourceId === HUB_ID;
-  const targetIsHub = targetId === HUB_ID;
-
   const sourceWidth = sourceNode.data?.width ?? NODE_WIDTH;
   const targetWidth = targetNode.data?.width ?? NODE_WIDTH;
   
   const sourceSize: Size = { w: sourceWidth, h: NODE_HEIGHT };
   const targetSize: Size = { w: targetWidth, h: NODE_HEIGHT };
 
-  const offsetIndex = data?.offsetIndex ?? 0;
-  const totalOffsets = data?.totalOffsets ?? 1;
-  const laneOffset =
-    totalOffsets > 1 ? (offsetIndex - (totalOffsets - 1) / 2) * EDGE_OFFSET : 0;
-
-  const sourceCenter: Point = { 
-    x: sourceNode.position.x + sourceWidth / 2, 
-    y: sourceNode.position.y + NODE_HEIGHT / 2 
+  // Get node bounds
+  const sourceBounds = {
+    left: sourceNode.position.x,
+    right: sourceNode.position.x + sourceWidth,
+    top: sourceNode.position.y,
+    bottom: sourceNode.position.y + NODE_HEIGHT,
+    centerX: sourceNode.position.x + sourceWidth / 2,
+    centerY: sourceNode.position.y + NODE_HEIGHT / 2
   };
-  const targetCenter: Point = { 
-    x: targetNode.position.x + targetWidth / 2, 
-    y: targetNode.position.y + NODE_HEIGHT / 2 
-  };
-
-  const participantCenter = sourceIsHub ? targetCenter : sourceCenter;
-  const hubCenter = sourceIsHub ? sourceCenter : targetCenter;
-
-  const participantHalfW = (sourceIsHub ? targetWidth : sourceWidth) / 2;
-  const hubHalfW = (sourceIsHub ? sourceWidth : targetWidth) / 2;
-
-  const axisX = computeAxisX(
-    participantCenter.x,
-    hubCenter.x,
-    laneOffset,
-    participantHalfW,
-    hubHalfW
-  );
-
-  const halfHeight = NODE_HEIGHT / 2;
-  const start = {
-    x: axisX,
-    y: sourceCenter.y + (targetCenter.y > sourceCenter.y ? halfHeight : -halfHeight)
+  
+  const targetBounds = {
+    left: targetNode.position.x,
+    right: targetNode.position.x + targetWidth,
+    top: targetNode.position.y,
+    bottom: targetNode.position.y + NODE_HEIGHT,
+    centerX: targetNode.position.x + targetWidth / 2,
+    centerY: targetNode.position.y + NODE_HEIGHT / 2
   };
 
-  const end = {
-    x: axisX,
-    y: targetCenter.y + (sourceCenter.y > targetCenter.y ? halfHeight : -halfHeight)
-  };
+  // Find the closest points on each rectangle's border
+  let startPoint: Point;
+  let endPoint: Point;
 
-  const startClipped = intersectLineWithRectBorder(end, start, sourceCenter, sourceSize);
-  const endClipped = intersectLineWithRectBorder(startClipped, end, targetCenter, targetSize);
+  // Determine which edges are closest
+  const xOverlap = !(sourceBounds.right < targetBounds.left || targetBounds.right < sourceBounds.left);
+  const yOverlap = !(sourceBounds.bottom < targetBounds.top || targetBounds.bottom < sourceBounds.top);
 
-  const midY = (startClipped.y + endClipped.y) / 2;
-  const path = `M ${startClipped.x} ${startClipped.y} L ${axisX} ${midY} L ${axisX} ${endClipped.y}`;
+  if (!xOverlap && !yOverlap) {
+    // No overlap - connect corners (shortest path)
+    if (targetBounds.left > sourceBounds.right) {
+      // Target is to the right
+      startPoint = { 
+        x: sourceBounds.right, 
+        y: targetBounds.centerY < sourceBounds.centerY ? sourceBounds.top : sourceBounds.bottom 
+      };
+      endPoint = { 
+        x: targetBounds.left, 
+        y: sourceBounds.centerY < targetBounds.centerY ? targetBounds.top : targetBounds.bottom 
+      };
+    } else {
+      // Target is to the left
+      startPoint = { 
+        x: sourceBounds.left, 
+        y: targetBounds.centerY < sourceBounds.centerY ? sourceBounds.top : sourceBounds.bottom 
+      };
+      endPoint = { 
+        x: targetBounds.right, 
+        y: sourceBounds.centerY < targetBounds.centerY ? targetBounds.top : targetBounds.bottom 
+      };
+    }
+  } else if (xOverlap) {
+    // Horizontally overlapping - connect top/bottom
+    const x = Math.max(
+      Math.min(sourceBounds.centerX, sourceBounds.right, targetBounds.right),
+      Math.max(sourceBounds.left, targetBounds.left)
+    );
+    if (targetBounds.top > sourceBounds.bottom) {
+      startPoint = { x, y: sourceBounds.bottom };
+      endPoint = { x, y: targetBounds.top };
+    } else {
+      startPoint = { x, y: sourceBounds.top };
+      endPoint = { x, y: targetBounds.bottom };
+    }
+  } else {
+    // Vertically overlapping - connect left/right
+    const y = Math.max(
+      Math.min(sourceBounds.centerY, sourceBounds.bottom, targetBounds.bottom),
+      Math.max(sourceBounds.top, targetBounds.top)
+    );
+    if (targetBounds.left > sourceBounds.right) {
+      startPoint = { x: sourceBounds.right, y };
+      endPoint = { x: targetBounds.left, y };
+    } else {
+      startPoint = { x: sourceBounds.left, y };
+      endPoint = { x: targetBounds.right, y };
+    }
+  }
+
+  // Calculate midpoint for label
+  const midX = (startPoint.x + endPoint.x) / 2;
+  const midY = (startPoint.y + endPoint.y) / 2;
+
+  // Straight line - shortest path
+  const path = `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
 
   return (
     <>
@@ -237,7 +271,7 @@ function WorkflowEdge(props: EdgeProps) {
         <div
           style={{
             position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${axisX}px, ${(startClipped.y + endClipped.y) / 2}px)`,
+            transform: `translate(-50%, -50%) translate(${midX}px, ${midY}px)`,
             pointerEvents: 'none',
           }}
         >
@@ -317,9 +351,6 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
     </div>
   );
 };
-
-const nodeTypes = { entity: EntityNode };
-const edgeTypes = { workflow: WorkflowEdge };
 
 interface TransactionFlow {
   from: string;
@@ -567,6 +598,9 @@ export function FlowVisualization({
       nodes: applyNodeChanges(changes, prev.nodes),
     }));
   }, []);
+
+  const nodeTypes = useMemo(() => ({ entity: EntityNode }), []);
+  const edgeTypes = useMemo(() => ({ workflow: WorkflowEdge }), []);
 
   return (
     <Card>
