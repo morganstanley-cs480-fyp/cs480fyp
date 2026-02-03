@@ -633,7 +633,7 @@ export function FlowVisualization({
                   nodesDraggable
                   nodesConnectable={false}
                   elementsSelectable
-                  panOnDrag={[1, 2]}
+                  panOnDrag={true}
                   selectionOnDrag={false}
                   zoomOnScroll
                   fitView
