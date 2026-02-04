@@ -9,7 +9,7 @@ import { XMLParser } from 'fast-xml-parser';
 
 // Config
 export const config = {
-  queueUrl: process.env.QUEUE_URL,
+  queueUrl: process.env.DATA_PROCESSING_QUEUE_URL,
   bucketName: process.env.S3_BUCKET_NAME,
   fileName: process.env.S3_FILE_KEY || "data.xml",
   ssmParamName: process.env.SSM_PARAM_NAME || "/trade-ingestor/last-pos",
