@@ -9,6 +9,7 @@ CRITICAL SECURITY:
 """
 
 from typing import Tuple, Any
+from datetime import datetime, date
 from app.config.settings import settings
 from app.models.domain import ExtractedParams
 from app.models.request import ManualSearchFilters
@@ -99,14 +100,18 @@ class QueryBuilder:
         # Handle date_from filter (always uses update_time)
         if params.date_from:
             conditions.append(f"update_time >= ${param_index}::timestamp")
-            values.append(params.date_from)
+            # Convert string date to datetime object for asyncpg
+            date_value = datetime.strptime(params.date_from, "%Y-%m-%d").date()
+            values.append(date_value)
             param_index += 1
         
         # Handle date_to filter (always uses update_time)
         if params.date_to:
             # Add 1 day to include the entire end date
             conditions.append(f"update_time < (${param_index}::timestamp + INTERVAL '1 day')")
-            values.append(params.date_to)
+            # Convert string date to datetime object for asyncpg
+            date_value = datetime.strptime(params.date_to, "%Y-%m-%d").date()
+            values.append(date_value)
             param_index += 1
         
         # Handle with_exceptions_only filter
@@ -205,14 +210,18 @@ class QueryBuilder:
         # Handle date_from filter
         if filters.date_from:
             conditions.append(f"{date_field} >= ${param_index}::timestamp")
-            values.append(filters.date_from)
+            # Convert string date to datetime object for asyncpg
+            date_value = datetime.strptime(filters.date_from, "%Y-%m-%d").date()
+            values.append(date_value)
             param_index += 1
         
         # Handle date_to filter
         if filters.date_to:
             # Add 1 day to include the entire end date
             conditions.append(f"{date_field} < (${param_index}::timestamp + INTERVAL '1 day')")
-            values.append(filters.date_to)
+            # Convert string date to datetime object for asyncpg
+            date_value = datetime.strptime(filters.date_to, "%Y-%m-%d").date()
+            values.append(date_value)
             param_index += 1
         
         # Handle with_exceptions_only filter

@@ -44,7 +44,7 @@ class QueryHistoryService:
             INSERT INTO query_history 
             (user_id, query_text, is_saved, query_name, create_time, last_use_time)
             VALUES ($1, $2, FALSE, NULL, NOW(), NOW())
-            RETURNING query_id
+            RETURNING id
         """
         
         try:
