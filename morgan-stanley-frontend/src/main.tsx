@@ -9,7 +9,7 @@ const cognitoAuthConfig = {
   client_id: import.meta.env.VITE_COGNITO_CLIENT_ID,
   redirect_uri: import.meta.env.VITE_COGNITO_REDIRECT_URI,
   response_type: "code",
-  scope: "email openid",
+  scope: "email openid profile",
   loadUserInfo: true,
   onSigninCallback: () => {
   window.history.replaceState({}, document.title, window.location.pathname);

@@ -13,8 +13,8 @@ const ENABLE_DEBUG_LOGGING = import.meta.env.VITE_ENABLE_DEBUG_LOGGING === 'true
 export class APIError extends Error {
   constructor(
     message: string,
-    public statusCode?: number,
-    public details?: unknown
+    statusCode?: number,
+    details?: unknown
   ) {
     super(message);
     this.name = 'APIError';

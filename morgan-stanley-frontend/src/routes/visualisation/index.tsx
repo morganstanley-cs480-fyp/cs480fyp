@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import '@xyflow/react/dist/style.css';
 import ReactFlowWithElkAutoLayout from '@/components/visualisations-prototype/ReactFlowWithElkAutoLayout';
 

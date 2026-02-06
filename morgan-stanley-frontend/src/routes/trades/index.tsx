@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   useReactTable,
@@ -31,7 +31,7 @@ import { SearchHeader, type RecentSearch } from "@/components/trades/SearchHeade
 import { TradeFilters, type ManualSearchFilters } from "@/components/trades/TradeFilters";
 import { TradeResultsTable } from "@/components/trades/TradeResultsTable";
 import { useTradeColumns } from "@/components/trades/useTradeColumns";
-import { useUser } from "@/contexts/UserContext";
+// import { useUser } from "@/contexts/UserContext";
 import { searchService } from "@/lib/api/searchService";
 import { APIError } from "@/lib/api/client";
 
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/trades/")({
 });
 
 function TradeSearchPage() {
-  const { userId } = useUser();
+  // const { userId } = useUser();
   const STORAGE_KEY = "tradeFilters:v1";
   const TABLE_STATE_KEY = "tradeTableState:v1";
   const SEARCH_KEY = "tradeSearchQuery:v1";

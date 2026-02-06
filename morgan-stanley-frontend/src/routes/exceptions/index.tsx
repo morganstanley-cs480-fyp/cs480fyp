@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute,  redirect } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { AlertTriangle, AlertCircle, Clock } from "lucide-react";
 import {

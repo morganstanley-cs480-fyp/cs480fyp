@@ -236,7 +236,7 @@ export function TradeResultsTable({
                     onClick={() =>
                       navigate({
                         to: "/trades/$tradeId",
-                        params: { tradeId: row.original.trade_id },
+                        params: { tradeId: row.original.trade_id.toString() },
                       })
                     }
                     className="cursor-pointer hover:bg-[#002B51]/5"
