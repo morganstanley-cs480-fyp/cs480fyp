@@ -52,7 +52,7 @@ export function DateRangeFilter({
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-sm text-slate-600">From</Label>
+          <Label className="text-sm text-black/75">From</Label>
           <div className="relative">
             <Input
               type="date"
@@ -63,7 +63,7 @@ export function DateRangeFilter({
             {dateFrom && (
               <button
                 type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-black/50 hover:text-red-600"
                 onClick={() => onDateFromChange("")}
                 title="Clear date"
               >
@@ -73,7 +73,7 @@ export function DateRangeFilter({
           </div>
         </div>
         <div className="space-y-2">
-          <Label className="text-sm text-slate-600">To</Label>
+          <Label className="text-sm text-black/75">To</Label>
           <div className="relative">
             <Input
               type="date"
@@ -84,7 +84,7 @@ export function DateRangeFilter({
             {dateTo && (
               <button
                 type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-black/50 hover:text-red-600"
                 onClick={() => onDateToChange("")}
                 title="Clear date"
               >

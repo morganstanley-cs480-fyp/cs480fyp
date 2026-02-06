@@ -29,7 +29,7 @@ export function AISuggestionsTab({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="size-5 text-purple-600" />
-          <h3 className="font-semibold text-slate-900">
+          <h3 className="font-semibold text-black">
             AI-Powered Suggestions
           </h3>
         </div>
@@ -54,7 +54,7 @@ export function AISuggestionsTab({
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-black/50" />
         <Input
           placeholder="Search solutions by title, description, solution ID..."
           value={searchQuery}
@@ -78,7 +78,7 @@ export function AISuggestionsTab({
       {aiSearching && (
         <div className="text-center py-8">
           <Loader2 className="size-8 mx-auto mb-3 animate-spin text-purple-600" />
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-black/75">
             AI is analyzing the exception...
           </p>
         </div>

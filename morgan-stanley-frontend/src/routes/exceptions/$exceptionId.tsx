@@ -60,7 +60,7 @@ function ResolveExceptionPage() {
       <div className="p-6 max-w-7xl mx-auto">
         <Card>
           <CardContent className="py-12">
-            <div className="text-center text-slate-500">
+            <div className="text-center text-black/50">
               <AlertCircle className="size-12 mx-auto mb-3" />
               <p className="text-lg mb-2">Exception not found</p>
               <Button onClick={() => navigate({ to: '/exceptions' })}>
@@ -87,10 +87,10 @@ function ResolveExceptionPage() {
           Back
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">
+          <h1 className="text-2xl font-semibold text-black">
             Resolve Exception {exception.exception_id}
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-sm text-black/75 mt-1">
             Choose a solution method to resolve this exception
           </p>
         </div>

@@ -72,12 +72,12 @@
 //   return (
 //     <div className={`p-4 rounded-xl border-2 shadow-xl ${nodeWidth} bg-white ${isHub ? 'border-blue-600' : 'border-slate-200'}`}>
 //       <div className="flex items-center gap-3 mb-2">
-//         {isHub ? <ShieldCheck className="text-blue-600" /> : <Landmark className="text-slate-400" />}
-//         <span className="text-[10px] font-black uppercase tracking-tighter text-slate-400">
+//         {isHub ? <ShieldCheck className="text-blue-600" /> : <Landmark className="text-black/50" />}
+//         <span className="text-[10px] font-black uppercase tracking-tighter text-black/50">
 //           {isHub ? 'Central Clearing' : 'Participant'}
 //         </span>
 //       </div>
-//       <div className="text-sm font-bold text-slate-900 uppercase italic truncate">{data.label}</div>
+//       <div className="text-sm font-bold text-black uppercase italic truncate">{data.label}</div>
       
 //       <Handle type="source" position={Position.Top} id="top" className="opacity-0" />
 //       <Handle type="target" position={Position.Top} id="top" className="opacity-0" />
@@ -188,13 +188,13 @@
 //   return (
 //     <div className="h-screen w-screen bg-slate-50">
 //       <div className="absolute top-10 left-10 z-10">
-//         <h1 className="text-3xl font-black text-slate-900 tracking-tighter flex items-center gap-3">
+//         <h1 className="text-3xl font-black text-black tracking-tighter flex items-center gap-3">
 //           <div className="bg-blue-600 p-2 rounded-lg">
 //             <Activity className="text-white" size={24} />
 //           </div>
 //           {title}
 //         </h1>
-//         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 ml-11">
+//         <p className="text-[10px] font-bold text-black/50 uppercase tracking-widest mt-1 ml-11">
 //           {subtitle}
 //         </p>
 //       </div>

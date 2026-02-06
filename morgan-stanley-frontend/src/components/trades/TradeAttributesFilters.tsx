@@ -78,7 +78,7 @@ export function TradeAttributesFilters({
             {tradeId && (
               <button
                 type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-black/50 hover:text-red-600"
                 onClick={() => onTradeIdChange("")}
                 title="Clear filter"
               >
@@ -115,7 +115,7 @@ export function TradeAttributesFilters({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 text-slate-500 hover:text-red-600"
+                className="h-9 w-9 p-0 text-black/50 hover:text-red-600"
                 onClick={() => onAccountChange("all")}
                 title="Clear filter"
               >
@@ -149,7 +149,7 @@ export function TradeAttributesFilters({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 text-slate-500 hover:text-red-600"
+                className="h-9 w-9 p-0 text-black/50 hover:text-red-600"
                 onClick={() => onBookingSystemChange("all")}
                 title="Clear filter"
               >
@@ -183,7 +183,7 @@ export function TradeAttributesFilters({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 text-slate-500 hover:text-red-600"
+                className="h-9 w-9 p-0 text-black/50 hover:text-red-600"
                 onClick={() => onAffirmationSystemChange("all")}
                 title="Clear filter"
               >
@@ -221,7 +221,7 @@ export function TradeAttributesFilters({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 text-slate-500 hover:text-red-600"
+                className="h-9 w-9 p-0 text-black/50 hover:text-red-600"
                 onClick={() => onAssetTypeChange("all")}
                 title="Clear filter"
               >
@@ -255,7 +255,7 @@ export function TradeAttributesFilters({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 text-slate-500 hover:text-red-600"
+                className="h-9 w-9 p-0 text-black/50 hover:text-red-600"
                 onClick={() => onClearingHouseChange("all")}
                 title="Clear filter"
               >

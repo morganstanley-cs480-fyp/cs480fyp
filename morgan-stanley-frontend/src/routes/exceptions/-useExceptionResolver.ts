@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getExceptionById, type Exception } from "@/lib/mockData";
 import { type AISuggestion } from "@/components/exceptions-individual/AISuggestionCard";
 
@@ -52,11 +52,14 @@ export function useExceptionResolver(exceptionId: string) {
   }, [exception]);
 
   useEffect(() => {
-    const exc = getExceptionById(exceptionId);
-    if (exc) {
-      setException(exc);
-      handleAISearch(exc);
-    }
+    const loadException = () => {
+      const exc = getExceptionById(Number(exceptionId));
+      if (exc) {
+        setException(exc);
+        handleAISearch(exc);
+      }
+    };
+    loadException();
   }, [exceptionId, handleAISearch]);
 
   const handleGenerateAISolution = useCallback(() => {

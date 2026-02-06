@@ -18,7 +18,7 @@ import "@xyflow/react/dist/style.css";
 import {
   Card,
   CardContent,
-  CardDescription,
+
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -70,7 +70,7 @@ const WorkflowEdge = ({
       <path
         id={id}
         style={style}
-        className="react-flow__edge-path stroke-[2.5px] transition-all duration-300 hover:stroke-blue-500"
+        className="react-flow__edge-path stroke-[2.5px] transition-all duration-300 hover:stroke-[#002B51]"
         d={edgePath}
         markerEnd={markerEnd}
       />
@@ -120,15 +120,15 @@ const SelfLoopEdge = ({ id, sourceX, sourceY, markerEnd, style, data }) => {
 const EntityNode = ({ data }) => {
   const Icon = data.icon || Server;
   return (
-    <div className="flex flex-col rounded-xl bg-white border border-slate-200 shadow-sm min-w-[220px] overflow-hidden group hover:border-blue-400 transition-all hover:shadow-md">
-      <div className={`px-4 py-2 flex items-center justify-between border-b bg-slate-50/50 text-slate-500`}>
+    <div className="flex flex-col rounded-xl bg-white border border-slate-200 shadow-sm min-w-[220px] overflow-hidden group hover:border-[#002B51] transition-all hover:shadow-md">
+      <div className={`px-4 py-2 flex items-center justify-between border-b bg-slate-50/50 text-black/50`}>
         <div className="flex items-center gap-2">
           <Icon size={12} />
           <span className="text-[9px] font-black uppercase tracking-widest opacity-70">System Node</span>
         </div>
       </div>
       <div className="p-4 bg-white">
-        <div className="text-sm font-bold text-slate-900 leading-tight">
+        <div className="text-sm font-bold text-black leading-tight">
           {data.label}
         </div>
       </div>
@@ -246,26 +246,29 @@ export default function App() {
   const [selectedEdge, setSelectedEdge] = useState(null);
 
   useEffect(() => {
-    const { nodes: lNodes, edges: lEdges } = transformTradeData(mockTradeData);
-    setNodes(lNodes);
-    setEdges(lEdges.map(e => ({
-      ...e,
-      markerEnd: { 
-        type: MarkerType.ArrowClosed, 
-        color: e.source === e.target ? '#94a3b8' : '#2563eb' 
-      },
-      style: { 
-        stroke: e.source === e.target ? '#cbd5e1' : '#3b82f6',
-        strokeWidth: 2.5
-      }
-    })));
+    const initializeData = () => {
+      const { nodes: lNodes, edges: lEdges } = transformTradeData(mockTradeData);
+      setNodes(lNodes);
+      setEdges(lEdges.map(e => ({
+        ...e,
+        markerEnd: { 
+          type: MarkerType.ArrowClosed, 
+          color: e.source === e.target ? '#94a3b8' : '#002B51' 
+        },
+        style: {
+          stroke: e.source === e.target ? '#cbd5e1' : '#002B51',
+          strokeWidth: 2.5
+        }
+      })));
+    };
+    initializeData();
   }, []);
 
   const onNodesChange = useCallback((c) => setNodes((ns) => applyNodeChanges(c, ns)), []);
   const onEdgesChange = useCallback((c) => setEdges((es) => applyEdgeChanges(c, es)), []);
 
   return (
-    <div className="h-screen w-screen flex bg-slate-50 font-sans text-slate-900 overflow-hidden">
+    <div className="h-screen w-screen flex bg-slate-50 font-sans text-black overflow-hidden">
       <div className={`transition-all duration-700 relative ${selectedEdge ? "w-3/5" : "w-full"}`}>
         <ReactFlow
           nodes={nodes}
@@ -283,11 +286,11 @@ export default function App() {
         
         {!selectedEdge && (
           <div className="absolute top-10 left-10 pointer-events-none">
-            <h1 className="text-3xl font-black text-slate-900 tracking-tighter flex items-center gap-3">
-              <Activity className="text-blue-600" /> 
+            <h1 className="text-3xl font-black text-black tracking-tighter flex items-center gap-3">
+              <Activity className="text-[#002B51]" /> 
               Dynamic Audit Flow
             </h1>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">
+            <p className="text-black/50 text-[10px] font-bold uppercase tracking-widest mt-1">
               Automated Lifecycle Visualization
             </p>
           </div>
@@ -298,7 +301,7 @@ export default function App() {
         <div className="w-2/5 p-10 border-l bg-white shadow-2xl z-10 animate-in slide-in-from-right duration-500">
           <div className="flex justify-between items-center mb-10">
             <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
-              <div className="w-1.5 h-8 bg-blue-600 rounded-full" />
+              <div className="w-1.5 h-8 bg-[#002B51] rounded-full" />
               Intelligence
             </h2>
             <Button variant="ghost" size="icon" onClick={() => setSelectedEdge(null)} className="rounded-full h-10 w-10">
@@ -306,31 +309,31 @@ export default function App() {
             </Button>
           </div>
 
-          <Card className="border-t-[10px] border-t-blue-600 rounded-[2rem] overflow-hidden shadow-2xl border-slate-100">
+          <Card className="border-t-[10px] border-t-[#002B51] rounded-[2rem] overflow-hidden shadow-2xl border-slate-100">
             <CardHeader className="bg-slate-50/50 pb-8 border-b border-slate-100 px-8 pt-8">
-               <div className="bg-blue-600 text-white text-[10px] font-black px-4 py-1.5 rounded-lg w-fit mb-6 uppercase tracking-widest">
+               <div className="bg-[#002B51] text-white text-[10px] font-black px-4 py-1.5 rounded-lg w-fit mb-6 uppercase tracking-widest">
                  STEP {selectedEdge.data?.step}
                </div>
-               <CardTitle className="text-4xl font-black text-slate-900 leading-none tracking-tight">
+               <CardTitle className="text-4xl font-black text-black leading-none tracking-tight">
                  {selectedEdge.data?.transType}
                </CardTitle>
             </CardHeader>
             <CardContent className="p-10 space-y-10">
                <div className="flex items-center justify-between bg-white border border-slate-100 p-8 rounded-3xl shadow-sm">
                   <div className="text-center flex-1">
-                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-2 leading-none">Source</p>
-                    <p className="text-sm font-bold text-slate-900 uppercase">{selectedEdge.source}</p>
+                    <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-2 leading-none">Source</p>
+                    <p className="text-sm font-bold text-black uppercase">{selectedEdge.source}</p>
                   </div>
-                  <ArrowRightLeft className="text-blue-500 mx-4" size={20} />
+                  <ArrowRightLeft className="text-[#002B51] mx-4" size={20} />
                   <div className="text-center flex-1">
-                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-2 leading-none">Target</p>
-                    <p className="text-sm font-bold text-slate-900 uppercase">{selectedEdge.target}</p>
+                    <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-2 leading-none">Target</p>
+                    <p className="text-sm font-bold text-black uppercase">{selectedEdge.target}</p>
                   </div>
                </div>
                
-               <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50">
-                 <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                   This automated stage verifies the transition between <span className="text-blue-700 font-bold">{selectedEdge.source}</span> and <span className="text-blue-700 font-bold">{selectedEdge.target}</span> within the immutable trade protocol.
+               <div className="bg-[#002B51]/5 p-6 rounded-2xl border border-[#002B51]/10">
+                 <p className="text-xs text-black/75 leading-relaxed font-medium">
+                   This automated stage verifies the transition between <span className="text-[#002B51] font-bold">{selectedEdge.source}</span> and <span className="text-[#002B51] font-bold">{selectedEdge.target}</span> within the immutable trade protocol.
                  </p>
                </div>
             </CardContent>

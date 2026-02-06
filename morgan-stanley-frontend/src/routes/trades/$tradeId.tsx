@@ -15,6 +15,7 @@ import {
 import { TradeInfoCard } from "@/components/trades-individual/TradeInfoCard";
 import { FlowVisualization } from "@/components/trades-individual/FlowVisualization";
 import { TransactionDetailPanel } from "@/components/trades-individual/TransactionDetailPanel";
+import { EntityDetailPanel } from "@/components/trades-individual/EntityDetailPanel";
 
 // Utility imports
 import {
@@ -34,11 +35,12 @@ function TradeDetailPage() {
   const { tradeId } = Route.useParams();
   const navigate = useNavigate();
 
-  const trade = getTradeById(tradeId);
-  const transactions = getTransactionsForTrade(tradeId);
-  const exceptions = getExceptionsForTrade(tradeId);
+  const trade = getTradeById(Number(tradeId));
+  const transactions = getTransactionsForTrade(Number(tradeId));
+  const exceptions = getExceptionsForTrade(Number(tradeId));
 
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<{ name: string; isHub: boolean } | null>(null);
   const [showTradeInfo, setShowTradeInfo] = useState(true);
   const [activeTab, setActiveTab] = useState<"timeline" | "system">("system");
 
@@ -49,12 +51,22 @@ function TradeDetailPage() {
     });
   };
 
+  const handleEntitySelect = (entityName: string, isHub: boolean) => {
+    setSelectedEntity({ name: entityName, isHub });
+    setSelectedTransaction(null); // Clear transaction selection
+  };
+
+  const handleTransactionSelect = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setSelectedEntity(null); // Clear entity selection
+  };
+
   if (!trade) {
     return (
       <div className="p-6 w-full mx-auto">
         <Card>
           <CardContent className="py-12">
-            <div className="text-center text-slate-500">
+            <div className="text-center text-black/50">
               <AlertCircle className="size-12 mx-auto mb-3 opacity-50" />
               <p className="text-lg font-medium mb-2">Trade Not Found</p>
               <p className="text-sm mb-4">
@@ -112,8 +124,11 @@ function TradeDetailPage() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             transactions={transactions}
+            clearingHouse={trade.clearing_house}
             selectedTransaction={selectedTransaction}
-            onTransactionSelect={setSelectedTransaction}
+            onTransactionSelect={handleTransactionSelect}
+            onEntitySelect={handleEntitySelect}
+            exceptions={exceptions}
             getRelatedExceptions={(transId) => getRelatedExceptions(transId, exceptions)}
             getTransactionBackgroundColor={(transaction) => getTransactionBackgroundColor(transaction, exceptions)}
             getTransactionStatusColor={getTransactionStatusColor}
@@ -131,6 +146,15 @@ function TradeDetailPage() {
             onToggle={() => setShowTradeInfo(!showTradeInfo)}
             getStatusBadgeClassName={getStatusBadgeClassName}
           />
+
+          {/* Entity Details */}
+          {selectedEntity && (
+            <EntityDetailPanel
+              entityName={selectedEntity.name}
+              isHub={selectedEntity.isHub}
+              transactions={transactions}
+            />
+          )}
 
           {/* Transaction Details */}
           <TransactionDetailPanel

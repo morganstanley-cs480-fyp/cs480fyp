@@ -33,7 +33,7 @@ export function useExceptionColumns({
         );
       },
       cell: ({ row }) => (
-        <div className="font-medium text-slate-900">
+        <div className="font-medium text-black">
           {row.getValue("exception_id")}
         </div>
       ),
@@ -54,7 +54,7 @@ export function useExceptionColumns({
         );
       },
       cell: ({ row }) => (
-        <div className="font-medium text-slate-900">
+        <div className="font-medium text-black">
           {row.getValue("trade_id")}
         </div>
       ),
@@ -97,7 +97,7 @@ export function useExceptionColumns({
       accessorKey: "comment",
       header: "Comments",
       cell: ({ row }) => (
-        <div className="text-sm text-slate-600">{row.getValue("comment")}</div>
+        <div className="text-sm text-black/75">{row.getValue("comment")}</div>
       ),
       enableColumnFilter: true,
     },
@@ -116,7 +116,7 @@ export function useExceptionColumns({
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm text-slate-600">
+        <div className="text-sm text-black/75">
           {row.getValue("create_time")}
         </div>
       ),
@@ -137,7 +137,7 @@ export function useExceptionColumns({
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm text-slate-600">
+        <div className="text-sm text-black/75">
           {row.getValue("update_time")}
         </div>
       ),
