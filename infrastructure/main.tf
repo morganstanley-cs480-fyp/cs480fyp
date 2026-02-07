@@ -622,3 +622,20 @@ module "trade_flow_service" {
     { name = "ALB_URL", value = "http://${module.alb.alb_dns_name}" }
   ]
 }
+
+# MILVUS EC2 INSTANCE
+module "milvus_ec2" {
+  source = "./modules/milvus_ec2"
+  
+  project_name          = "cs480fyp"
+  environment           = var.environment
+  vpc_id                = module.networking.vpc_id
+  subnet_id             = module.networking.public_subnet_ids[0]
+  ecs_security_group_id = module.ecs_security_group.ecs_service_sg_id
+  
+  instance_type     = "t3.large"
+  volume_size       = 30
+  data_volume_size  = 100
+  key_name          = var.key_name
+  ssh_cidr_blocks   = ["0.0.0.0/0"]  # Restrict this in production
+}
