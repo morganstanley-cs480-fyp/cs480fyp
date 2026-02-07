@@ -32,7 +32,10 @@ class Settings(BaseSettings):
     # Milvus
     MILVUS_HOST: str = "localhost"
     MILVUS_PORT: int = 19530
+    MILVUS_USER: str = ""  # For production auth
+    MILVUS_PASSWORD: str = ""  # For production auth
     MILVUS_COLLECTION: str = "documents"
+    MILVUS_SSL: bool = False  # Enable SSL in production
     VECTOR_DIM: int = 1536  # OpenAI embedding dimension
 
     model_config = SettingsConfigDict(

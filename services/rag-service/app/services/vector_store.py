@@ -32,6 +32,9 @@ class MilvusVectorStore:
             alias="default",
             host=self.host,
             port=self.port,
+            user=settings.MILVUS_USER,  # For production auth
+            password=settings.MILVUS_PASSWORD,  # For production auth
+            secure=settings.MILVUS_SSL,  # Enable SSL in production
         )
 
     def initialize(self) -> None:
