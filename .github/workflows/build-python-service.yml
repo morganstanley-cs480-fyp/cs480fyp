@@ -45,6 +45,7 @@ jobs:
         run: ruff format --check .
 
   test:
+    needs: static-analysis
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -78,7 +79,7 @@ jobs:
         run: pytest -m "not integration" --cov=. --cov-report=xml --cov-report=term
 
   build:
-    needs: [static-analysis, test]
+    needs: test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
