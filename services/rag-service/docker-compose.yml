@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  rag-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fyp-rag-service
+    ports:
+      - "8001:8000"
+    environment:
+      LOG_LEVEL: DEBUG
+    restart: unless-stopped
