@@ -198,11 +198,21 @@ class MilvusVectorDB:
         formatted_results = []
         for hits in results:
             for hit in hits:
+                try:
+                    text = hit.get("text")
+                except (KeyError, AttributeError):
+                    text = ""
+                
+                try:
+                    metadata = hit.get("metadata")
+                except (KeyError, AttributeError):
+                    metadata = {}
+                
                 result = {
                     "id": hit.id,
                     "distance": hit.distance,
-                    "text": hit.entity.get("text"),
-                    "metadata": hit.entity.get("metadata", {}),
+                    "text": text,
+                    "metadata": metadata if metadata else {},
                 }
                 formatted_results.append(result)
 
