@@ -11,15 +11,28 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.config.settings import settings
-from app.api.routes import health_router
+from app.api.routes import health_router, vectors_router
+from app.services.vector_db import get_vector_db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown."""
     # Startup
+    vector_db = get_vector_db()
+    try:
+        vector_db.connect()
+    except Exception as e:
+        print(f"Warning: Failed to connect to Milvus: {e}")
+        print("Vector database operations will not be available until connection is established.")
+    
     yield
-    # Shutdown (e.g. close vector store / LLM clients when added)
+    
+    # Shutdown
+    try:
+        vector_db.disconnect()
+    except Exception:
+        pass
 
 
 app = FastAPI(
@@ -41,3 +54,4 @@ if settings.ENABLE_CORS:
     )
 
 app.include_router(health_router)
+app.include_router(vectors_router)

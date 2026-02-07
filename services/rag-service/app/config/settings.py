@@ -29,6 +29,14 @@ class Settings(BaseSettings):
         "http://localhost:3000",
     ]
 
+    # Milvus Vector Database
+    MILVUS_HOST: str = "localhost"
+    MILVUS_PORT: int = 19530
+    MILVUS_USER: str = ""
+    MILVUS_PASSWORD: str = ""
+    MILVUS_COLLECTION_NAME: str = "rag_documents"
+    MILVUS_DIMENSION: int = 384  # Default embedding dimension for sentence-transformers
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
