@@ -15,6 +15,9 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
 
+env:
+  IMAGE_TAG: ${{ github.sha }}
+
 jobs:
   static-analysis:
     runs-on: ubuntu-latest
@@ -78,7 +81,9 @@ jobs:
         with:
           context: ./services/${{ inputs.service_name }}
           file: ./services/${{ inputs.service_name }}/Dockerfile
-          tags: ${{ inputs.service_name }}:latest
+          tags: |
+            ${{ inputs.service_name }}:latest
+            ${{ inputs.service_name }}:${{ github.sha }}
           outputs: type=docker,dest=/tmp/${{ inputs.service_name }}.tar
 
       - name: Upload artifact
@@ -116,5 +121,11 @@ jobs:
 
       - name: Tag and Push ${{ inputs.service_name }}
         run: |
-          docker tag ${{ inputs.service_name }}:latest ${{ steps.login-ecr.outputs.registry }}/${{ inputs.service_name }}:latest
-          docker push ${{ steps.login-ecr.outputs.registry }}/${{ inputs.service_name }}:latest
+          REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          IMAGE=${{ inputs.service_name }}
+
+          docker tag $IMAGE:latest $REGISTRY/$IMAGE:latest
+          docker tag $IMAGE:${{ github.sha }} $REGISTRY/$IMAGE:${{ github.sha }}
+
+          docker push $REGISTRY/$IMAGE:latest
+          docker push $REGISTRY/$IMAGE:${{ github.sha }}
