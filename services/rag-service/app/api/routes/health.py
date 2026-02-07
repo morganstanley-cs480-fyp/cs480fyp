@@ -2,7 +2,7 @@
 Health and readiness endpoints for load balancers and orchestration.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter
 
@@ -27,7 +27,7 @@ async def health():
     """Health check for ALB/ECS. Returns 200 when the service can accept traffic."""
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": settings.SERVICE_NAME,
         "version": settings.VERSION,
     }
@@ -38,7 +38,7 @@ async def liveness():
     """Liveness probe - process is running. No dependency checks."""
     return {
         "alive": True,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": settings.SERVICE_NAME,
         "version": settings.VERSION,
     }

@@ -41,8 +41,8 @@ class MilvusVectorDB:
                 alias="default",
                 host=self.host,
                 port=self.port,
-                user=settings.MILVUS_USER if settings.MILVUS_USER else None,
-                password=settings.MILVUS_PASSWORD if settings.MILVUS_PASSWORD else None,
+                user=settings.MILVUS_USER or None,
+                password=settings.MILVUS_PASSWORD or None,
             )
             self._connected = True
             logger.info(f"Connected to Milvus at {self.host}:{self.port}")
@@ -198,21 +198,11 @@ class MilvusVectorDB:
         formatted_results = []
         for hits in results:
             for hit in hits:
-                try:
-                    text = hit.get("text")
-                except (KeyError, AttributeError):
-                    text = ""
-                
-                try:
-                    metadata = hit.get("metadata")
-                except (KeyError, AttributeError):
-                    metadata = {}
-                
                 result = {
                     "id": hit.id,
                     "distance": hit.distance,
-                    "text": text,
-                    "metadata": metadata if metadata else {},
+                    "text": hit.get("text"),
+                    "metadata": hit.get("metadata") or {},
                 }
                 formatted_results.append(result)
 
