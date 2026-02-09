@@ -9,7 +9,7 @@ CRITICAL SECURITY:
 """
 
 from typing import Tuple, Any
-from datetime import datetime, date
+from datetime import datetime
 from app.config.settings import settings
 from app.models.domain import ExtractedParams
 from app.models.request import ManualSearchFilters

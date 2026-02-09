@@ -63,8 +63,8 @@ class Trade(BaseModel):
             booking_system=record["booking_system"],
             affirmation_system=record["affirmation_system"],
             clearing_house=record["clearing_house"],
-            create_time=record["create_time"].strftime("%Y-%m-%d %H:%M:%S") if isinstance(record["create_time"], datetime) else record["create_time"],
-            update_time=record["update_time"].strftime("%Y-%m-%d %H:%M:%S") if isinstance(record["update_time"], datetime) else record["update_time"],
+            create_time=record["create_time"].strftime("%Y-%m-%dT%H:%M:%SZ") if isinstance(record["create_time"], datetime) else record["create_time"],
+            update_time=record["update_time"].strftime("%Y-%m-%dT%H:%M:%SZ") if isinstance(record["update_time"], datetime) else record["update_time"],
             status=record["status"]
         )
 
@@ -107,13 +107,13 @@ class QueryHistory(BaseModel):
             QueryHistory instance
         """
         return cls(
-            query_id=record["query_id"],
+            query_id=record["id"],  # Database column is 'id', map to 'query_id'
             user_id=record["user_id"],
             query_text=record["query_text"],
             is_saved=record["is_saved"],
             query_name=record["query_name"],
-            create_time=record["create_time"].strftime("%Y-%m-%d %H:%M:%S") if isinstance(record["create_time"], datetime) else record["create_time"],
-            last_use_time=record["last_use_time"].strftime("%Y-%m-%d %H:%M:%S") if isinstance(record["last_use_time"], datetime) else record["last_use_time"]
+            create_time=record["create_time"].strftime("%Y-%m-%dT%H:%M:%SZ") if isinstance(record["create_time"], datetime) else record["create_time"],
+            last_use_time=record["last_use_time"].strftime("%Y-%m-%dT%H:%M:%SZ") if isinstance(record["last_use_time"], datetime) else record["last_use_time"]
         )
 
 

@@ -9,10 +9,10 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.models.domain import Trade, QueryHistory, ExtractedParams
-from app.models.request import SearchRequest, ManualSearchFilters, UpdateHistoryRequest
-from app.models.response import SearchResponse, ErrorResponse, HealthResponse
-from pydantic import ValidationError
+from app.models.domain import Trade, QueryHistory  # noqa: E402
+from app.models.request import SearchRequest, ManualSearchFilters, UpdateHistoryRequest  # noqa: E402
+from app.models.response import SearchResponse, ErrorResponse  # noqa: E402
+from pydantic import ValidationError  # noqa: E402
 
 
 def test_trade_model():

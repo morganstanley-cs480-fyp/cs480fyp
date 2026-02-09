@@ -61,6 +61,7 @@ class SearchOrchestrator:
             DatabaseQueryError: If query execution fails
         """
         start_time = time.time()
+        query_id: Optional[int] = None
         
         logger.info(
             "Starting search execution",
@@ -69,6 +70,28 @@ class SearchOrchestrator:
                 "search_type": request.search_type
             }
         )
+        
+        # Save to query history early (before execution) so failed searches are tracked
+        try:
+            query_text = request.query_text if request.search_type == "natural_language" else request.filters.model_dump_json()
+            query_id = await self.history.save_query(
+                user_id=request.user_id,
+                query_text=query_text,
+                search_type=request.search_type
+            )
+            logger.info(
+                "Query saved to history",
+                extra={
+                    "user_id": request.user_id,
+                    "query_id": query_id
+                }
+            )
+        except Exception as e:
+            # Log but don't fail search if history save fails
+            logger.warning(
+                f"Failed to save query to history: {e}",
+                extra={"user_id": request.user_id}
+            )
         
         # Step 1: Build SQL query based on search type
         if request.search_type == "natural_language":
@@ -90,19 +113,11 @@ class SearchOrchestrator:
         # Step 3: Execute query
         trades = await self._execute_query(sql_query, params, request.user_id)
         
-        # Step 4: Save to query history
-        query_text = request.query_text if request.search_type == "natural_language" else request.filters.model_dump_json()
-        query_id = await self.history.save_query(
-            user_id=request.user_id,
-            query_text=query_text,
-            search_type=request.search_type
-        )
-        
-        # Step 5: Format response
+        # Step 4: Format response
         execution_time = (time.time() - start_time) * 1000  # Convert to milliseconds
         
         response = SearchResponse(
-            query_id=query_id,
+            query_id=query_id or 0,  # Use 0 if history save failed
             total_results=len(trades),
             results=trades,
             search_type=request.search_type,

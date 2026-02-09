@@ -7,13 +7,13 @@ Useful for local development and testing.
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from datetime import datetime, timedelta
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.utils.logger import logger
+from app.utils.logger import logger  # noqa: E402
 
 
 class MockBedrockService:

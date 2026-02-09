@@ -10,10 +10,10 @@ from pathlib import Path
 # Add app to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.config.settings import settings
-from app.database.connection import db_manager
-from app.cache.redis_client import redis_manager
-from app.utils.logger import logger
+from app.config.settings import settings  # noqa: E402
+from app.database.connection import db_manager  # noqa: E402
+from app.cache.redis_client import redis_manager  # noqa: E402
+from app.utils.logger import logger  # noqa: E402
 
 
 async def test_configuration():
