@@ -54,7 +54,6 @@ function TradeDetailPage() {
   const handleEntitySelect = (entityName: string, isHub: boolean) => {
     setSelectedEntity({ name: entityName, isHub });
     setSelectedTransaction(null); // Clear transaction selection
-
   };
 
   const handleEntityClose = () => {
@@ -90,7 +89,7 @@ function TradeDetailPage() {
 
   return (
     <div className="p-6 max-w-[1800px] mx-auto space-y-6">
-      {/* Header */}
+      {/* Header with Trade Info */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -119,11 +118,23 @@ function TradeDetailPage() {
             </Badge>
           </div>
         </CardHeader>
+        
+        {/* Trade Information Card Content */}
+        <CardContent className="pt-0">
+          <TradeInfoCard
+            trade={trade}
+            transactions={transactions}
+            exceptions={exceptions}
+            showTradeInfo={showTradeInfo}
+            onToggle={() => setShowTradeInfo(!showTradeInfo)}
+            getStatusBadgeClassName={getStatusBadgeClassName}
+          />
+        </CardContent>
       </Card>
 
       {/* Main Content - Split View */}
       <div className="grid grid-cols-2 gap-6">
-        {/* Left Side - Timeline/System Flow Tabs */}
+        {/* Left Side - Flow Visualization */}
         <div className="space-y-6">
           <FlowVisualization
             activeTab={activeTab}
@@ -140,18 +151,8 @@ function TradeDetailPage() {
           />
         </div>
 
-        {/* Right Side - Trade Info & Transaction Details */}
+        {/* Right Side - Transaction & Entity Details */}
         <div className="space-y-6">
-          {/* Trade Information Card - Collapsible */}
-          <TradeInfoCard
-            trade={trade}
-            transactions={transactions}
-            exceptions={exceptions}
-            showTradeInfo={showTradeInfo}
-            onToggle={() => setShowTradeInfo(!showTradeInfo)}
-            getStatusBadgeClassName={getStatusBadgeClassName}
-          />
-
           {/* Entity Details */}
           {selectedEntity && (
             <EntityDetailPanel
