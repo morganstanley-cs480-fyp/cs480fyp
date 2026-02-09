@@ -54,7 +54,12 @@ function TradeDetailPage() {
   const handleEntitySelect = (entityName: string, isHub: boolean) => {
     setSelectedEntity({ name: entityName, isHub });
     setSelectedTransaction(null); // Clear transaction selection
+
   };
+
+  const handleEntityClose = () => {
+    setSelectedEntity(null);
+  }
 
   const handleTransactionSelect = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -153,6 +158,7 @@ function TradeDetailPage() {
               entityName={selectedEntity.name}
               isHub={selectedEntity.isHub}
               transactions={transactions}
+              onClose={handleEntityClose}
             />
           )}
 

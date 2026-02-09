@@ -1,15 +1,19 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Landmark, ShieldCheck, ArrowRight, ArrowLeft, Activity } from "lucide-react";
+import { Landmark, ShieldCheck, ArrowRight, ArrowLeft, Activity, X } from "lucide-react";
 import type { Transaction } from "@/lib/mockData";
 
 interface EntityDetailPanelProps {
   entityName: string;
   isHub: boolean;
   transactions: Transaction[];
+  onClose: () => void;
 }
 
-export function EntityDetailPanel({ entityName, isHub, transactions }: EntityDetailPanelProps) {
+export function EntityDetailPanel({ entityName, isHub, transactions, onClose }: EntityDetailPanelProps) {
+
+  
   // Filter transactions related to this entity
   const entityTransactions = transactions.filter(t => 
     t.entity === entityName || (isHub && t.entity === 'CCP')
@@ -46,6 +50,15 @@ export function EntityDetailPanel({ entityName, isHub, transactions }: EntityDet
               {isHub ? 'Central Clearing House' : 'Market Participant'}
             </CardDescription>
           </div>
+                    <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-8 w-8 p-0 hover:bg-slate-100"
+          >
+            <X className="size-4" />
+            <span className="sr-only">Close</span>
+          </Button>
         </div>
       </CardHeader>
 

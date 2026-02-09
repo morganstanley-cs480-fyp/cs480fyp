@@ -259,23 +259,32 @@ function WorkflowEdge(props: EdgeProps) {
   // Straight line - shortest path
   const path = `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
 
+  const handleEdgeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (data?.onEdgeClick && data?.transaction) {
+      data.onEdgeClick(data.transaction);
+    }
+  };
+
   return (
     <>
       <BaseEdge
         id={id}
         path={path}
-        style={{ stroke: EDGE_COLOR, strokeWidth: 2.25, strokeLinecap: 'round' }}
+        style={{ stroke: EDGE_COLOR, strokeWidth: 2.25, strokeLinecap: 'round', cursor:'pointer' }}
         markerEnd={markerEnd}
+        onClick={handleEdgeClick}
       />
       <EdgeLabelRenderer>
         <div
           style={{
             position: 'absolute',
             transform: `translate(-50%, -50%) translate(${midX}px, ${midY}px)`,
-            pointerEvents: 'none',
+            pointerEvents: 'auto',
           }}
+          onClick={handleEdgeClick}
         >
-          <div className="w-6 h-6 rounded-full bg-white border border-slate-300 text-[11px] font-semibold text-black/75 flex items-center justify-center shadow-sm">
+      <div className="w-6 h-6 rounded-full bg-white border border-slate-300 text-[11px] font-semibold text-black/75 flex items-center justify-center shadow-sm cursor-pointer hover:border-[#002B51] hover:shadow-md transition-all">
             {data?.step ?? ''}
           </div>
         </div>
@@ -363,7 +372,10 @@ async function generateElkLayout(
   clearingHouse: string,
   onEntitySelect: (entityName: string, isHub: boolean) => void,
   allTransactions: Transaction[],
-  exceptions: Exception[]
+  sortedTransactions: Transaction[],
+  exceptions: Exception[],
+  onTransactionSelect: (transaction: Transaction) => void // Add this parameter
+
 ) {
   const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
   const bottomCount = participants.length - topCount;
@@ -480,6 +492,10 @@ async function generateElkLayout(
     const sourceNode = nodeLookup[sourceId];
     const targetNode = nodeLookup[targetId];
 
+    // Find the corresponding transaction for this edge
+    const correspondingTransaction = sortedTransactions[idx] || null;
+
+
     edges.push({
       id: e.id!,
       source: sourceId,
@@ -493,6 +509,8 @@ async function generateElkLayout(
         totalOffsets,
         sourceSize: { w: sourceNode.width ?? NODE_WIDTH, h: NODE_HEIGHT },
         targetSize: { w: targetNode.width ?? NODE_WIDTH, h: NODE_HEIGHT },
+        transaction: correspondingTransaction,
+        onEdgeClick: onTransactionSelect,
       },
       markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 },
     });
@@ -510,7 +528,7 @@ interface FlowVisualizationProps {
   onTransactionSelect: (transaction: Transaction) => void;
   onEntitySelect: (entityName: string, isHub: boolean) => void;
   exceptions: Exception[];
-  getRelatedExceptions: (transId: string) => Exception[];
+  getRelatedExceptions: (trans_id: number) => Exception[];
   getTransactionBackgroundColor: (transaction: Transaction) => string;
   getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
 }
@@ -581,7 +599,7 @@ export function FlowVisualization({
       return;
     }
 
-    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, exceptions)
+    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect)
       .then((result) => {
         setLayoutData(result);
         setIsLoading(false);
@@ -590,7 +608,7 @@ export function FlowVisualization({
         console.error('ELK layout failed:', error);
         setIsLoading(false);
       });
-  }, [transactions, clearingHouse, onEntitySelect, exceptions]);
+  }, [transactions, clearingHouse, onEntitySelect, exceptions, onTransactionSelect]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setLayoutData((prev) => ({
