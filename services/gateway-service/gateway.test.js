@@ -50,7 +50,6 @@ describe('Gateway Service', () => {
   });
 
   test('WebSocket Subscription', (done) => {
-    // FIX 1: Use 127.0.0.1 to avoid IPv6 issues
     wsClient = new WebSocket(`ws://127.0.0.1:${PORT}`);
 
     // FIX 2: Catch connection errors

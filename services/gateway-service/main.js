@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3002;
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 
 // Setup Redis
-const redisSub = createClient({
+export const redisSub = createClient({
   url: `redis://${REDIS_HOST}:6379`
 });
 
@@ -104,6 +104,6 @@ export async function start() {
 }
 
 // Only start automatically if this file is run directly (not imported by test)
-if (process.argv[1] === import.meta.url) { // Node.js ES Module check
+if (process.argv[1] === import.meta.url) {
     start();
 }
