@@ -77,7 +77,7 @@ variable "s3_data_bucket_name" {
 
 variable "data_processing_queue_name" {
   type    = string
-  default = "data-processing-queue"
+  default = "data-processing-queue.fifo"
 }
 
 variable "main_db_identifier" {
@@ -87,7 +87,7 @@ variable "main_db_identifier" {
 
 variable "db_username" {
   type    = string
-  default = "admin"
+  default = "dbadmin"
 }
 
 variable "db_password" {
@@ -145,7 +145,7 @@ variable "data_processing_container_name" {
 
 variable "data_processing_container_image" {
   type    = string
-  default = "" # Provide via .tfvars or CLI
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/data-processing-service:latest"
 }
 
 variable "data_processing_service_name" {
@@ -183,7 +183,7 @@ variable "exception_container_name" {
 
 variable "exception_container_image" {
   type    = string
-  default = ""
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/exception-service:latest"
 }
 
 variable "exception_service_name" {
@@ -221,7 +221,7 @@ variable "gateway_container_name" {
 
 variable "gateway_container_image" {
   type    = string
-  default = ""
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/gateway-service:latest"
 }
 
 variable "gateway_service_name" {
@@ -259,7 +259,7 @@ variable "ingestion_container_name" {
 
 variable "ingestion_container_image" {
   type    = string
-  default = ""
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/ingestion-service:latest"
 }
 
 variable "ingestion_service_name" {
@@ -297,7 +297,7 @@ variable "query_suggestion_container_name" {
 
 variable "query_suggestion_container_image" {
   type    = string
-  default = ""
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/query-suggestion-service:latest"
 }
 
 variable "query_suggestion_service_name" {
@@ -335,7 +335,7 @@ variable "rag_container_name" {
 
 variable "rag_container_image" {
   type    = string
-  default = ""
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/rag-service:latest"
 }
 
 variable "rag_service_name" {
@@ -373,7 +373,7 @@ variable "search_container_name" {
 
 variable "search_container_image" {
   type    = string
-  default = ""
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/search-service:latest"
 }
 
 variable "search_service_name" {
@@ -411,7 +411,7 @@ variable "solution_container_name" {
 
 variable "solution_container_image" {
   type    = string
-  default = ""
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/solution-service:latest"
 }
 
 variable "solution_service_name" {
@@ -449,7 +449,7 @@ variable "trade_flow_container_name" {
 
 variable "trade_flow_container_image" {
   type    = string
-  default = ""
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/trade-flow-service:latest"
 }
 
 variable "trade_flow_service_name" {
