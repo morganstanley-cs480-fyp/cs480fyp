@@ -105,12 +105,6 @@ module "ecs_cluster" {
 }
 
 # DATA PROCESSING SERVICE (To add elasticache pub sub)
-# Data Processing ECR
-module "data_processing_service_ecr" {
-  source          = "./modules/ecr"
-  repository_name = var.data_processing_repo_name
-}
-
 # data_processing_task_role
 module "data_processing_task_role" {
   source        = "./modules/data_processing_task_role"
@@ -157,12 +151,6 @@ module "data_processing_service" {
 }
 
 # EXCEPTION SERVICE (Change Port Group)
-# Exception ECR
-module "exception_service_ecr" {
-  source          = "./modules/ecr"
-  repository_name = var.exception_repo_name
-}
-
 # exception_target_group 
 module "exception_target_group" {
   source                = "./modules/alb_tg"
@@ -219,12 +207,6 @@ module "exception_service" {
 }
 
 # GATEWAY SERVICE (To Add elasticache access for pub sub)
-# Gateway ECR
-module "gateway_service_ecr" {
-  source          = "./modules/ecr"
-  repository_name = var.gateway_repo_name
-}
-
 # gateway_target_group
 module "gateway_target_group" {
   source                = "./modules/alb_tg"
@@ -282,14 +264,7 @@ module "gateway_service" {
 }
 
 # INGESTION SERVICE
-# Ingestion ECR
-module "ingestion_service_ecr" {
-  source          = "./modules/ecr"  # Adjust the path as necessary
-  repository_name = var.ingestion_repo_name
-}
-
 # ingestion task role (iam permissions)
-# Create the specific IAM Role for Ingestion
 module "ingestion_task_role" {
   source            = "./modules/ingestion_task_role"
   service_name      = "ingestion-service"
@@ -337,12 +312,6 @@ module "ingestion_service" {
 
 
 # QUERY SUGGESTION SERVICE
-# Query Suggestion ECR
-module "query_suggestion_service_ecr" {
-  source          = "./modules/ecr"
-  repository_name = var.query_suggestion_repo_name
-}
-
 # query_suggestion_target_group
 module "query_suggestion_target_group" {
   source                = "./modules/alb_tg"
@@ -394,12 +363,6 @@ module "query_suggestion_service" {
 }
 
 # RAG SERVICE
-# RAG ECR
-module "rag_service_ecr" {
-  source          = "./modules/ecr" 
-  repository_name = var.rag_repo_name
-}
-
 # rag_target_group
 module "rag_target_group" {
   source                = "./modules/alb_tg"
@@ -462,12 +425,6 @@ module "rag_service" {
 }
 
 # SEARCH SERVICE
-# Search ECR
-module "search_service_ecr" {
-  source          = "./modules/ecr" 
-  repository_name = var.search_repo_name
-}
-
 # search_target_group
 module "search_target_group" {
   source                = "./modules/alb_tg"
@@ -524,12 +481,6 @@ module "search_service" {
 }
 
 # SOLUTION SERVICE
-# Solution ECR
-module "solution_service_ecr" {
-  source          = "./modules/ecr" 
-  repository_name = var.solution_repo_name
-}
-
 # solution_target_group
 module "solution_target_group" {
   source                = "./modules/alb_tg"
@@ -586,12 +537,6 @@ module "solution_service" {
 }
 
 # TRADE FLOW SERVICE # To change target port
-# Trade Flow ECR
-module "trade_flow_service_ecr" {
-  source          = "./modules/ecr" 
-  repository_name = var.trade_flow_repo_name
-}
-
 # trade_flow target to ALB
 module "trade_flow_target_group" {
   source                = "./modules/alb_tg"

@@ -37,4 +37,6 @@ resource "aws_elasticache_replication_group" "this" {
   
   engine                     = "redis"
   engine_version             = "7.1"
+
+  transit_encryption_enabled = true
 }
