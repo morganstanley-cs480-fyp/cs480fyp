@@ -1,4 +1,3 @@
-version: '3.8'
 
 # Docker Compose configuration for LocalStack testing environment
 # This runs LocalStack, PostgreSQL, and Redis for integration testing
@@ -12,24 +11,29 @@ services:
       - "4566:4566"            # LocalStack edge port (all AWS services)
       - "4510-4559:4510-4559"  # External service ports
     environment:
-      - SERVICES=bedrock,s3,sqs,secretsmanager,iam
+      # - SERVICES=bedrock,s3,sqs,secretsmanager,iam, ssm
       - DEBUG=1
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_DEFAULT_REGION=ap-southeast-1
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - PERSISTENCE=0
+      - SQS_QUEUENAME=${QUEUE_NAME}
+      - AWS_REGION=${AWS_REGION}
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./localstack-data}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - ./localstack-setup.sh:/etc/localstack/init/ready.d/script.sh
+      - ./generate-dummy-data:/data
     networks:
       - test-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-      interval: 10s
-      timeout: 5s
+      test: sleep 5
+      interval: 5s
       retries: 10
       start_period: 15s
+    env_file:
+      - .env
 
   # PostgreSQL Database (for test data)
   postgres-test:
@@ -45,7 +49,7 @@ services:
       - ./init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      interval: 1s
       timeout: 3s
       retries: 5
     networks:
@@ -66,6 +70,53 @@ services:
     networks:
       - test-network
 
+  ingestion-service:
+    build:
+      context: ./ingestion-service
+      dockerfile: dockerfile
+    depends_on:
+      localstack:
+        condition: service_healthy
+    networks:
+      - test-network
+    environment:
+      HOSTNAME_EXTERNAL: localstack
+      QUEUE_URL: ${QUEUE_URL}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_FILE_KEY: ${S3_FILE_KEY}
+      SSM_PARAM_NAME: ${SSM_PARAM_NAME}
+      AWS_REGION: ${AWS_REGION}
+      NODE_ENV: ${NODE_ENV}
+      AWS_ENDPOINT: ${AWS_ENDPOINT}
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      BATCH_SIZE: ${BATCH_SIZE}
+    env_file:
+      - .env
+  data-processing-service:
+    build:
+      context: ./data-processing-service
+      dockerfile: dockerfile
+    depends_on:
+      localstack:
+        condition: service_healthy
+      postgres-test:
+        condition: service_healthy
+    networks:
+      - test-network
+    environment:
+      AWS_REGION: ${AWS_REGION}
+      QUEUE_URL: ${QUEUE_URL}
+      AWS_ENDPOINT: ${AWS_ENDPOINT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    env_file:
+      - .env
 networks:
   test-network:
     driver: bridge

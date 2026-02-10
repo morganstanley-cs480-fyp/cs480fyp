@@ -9,11 +9,15 @@ import { Pool } from 'pg';
 const queueUrl = process.env.QUEUE_URL;
 const awsRegion = process.env.AWS_REGION || "ap-southeast-1";
 
-// AWS Clients
-const sqs = new SQSClient({
-  region: awsRegion,
-});
-
+// // AWS Clients
+// const sqs = new SQSClient({
+//   region: awsRegion,
+// });
+const awsEndpoint = process.env.AWS_ENDPOINT
+const sqs = new SQSClient({ region: awsRegion,
+                            forcePathStyle: true,
+                            endpoint: awsEndpoint
+                            });
 // Database Connection Pool
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -21,9 +25,10 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   user: process.env.DB_USER,
   port: parseInt(process.env.DB_PORT || "5432"),
-  ssl: {
-    rejectUnauthorized: false
-  },
+  // ssl: {
+  //   rejectUnauthorized: false
+  // },
+  ssl: false,
   max: 10, // Keep up to 10 connections open
   idleTimeoutMillis: 30000 // Close idle connections after 30s
 });
