@@ -4,18 +4,39 @@ AWS_REGION, QUEUE_URL, DB_HOST, DB_NAME, DB_PASSWORD, DB_USER, DB_PORT
 
 import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from "@aws-sdk/client-sqs";
 import { Pool } from 'pg';
+import { createClient } from 'redis';
 
 // Config
-const queueUrl = process.env.QUEUE_URL;
-const awsRegion = process.env.AWS_REGION || "ap-southeast-1";
+export const queueUrl = process.env.QUEUE_URL;
+export const awsRegion = process.env.AWS_REGION || "ap-southeast-1";
+export const redisHost = process.env.REDIS_HOST || "localhost";
 
 // AWS Clients
-const sqs = new SQSClient({
+export const sqs = new SQSClient({
   region: awsRegion,
 });
 
+export const publisher = createClient({
+  url: `redis://${redisHost}:6379`
+});
+publisher.on('error', (err) => console.error('Redis Client Error', err));
+
+// Publish update to Redis
+export async function publishUpdate(trade_id, payload) {
+  try{
+    const message = JSON.stringify({
+      trade_id: trade_id.toString(),
+      data: payload
+    });
+    await publisher.publish('trade_updates', message);
+    console.log(`Published to Redis for Trade ID: ${trade_id}`);
+  } catch(err) {
+    console.error("Redis Publish Error:", err);
+  }
+}
+
 // Database Connection Pool
-const pool = new Pool({
+export const pool = new Pool({
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
@@ -84,6 +105,9 @@ async function processData() {
   // Intialise DB
   await initDB();
 
+  // Connect to Redis
+  await publisher.connect();
+  console.log("Connected to Redis server.");
   const params = {
     QueueUrl: queueUrl,
     MaxNumberOfMessages: 10,
@@ -106,7 +130,7 @@ async function processData() {
         try {
           body = JSON.parse(message.Body);
         } catch (jsonErr) {
-          console.error("Failed to parse JSON body:", message.Body);
+          console.error("Failed to parse JSON body:", jsonErr);
           await sqs.send(new DeleteMessageCommand({ QueueUrl: queueUrl, ReceiptHandle: message.ReceiptHandle }));
           continue;
         }
@@ -148,7 +172,7 @@ async function processData() {
 }
 
 // --- Handlers ---
-async function handleTrade(trade) {
+export async function handleTrade(trade) {
   const query = `
     INSERT INTO trades (id, account, asset_type, booking_system, affirmation_system, clearing_house, create_time, update_time, status)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -163,11 +187,15 @@ async function handleTrade(trade) {
     trade.update_time, trade.status
   ];
   
+  // Insert or Update Trade
   await pool.query(query, values);
+
+  // Publish update to Redis
+  await publishUpdate(trade.id, trade);
   console.log(`Processed Trade ID: ${trade.id}`);
 }
 
-async function handleTransaction(trans) {
+export async function handleTransaction(trans) {
   // Manual client connect for Transaction (BEGIN/COMMIT)
   const client = await pool.connect();
   try {
@@ -194,8 +222,13 @@ async function handleTransaction(trans) {
     `;
     await client.query(updateTradeQuery, [trans.status, trans.update_time, parseInt(trans.trade_id)]);
 
+    // Commit Transaction
     await client.query('COMMIT');
     console.log(`Processed Transaction ID: ${trans.id}`);
+
+    // Publish update to Redis
+    await publishUpdate(trans.trade_id, trans);
+
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -204,7 +237,7 @@ async function handleTransaction(trans) {
   }
 }
 
-async function handleException(excep) {
+export async function handleException(excep) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -234,8 +267,13 @@ async function handleException(excep) {
       [excep.update_time, parseInt(excep.trade_id)]
     );
 
+    // Commit Exception
     await client.query('COMMIT');
     console.log(`Processed Exception ID: ${excep.id}`);
+
+    // Publish update to Redis
+    await publishUpdate(excep.trade_id, excep);
+
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
