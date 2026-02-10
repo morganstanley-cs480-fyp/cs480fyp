@@ -10,14 +10,20 @@ from datetime import datetime
 import sqlite3
 from pathlib import Path
 import re
+import xml.etree.ElementTree as et
+
+BASE_DIR = Path(__file__).resolve().parent
 
 def next_available_xml(fname: str) -> str:
-    path = Path(fname)
+    path = (BASE_DIR / fname).resolve()
+
     if not path.exists():
         return str(path)
+
     stem = path.stem
     suffix = path.suffix
     base = re.sub(r"-\d+$", "", stem)
+
     i = 1
     while True:
         candidate = path.with_name(f"{base}-{i}{suffix}")
@@ -33,7 +39,8 @@ def setup_tables(cursor):
     cursor.execute(CREATE_TRANSACTIONS_TABLE)
     cursor.execute(CREATE_EXCEPTION_TABLE)
 def connectToDb(name):
-    cursor = sqlite3.connect(name).cursor()
+    db_path = BASE_DIR / name
+    cursor = sqlite3.connect(db_path).cursor()
     setup_tables(cursor)
     return cursor
 
@@ -119,15 +126,6 @@ def createException(cursor,create_time ,trade_id, trans_id):
     insertException(cursor, expt)
     return expt 
 
-# def writeToXML(root, ls, fname):
-#     fname = next_available_xml(fname)
-#
-#     for n in ls:
-#         root.append(n.getXMLTreeRoot())
-#     tree = et.ElementTree(root)
-#     et.indent(tree, space="\t", level=0)
-#     tree.write(fname, encoding="utf-8")
-
 def writeToXML(root, fname):
     fname = next_available_xml(fname)
     tree = et.ElementTree(root)
@@ -139,7 +137,7 @@ def appendRoot(root, ls):
         root.append(child.getXMLTreeRoot())
 def writeAll(fname):
     global CURRENT_CREATED_TRADE, CURRENT_CREATED_TRANSACTIONS, CURRENT_CREATED_EXCEPTION
-    root = et.Element("Root")
+    root = et.Element("root")
     appendRoot(root, CURRENT_CREATED_TRADE)
     appendRoot(root, CURRENT_CREATED_TRANSACTIONS)
     appendRoot(root, CURRENT_CREATED_EXCEPTION)
@@ -178,11 +176,7 @@ def main():
     else:
         print("Not transactions found")
 
-    writeAll("ALL.xml")
-    # writeTradeToXML()
-    # writeTransactionsToXML()
-    # writeExceptionsToXML()
-    # getAllTradeIDs(cursor)
+    writeAll("data.xml")
 
 if __name__ == "__main__":
     main()

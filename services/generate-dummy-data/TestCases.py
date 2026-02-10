@@ -3,16 +3,20 @@ from constants import *
 from classes import *
 from sqlQuery import *
 import yaml
-
+import os
 
 def getYaml(caseNum):
-    with open("allcases.yml") as stream:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    yaml_path = os.path.join(base_dir, "allcases.yml")
+
+    with open(yaml_path, "r") as stream:
         try:
-            return yaml.safe_load(stream)['Cases'][caseNum]
+            return yaml.safe_load(stream)["Cases"][caseNum]
         except Exception as e:
             print("Error when reading yaml")
             print(e)
 
+COMMON_ROOT=et.Element("root")
 def Case1():
     print("creating case1")
     yml = getYaml("Case1")
@@ -35,13 +39,10 @@ def Case1():
         start_date = trans_create_time
         trans_ls.append(trans)
         insertTransaction(cursor, trans)
-    root = et.Element("Root")
-
-    # trade.update_time = start_date
     insertTrade(cursor, trade)
-    appendRoot(root, trade_ls)
-    appendRoot(root, trans_ls)
-    writeToXML(root, "case1.xml")
+    global COMMON_ROOT
+    appendRoot(COMMON_ROOT, trade_ls)
+    appendRoot(COMMON_ROOT, trans_ls)
     
 
 def Case2():
@@ -65,13 +66,11 @@ def Case2():
         start_date = trans_create_time
         trans_ls.append(trans)
         insertTransaction(cursor, trans)
-    root = et.Element("Root")
 
-    # trade.update_time = start_date
     insertTrade(cursor, trade)
-    appendRoot(root, trade_ls)
-    appendRoot(root, trans_ls)
-    writeToXML(root, "case2.xml")
+    global COMMON_ROOT
+    appendRoot(COMMON_ROOT, trade_ls)
+    appendRoot(COMMON_ROOT, trans_ls)
         
     
 def Case3():
@@ -95,21 +94,15 @@ def Case3():
         start_date = trans_create_time
         trans_ls.append(trans)
         insertTransaction(cursor, trans)
-
-    # EXCEPTION_MSG_LS=["MISSING BIC", "INSUFFICIENT MARGIN", "TIME OUT OF RANGE", "MAPPING ISSUE"]
-    # EXCEPTION_COMMENT_LS=["RETRY LIMIT EXCEEDED", "NO BIC", "NO MAPPING"]
-    # EXCEPTION_PRIORITY_LS=["LOW","MEDIUM","HIGH"]
     start_date = add_seconds(start_date, 60)
     expt = TransException(trade.trade_id, trans_ls[-1].trans_id, RandNum(8), "PENDING","INSUFFICIENT MARGIN" , start_date, "NO BIC", random.choice(EXCEPTION_PRIORITY_LS), start_date)
     trans_ls.append(expt)
-    root = et.Element("Root")
 
-    # trade.update_time = start_date
     insertException(cursor, expt)
     insertTrade(cursor, trade)
-    appendRoot(root, trade_ls)
-    appendRoot(root, trans_ls)
-    writeToXML(root, "case3.xml")
+    global COMMON_ROOT
+    appendRoot(COMMON_ROOT, trade_ls)
+    appendRoot(COMMON_ROOT, trans_ls)
 
 def Case4():
     print("creating case4")
@@ -133,20 +126,15 @@ def Case4():
         trans_ls.append(trans)
         insertTransaction(cursor, trans)
 
-    # EXCEPTION_MSG_LS=["MISSING BIC", "INSUFFICIENT MARGIN", "TIME OUT OF RANGE", "MAPPING ISSUE"]
-    # EXCEPTION_COMMENT_LS=["RETRY LIMIT EXCEEDED", "NO BIC", "NO MAPPING"]
-    # EXCEPTION_PRIORITY_LS=["LOW","MEDIUM","HIGH"]
     start_date = add_seconds(start_date, 60)
     expt = TransException(trade.trade_id, trans_ls[-1].trans_id, RandNum(8), "PENDING","MISSING BIC" , start_date, "NO BIC", random.choice(EXCEPTION_PRIORITY_LS), start_date)
     trans_ls.append(expt)
-    root = et.Element("Root")
 
-    # trade.update_time = start_date
     insertException(cursor,expt)
     insertTrade(cursor, trade)
-    appendRoot(root, trade_ls)
-    appendRoot(root, trans_ls)
-    writeToXML(root, "case4.xml")
+    global COMMON_ROOT
+    appendRoot(COMMON_ROOT, trade_ls)
+    appendRoot(COMMON_ROOT, trans_ls)
 
 def Case5():
     print("creating case5")
@@ -170,29 +158,18 @@ def Case5():
         trans_ls.append(trans)
         insertTransaction(cursor, trans)
 
-    # EXCEPTION_MSG_LS=["MISSING BIC", "INSUFFICIENT MARGIN", "TIME OUT OF RANGE", "MAPPING ISSUE"]
-    # EXCEPTION_COMMENT_LS=["RETRY LIMIT EXCEEDED", "NO BIC", "NO MAPPING"]
-    # EXCEPTION_PRIORITY_LS=["LOW","MEDIUM","HIGH"]
     start_date = add_seconds(start_date, 60)
     expt = TransException(trade.trade_id, trans_ls[-1].trans_id, RandNum(8), "PENDING","MAPPING ISSUE" , start_date, "NO MAPPING FOR KINGSLANDING", random.choice(EXCEPTION_PRIORITY_LS), start_date)
     trans_ls.append(expt)
-    root = et.Element("Root")
 
-    # trade.update_time = start_date
     insertException(cursor, expt)
     insertTrade(cursor, trade)
-    appendRoot(root, trade_ls)
-    appendRoot(root, trans_ls)
-    writeToXML(root, "case5.xml")
+    global COMMON_ROOT
+    appendRoot(COMMON_ROOT, trade_ls)
+    appendRoot(COMMON_ROOT, trans_ls)
 Case1()
 Case2()
 Case3()
 Case4()
 Case5()
-    # cursor = connectToDb(DBNAME)
-    # trade = createTrade(cursor)
-    # for _ in range(20):
-    #     addTransactionToTrade(cursor, trade.trade_id)
-
-
-    
+writeToXML(COMMON_ROOT, "data.xml")

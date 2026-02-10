@@ -11,7 +11,7 @@ class Trade:
         self.update_time = update_time 
         self.status = status
     def getXMLTreeRoot(self):
-        root = et.Element("Trade")
+        root = et.Element("trade")
         et.SubElement(root, "id").text = str(self.trade_id)
         et.SubElement(root,"account").text = self.acc
         et.SubElement(root, "asset_type").text = self.asset_type
@@ -35,7 +35,7 @@ class Transaction:
         self.update_time = update_time
         self.step = step
     def getXMLTreeRoot(self):
-        root = et.Element("Transaction")
+        root = et.Element("transaction")
         et.SubElement(root, "id").text = str(self.trans_id)
         et.SubElement(root, "trade_id").text = str(self.trade_id)
         et.SubElement(root, "create_time").text = self.create_time
@@ -45,7 +45,6 @@ class Transaction:
         et.SubElement(root, "status").text = self.status
         et.SubElement(root, "update_time").text = self.update_time
         et.SubElement(root, "step").text = str(self.step)
-        # tree = et.ElementTree(root)
         return root
 
 class TransException:
@@ -61,7 +60,7 @@ class TransException:
         self.update_time = update_time
 
     def getXMLTreeRoot(self):
-        root = et.Element("Exception")
+        root = et.Element("exception")
         et.SubElement(root, "id").text = str(self.exception_id)
         et.SubElement(root, "trade_id").text = str(self.trade_id)
         et.SubElement(root, "transaction_id").text = str(self.trans_id)
@@ -72,14 +71,4 @@ class TransException:
         et.SubElement(root, "priority").text = self.priority
         et.SubElement(root, "update_time").text = self.update_time
         return root
-
-# root = et.Element("transaction")
-# doc = et.SubElement(root,"details")
-# et.SubElement(doc,"field1", name="name1").text = "value 1"
-# et.SubElement(doc,"field2", name="name2").text = "value 2"
-#
-# tree = et.ElementTree(root)
-# tree.write("test.xml")
-
-    
 
