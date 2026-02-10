@@ -39,6 +39,23 @@ services:
     networks:
       - fyp-network
 
+  # pgAdmin
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: fyp-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - fyp-network
+    restart: unless-stopped
+
   # Search Service
   search-service:
     build:
@@ -69,10 +86,67 @@ services:
       - fyp-network
     restart: unless-stopped
 
+  # Exception Service
+  exception-service:
+    build:
+      context: ./exception-service
+      dockerfile: Dockerfile
+    container_name: fyp-exception-service
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/trading_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - fyp-network
+    restart: unless-stopped
+
+  # Solution Service
+  solution-service:
+    build:
+      context: ./solution-service
+      dockerfile: Dockerfile
+    container_name: fyp-solution-service
+    ports:
+      - "8002:8001"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/trading_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - fyp-network
+    restart: unless-stopped
+
+  # Trade Flow Service
+  trade-flow-service:
+    build:
+      context: ./trade-flow-service
+      dockerfile: Dockerfile
+    container_name: fyp-trade-flow-service
+    ports:
+      - "8003:8000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: trading_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - fyp-network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  pgadmin_data:
     driver: local
 
 networks:
