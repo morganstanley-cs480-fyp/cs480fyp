@@ -115,4 +115,4 @@ VALUES
 
 -- Sample query history for demo user
 INSERT INTO query_history (user_id, query_text, is_saved, query_name, create_time, last_use_time) VALUES
-('demo_user', 'show me alleged CDS trades', TRUE, 'Alleged CDS Review', '2025-10-15 10:00:00', '2025-10-20 09:00:00'),
+('demo_user', 'show me alleged CDS trades', TRUE, 'Alleged CDS Review', '2025-10-15 10:00:00', '2025-10-20 09:00:00');
