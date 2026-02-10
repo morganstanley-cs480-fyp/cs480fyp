@@ -11,6 +11,9 @@ on:
       - "morgan-stanley-frontend/**"
       - ".github/workflows/frontend.yml"
 
+env:
+  BUILD_TAG: ${{ github.sha }}
+
 permissions:
   id-token: write
   contents: read
@@ -39,6 +42,7 @@ jobs:
         run: npm run lint
 
   test:
+    needs: lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -65,7 +69,7 @@ jobs:
           fi
 
   build:
-    needs: [lint, test]
+    needs: test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -85,7 +89,15 @@ jobs:
 
       - name: Build frontend
         working-directory: ./morgan-stanley-frontend
-        run: npm run build
+        run: npm run 
+
+      - name: Write build metadata
+        run: |
+          echo '{
+            "commit": "${{ env.BUILD_TAG }}",
+            "branch": "${{ github.ref_name }}",
+            "buildTime": "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'"
+          }' > ./morgan-stanley-frontend/dist/version.json
 
       - name: Verify build output
         run: |
@@ -99,9 +111,9 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-build
+          name: frontend-build-${{ env.BUILD_TAG }}
           path: ./morgan-stanley-frontend/dist
-          retention-days: 1
+          retention-days: 7
 
   deploy:
     needs: build
