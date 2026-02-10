@@ -463,5 +463,5 @@ variable "trade_flow_service_name" {
 variable "key_name" {
   description = "EC2 Key Pair name for SSH access to Milvus instance (leave empty to disable)"
   type        = string
-  default     = ""  # Set your key pair name or leave empty
+  default     = "" # Set your key pair name or leave empty
 }
