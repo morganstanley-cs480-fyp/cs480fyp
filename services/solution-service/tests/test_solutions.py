@@ -13,7 +13,7 @@ async def test_create_solution(client: AsyncClient):
         "solution_description": "Solution description",
         "scores": 15
     }
-    response = await client.post("/solutions/", json=payload)
+    response = await client.post("/api/solutions/", json=payload)
     
     assert response.status_code == 201
     data = response.json()
@@ -34,7 +34,7 @@ async def test_create_solution_minimal_fields(client: AsyncClient):
         "title": "Minimal solution",
         "scores": 10
     }
-    response = await client.post("/solutions/", json=payload)
+    response = await client.post("/api/solutions/", json=payload)
     
     assert response.status_code == 201
     data = response.json()
@@ -53,7 +53,7 @@ async def test_create_solution_with_minimum_score(client: AsyncClient):
         "title": "Minimum score solution",
         "scores": 0
     }
-    response = await client.post("/solutions/", json=payload)
+    response = await client.post("/api/solutions/", json=payload)
     
     assert response.status_code == 201
     data = response.json()
@@ -70,7 +70,7 @@ async def test_create_solution_with_maximum_score(client: AsyncClient):
         "title": "Maximum score solution",
         "scores": 27
     }
-    response = await client.post("/solutions/", json=payload)
+    response = await client.post("/api/solutions/", json=payload)
     
     assert response.status_code == 201
     data = response.json()
@@ -87,7 +87,7 @@ async def test_create_solution_invalid_score_too_high(client: AsyncClient):
         "title": "Invalid high score",
         "scores": 30
     }
-    response = await client.post("/solutions/", json=payload)
+    response = await client.post("/api/solutions/", json=payload)
     
     assert response.status_code == 422  # Validation error
 
@@ -99,14 +99,14 @@ async def test_create_solution_invalid_score_negative(client: AsyncClient):
         "title": "Invalid negative score",
         "scores": -5
     }
-    response = await client.post("/solutions/", json=payload)
+    response = await client.post("/api/solutions/", json=payload)
     
     assert response.status_code == 422  # Validation error
 
 @pytest.mark.asyncio
 async def test_get_solution(client: AsyncClient, sample_solution):
     """Test retrieving a single solution"""
-    response = await client.get(f"/solutions/{sample_solution.id}")
+    response = await client.get(f"/api/solutions/{sample_solution.id}")
     
     assert response.status_code == 200
     data = response.json()
@@ -118,7 +118,7 @@ async def test_get_solution(client: AsyncClient, sample_solution):
 @pytest.mark.asyncio
 async def test_get_solution_not_found(client: AsyncClient):
     """Test retrieving non-existent solution returns 404"""
-    response = await client.get("/solutions/99999")
+    response = await client.get("/api/solutions/99999")
     
     assert response.status_code == 404
     assert response.json()["detail"] == "Solution not found"
@@ -126,7 +126,7 @@ async def test_get_solution_not_found(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_list_solutions(client: AsyncClient, multiple_solutions):
     """Test listing all solutions"""
-    response = await client.get("/solutions/")
+    response = await client.get("/api/solutions/")
     
     assert response.status_code == 200
     data = response.json()
@@ -141,7 +141,7 @@ async def test_update_solution(client: AsyncClient, sample_solution):
         "scores": 20,
         "solution_description": "Updated description"
     }
-    response = await client.put(f"/solutions/{sample_solution.id}", json=payload)
+    response = await client.put(f"/api/solutions/{sample_solution.id}", json=payload)
     
     assert response.status_code == 200
     data = response.json()
@@ -155,7 +155,7 @@ async def test_update_solution_partial(client: AsyncClient, sample_solution):
     original_title = sample_solution.title
     payload = {"scores": 25}
     
-    response = await client.put(f"/solutions/{sample_solution.id}", json=payload)
+    response = await client.put(f"/api/solutions/{sample_solution.id}", json=payload)
     
     assert response.status_code == 200
     data = response.json()
@@ -166,7 +166,7 @@ async def test_update_solution_partial(client: AsyncClient, sample_solution):
 async def test_update_solution_invalid_score(client: AsyncClient, sample_solution):
     """Test updating solution with invalid score should fail"""
     payload = {"scores": 100}
-    response = await client.put(f"/solutions/{sample_solution.id}", json=payload)
+    response = await client.put(f"/api/solutions/{sample_solution.id}", json=payload)
     
     assert response.status_code == 422  # Validation error
 
@@ -174,7 +174,7 @@ async def test_update_solution_invalid_score(client: AsyncClient, sample_solutio
 async def test_update_solution_not_found(client: AsyncClient):
     """Test updating non-existent solution returns 404"""
     payload = {"scores": 15}
-    response = await client.put("/solutions/99999", json=payload)
+    response = await client.put("/api/solutions/99999", json=payload)
     
     assert response.status_code == 404
     assert response.json()["detail"] == "Solution not found"
@@ -189,7 +189,7 @@ async def test_delete_solution(client: AsyncClient):
         scores=10
     )
     
-    response = await client.delete(f"/solutions/{solution.id}")
+    response = await client.delete(f"/api/solutions/{solution.id}")
     assert response.status_code == 204
     
     # Verify deletion
@@ -199,7 +199,7 @@ async def test_delete_solution(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_delete_solution_not_found(client: AsyncClient):
     """Test deleting non-existent solution returns 404"""
-    response = await client.delete("/solutions/99999")
+    response = await client.delete("/api/solutions/99999")
     
     assert response.status_code == 404
     assert response.json()["detail"] == "Solution not found"
