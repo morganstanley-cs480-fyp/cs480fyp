@@ -7,9 +7,3 @@ variable "data_processing_queue_arn" {
   description = "The ARN of the data_proccessing queue to consume from"
   type        = string
 }
-
-variable "update_gateway_queue_arn" {
-  description = "The ARN of the update_gateway queue to send to"
-  type        = string
-}
-

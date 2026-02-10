@@ -53,14 +53,6 @@ module "data_processing_queue" {
   visibility_timeout_seconds = 240
 }
 
-# Update Gateway Queue SQS (Data Processing Service to Gateway Service)
-module "update_gateway_queue" {
-  source = "./modules/sqs"
-  sqs_name = var.update_gateway_queue_name # Needs to end with .fifo
-  is_fifo  = true
-  visibility_timeout_seconds = 240
-}
-
 # RDS-SG
 module "rds_security_group" {
   source                 = "./modules/rds_sg"
@@ -124,7 +116,6 @@ module "data_processing_task_role" {
   source        = "./modules/data_processing_task_role"
   service_name  = var.data_processing_service_name
   data_processing_queue_arn = module.data_processing_queue.sqs_queue_arn
-  update_gateway_queue_arn = module.update_gateway_queue.sqs_queue_arn
 }
 
 # data_processing_cloudwatch
@@ -159,7 +150,6 @@ module "data_processing_service" {
   ]
   sqs_environment = [
     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
-    { name = "UPDATE_GATEWAY_QUEUE_URL", value = module.update_gateway_queue.sqs_queue_url },
   ]
   other_environment = [
     {name = "MIGRATE", value = "true"}
@@ -264,7 +254,6 @@ module "gateway_log_group" {
 module "gateway_task_role" {
   source        = "./modules/gateway_task_role"
   service_name  = var.gateway_service_name
-  update_gateway_queue_arn = module.update_gateway_queue.sqs_queue_arn
 }
 
 # gateway_ecs
@@ -286,9 +275,7 @@ module "gateway_service" {
   assign_public_ip        = true
   target_group_arn        = module.gateway_target_group.target_group_arn 
   rds_environment  = []
-  sqs_environment = [
-     { name = "UPDATE_GATEWAY_QUEUE_URL", value = module.update_gateway_queue.sqs_queue_url }
-  ]
+  sqs_environment = []
   other_environment = [
     { name = "ALB_URL", value = "http://${module.alb.alb_dns_name}" }
   ]
