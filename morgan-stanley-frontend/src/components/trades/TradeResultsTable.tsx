@@ -190,9 +190,9 @@ export function TradeResultsTable({
                             </button>
                           )}
                           {optionMap[header.id]?.length ? (
-                            <button
-                              type="button"
-                              className="flex items-center px-1 text-black/50 hover:text-black/75"
+                            <Button
+                              variant="ghost"
+                              className="flex items-center size-6"
                               onMouseDown={(event) => {
                                 event.preventDefault();
                                 setOpenFilter((prev) =>
@@ -201,11 +201,11 @@ export function TradeResultsTable({
                               }}
                             >
                               <ChevronDown className="size-4" />
-                            </button>
+                            </Button>
                           ) : null}
                         </div>
                         {openFilter === header.id && optionMap[header.id]?.length ? (
-                          <div className="absolute left-0 right-auto top-full z-30 mt-1 max-h-64 min-w-[12rem] overflow-y-auto overflow-x-hidden rounded-md border border-slate-200 bg-white shadow-md flex flex-col">
+                          <div className="absolute left-0 right-auto top-full z-30 mt-1 max-h-64 min-w-48 overflow-y-auto overflow-x-hidden rounded-md border border-slate-200 bg-white shadow-md flex flex-col">
                             {optionMap[header.id].map((option) => (
                               <button
                                 key={option}
@@ -236,7 +236,7 @@ export function TradeResultsTable({
                     onClick={() =>
                       navigate({
                         to: "/trades/$tradeId",
-                        params: { tradeId: row.original.trade_id },
+                        params: { tradeId: row.original.trade_id.toString() },
                       })
                     }
                     className="cursor-pointer hover:bg-[#002B51]/5"

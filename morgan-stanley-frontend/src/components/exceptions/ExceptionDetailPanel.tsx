@@ -123,7 +123,7 @@ export function ExceptionDetailPanel({
                 onClick={() =>
                   navigate({
                     to: "/trades/$tradeId",
-                    params: { tradeId: exception.trade_id },
+                    params: { tradeId: exception.trade_id.toString() },
                   })
                 }
               >
@@ -135,7 +135,7 @@ export function ExceptionDetailPanel({
                 onClick={() =>
                   navigate({
                     to: "/exceptions/$exceptionId",
-                    params: { exceptionId: exception.exception_id },
+                    params: { exceptionId: exception.exception_id.toString() },
                   })
                 }
               >

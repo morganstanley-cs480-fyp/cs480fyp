@@ -8,7 +8,7 @@
 // ============================================================================
 
 export interface Trade {
-  trade_id: string;
+  trade_id: number;
   account: string;
   asset_type: string;
   booking_system: string;

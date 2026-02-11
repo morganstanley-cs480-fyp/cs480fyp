@@ -1,6 +1,5 @@
 //  Collapsible trade information card - now as inner content
 
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -59,6 +58,7 @@ export function TradeInfoCard({
               <p className="text-sm text-black/75 mb-1">Account</p>
               <p className="font-medium text-black">{trade.account}</p>
             </div>
+
             <div>
               <p className="text-sm text-black/75 mb-1">Asset Type</p>
               <p className="font-medium text-black">{trade.asset_type}</p>

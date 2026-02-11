@@ -14,7 +14,7 @@ interface TransactionDetailPanelProps {
   getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
   getPriorityColor: (priority: string) => "default" | "destructive" | "secondary";
   getPriorityIcon: (priority: string) => React.ReactElement;
-  onResolveException: (exceptionId: string) => void;
+  onResolveException: (exceptionId: number) => void;
 }
 
 export function TransactionDetailPanel({

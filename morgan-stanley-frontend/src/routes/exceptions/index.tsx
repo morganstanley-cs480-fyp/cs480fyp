@@ -110,8 +110,8 @@ function ExceptionsPage() {
         const query = searchQuery.toLowerCase();
         filtered = filtered.filter(
           (exc) =>
-            exc.exception_id.toLowerCase().includes(query) ||
-            exc.trade_id.toLowerCase().includes(query) ||
+            exc.exception_id.toString().includes(query) ||
+            exc.trade_id.toString().includes(query) ||
             exc.msg.toLowerCase().includes(query) ||
             exc.comment.toLowerCase().includes(query)
         );

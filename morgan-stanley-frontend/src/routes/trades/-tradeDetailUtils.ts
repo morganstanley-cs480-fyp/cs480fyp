@@ -79,6 +79,6 @@ export function getTransactionBackgroundColor(transaction: Transaction, exceptio
   return "bg-slate-100 border-slate-300";
 }
 
-export function getRelatedExceptions(transId: string, exceptions: Exception[]): Exception[] {
+export function getRelatedExceptions(transId: number, exceptions: Exception[]): Exception[] {
   return exceptions.filter((exc) => exc.trans_id === transId);
 }
