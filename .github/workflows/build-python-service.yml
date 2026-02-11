@@ -167,7 +167,7 @@ jobs:
       - name: Get current task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition ${{ inputs.service_name }}-task \
+            --task-definition ${{ inputs.deployment_name || inputs.service_name }}-task \
             --query 'taskDefinition' \
             --region ap-southeast-1 > task-def.json
 
@@ -176,13 +176,13 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-def.json
-          container-name: ${{ inputs.service_name }}-container
+          container-name: ${{ inputs.deployment_name || inputs.service_name }}-container
           image: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.service_name }}:${{ github.sha }}
 
       - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           cluster: ecs-cluster
-          service: ${{ inputs.service_name }}-service
+          service: ${{ inputs.deployment_name || inputs.service_name }}
           task-definition: ${{ steps.render.outputs.task-definition }}
           wait-for-service-stability: true
