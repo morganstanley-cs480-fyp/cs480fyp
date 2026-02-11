@@ -485,14 +485,15 @@ module "search_service" {
   assign_public_ip   = true
   target_group_arn   = module.search_target_group.target_group_arn
   rds_environment = [
-    { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
-    { name = "DB_USER", value = var.db_username },
-    { name = "DB_PASSWORD", value = var.db_password },
-    { name = "DB_NAME", value = module.main_rds.db_name }
+    { name = "RDS_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
+    { name = "RDS_USER", value = var.db_username },
+    { name = "RDS_PASSWORD", value = var.db_password },
+    { name = "RDS_DB", value = module.main_rds.db_name }
   ]
   sqs_environment = []
   other_environment = [
-    { name = "ALB_URL", value = "http://${module.alb.alb_dns_name}" }
+    { name = "ALB_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "REDIS_HOST", value = "redis-placeholder" }
   ]
 }
 
