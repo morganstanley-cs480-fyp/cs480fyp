@@ -184,3 +184,39 @@ VALUES
 (33084149, 46195889, '2025-08-28 05:10:36', 'CME', 'send', 'CONSENT_GRANTED', 'ALLEGED', '2025-08-28 05:10:36', 4),
 (73573614, 46195889, '2025-08-28 05:12:47', 'CME', 'receive', 'CLEARING_CONFIRMED', 'CLEARED', '2025-08-28 05:12:47', 5),
 (97337730, 46195889, '2025-08-28 05:13:59', 'KINGSLANDING', 'send', 'CLEARED_TRADE', 'REJECTED', '2025-08-28 05:13:59', 6);
+
+-- Sample exceptions for pending trades
+INSERT INTO exceptions (id, trade_id, trans_id, msg, priority, status, comment, create_time, update_time)
+VALUES
+-- Exception 1: Credit rejection for trade 55623053
+(19757932, 55623053, 88242387, 'Credit limit exceeded for counterparty. Available credit: $5M, Required: $8M for IRS trade.', 'HIGH', 'PENDING', 'Awaiting credit committee review and approval for limit increase', '2025-08-07 09:12:25', '2025-08-07 09:12:25'),
+
+-- Exception 2: Consent rejection for trade 68186799
+(86572959, 68186799, 15153056, 'LCH consent rejected due to incomplete LEI documentation. Counterparty LEI verification failed regulatory check.', 'HIGH', 'PENDING', 'Legal team contacted for updated LEI certificate', '2025-08-09 03:17:28', '2025-08-09 03:17:28'),
+
+-- Exception 3: Booking system rejection for trade 46195889
+(36485937, 46195889, 97337730, 'Booking system validation failed: Settlement account mismatch between clearing house (CME) and booking system (KINGSLANDING). Account reference data inconsistency detected.', 'MEDIUM', 'PENDING', 'Operations team investigating account mapping configuration', '2025-08-28 05:14:05', '2025-08-28 05:14:05');
+
+-- Sample solutions for the exceptions
+INSERT INTO solutions (id, exception_id, title, exception_description, reference_event, solution_description, scores, create_time)
+VALUES
+-- Solution 1: Credit limit exception
+(275682, 19757932, 'Credit Limit Increase with Additional Collateral', 
+'Trade execution blocked due to insufficient credit line. The IRS trade requires $8M exposure but only $5M credit is available. Credit check (trans 98680769) passed but final approval (trans 88242387) was rejected by TAS system.',
+'Similar credit rejections occurred on 2025-07-15 for ACC7526 and were resolved within 4 hours using collateral posting method.',
+'1. Request immediate collateral posting of $3M from counterparty to cover shortfall. 2. Submit emergency credit limit increase request to Credit Risk team with trade economics justification. 3. Once collateral posted or limit approved, manually override credit check in TAS. 4. Resubmit consent request to CME clearing house. 5. Monitor transaction flow through to SEND_TRADE_ID step.',
+23, '2025-08-07 09:15:00'),
+
+-- Solution 2: LEI documentation exception  
+(539273, 86572959, 'Update LEI Documentation and Resubmit Clearing Request',
+'Clearing house consent rejection at step 5 after initial consent request succeeded (trans 81466877). Credit approval obtained (trans 58746648) but LCH rejected the second consent request (trans 15153056) due to failed LEI verification in their regulatory database.',
+'Trade 45623890 on 2025-07-22 encountered identical LEI rejection from LCH and was resolved in 2.5 hours after documentation update.',
+'1. Contact Legal/Compliance to obtain updated LEI certificate from Global LEI Foundation database. 2. Upload refreshed LEI documentation to counterparty master data in RED KEEP system. 3. Notify LCH clearing operations of documentation update via secure portal. 4. Request manual LEI re-verification from LCH compliance team. 5. Once verified, resubmit consent request through MARC affirmation system. 6. Continue normal clearing workflow.',
+25, '2025-08-09 03:20:00'),
+
+-- Solution 3: Settlement account mismatch
+(912732, 36485937, 'Reconcile Settlement Account Reference Data Across Systems',
+'Trade successfully cleared at CME (trans 73573614 confirmed) but booking system rejected at final step (trans 97337730). The issue stems from mismatched settlement account identifiers between CME clearing records and KINGSLANDING booking system master data.',
+'Reference data mismatches have occurred 3 times in past month for HIGHGARDEN trades. Root cause identified as manual account updates not syncing across all systems.',
+'1. Extract settlement account details from CME clearing confirmation message. 2. Compare against KINGSLANDING account master file for HIGHGARDEN accounts. 3. Update KINGSLANDING reference data tables with correct CME settlement account mapping. 4. Execute data validation script to ensure sync between all booking and clearing systems. 5. Resubmit cleared trade message from CME to KINGSLANDING. 6. Implement automated daily reconciliation job to prevent future occurrences.',
+20, '2025-08-28 05:16:00');
