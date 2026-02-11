@@ -89,7 +89,7 @@ jobs:
 
       - name: Build frontend
         working-directory: ./morgan-stanley-frontend
-        run: npm run 
+        run: npm run build
 
       - name: Write build metadata
         run: |
@@ -124,7 +124,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: frontend-build
+          name: frontend-build-${{ env.BUILD_TAG }} 
           path: ./dist
 
       - name: Configure AWS credentials

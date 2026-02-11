@@ -1,5 +1,4 @@
 // Individual transaction details
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ interface TransactionDetailPanelProps {
   getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
   getPriorityColor: (priority: string) => "default" | "destructive" | "secondary";
   getPriorityIcon: (priority: string) => React.ReactElement;
-  onResolveException: (exceptionId: string) => void;
+  onResolveException: (exceptionId: number) => void;
 }
 
 export function TransactionDetailPanel({

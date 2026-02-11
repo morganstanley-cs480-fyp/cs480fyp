@@ -25,7 +25,7 @@ import {
   getPriorityIcon,
   getTransactionBackgroundColor,
   getRelatedExceptions,
-} from "./tradeDetailUtils";
+} from "./-tradeDetailUtils";
 
 export const Route = createFileRoute("/trades/$tradeId")({
   component: TradeDetailPage,

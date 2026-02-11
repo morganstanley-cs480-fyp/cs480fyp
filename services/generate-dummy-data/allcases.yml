@@ -1,0 +1,269 @@
+Cases:
+  Case1:
+    - direction: receive
+      entity: CLEARING HOUSE
+      name: OCTCCHK
+      type: REQUEST_CONSENT
+      status: CLEARED
+
+    - direction: send
+      entity: Trade Approval System
+      name: TAS
+      type: CREDIT_CHECK
+      status: CLEARED
+
+    - direction: receive
+      entity: Trade Approval System
+      name: TAS
+      type: CREDIT_APPROVE
+      status: CLEARED
+
+    - direction: send
+      entity: CLEARING HOUSE
+      name: OCTCCHK
+      type: CONSENT_GRANTED
+      status: ALLEGED
+
+    - direction: receive
+      entity: CLEARING HOUSE
+      name: OCTCCHK
+      type: STATUS_UPDATE
+      status: CLEARED
+
+    - direction: receive
+      entity: CLEARING HOUSE
+      name: OCTCCHK
+      type: CLEARING_CONFIRMED
+      status: CLEARED
+
+    - direction: send
+      entity: BOOKING SYSTEM
+      name: WINTERFELL
+      type: CLEARED_TRADE
+      status: CLEARED
+
+    - direction: receive
+      entity: BOOKING SYSTEM
+      name: WINTERFELL
+      type: CLEARED_TRADE
+      status: CLEARED
+
+    - direction: send
+      entity: CLEARING HOUSE
+      name: OCTCCHK
+      type: SEND_TRADE_ID
+      status: CLEARED
+
+    - direction: send
+      entity: Trade Approval System
+      name: TAS
+      type: SEND_TRADE_ID
+      status: CLEARED
+
+  Case2:
+      - direction: receive
+        entity: CLEARING HOUSE
+        name: CME
+        type: REQUEST_CONSENT
+        status: CLEARED
+
+      - direction: send
+        entity: Trade Approval System
+        name: TAS
+        type: CREDIT_CHECK
+        status: CLEARED
+
+      - direction: reveive
+        entity: Trade Approval System
+        name: TAS
+        type: CREDIT_APPROVE
+        status: CLEARED
+
+      - direction: send 
+        entity: CLEARING HOUSE
+        name: CME
+        type: CONSENT_GRANTED
+        status: ALLEGED
+
+      - direction: receive 
+        entity: CLEARING HOUSE
+        name: CME
+        type: STATUS_UPDATE
+        status: CLEARED
+      
+      - direction: reveive 
+        entity: CLEARING HOUSE
+        name: CME
+        type: CLEARING_CONFIRMED
+        status: CLEARED
+
+      - direction: send
+        entity: BOOKING SYSTEM
+        name: RED KEEP
+        type: CLEARED_TRADE
+        status: CLEARED
+
+      - direction: send
+        entity: CLEARING HOUSE
+        name: CME
+        type: SEND_TRADE_ID
+        status: CLEARED
+
+      - direction: receive 
+        entity: CLEARING HOUSE
+        name: CME
+        type: STATUS_UPDATE
+        status: CLEARED
+
+      - direction: send
+        entity: Trade Approval System
+        name: TAS
+        type: SEND_TRADE_ID
+        status: CLEARED
+
+      - direction: send
+        entity: CLEARING HOUSE
+        name: LCH
+        type: REQUEST_CONSENT
+        status: CLEARED
+
+      - direction: receive
+        entity: CLEARING HOUSE
+        name: LCH
+        type: CONSENT_GRANTED 
+        status: CLEARED 
+
+      - direction: send
+        entity: Trade Approval System
+        name: TAS
+        type: CREDIT_CHECK
+        status: CLEARED
+
+      - direction: receive 
+        entity: Trade Approval System
+        name: TAS
+        type: CREDIT_REJECT
+        status: CLEARED 
+
+      - direction: send
+        entity: CLEARING HOUSE
+        name: LCH
+        type: CONSENT_REJECTED
+        status: CLEARED 
+
+      - direction: receive
+        entity: CLEARING HOUSE
+        name: LCH
+        type: CLEARING_REFUSED
+        status: CLEARED 
+
+      - direction: send
+        entity: BOOKING SYSTEM
+        name: KINGSLANDING
+        type: CLEARED_TRADE
+        status: CLEARED 
+
+      - direction: receive
+        entity: BOOKING SYSTEM
+        name: KINGSLANDING
+        type: CLEARED_TRADE
+        status: CLEARED 
+
+      - direction: send
+        entity: CLEARING HOUSE
+        name: KINGSLANDING
+        type: SEND_TRADE_ID
+        status: CLEARED 
+
+      - direction: send
+        entity: Trade Approval System
+        name: TAS
+        type: SEND_TRADE_ID
+        status: CLEARED 
+
+  Case3:
+    - direction: receive
+      entity: CLEARING HOUSE
+      name: CME
+      type: REQUEST_CONSENT
+      status: CLEARED
+
+    - direction: send
+      entity: Trade Approval System
+      name: TAS
+      type: CREDIT_CHECK
+      status: CLEARED
+
+    - direction: receive
+      entity: Trade Approval System
+      name: TAS
+      type: CREDIT_REJECT
+      status: REJECTED 
+
+  Case4:
+    - direction: receive
+      entity: CLEARING HOUSE
+      name: LCH
+      type: REQUEST_CONSENT
+      status: CLEARED
+
+    - direction: send
+      entity: Trade Approval System
+      name: TAS
+      type: CREDIT_CHECK
+      status: CLEARED
+
+    - direction: receive
+      entity: Trade Approval System
+      name: TAS
+      type: CREDIT_APPROVE
+      status: CLEARED
+
+    - direction: send
+      entity: CLEARING HOUSE
+      name: LCH
+      type: REQUEST_CONSENT
+      status: CLEARED
+
+    - direction: receive
+      entity: CLEARING HOUSE
+      name: LCH
+      type: CONSENT_REJECTED
+      status: REJECTED 
+
+  Case5:
+    - direction: receive
+      entity: CLEARING HOUSE
+      name: CME
+      type: REQUEST_CONSENT
+      status: CLEARED
+
+    - direction: send
+      entity: Trade Approval System
+      name: TAS
+      type: CREDIT_CHECK
+      status: CLEARED
+
+    - direction: receive
+      entity: Trade Approval System
+      name: TAS
+      type: CREDIT_APPROVE
+      status: CLEARED
+
+    - direction: send
+      entity: CLEARING HOUSE
+      name: CME
+      type: CONSENT_GRANTED
+      status: ALLEGED
+
+    - direction: receive
+      entity: CLEARING HOUSE
+      name: CME
+      type: CLEARING_CONFIRMED
+      status: CLEARED
+
+    - direction: send
+      entity: BOOKING SYSTEM
+      name: KINGSLANDING
+      type: CLEARED_TRADE
+      status: REJECTED 
