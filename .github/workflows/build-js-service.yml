@@ -168,6 +168,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           cluster: ecs-cluster
-          service: ${{ inputs.deployment_name || inputs.service_name }}
+          service: ${{ inputs.service_name }}
           task-definition: ${{ steps.render.outputs.task-definition }}
           wait-for-service-stability: true
