@@ -15,8 +15,8 @@ import type {
   PaginationState,
 } from "@tanstack/react-table";
 
-import { 
-  mockTrades, 
+import {
+  mockTrades,
   type Trade,
   getUniqueAssetTypes,
   getUniqueAccounts,
@@ -27,15 +27,23 @@ import {
 } from "@/lib/mockData";
 
 // Component imports
-import { SearchHeader, type RecentSearch } from "@/components/trades/SearchHeader";
-import { TradeFilters, type ManualSearchFilters } from "@/components/trades/TradeFilters";
+import {
+  SearchHeader,
+  type RecentSearch,
+} from "@/components/trades/SearchHeader";
+import {
+  TradeFilters,
+  type ManualSearchFilters,
+} from "@/components/trades/TradeFilters";
 import { TradeResultsTable } from "@/components/trades/TradeResultsTable";
 import { useTradeColumns } from "@/components/trades/useTradeColumns";
 // import { useUser } from "@/contexts/UserContext";
 import { searchService } from "@/lib/api/searchService";
 import { APIError } from "@/lib/api/client";
+import { requireAuth } from "@/lib/utils";
 
 export const Route = createFileRoute("/trades/")({
+  beforeLoad: requireAuth,
   component: TradeSearchPage,
 });
 
@@ -64,7 +72,9 @@ function TradeSearchPage() {
     if (typeof window === "undefined") return getDefaultFilters();
     const saved = sessionStorage.getItem(STORAGE_KEY);
     try {
-      return saved ? (JSON.parse(saved) as ManualSearchFilters) : getDefaultFilters();
+      return saved
+        ? (JSON.parse(saved) as ManualSearchFilters)
+        : getDefaultFilters();
     } catch (error) {
       console.warn("Failed to parse saved trade filters", error);
       return getDefaultFilters();
@@ -92,23 +102,29 @@ function TradeSearchPage() {
       return [];
     }
   });
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
-    if (typeof window === "undefined") return {};
-    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
-    if (!saved) return {};
-    try {
-      const parsed = JSON.parse(saved) as { columnVisibility?: VisibilityState };
-      return parsed.columnVisibility ?? {};
-    } catch {
-      return {};
-    }
-  });
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    () => {
+      if (typeof window === "undefined") return {};
+      const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+      if (!saved) return {};
+      try {
+        const parsed = JSON.parse(saved) as {
+          columnVisibility?: VisibilityState;
+        };
+        return parsed.columnVisibility ?? {};
+      } catch {
+        return {};
+      }
+    },
+  );
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
     if (typeof window === "undefined") return [];
     const saved = sessionStorage.getItem(TABLE_STATE_KEY);
     if (!saved) return [];
     try {
-      const parsed = JSON.parse(saved) as { columnFilters?: ColumnFiltersState };
+      const parsed = JSON.parse(saved) as {
+        columnFilters?: ColumnFiltersState;
+      };
       return parsed.columnFilters ?? [];
     } catch {
       return [];
@@ -125,7 +141,7 @@ function TradeSearchPage() {
       return { pageIndex: 0, pageSize: 20 };
     }
   });
-  
+
   // Manual search filter state
   const [filters, setFilters] = useState<ManualSearchFilters>(loadFilters);
 
@@ -160,11 +176,11 @@ function TradeSearchPage() {
   const clearAllFilters = async () => {
     const defaultFilters = getDefaultFilters();
     setFilters(defaultFilters);
-    
+
     // Search with cleared filters
     setSearching(true);
     setSearchError(null);
-    
+
     try {
       const response = await searchService.searchTrades({
         search_type: "manual",
@@ -178,11 +194,11 @@ function TradeSearchPage() {
 
       setResults(response.results);
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       if (error instanceof APIError) {
         setSearchError(`Search failed: ${error.message}`);
       } else {
-        setSearchError('An unexpected error occurred during search');
+        setSearchError("An unexpected error occurred during search");
       }
       // Fallback to mock data on error
       setResults(mockTrades);
@@ -195,7 +211,7 @@ function TradeSearchPage() {
   const handleManualSearch = async () => {
     setSearching(true);
     setSearchError(null);
-    
+
     try {
       // Build manual search request
       const response = await searchService.searchTrades({
@@ -219,11 +235,11 @@ function TradeSearchPage() {
 
       setResults(response.results);
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       if (error instanceof APIError) {
         setSearchError(`Search failed: ${error.message}`);
       } else {
-        setSearchError('An unexpected error occurred during search');
+        setSearchError("An unexpected error occurred during search");
       }
       // Fallback to mock data on error
       setResults(mockTrades);
@@ -237,7 +253,7 @@ function TradeSearchPage() {
 
     setSearching(true);
     setSearchError(null);
-    
+
     try {
       // Build natural language search request
       const response = await searchService.searchTrades({
@@ -247,7 +263,7 @@ function TradeSearchPage() {
       });
 
       setResults(response.results);
-      
+
       // Add to recent searches
       const newSearch: RecentSearch = {
         id: Date.now().toString(),
@@ -256,11 +272,11 @@ function TradeSearchPage() {
       };
       setRecentSearches((prev) => [newSearch, ...prev.slice(0, 4)]);
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       if (error instanceof APIError) {
         setSearchError(`Search failed: ${error.message}`);
       } else {
-        setSearchError('An unexpected error occurred during search');
+        setSearchError("An unexpected error occurred during search");
       }
       // Fallback to mock data on error
       setResults(mockTrades);
@@ -275,7 +291,7 @@ function TradeSearchPage() {
 
     setSearching(true);
     setSearchError(null);
-    
+
     try {
       const response = await searchService.searchTrades({
         search_type: "natural_language",
@@ -285,11 +301,11 @@ function TradeSearchPage() {
 
       setResults(response.results);
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       if (error instanceof APIError) {
         setSearchError(`Search failed: ${error.message}`);
       } else {
-        setSearchError('An unexpected error occurred during search');
+        setSearchError("An unexpected error occurred during search");
       }
       setResults(mockTrades);
     } finally {
@@ -308,7 +324,9 @@ function TradeSearchPage() {
         onSearch={handleSearch}
         onToggleFilters={() => setShowFilters(!showFilters)}
         onRecentSearchClick={handleRecentSearchClick}
-        onDeleteSearch={(id) => setRecentSearches((prev) => prev.filter((s) => s.id !== id))}
+        onDeleteSearch={(id) =>
+          setRecentSearches((prev) => prev.filter((s) => s.id !== id))
+        }
         onClearAllSearches={() => setRecentSearches([])}
       />
 
@@ -334,7 +352,15 @@ function TradeSearchPage() {
             className="text-red-400 hover:text-red-600 flex-shrink-0"
             aria-label="Dismiss error"
           >
-            <svg className="w-5 h-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>

@@ -12,8 +12,10 @@ import { AIGeneratorPanel } from '@/components/exceptions-individual/AIGenerator
 
 // Hook import
 import { useExceptionResolver } from './-useExceptionResolver';
+import { requireAuth } from '@/lib/utils';
 
 export const Route = createFileRoute('/exceptions/$exceptionId')({
+    beforeLoad: requireAuth,
   component: ResolveExceptionPage,
 });
 

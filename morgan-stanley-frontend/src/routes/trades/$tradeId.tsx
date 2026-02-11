@@ -26,8 +26,10 @@ import {
   getTransactionBackgroundColor,
   getRelatedExceptions,
 } from "./-tradeDetailUtils";
+import { requireAuth } from "@/lib/utils";
 
 export const Route = createFileRoute("/trades/$tradeId")({
+  beforeLoad: requireAuth,
   component: TradeDetailPage,
 });
 

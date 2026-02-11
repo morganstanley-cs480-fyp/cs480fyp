@@ -1,8 +1,14 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { Header } from '@/components/Header'
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useAuth } from "react-oidc-context";
+import type { AuthContextProps } from 'react-oidc-context';
 
+
+// Created to protect pages.
+export type RouterContext = {
+  authentication: AuthContextProps;
+}
 
 function RootComponent() {
   const auth = useAuth();
@@ -29,6 +35,6 @@ function RootComponent() {
   );
 }
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
 });
