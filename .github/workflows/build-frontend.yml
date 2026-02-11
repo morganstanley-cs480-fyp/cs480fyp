@@ -89,7 +89,7 @@ jobs:
 
       - name: Build frontend
         working-directory: ./morgan-stanley-frontend
-        run: npm run 
+        run: npm run build
 
       - name: Write build metadata
         run: |
