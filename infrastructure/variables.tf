@@ -135,12 +135,12 @@ variable "data_processing_log_group_name" {
 
 variable "data_processing_family" {
   type    = string
-  default = "data-processing-task"
+  default = "data-processing-service-task"
 }
 
 variable "data_processing_container_name" {
   type    = string
-  default = "data-processing-container"
+  default = "data-processing-service-container"
 }
 
 variable "data_processing_container_image" {
@@ -173,12 +173,12 @@ variable "exception_log_group_name" {
 
 variable "exception_family" {
   type    = string
-  default = "exception-task"
+  default = "exception-service-task"
 }
 
 variable "exception_container_name" {
   type    = string
-  default = "exception-container"
+  default = "exception-service-container"
 }
 
 variable "exception_container_image" {
@@ -211,12 +211,12 @@ variable "gateway_log_group_name" {
 
 variable "gateway_family" {
   type    = string
-  default = "gateway-task"
+  default = "gateway-service-task"
 }
 
 variable "gateway_container_name" {
   type    = string
-  default = "gateway-container"
+  default = "gateway-service-container"
 }
 
 variable "gateway_container_image" {
@@ -249,12 +249,12 @@ variable "ingestion_log_group_name" {
 
 variable "ingestion_family" {
   type    = string
-  default = "ingestion-task"
+  default = "ingestion-service-task"
 }
 
 variable "ingestion_container_name" {
   type    = string
-  default = "ingestion-container"
+  default = "ingestion-service-container"
 }
 
 variable "ingestion_container_image" {
@@ -287,12 +287,12 @@ variable "query_suggestion_log_group_name" {
 
 variable "query_suggestion_family" {
   type    = string
-  default = "query-suggestion-task"
+  default = "query-suggestion-service-task"
 }
 
 variable "query_suggestion_container_name" {
   type    = string
-  default = "query-suggestion-container"
+  default = "query-suggestion-service-container"
 }
 
 variable "query_suggestion_container_image" {
@@ -325,12 +325,12 @@ variable "rag_log_group_name" {
 
 variable "rag_family" {
   type    = string
-  default = "rag-task"
+  default = "rag-service-task"
 }
 
 variable "rag_container_name" {
   type    = string
-  default = "rag-container"
+  default = "rag-service-container"
 }
 
 variable "rag_container_image" {
@@ -363,12 +363,12 @@ variable "search_log_group_name" {
 
 variable "search_family" {
   type    = string
-  default = "search-task"
+  default = "search-service-task"
 }
 
 variable "search_container_name" {
   type    = string
-  default = "search-container"
+  default = "search-service-container"
 }
 
 variable "search_container_image" {
@@ -401,12 +401,12 @@ variable "solution_log_group_name" {
 
 variable "solution_family" {
   type    = string
-  default = "solution-task"
+  default = "solution-service-task"
 }
 
 variable "solution_container_name" {
   type    = string
-  default = "solution-container"
+  default = "solution-service-container"
 }
 
 variable "solution_container_image" {
@@ -439,12 +439,12 @@ variable "trade_flow_log_group_name" {
 
 variable "trade_flow_family" {
   type    = string
-  default = "trade-flow-task"
+  default = "trade-flow-service-task"
 }
 
 variable "trade_flow_container_name" {
   type    = string
-  default = "trade-flow-container"
+  default = "trade-flow-service-container"
 }
 
 variable "trade_flow_container_image" {
