@@ -167,7 +167,7 @@ jobs:
       - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          cluster: cs480fyp-ecs-cluster
+          cluster: ecs-cluster
           service: ${{ inputs.service_name }}-service
           task-definition: ${{ steps.render.outputs.task-definition }}
           wait-for-service-stability: true
