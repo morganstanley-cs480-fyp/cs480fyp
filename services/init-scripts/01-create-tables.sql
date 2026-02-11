@@ -53,3 +53,28 @@ CREATE INDEX IF NOT EXISTS idx_trades_status ON trades(status);
 CREATE INDEX IF NOT EXISTS idx_trades_create_time ON trades(create_time DESC);
 CREATE INDEX IF NOT EXISTS idx_trades_update_time ON trades(update_time DESC);
 CREATE INDEX IF NOT EXISTS idx_trades_account ON trades(account);
+
+-- Create transactions table
+-- Schema matches production: stores transaction flow for each trade
+CREATE TABLE IF NOT EXISTS transactions (
+    id INTEGER PRIMARY KEY,
+    trade_id INTEGER NOT NULL,
+    create_time TIMESTAMP NOT NULL,
+    entity VARCHAR(50) NOT NULL,
+    direction VARCHAR(20) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    update_time TIMESTAMP NOT NULL,
+    step INTEGER NOT NULL,
+    
+    -- Foreign key constraint
+    CONSTRAINT fk_transactions_trade_id 
+        FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE CASCADE
+);
+
+-- Create indexes for transactions table
+CREATE INDEX IF NOT EXISTS idx_transactions_trade_id ON transactions(trade_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
+CREATE INDEX IF NOT EXISTS idx_transactions_create_time ON transactions(create_time DESC);
+CREATE INDEX IF NOT EXISTS idx_transactions_step ON transactions(step);
+CREATE INDEX IF NOT EXISTS idx_transactions_entity ON transactions(entity);
