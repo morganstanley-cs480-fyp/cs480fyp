@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Check } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import type { Transaction, Exception } from "@/lib/mockData";
 import { formatDateShort } from "@/lib/utils";
 
@@ -177,8 +177,7 @@ export function TransactionDetailPanel({
                           className="w-full"
                           onClick={() => onResolveException(String(exception.exception_id))}
                         >
-                          <Check className="size-4 mr-2" />
-                          Resolve Exception
+                          View Exception
                         </Button>
                       </>
                     )}

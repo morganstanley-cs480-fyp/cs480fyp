@@ -14,6 +14,7 @@ from app.models.domain import Trade, ExtractedParams
 from app.services.bedrock_service import bedrock_service
 from app.services.query_builder import query_builder
 from app.services.query_history_service import query_history_service
+from app.services.ranking_service import trade_ranker
 from app.utils.logger import logger
 from app.utils.exceptions import (
     InvalidSearchRequestError,
@@ -44,6 +45,7 @@ class SearchOrchestrator:
         self.builder = query_builder
         self.history = query_history_service
         self.db = db_manager
+        self.ranker = trade_ranker
     
     async def execute_search(self, request: SearchRequest) -> SearchResponse:
         """
@@ -112,6 +114,9 @@ class SearchOrchestrator:
         
         # Step 3: Execute query
         trades = await self._execute_query(sql_query, params, request.user_id)
+        
+        # Step 3.5: Apply intelligent ranking (if enabled)
+        trades = await self._apply_ranking(trades, request.user_id)
         
         # Step 4: Format response
         execution_time = (time.time() - start_time) * 1000  # Convert to milliseconds
@@ -267,6 +272,85 @@ class SearchOrchestrator:
                     "user_id": user_id
                 }
             )
+    
+    async def _apply_ranking(
+        self,
+        trades: list[Trade],
+        user_id: str
+    ) -> list[Trade]:
+        """
+        Apply intelligent ranking to search results.
+        
+        Fetches enriched data (exceptions, transactions) and ranks trades
+        by relevance using the configured ranking algorithm.
+        
+        Args:
+            trades: Initial list of trades from search query
+            user_id: User ID for logging
+        
+        Returns:
+            Ranked list of trades (most relevant first)
+        """
+        if not trades:
+            return trades
+        
+        # Check if ranking is enabled
+        if not self.ranker.config.is_enabled():
+            logger.debug(
+                "Ranking disabled, returning trades in original order",
+                extra={"user_id": user_id}
+            )
+            return trades
+        
+        try:
+            # Extract trade IDs
+            trade_ids = [trade.trade_id for trade in trades]
+            
+            # Fetch enriched data for ranking
+            enriched_query, enriched_params = self.builder.build_enriched_data_query(trade_ids)
+            
+            if not enriched_query:
+                logger.warning("No enriched data query generated, skipping ranking")
+                return trades
+            
+            # Execute enriched data query
+            enriched_records = await self.db.fetch(enriched_query, *enriched_params)
+            
+            # Convert to dict for efficient lookup
+            enriched_data = {}
+            for record in enriched_records:
+                enriched_data[record["trade_id"]] = {
+                    "transaction_count": record["transaction_count"]
+                }
+            
+            logger.debug(
+                f"Fetched enriched data for {len(enriched_data)} trades",
+                extra={"user_id": user_id}
+            )
+            
+            # Apply ranking
+            ranked_trades = self.ranker.rank_trades(trades, enriched_data)
+            
+            logger.info(
+                "Applied intelligent ranking to search results",
+                extra={
+                    "user_id": user_id,
+                    "trade_count": len(ranked_trades)
+                }
+            )
+            
+            return ranked_trades
+            
+        except Exception as e:
+            # If ranking fails, log warning and return original order
+            logger.warning(
+                f"Ranking failed, returning trades in original order: {e}",
+                extra={
+                    "user_id": user_id,
+                    "error": str(e)
+                }
+            )
+            return trades
 
 
 # Global singleton instance

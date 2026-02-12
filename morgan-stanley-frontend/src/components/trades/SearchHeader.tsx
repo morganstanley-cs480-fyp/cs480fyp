@@ -1,6 +1,6 @@
 // The gradient search header with natural language search input and recent searches dropdown
 
-import { Search, Sparkles, Filter, Clock, X, Star, Bookmark } from "lucide-react";
+import { Search, Filter, Clock, X, Star, Bookmark } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
@@ -93,7 +93,6 @@ export function SearchHeader({
   return (
     <div className="bg-[#002B51] rounded-lg p-8 text-white">
       <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="size-6" />
         <h2>Advanced Trade Lifecycle Search</h2>
       </div>
       <p className="text-white mb-6">

@@ -17,9 +17,9 @@ from pydantic import ValidationError  # noqa: E402
 
 def test_trade_model():
     """Test Trade domain model"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Testing Trade Model")
-    print("="*60)
+    print("=" * 60)
     
     try:
         # Valid trade
@@ -34,27 +34,27 @@ def test_trade_model():
             update_time="2025-01-15 10:00:00",
             status="CLEARED"
         )
-        print(f"✓ Valid trade created: {trade.trade_id}")
-        print(f"  Asset: {trade.asset_type}, Status: {trade.status}")
+        print("✓ Valid trade created: {trade.trade_id}")
+        print("  Asset: {trade.asset_type}, Status: {trade.status}")
         
         # Test JSON serialization
         trade_json = trade.model_dump_json()
-        print(f"✓ JSON serialization works")
+        print("✓ JSON serialization works")
         
         # Test JSON deserialization
         trade_from_json = Trade.model_validate_json(trade_json)
-        print(f"✓ JSON deserialization works")
+        print("✓ JSON deserialization works")
         
     except Exception as e:
-        print(f"❌ Trade model test failed: {e}")
+        print("❌ Trade model test failed: {e}")
         raise
 
 
 def test_query_history_model():
     """Test QueryHistory domain model"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Testing QueryHistory Model")
-    print("="*60)
+    print("=" * 60)
     
     try:
         # Valid query history
@@ -67,20 +67,20 @@ def test_query_history_model():
             create_time="2025-01-18 10:00:00",
             last_use_time="2025-01-20 09:00:00"
         )
-        print(f"✓ Valid query history created: {query.query_id}")
-        print(f"  User: {query.user_id}, Saved: {query.is_saved}")
-        print(f"  Name: {query.query_name}")
+        print("✓ Valid query history created: {query.query_id}")
+        print("  User: {query.user_id}, Saved: {query.is_saved}")
+        print("  Name: {query.query_name}")
         
     except Exception as e:
-        print(f"❌ QueryHistory model test failed: {e}")
+        print("❌ QueryHistory model test failed: {e}")
         raise
 
 
 def test_manual_search_filters():
     """Test ManualSearchFilters model"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Testing ManualSearchFilters Model")
-    print("="*60)
+    print("=" * 60)
     
     try:
         # Valid filters
@@ -91,10 +91,10 @@ def test_manual_search_filters():
             date_from="2025-01-13",
             date_to="2025-01-20"
         )
-        print(f"✓ Valid filters created")
-        print(f"  Asset: {filters.asset_type}")
-        print(f"  Status: {filters.status}")
-        print(f"  Date range: {filters.date_from} to {filters.date_to}")
+        print("✓ Valid filters created")
+        print("  Asset: {filters.asset_type}")
+        print("  Status: {filters.status}")
+        print("  Date range: {filters.date_from} to {filters.date_to}")
         
         # Test with invalid status
         try:
@@ -104,7 +104,7 @@ def test_manual_search_filters():
             print("❌ Should have failed with invalid status")
             raise AssertionError("Should have rejected invalid status")
         except ValidationError as e:
-            print(f"✓ Correctly rejected invalid status")
+            print("✓ Correctly rejected invalid status")
         
         # Test with invalid date format
         try:
@@ -114,18 +114,18 @@ def test_manual_search_filters():
             print("❌ Should have failed with invalid date format")
             raise AssertionError("Should have rejected invalid date format")
         except ValidationError as e:
-            print(f"✓ Correctly rejected invalid date format")
+            print("✓ Correctly rejected invalid date format")
         
     except Exception as e:
-        print(f"❌ ManualSearchFilters test failed: {e}")
+        print("❌ ManualSearchFilters test failed: {e}")
         raise
 
 
 def test_search_request_natural_language():
     """Test SearchRequest for natural language"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Testing SearchRequest (Natural Language)")
-    print("="*60)
+    print("=" * 60)
     
     try:
         # Valid NL search
@@ -134,9 +134,9 @@ def test_search_request_natural_language():
             search_type="natural_language",
             query_text="show me pending FX trades from last week"
         )
-        print(f"✓ Valid NL search request created")
-        print(f"  User: {request.user_id}")
-        print(f"  Query: {request.query_text}")
+        print("✓ Valid NL search request created")
+        print("  User: {request.user_id}")
+        print("  Query: {request.query_text}")
         
         # Test missing query_text
         try:
@@ -148,7 +148,7 @@ def test_search_request_natural_language():
             print("❌ Should have failed without query_text")
             raise AssertionError("Should have rejected NL search without query_text")
         except ValidationError as e:
-            print(f"✓ Correctly rejected NL search without query_text")
+            print("✓ Correctly rejected NL search without query_text")
         
         # Test too short query_text
         try:
@@ -160,18 +160,18 @@ def test_search_request_natural_language():
             print("❌ Should have failed with too short query_text")
             raise AssertionError("Should have rejected query_text < 3 chars")
         except ValidationError as e:
-            print(f"✓ Correctly rejected query_text < 3 chars")
+            print("✓ Correctly rejected query_text < 3 chars")
         
     except Exception as e:
-        print(f"❌ SearchRequest (NL) test failed: {e}")
+        print("❌ SearchRequest (NL) test failed: {e}")
         raise
 
 
 def test_search_request_manual():
     """Test SearchRequest for manual search"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Testing SearchRequest (Manual)")
-    print("="*60)
+    print("=" * 60)
     
     try:
         # Valid manual search
@@ -183,9 +183,9 @@ def test_search_request_manual():
                 status=["ALLEGED"]
             )
         )
-        print(f"✓ Valid manual search request created")
-        print(f"  User: {request.user_id}")
-        print(f"  Filters: {request.filters.asset_type}, {request.filters.status}")
+        print("✓ Valid manual search request created")
+        print("  User: {request.user_id}")
+        print("  Filters: {request.filters.asset_type}, {request.filters.status}")
         
         # Test missing filters
         try:
@@ -197,18 +197,18 @@ def test_search_request_manual():
             print("❌ Should have failed without filters")
             raise AssertionError("Should have rejected manual search without filters")
         except ValidationError as e:
-            print(f"✓ Correctly rejected manual search without filters")
+            print("✓ Correctly rejected manual search without filters")
         
     except Exception as e:
-        print(f"❌ SearchRequest (Manual) test failed: {e}")
+        print("❌ SearchRequest (Manual) test failed: {e}")
         raise
 
 
 def test_update_history_request():
     """Test UpdateHistoryRequest model"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Testing UpdateHistoryRequest Model")
-    print("="*60)
+    print("=" * 60)
     
     try:
         # Valid save request
@@ -216,15 +216,15 @@ def test_update_history_request():
             is_saved=True,
             query_name="My weekly review"
         )
-        print(f"✓ Valid save request created")
-        print(f"  Saved: {request.is_saved}, Name: {request.query_name}")
+        print("✓ Valid save request created")
+        print("  Saved: {request.is_saved}, Name: {request.query_name}")
         
         # Valid unsave request
         request2 = UpdateHistoryRequest(
             is_saved=False,
             query_name=None
         )
-        print(f"✓ Valid unsave request created")
+        print("✓ Valid unsave request created")
         
         # Test save without name
         try:
@@ -235,18 +235,18 @@ def test_update_history_request():
             print("❌ Should have failed: save without name")
             raise AssertionError("Should have rejected save without query_name")
         except ValidationError as e:
-            print(f"✓ Correctly rejected save without query_name")
+            print("✓ Correctly rejected save without query_name")
         
     except Exception as e:
-        print(f"❌ UpdateHistoryRequest test failed: {e}")
+        print("❌ UpdateHistoryRequest test failed: {e}")
         raise
 
 
 def test_search_response():
     """Test SearchResponse model"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Testing SearchResponse Model")
-    print("="*60)
+    print("=" * 60)
     
     try:
         # Create sample trades
@@ -272,26 +272,26 @@ def test_search_response():
             cached=False,
             execution_time_ms=234.5
         )
-        print(f"✓ Valid search response created")
-        print(f"  Query ID: {response.query_id}")
-        print(f"  Total results: {response.total_results}")
-        print(f"  Cached: {response.cached}")
-        print(f"  Execution time: {response.execution_time_ms}ms")
+        print("✓ Valid search response created")
+        print("  Query ID: {response.query_id}")
+        print("  Total results: {response.total_results}")
+        print("  Cached: {response.cached}")
+        print("  Execution time: {response.execution_time_ms}ms")
         
         # Test JSON serialization
         response_json = response.model_dump_json()
-        print(f"✓ JSON serialization works ({len(response_json)} bytes)")
+        print("✓ JSON serialization works ({len(response_json)} bytes)")
         
     except Exception as e:
-        print(f"❌ SearchResponse test failed: {e}")
+        print("❌ SearchResponse test failed: {e}")
         raise
 
 
 def test_error_response():
     """Test ErrorResponse model"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Testing ErrorResponse Model")
-    print("="*60)
+    print("=" * 60)
     
     try:
         # Test factory method
@@ -301,22 +301,22 @@ def test_error_response():
             details={"field": "query_text"},
             path="/search"
         )
-        print(f"✓ Error response created via factory")
-        print(f"  Error: {error.error}")
-        print(f"  Message: {error.message}")
-        print(f"  Timestamp: {error.timestamp}")
-        print(f"  Path: {error.path}")
+        print("✓ Error response created via factory")
+        print("  Error: {error.error}")
+        print("  Message: {error.message}")
+        print("  Timestamp: {error.timestamp}")
+        print("  Path: {error.path}")
         
     except Exception as e:
-        print(f"❌ ErrorResponse test failed: {e}")
+        print("❌ ErrorResponse test failed: {e}")
         raise
 
 
 def run_all_tests():
     """Run all model tests"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("PHASE 2 - DATA MODELS TEST SUITE")
-    print("="*60)
+    print("=" * 60)
     
     results = []
     
@@ -330,22 +330,22 @@ def run_all_tests():
     results.append(("ErrorResponse", test_error_response()))
     
     # Summary
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("TEST SUMMARY")
-    print("="*60)
+    print("=" * 60)
     
     for test_name, passed in results:
         status = "✅ PASSED" if passed else "❌ FAILED"
-        print(f"{test_name}: {status}")
+        print("{test_name}: {status}")
     
     all_passed = all(result[1] for result in results)
     
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     if all_passed:
         print("🎉 ALL MODEL TESTS PASSED! Phase 2 complete.")
     else:
         print("⚠️  SOME TESTS FAILED. Check output above.")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
     
     return all_passed
 
@@ -359,7 +359,7 @@ if __name__ == "__main__":
         print("\n\n⚠️  Tests interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\n\n❌ Fatal error: {e}")
+        print("\n\n❌ Fatal error: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

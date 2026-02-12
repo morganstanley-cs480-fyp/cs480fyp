@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   useReactTable,
@@ -38,12 +38,27 @@ import { useUser } from "@/contexts/UserContext";
 import { searchService } from "@/lib/api/searchService";
 import { APIError } from "@/lib/api/client";
 
+// Define search params schema for pagination
+type TradeSearchParams = {
+  page?: number;
+  pageSize?: number;
+};
+
 export const Route = createFileRoute("/trades/")({
   component: TradeSearchPage,
+  validateSearch: (search: Record<string, unknown>): TradeSearchParams => {
+    return {
+      page: Number(search?.page) || 1,
+      pageSize: Number(search?.pageSize) || 20,
+    };
+  },
 });
 
 function TradeSearchPage() {
   const { userId } = useUser();
+  const navigate = useNavigate();
+  const searchParams = Route.useSearch();
+  
   const STORAGE_KEY = "tradeFilters:v1";
   const TABLE_STATE_KEY = "tradeTableState:v1";
   const SEARCH_KEY = "tradeSearchQuery:v1";
@@ -155,15 +170,11 @@ function TradeSearchPage() {
     }
   });
   const [pagination, setPagination] = useState<PaginationState>(() => {
-    if (typeof window === "undefined") return { pageIndex: 0, pageSize: 20 };
-    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
-    if (!saved) return { pageIndex: 0, pageSize: 20 };
-    try {
-      const parsed = JSON.parse(saved) as { pagination?: PaginationState };
-      return parsed.pagination ?? { pageIndex: 0, pageSize: 20 };
-    } catch {
-      return { pageIndex: 0, pageSize: 20 };
-    }
+    // Initialize from URL search params
+    return {
+      pageIndex: (searchParams.page || 1) - 1, // Convert 1-based to 0-based
+      pageSize: searchParams.pageSize || 20,
+    };
   });
   
   // Manual search filter state
@@ -173,6 +184,18 @@ function TradeSearchPage() {
     if (typeof window === "undefined") return;
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
   }, [filters]);
+
+  // Sync pagination state to URL
+  useEffect(() => {
+    navigate({
+      to: "/trades",
+      search: {
+        page: pagination.pageIndex + 1, // Convert 0-based to 1-based
+        pageSize: pagination.pageSize,
+      },
+      replace: true, // Don't add to history stack
+    });
+  }, [pagination, navigate]);
 
   const columns = useTradeColumns();
 
