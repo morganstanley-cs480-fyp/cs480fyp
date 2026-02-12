@@ -2,6 +2,7 @@ import { WebSocketServer } from 'ws';
 import { createClient } from 'redis';
 import express from 'express';
 import http from 'http';
+import { fileURLToPath } from 'url'; 
 
 const PORT = process.env.PORT || 3002;
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
@@ -104,6 +105,6 @@ export async function start() {
 }
 
 // Only start automatically if this file is run directly (not imported by test)
-if (process.argv[1] === import.meta.url) {
-    start();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  start();
 }
