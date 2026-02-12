@@ -74,7 +74,7 @@ export function TradeInfoCard({
           <Separator />
 
           {/* Second Row - Systems */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-black/75 mb-1">Booking System</p>
               <p className="font-medium text-black">{trade.booking_system}</p>
