@@ -177,36 +177,45 @@ export async function handleTrade(trade) {
     INSERT INTO trades (id, account, asset_type, booking_system, affirmation_system, clearing_house, create_time, update_time, status)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     ON CONFLICT (id) DO UPDATE SET 
-      status = EXCLUDED.status,
-      update_time = EXCLUDED.update_time; 
+      account = EXCLUDED.account,
+      asset_type = EXCLUDED.asset_type,
+      booking_system = EXCLUDED.booking_system,
+      affirmation_system = EXCLUDED.affirmation_system,
+      clearing_house = EXCLUDED.clearing_house,
+      create_time = EXCLUDED.create_time,
+      update_time = EXCLUDED.update_time,
+      status = EXCLUDED.status;
   `;
   const values = [
-    parseInt(trade.id), // Ensure INT
+    parseInt(trade.id), 
     trade.account, trade.asset_type, trade.booking_system, 
     trade.affirmation_system, trade.clearing_house, trade.create_time, 
     trade.update_time, trade.status
   ];
   
-  // Insert or Update Trade
   await pool.query(query, values);
-
-  // Publish update to Redis
   await publishUpdate(trade.id, trade);
   console.log(`Processed Trade ID: ${trade.id}`);
 }
 
 export async function handleTransaction(trans) {
-  // Manual client connect for Transaction (BEGIN/COMMIT)
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
+    // This query overwrites every field with the incoming data
     const insertTransQuery = `
       INSERT INTO transactions (id, trade_id, create_time, entity, direction, type, status, update_time, step)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       ON CONFLICT (id) DO UPDATE SET 
+        trade_id = EXCLUDED.trade_id,
+        create_time = EXCLUDED.create_time,
+        entity = EXCLUDED.entity,
+        direction = EXCLUDED.direction,
+        type = EXCLUDED.type,
         status = EXCLUDED.status, 
-        update_time = EXCLUDED.update_time;
+        update_time = EXCLUDED.update_time,
+        step = EXCLUDED.step;
     `;
     const transValues = [
       parseInt(trans.id), 
@@ -216,24 +225,23 @@ export async function handleTransaction(trans) {
     ];
     await client.query(insertTransQuery, transValues);
 
-    // Update parent Trade status
+    // Update parent Trade status to match the latest transaction state
     const updateTradeQuery = `
       UPDATE trades SET status = $1, update_time = $2 WHERE id = $3;
     `;
     await client.query(updateTradeQuery, [trans.status, trans.update_time, parseInt(trans.trade_id)]);
 
-    // Commit Transaction
     await client.query('COMMIT');
-    console.log(`Processed Transaction ID: ${trans.id}`);
+    console.log(`Fully Updated Transaction ID: ${trans.id}`);
 
-    // Publish update to Redis
+    // Notify Frontend via Redis
     await publishUpdate(trans.trade_id, trans);
 
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
   } finally {
-    client.release(); // IMPORTANT: Release client back to pool
+    client.release();
   }
 }
 
