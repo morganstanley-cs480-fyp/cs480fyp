@@ -117,6 +117,29 @@ services:
       AWS_SECRET_ACCESS_KEY: test
     env_file:
       - .env
+  trade-flow-service:
+    build:
+      context: ./trade-flow-service
+      dockerfile: dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      localstack:
+        condition: service_healthy
+      postgres-test:
+        condition: service_healthy
+    networks:
+      - test-network
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+    env_file:
+      - .env
+
+
 networks:
   test-network:
     driver: bridge
