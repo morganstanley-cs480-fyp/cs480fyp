@@ -124,7 +124,10 @@ jobs:
           REGISTRY=${{ steps.login-ecr.outputs.registry }}
           IMAGE=${{ inputs.service_name }}
 
-          docker tag $IMAGE:latest $REGISTRY/$IMAGE:${{ github.sha }}
+          docker tag $IMAGE:latest $REGISTRY/$IMAGE:latest
+          docker tag $IMAGE:${{ github.sha }} $REGISTRY/$IMAGE:${{ github.sha }}
+
+          docker push $REGISTRY/$IMAGE:latest
           docker push $REGISTRY/$IMAGE:${{ github.sha }}
 
   deploy:
