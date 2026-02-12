@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # 1. Redis Cache & Pub/Sub
+  redis:
+    image: redis:7-alpine
+    container_name: my-redis
+    ports:
+      - "6379:6379"  # Exposed for manual testing
+    
+  # 2. Gateway Service (WebSocket Server)
+  gateway:
+    build: .
+    ports:
+      - "3002:3002"  # Exposed for React App
+    environment:
+      - PORT=3002
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
