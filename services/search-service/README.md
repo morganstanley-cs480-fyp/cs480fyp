@@ -25,6 +25,17 @@ AI-powered trade search service using natural language queries and manual filter
 - 🏥 **ECS health checks** - Multiple probe endpoints
 - 🔒 **SQL injection proof** - 100% parameterized queries
 - 📊 **Structured logging** - JSON format with context
+- 🎯 **Intelligent ranking** - Multi-factor relevance scoring (NEW!)
+
+### Intelligent Ranking ⭐
+- **Automatic relevance scoring** - Results ranked by business importance
+- **Configurable weights** - Customize ranking via JSON config (no code changes!)
+- **Trade-focused algorithm** - Status urgency, recency, complexity, asset type
+- **Hot-reload config** - Changes apply instantly without restart
+- **Zero schema changes** - Works with existing data model
+- **Performance optimized** - Minimal overhead (~15ms added)
+- **Separation of concerns** - Exception management via dedicated Exceptions page
+- 📖 **[Full documentation →](documentation/RANKING.md)**
 
 ### Testing & Quality
 - ✅ **Comprehensive test suite** - Unit, integration, API tests

@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trade Search Ranking Configuration",
+  "description": "Configure how trade search results are ranked by relevance. Adjust weights and priorities to match your operational needs.",
+  
+  "ranking_enabled": true,
+  
+  "weights": {
+    "description": "Weights control how much each factor contributes to the final relevance score. Total should equal 1.0. Exception handling is managed via dedicated Exceptions page.",
+    "status_urgency": 0.45,
+    "recency": 0.30,
+    "transaction_volume": 0.15,
+    "asset_type_risk": 0.10
+  },
+  
+  "status_priority": {
+    "description": "Priority scores for different trade statuses (0-100 scale). Higher = more urgent",
+    "REJECTED": 100,
+    "ALLEGED": 75,
+    "CANCELLED": 50,
+    "CLEARED": 25
+  },
+  
+  "asset_type_priority": {
+    "description": "Risk priority scores for asset types (0-100 scale). Higher = higher risk/complexity",
+    "CDS": 100,
+    "IRS": 95,
+    "FX": 70,
+    "EQUITY": 50,
+    "BOND": 50,
+    "COMMODITY": 50
+  },
+  
+  "recency_config": {
+    "description": "Controls time decay for recency scoring",
+    "max_age_days": 90,
+    "decay_type": "exponential",
+    "half_life_days": 14,
+    "comment": "Trades older than max_age_days get 0 recency score. Half_life_days controls decay rate."
+  },
+  
+  "transaction_config": {
+    "description": "Transaction volume scoring parameters",
+    "min_transactions_for_bonus": 5,
+    "max_transaction_count": 20,
+    "comment": "Trades with more transaction steps may be more complex and warrant attention"
+  },
+  
+  "performance": {
+    "description": "Performance and optimization settings",
+    "fetch_limit": 100,
+    "rank_before_limit": true,
+    "comment": "fetch_limit can exceed MAX_SEARCH_RESULTS to ensure best matches after ranking"
+  },
+  
+  "metadata": {
+    "version": "2.0",
+    "last_updated": "2026-02-12",
+    "updated_by": "system",
+    "notes": "Trade-focused ranking. Exception management handled via dedicated Exceptions page."
+  }
+}

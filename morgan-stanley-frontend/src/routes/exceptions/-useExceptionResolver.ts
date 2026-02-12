@@ -12,7 +12,14 @@ export function useExceptionResolver(exceptionId: string) {
   const [aiGeneratedSolution, setAiGeneratedSolution] = useState<string>("");
   const [newSolutionTitle, setNewSolutionTitle] = useState<string>("");
   const [newSolutionDescription, setNewSolutionDescription] = useState<string>("");
+  const [aiSolutionType, setAiSolutionType] = useState<string>("");
+  const [selectedSuggestion, setSelectedSuggestion] = useState<AISuggestion | null>(null);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
+
+  // Clear selected suggestion when switching tabs
+  useEffect(() => {
+    setSelectedSuggestion(null);
+  }, [selectedTab]);
 
   const handleAISearch = useCallback((exc?: Exception) => {
     const targetException = exc || exception;
@@ -147,8 +154,7 @@ RESOLUTION APPROACH:
   }, [aiGeneratedSolution]);
 
   const handleSuggestionClick = useCallback((suggestion: AISuggestion) => {
-    setNewSolutionTitle(suggestion.title);
-    setNewSolutionDescription(suggestion.description);
+    setSelectedSuggestion(suggestion);
   }, []);
 
   const filteredSuggestions = aiSuggestions.filter(
@@ -172,6 +178,9 @@ RESOLUTION APPROACH:
     setNewSolutionTitle,
     newSolutionDescription,
     setNewSolutionDescription,
+    aiSolutionType,
+    setAiSolutionType,
+    selectedSuggestion,
     copiedToClipboard,
     filteredSuggestions,
     handleAISearch,

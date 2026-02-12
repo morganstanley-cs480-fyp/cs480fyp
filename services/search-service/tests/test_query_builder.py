@@ -3,7 +3,6 @@ Unit tests for query_builder service.
 Tests SQL generation and safety validation.
 """
 
-import pytest
 from app.services.query_builder import query_builder
 from app.models.domain import ExtractedParams
 from app.models.request import ManualSearchFilters

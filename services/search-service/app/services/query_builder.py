@@ -9,7 +9,7 @@ CRITICAL SECURITY:
 """
 
 from typing import Tuple, Any
-from datetime import datetime, date
+from datetime import datetime
 from app.config.settings import settings
 from app.models.domain import ExtractedParams
 from app.models.request import ManualSearchFilters
@@ -323,6 +323,41 @@ class QueryBuilder:
         count_query = f"SELECT COUNT(*) FROM trades {where_clause}"
         
         return count_query
+    
+    def build_enriched_data_query(self, trade_ids: list[int]) -> Tuple[str, list[Any]]:
+        """
+        Build query to fetch enriched data for ranking (transactions only).
+        
+        This query efficiently fetches transaction counts for a list of trade IDs.
+        Exception data is not included as exceptions are managed via dedicated page.
+        
+        Performance: Optimized for small result sets (typically 50 trades).
+        Uses simple LEFT JOIN with GROUP BY - efficient with proper indexes.
+        
+        Args:
+            trade_ids: List of trade IDs to fetch enriched data for
+        
+        Returns:
+            Tuple of (sql_query, parameter_values)
+        """
+        if not trade_ids:
+            return "", []
+        
+        query = """
+            SELECT 
+                t.id as trade_id,
+                COUNT(DISTINCT tr.id) as transaction_count
+            FROM trades t
+            LEFT JOIN transactions tr ON t.id = tr.trade_id
+            WHERE t.id = ANY($1::integer[])
+            GROUP BY t.id
+        """
+        
+        logger.debug(
+            f"Building enriched data query for {len(trade_ids)} trades"
+        )
+        
+        return query, [trade_ids]
 
 
 # Global singleton instance

@@ -1,6 +1,6 @@
 // Side panel details when you click on an Exception from the table
 
-import { CheckCircle, XCircle, Eye, Check } from "lucide-react";
+import { CheckCircle, XCircle, Eye } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Card,
@@ -127,7 +127,6 @@ export function ExceptionDetailPanel({
                   })
                 }
               >
-                <Eye className="size-4 mr-2" />
                 View Associated Trade
               </Button>
               <Button
@@ -139,8 +138,7 @@ export function ExceptionDetailPanel({
                   })
                 }
               >
-                <Check className="size-4 mr-2" />
-                Resolve Exception
+                View Exception
               </Button>
             </>
           )}

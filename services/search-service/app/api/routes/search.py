@@ -95,15 +95,15 @@ async def search_trades(request: SearchRequest):
         
         return result
         
-    except InvalidSearchRequestError as e:  # pylint: disable=unused-variable
-        # 400 Bad Request - already handled by exception handler
+    except InvalidSearchRequestError:
+        # 400 - already handled by exception handler
         raise
         
-    except BedrockAPIError as e:  # pylint: disable=unused-variable
+    except BedrockAPIError:
         # 502 Bad Gateway - already handled by exception handler
         raise
         
-    except DatabaseQueryError as e:
+    except DatabaseQueryError:
         # 500/503 - already handled by exception handler
         raise
         
