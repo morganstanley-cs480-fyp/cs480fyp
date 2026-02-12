@@ -115,4 +115,108 @@ VALUES
 
 -- Sample query history for demo user
 INSERT INTO query_history (user_id, query_text, is_saved, query_name, create_time, last_use_time) VALUES
-('demo_user', 'show me alleged CDS trades', TRUE, 'Alleged CDS Review', '2025-10-15 10:00:00', '2025-10-20 09:00:00'),
+('demo_user', 'show me alleged CDS trades', TRUE, 'Alleged CDS Review', '2025-10-15 10:00:00', '2025-10-20 09:00:00');
+
+-- Trades from data.xml (with linked transactions and exceptions)
+INSERT INTO trades
+  (id, account, asset_type, booking_system, affirmation_system, clearing_house, create_time, update_time, status)
+VALUES
+(54707890, 'ACC3848', 'CDS', 'KINGSLANDING', 'TRAI', 'CME', '2025-08-31 18:24:09', '2025-08-31 18:24:09', 'CLEARED'),
+(91404528, 'ACC3147', 'CDS', 'KINGSLANDING', 'MARC', 'CME', '2025-08-19 12:18:34', '2025-08-19 12:18:34', 'CLEARED'),
+(55623053, 'ACC7526', 'IRS', 'RED KEEP', 'TRAI', 'JSCC', '2025-08-07 09:04:05', '2025-08-07 09:04:05', 'PENDING'),
+(68186799, 'ACC7944', 'FX', 'RED KEEP', 'MARC', 'CME', '2025-08-09 03:00:44', '2025-08-09 03:00:44', 'PENDING'),
+(46195889, 'ACC7734', 'FX', 'HIGHGARDEN', 'MARC', 'JSCC', '2025-08-28 04:55:52', '2025-08-28 04:55:52', 'PENDING');
+
+-- Transactions for sample trades (from data.xml)
+INSERT INTO transactions
+  (id, trade_id, create_time, entity, direction, type, status, update_time, step)
+VALUES
+-- Transactions for trade 54707890 (CLEARED)
+(21282644, 54707890, '2025-08-31 18:26:44', 'OCTCCHK', 'receive', 'REQUEST_CONSENT', 'CLEARED', '2025-08-31 18:26:44', 1),
+(33481477, 54707890, '2025-08-31 18:31:38', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-31 18:31:38', 2),
+(15178400, 54707890, '2025-08-31 18:32:35', 'TAS', 'receive', 'CREDIT_APPROVE', 'CLEARED', '2025-08-31 18:32:35', 3),
+(99768484, 54707890, '2025-08-31 18:32:39', 'OCTCCHK', 'send', 'CONSENT_GRANTED', 'ALLEGED', '2025-08-31 18:32:39', 4),
+(89698060, 54707890, '2025-08-31 18:36:58', 'OCTCCHK', 'receive', 'STATUS_UPDATE', 'CLEARED', '2025-08-31 18:36:58', 5),
+(70264903, 54707890, '2025-08-31 18:39:58', 'OCTCCHK', 'receive', 'CLEARING_CONFIRMED', 'CLEARED', '2025-08-31 18:39:58', 6),
+(51150161, 54707890, '2025-08-31 18:44:16', 'WINTERFELL', 'send', 'CLEARED_TRADE', 'CLEARED', '2025-08-31 18:44:16', 7),
+(39130156, 54707890, '2025-08-31 18:44:53', 'WINTERFELL', 'receive', 'CLEARED_TRADE', 'CLEARED', '2025-08-31 18:44:53', 8),
+(33775061, 54707890, '2025-08-31 18:46:39', 'OCTCCHK', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-31 18:46:39', 9),
+(74975320, 54707890, '2025-08-31 18:50:08', 'TAS', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-31 18:50:08', 10),
+
+-- Transactions for trade 91404528 (CLEARED)
+(40019459, 91404528, '2025-08-19 12:19:00', 'CME', 'receive', 'REQUEST_CONSENT', 'CLEARED', '2025-08-19 12:19:00', 1),
+(66394716, 91404528, '2025-08-19 12:22:59', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-19 12:22:59', 2),
+(10196818, 91404528, '2025-08-19 12:26:09', 'TAS', 'receive', 'CREDIT_APPROVE', 'CLEARED', '2025-08-19 12:26:09', 3),
+(51801058, 91404528, '2025-08-19 12:31:00', 'CME', 'send', 'CONSENT_GRANTED', 'ALLEGED', '2025-08-19 12:31:00', 4),
+(89684241, 91404528, '2025-08-19 12:33:44', 'CME', 'receive', 'STATUS_UPDATE', 'CLEARED', '2025-08-19 12:33:44', 5),
+(88833373, 91404528, '2025-08-19 12:37:23', 'CME', 'receive', 'CLEARING_CONFIRMED', 'CLEARED', '2025-08-19 12:37:23', 6),
+(84008912, 91404528, '2025-08-19 12:38:08', 'RED KEEP', 'send', 'CLEARED_TRADE', 'CLEARED', '2025-08-19 12:38:08', 7),
+(10546096, 91404528, '2025-08-19 12:43:05', 'CME', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-19 12:43:05', 8),
+(31313806, 91404528, '2025-08-19 12:43:23', 'CME', 'receive', 'STATUS_UPDATE', 'CLEARED', '2025-08-19 12:43:23', 9),
+(11900072, 91404528, '2025-08-19 12:43:54', 'TAS', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-19 12:43:54', 10),
+(84606322, 91404528, '2025-08-19 12:47:56', 'LCH', 'send', 'REQUEST_CONSENT', 'CLEARED', '2025-08-19 12:47:56', 11),
+(80440424, 91404528, '2025-08-19 12:48:19', 'LCH', 'receive', 'CONSENT_GRANTED', 'CLEARED', '2025-08-19 12:48:19', 12),
+(85925696, 91404528, '2025-08-19 12:51:53', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-19 12:51:53', 13),
+(53151687, 91404528, '2025-08-19 12:52:16', 'TAS', 'receive', 'CREDIT_REJECT', 'CLEARED', '2025-08-19 12:52:16', 14),
+(17352428, 91404528, '2025-08-19 12:56:02', 'LCH', 'send', 'CONSENT_REJECTED', 'CLEARED', '2025-08-19 12:56:02', 15),
+(91671421, 91404528, '2025-08-19 12:59:00', 'LCH', 'receive', 'CLEARING_REFUSED', 'CLEARED', '2025-08-19 12:59:00', 16),
+(39119047, 91404528, '2025-08-19 13:03:09', 'KINGSLANDING', 'send', 'CLEARED_TRADE', 'CLEARED', '2025-08-19 13:03:09', 17),
+(67417886, 91404528, '2025-08-19 13:05:15', 'KINGSLANDING', 'receive', 'CLEARED_TRADE', 'CLEARED', '2025-08-19 13:05:15', 18),
+(10419302, 91404528, '2025-08-19 13:09:28', 'KINGSLANDING', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-19 13:09:28', 19),
+(31510116, 91404528, '2025-08-19 13:10:45', 'TAS', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-19 13:10:45', 20),
+
+-- Transactions for trade 55623053 (PENDING - has exception)
+(86149349, 55623053, '2025-08-07 09:05:44', 'CME', 'receive', 'REQUEST_CONSENT', 'CLEARED', '2025-08-07 09:05:44', 1),
+(98680769, 55623053, '2025-08-07 09:08:31', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-07 09:08:31', 2),
+(88242387, 55623053, '2025-08-07 09:12:18', 'TAS', 'receive', 'CREDIT_REJECT', 'REJECTED', '2025-08-07 09:12:18', 3),
+
+-- Transactions for trade 68186799 (PENDING - has exception)
+(81466877, 68186799, '2025-08-09 03:04:03', 'LCH', 'receive', 'REQUEST_CONSENT', 'CLEARED', '2025-08-09 03:04:03', 1),
+(46170504, 68186799, '2025-08-09 03:08:50', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-09 03:08:50', 2),
+(58746648, 68186799, '2025-08-09 03:13:17', 'TAS', 'receive', 'CREDIT_APPROVE', 'CLEARED', '2025-08-09 03:13:17', 3),
+(26155050, 68186799, '2025-08-09 03:17:20', 'LCH', 'send', 'REQUEST_CONSENT', 'CLEARED', '2025-08-09 03:17:20', 4),
+(15153056, 68186799, '2025-08-09 03:17:23', 'LCH', 'receive', 'CONSENT_REJECTED', 'REJECTED', '2025-08-09 03:17:23', 5),
+
+-- Transactions for trade 46195889 (PENDING - has exception)
+(62291938, 46195889, '2025-08-28 04:58:51', 'CME', 'receive', 'REQUEST_CONSENT', 'CLEARED', '2025-08-28 04:58:51', 1),
+(12724611, 46195889, '2025-08-28 05:02:14', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-28 05:02:14', 2),
+(31113850, 46195889, '2025-08-28 05:05:38', 'TAS', 'receive', 'CREDIT_APPROVE', 'CLEARED', '2025-08-28 05:05:38', 3),
+(33084149, 46195889, '2025-08-28 05:10:36', 'CME', 'send', 'CONSENT_GRANTED', 'ALLEGED', '2025-08-28 05:10:36', 4),
+(73573614, 46195889, '2025-08-28 05:12:47', 'CME', 'receive', 'CLEARING_CONFIRMED', 'CLEARED', '2025-08-28 05:12:47', 5),
+(97337730, 46195889, '2025-08-28 05:13:59', 'KINGSLANDING', 'send', 'CLEARED_TRADE', 'REJECTED', '2025-08-28 05:13:59', 6);
+
+-- Sample exceptions for pending trades
+INSERT INTO exceptions (id, trade_id, trans_id, msg, priority, status, comment, create_time, update_time)
+VALUES
+-- Exception 1: Credit rejection for trade 55623053
+(19757932, 55623053, 88242387, 'Credit limit exceeded for counterparty. Available credit: $5M, Required: $8M for IRS trade.', 'HIGH', 'PENDING', 'Awaiting credit committee review and approval for limit increase', '2025-08-07 09:12:25', '2025-08-07 09:12:25'),
+
+-- Exception 2: Consent rejection for trade 68186799
+(86572959, 68186799, 15153056, 'LCH consent rejected due to incomplete LEI documentation. Counterparty LEI verification failed regulatory check.', 'HIGH', 'PENDING', 'Legal team contacted for updated LEI certificate', '2025-08-09 03:17:28', '2025-08-09 03:17:28'),
+
+-- Exception 3: Booking system rejection for trade 46195889
+(36485937, 46195889, 97337730, 'Booking system validation failed: Settlement account mismatch between clearing house (CME) and booking system (KINGSLANDING). Account reference data inconsistency detected.', 'MEDIUM', 'PENDING', 'Operations team investigating account mapping configuration', '2025-08-28 05:14:05', '2025-08-28 05:14:05');
+
+-- Sample solutions for the exceptions
+INSERT INTO solutions (id, exception_id, title, exception_description, reference_event, solution_description, scores, create_time)
+VALUES
+-- Solution 1: Credit limit exception
+(275682, 19757932, 'Credit Limit Increase with Additional Collateral', 
+'Trade execution blocked due to insufficient credit line. The IRS trade requires $8M exposure but only $5M credit is available. Credit check (trans 98680769) passed but final approval (trans 88242387) was rejected by TAS system.',
+'Similar credit rejections occurred on 2025-07-15 for ACC7526 and were resolved within 4 hours using collateral posting method.',
+'1. Request immediate collateral posting of $3M from counterparty to cover shortfall. 2. Submit emergency credit limit increase request to Credit Risk team with trade economics justification. 3. Once collateral posted or limit approved, manually override credit check in TAS. 4. Resubmit consent request to CME clearing house. 5. Monitor transaction flow through to SEND_TRADE_ID step.',
+23, '2025-08-07 09:15:00'),
+
+-- Solution 2: LEI documentation exception  
+(539273, 86572959, 'Update LEI Documentation and Resubmit Clearing Request',
+'Clearing house consent rejection at step 5 after initial consent request succeeded (trans 81466877). Credit approval obtained (trans 58746648) but LCH rejected the second consent request (trans 15153056) due to failed LEI verification in their regulatory database.',
+'Trade 45623890 on 2025-07-22 encountered identical LEI rejection from LCH and was resolved in 2.5 hours after documentation update.',
+'1. Contact Legal/Compliance to obtain updated LEI certificate from Global LEI Foundation database. 2. Upload refreshed LEI documentation to counterparty master data in RED KEEP system. 3. Notify LCH clearing operations of documentation update via secure portal. 4. Request manual LEI re-verification from LCH compliance team. 5. Once verified, resubmit consent request through MARC affirmation system. 6. Continue normal clearing workflow.',
+25, '2025-08-09 03:20:00'),
+
+-- Solution 3: Settlement account mismatch
+(912732, 36485937, 'Reconcile Settlement Account Reference Data Across Systems',
+'Trade successfully cleared at CME (trans 73573614 confirmed) but booking system rejected at final step (trans 97337730). The issue stems from mismatched settlement account identifiers between CME clearing records and KINGSLANDING booking system master data.',
+'Reference data mismatches have occurred 3 times in past month for HIGHGARDEN trades. Root cause identified as manual account updates not syncing across all systems.',
+'1. Extract settlement account details from CME clearing confirmation message. 2. Compare against KINGSLANDING account master file for HIGHGARDEN accounts. 3. Update KINGSLANDING reference data tables with correct CME settlement account mapping. 4. Execute data validation script to ensure sync between all booking and clearing systems. 5. Resubmit cleared trade message from CME to KINGSLANDING. 6. Implement automated daily reconciliation job to prevent future occurrences.',
+20, '2025-08-28 05:16:00');
