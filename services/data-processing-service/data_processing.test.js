@@ -75,7 +75,7 @@ describe('Data Processor Service', () => {
 
       // Verify Redis Publish
       expect(publisher.publish).toHaveBeenCalledWith(
-        'trade_updates',
+        'trade-updates',
         expect.stringContaining('"trade_id":"10001"')
       );
     });
