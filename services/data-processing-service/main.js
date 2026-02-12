@@ -28,7 +28,7 @@ export async function publishUpdate(trade_id, payload) {
       trade_id: trade_id.toString(),
       data: payload
     });
-    await publisher.publish('trade_updates', message);
+    await publisher.publish('trade-updates', message);
     console.log(`Published to Redis for Trade ID: ${trade_id}`);
   } catch(err) {
     console.error("Redis Publish Error:", err);
