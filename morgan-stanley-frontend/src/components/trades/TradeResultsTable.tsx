@@ -43,6 +43,8 @@ export function TradeResultsTable({
 }: TradeResultsTableProps) {
   const navigate = useNavigate();
   const [openFilter, setOpenFilter] = useState<string | null>(null);
+  const isDateFilterColumn = (columnId: string) =>
+    columnId === "create_time" || columnId === "update_time";
 
   const optionMap = useMemo(() => {
     const rows = table.getPreFilteredRowModel().flatRows;
@@ -62,8 +64,8 @@ export function TradeResultsTable({
       booking_system: collect("booking_system"),
       affirmation_system: collect("affirmation_system"),
       clearing_house: collect("clearing_house"),
-      create_time: collect("create_time", (value) => formatDateShort(String(value))),
-      update_time: collect("update_time", (value) => formatDateShort(String(value))),
+      create_time: [],
+      update_time: [],
       status: collect("status"),
     } as Record<string, string[]>;
   }, [table]);
@@ -150,7 +152,7 @@ export function TradeResultsTable({
               <TableRow>
                 {table.getHeaderGroups()[0].headers.map((header) => (
                   <TableHead key={`filter-${header.id}`} className="py-2 overflow-visible">
-                    {header.column.getCanFilter() && (
+                    {header.column.getCanFilter() && !isDateFilterColumn(header.id) && (
                       <div className="relative">
                         <Input
                           placeholder="Filter..."
@@ -222,6 +224,44 @@ export function TradeResultsTable({
                             ))}
                           </div>
                         ) : null}
+                      </div>
+                    )}
+                    {header.column.getCanFilter() && isDateFilterColumn(header.id) && (
+                      <div className="flex flex-col gap-2 min-w-[160px]">
+                        <Input
+                          type="date"
+                          value={
+                            (header.column.getFilterValue() as { from?: string; to?: string } | undefined)?.from ?? ""
+                          }
+                          onChange={(event) => {
+                            const current =
+                              (header.column.getFilterValue() as { from?: string; to?: string } | undefined) ?? {};
+                            const next = { ...current, from: event.target.value };
+                            if (!next.from && !next.to) {
+                              header.column.setFilterValue(undefined);
+                              return;
+                            }
+                            header.column.setFilterValue(next);
+                          }}
+                          className="h-8 text-xs"
+                        />
+                        <Input
+                          type="date"
+                          value={
+                            (header.column.getFilterValue() as { from?: string; to?: string } | undefined)?.to ?? ""
+                          }
+                          onChange={(event) => {
+                            const current =
+                              (header.column.getFilterValue() as { from?: string; to?: string } | undefined) ?? {};
+                            const next = { ...current, to: event.target.value };
+                            if (!next.from && !next.to) {
+                              header.column.setFilterValue(undefined);
+                              return;
+                            }
+                            header.column.setFilterValue(next);
+                          }}
+                          className="h-8 text-xs"
+                        />
                       </div>
                     )}
                   </TableHead>
