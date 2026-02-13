@@ -78,7 +78,7 @@ class TestMilvusVectorStore:
         store._collection = mock_collection_instance
 
         texts = ["doc1", "doc2", "doc3"]
-        embeddings = [[0.1] * 1536, [0.2] * 1536, [0.3] * 1536]
+        embeddings = [[0.1] * 1024, [0.2] * 1024, [0.3] * 1024]
         metadata = [{"id": 1}, {"id": 2}, {"id": 3}]
 
         result = store.add_documents(texts, embeddings, metadata)
@@ -110,7 +110,7 @@ class TestMilvusVectorStore:
         store = MilvusVectorStore()
         store._collection = mock_collection_instance
 
-        query_embedding = [0.1] * 1536
+        query_embedding = [0.1] * 1024
         results = store.search(query_embedding, limit=5)
 
         assert len(results) == 1
@@ -141,7 +141,7 @@ class TestMilvusVectorStore:
         store._collection = mock_collection_instance
 
         texts = ["doc1", "doc2"]
-        embeddings = [[0.1] * 1536, [0.2] * 1536]
+        embeddings = [[0.1] * 1024, [0.2] * 1024]
 
         result = store.add_documents(texts, embeddings)
 

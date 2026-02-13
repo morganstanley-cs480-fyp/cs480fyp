@@ -2,7 +2,7 @@
 Application configuration loaded from environment variables.
 """
 
-from typing import List
+from typing import List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -29,6 +29,13 @@ class Settings(BaseSettings):
         "http://localhost:3000",
     ]
 
+    # AWS Bedrock
+    AWS_REGION: str = "us-east-1"
+    AWS_ACCESS_KEY_ID: Optional[str] = None
+    AWS_SECRET_ACCESS_KEY: Optional[str] = None
+    BEDROCK_EMBED_MODEL_ID: str = "amazon.nova-2-embedding-v1"
+    BEDROCK_CHAT_MODEL_ID: str = "meta.llama2-13b-chat-v1"
+
     # Milvus
     MILVUS_HOST: str = "localhost"
     MILVUS_PORT: int = 19530
@@ -36,7 +43,7 @@ class Settings(BaseSettings):
     MILVUS_PASSWORD: str = ""  # For production auth
     MILVUS_COLLECTION: str = "documents"
     MILVUS_SSL: bool = False  # Enable SSL in production
-    VECTOR_DIM: int = 1536  # OpenAI embedding dimension
+    VECTOR_DIM: int = 1024  # Cohere embedding dimension
 
     model_config = SettingsConfigDict(
         env_file=".env",

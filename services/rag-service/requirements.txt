@@ -4,3 +4,5 @@ pydantic==2.9.2
 pydantic-settings==2.6.0
 python-multipart==0.0.12
 pymilvus==2.6.3
+boto3>=1.34.0
+botocore>=1.34.0
