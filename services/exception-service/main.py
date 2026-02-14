@@ -25,6 +25,6 @@ register_tortoise(
     app,
     db_url=settings.DATABASE_URL,
     modules={"models": ["app.models"]},
-    generate_schemas=True,
+    generate_schemas=False,  # Schema managed by init-scripts
     add_exception_handlers=True,
 )

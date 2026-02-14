@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     MILVUS_SSL: bool = False  # Enable SSL in production
     VECTOR_DIM: int = 1024  # Cohere embedding dimension
 
+    # Service URLs
+    EXCEPTION_SERVICE_URL: str = "http://exception-service:8000"
+    TRADE_FLOW_SERVICE_URL: str = "http://trade-flow-service:8000"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

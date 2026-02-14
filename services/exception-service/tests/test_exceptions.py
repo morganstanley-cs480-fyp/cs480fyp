@@ -10,7 +10,7 @@ async def test_create_exception(client: AsyncClient):
         "trans_id": 56789,
         "msg": "New exception",
         "priority": "High",
-        "status": "Pending",
+        "status": "PENDING",
         "comment": "Test comment"
     }
     response = await client.post("/api/exceptions/", json=payload)
@@ -21,7 +21,7 @@ async def test_create_exception(client: AsyncClient):
     assert data["trans_id"] == 56789
     assert data["msg"] == "New exception"
     assert data["priority"] == "High"
-    assert data["status"] == "Pending"
+    assert data["status"] == "PENDING"
     assert "id" in data
     assert "create_time" in data
     
@@ -36,7 +36,7 @@ async def test_create_exception_without_comment(client: AsyncClient):
         "trans_id": 56789,
         "msg": "Exception without comment",
         "priority": "Low",
-        "status": "Pending"
+        "status": "PENDING"
     }
     response = await client.post("/api/exceptions/", json=payload)
     
@@ -82,7 +82,7 @@ async def test_update_exception(client: AsyncClient, sample_exception):
     payload = {
         "msg": "Updated message",
         "priority": "Critical",
-        "status": "Closed"
+        "status": "CLOSED"
     }
     response = await client.put(f"/api/exceptions/{sample_exception.id}", json=payload)
     
@@ -90,7 +90,7 @@ async def test_update_exception(client: AsyncClient, sample_exception):
     data = response.json()
     assert data["msg"] == "Updated message"
     assert data["priority"] == "Critical"
-    assert data["status"] == "Closed"
+    assert data["status"] == "CLOSED"
 
 @pytest.mark.asyncio
 async def test_update_exception_partial(client: AsyncClient, sample_exception):
@@ -123,7 +123,7 @@ async def test_delete_exception(client: AsyncClient):
         trans_id=99999,
         msg="To be deleted",
         priority="Low",
-        status="Pending"
+        status="PENDING"
     )
     
     response = await client.delete(f"/api/exceptions/{exception.id}")
@@ -153,7 +153,7 @@ async def test_get_exceptions_by_trade(client: AsyncClient):
             trans_id=20000 + i,
             msg=f"Exception {i} for trade {trade_id}",
             priority=["Low", "Medium", "High"][i],
-            status="Pending"
+            status="PENDING"
         )
         exceptions.append(exception)
     
@@ -163,7 +163,7 @@ async def test_get_exceptions_by_trade(client: AsyncClient):
         trans_id=30000,
         msg="Different trade exception",
         priority="Low",
-        status="Pending"
+        status="PENDING"
     )
     
     response = await client.get(f"/api/exceptions/trade/{trade_id}")
