@@ -180,24 +180,25 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
     Returns:
         IngestResponse
     """
-    logging.info("This is an info message")
     try:
+        # Check if exception already exists in Milvus
+        if request.app.state.vector_store.exists_by_exception_id(payload.exception_id):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Exception {payload.exception_id} already exists in the vector store"
+            )
+        
         # Fetch exception data
-        logging.info("Trying for exception data")
         async with httpx.AsyncClient(base_url=settings.EXCEPTION_SERVICE_URL) as client:
             resp = await client.get(f"/api/exceptions/{payload.exception_id}")
             resp.raise_for_status()
             exception_data = resp.json()
-
-        logging.info(f"Have exception data: {exception_data}")
 
         # Fetch transaction history
         async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
             resp = await client.get(f"/trades/{payload.trade_id}/transactions")
             resp.raise_for_status()
             history_data = resp.json()
-
-        logging.info(f"Have transaction history data: {history_data}")
 
         # Stitch text
         stitched_text = (
@@ -238,6 +239,8 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
 
     except HTTPStatusError as e:
         raise HTTPException(status_code=e.response.status_code, detail=f"Service error: {e.response.text}")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
