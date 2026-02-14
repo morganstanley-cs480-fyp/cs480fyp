@@ -125,6 +125,24 @@ class MilvusVectorStore:
             
         return hits
 
+    def exists_by_exception_id(self, exception_id: str) -> bool:
+        """
+        Check if a document with the given exception_id already exists.
+        
+        Args:
+            exception_id: The exception ID to check
+            
+        Returns:
+            True if document exists, False otherwise
+        """
+        expr = f'metadata["exception_id"] == "{exception_id}"'
+        results = self._collection.query(
+            expr=expr,
+            output_fields=["id"],
+            limit=1
+        )
+        return len(results) > 0
+
     def close(self) -> None:
         """Close Milvus connection."""
         connections.disconnect("default")
