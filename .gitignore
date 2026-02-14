@@ -132,3 +132,4 @@ node_modules/
 
 # Localstack
 services/localstack-data
+services/volumes/

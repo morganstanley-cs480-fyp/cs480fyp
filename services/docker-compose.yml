@@ -169,8 +169,11 @@ services:
       VECTOR_DIM: 1024
       ENABLE_CORS: "true"
       CORS_ORIGINS: '["http://localhost:3000","http://localhost:5173"]'
+      EXCEPTION_SERVICE_URL: http://exception-service:8001
+      TRADE_FLOW_SERVICE_URL: http://trade-flow-service:8000
     depends_on:
-      - milvus-standalone
+      milvus-standalone:
+        condition: service_healthy
     networks:
       - fyp-network
     restart: unless-stopped
@@ -219,6 +222,12 @@ services:
     ports:
       - "19530:19530"
       - "9091:9091"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       - milvus-etcd
       - milvus-minio

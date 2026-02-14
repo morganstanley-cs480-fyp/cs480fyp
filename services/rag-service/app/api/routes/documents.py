@@ -8,8 +8,12 @@ from pydantic import BaseModel, Field
 
 from app.config.settings import settings
 from app.services.bedrock_service import BedrockService
+import httpx
+from httpx import HTTPStatusError
+import json
+import logging
 
-
+logging.basicConfig(level=logging.INFO)
 router = APIRouter(prefix="/documents", tags=["documents"])
 
 
@@ -158,3 +162,84 @@ async def search_documents(request: Request, query: SearchQuery) -> List[Dict[st
         query_embedding=query.embedding,
         limit=query.limit
     )
+
+
+class IngestException(BaseModel):
+    trade_id: str
+    exception_id: str
+
+
+@router.post("/ingest-exception", response_model=IngestResponse, status_code=status.HTTP_201_CREATED)
+async def ingest_exception(request: Request, payload: IngestException) -> IngestResponse:
+    """
+    Ingest exception document: fetch exception and trade history, stitch, embed, and store.
+    
+    Args:
+        payload: trade_id and exception_id
+        
+    Returns:
+        IngestResponse
+    """
+    logging.info("This is an info message")
+    try:
+        # Fetch exception data
+        logging.info("Trying for exception data")
+        async with httpx.AsyncClient(base_url=settings.EXCEPTION_SERVICE_URL) as client:
+            resp = await client.get(f"/api/exceptions/{payload.exception_id}")
+            resp.raise_for_status()
+            exception_data = resp.json()
+
+        logging.info(f"Have exception data: {exception_data}")
+
+        # Fetch transaction history
+        async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
+            resp = await client.get(f"/trades/{payload.trade_id}/transactions")
+            resp.raise_for_status()
+            history_data = resp.json()
+
+        logging.info(f"Have transaction history data: {history_data}")
+
+        # Stitch text
+        stitched_text = (
+            f"Transaction History for Trade ID {payload.trade_id}:\n"
+            f"{json.dumps(history_data, indent=2)}\n\n"
+            f"Exception Details for Exception ID {payload.exception_id}:\n"
+            f"{json.dumps(exception_data, indent=2)}"
+        )
+
+        metadata = {
+            "trade_id": payload.trade_id,
+            "exception_id": payload.exception_id,
+            "type": "exception_with_trade_history"
+        }
+
+        # Generate embedding
+        bedrock = BedrockService(
+            region_name=settings.AWS_REGION,
+            embed_model_id=settings.BEDROCK_EMBED_MODEL_ID,
+            chat_model_id=settings.BEDROCK_CHAT_MODEL_ID,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+        embedding = bedrock.get_embedding(stitched_text)
+
+        # Store in Milvus
+        document_ids = request.app.state.vector_store.add_documents(
+            texts=[stitched_text],
+            embeddings=[embedding],
+            metadata=[metadata]
+        )
+
+        return IngestResponse(
+            document_ids=document_ids,
+            count=1,
+            message=f"Successfully ingested exception document for trade {payload.trade_id} and exception {payload.exception_id}"
+        )
+
+    except HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=f"Service error: {e.response.text}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unexpected error during ingestion: {str(e)}"
+        )
