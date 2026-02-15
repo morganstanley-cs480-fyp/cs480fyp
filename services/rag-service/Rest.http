@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:8004
+@baseUrl = http://localhost:8001
 
 ### Health Check
 GET {{baseUrl}}/health
