@@ -8,9 +8,9 @@ from pydantic import BaseModel, Field
 
 from app.config.settings import settings
 from app.services.bedrock_service import BedrockService
+from app.services.narrative_formatter import NarrativeFormatter
 import httpx
 from httpx import HTTPStatusError
-import json
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -200,19 +200,22 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
             resp.raise_for_status()
             history_data = resp.json()
 
-        # Stitch text
-        stitched_text = (
-            f"Transaction History for Trade ID {payload.trade_id}:\n"
-            f"{json.dumps(history_data, indent=2)}\n\n"
-            f"Exception Details for Exception ID {payload.exception_id}:\n"
-            f"{json.dumps(exception_data, indent=2)}"
+        # Format as human-readable narrative using the NarrativeFormatter service
+        formatter = NarrativeFormatter()
+        stitched_text = formatter.format_exception_narrative(
+            history_data, 
+            exception_data, 
+            payload.trade_id, 
+            payload.exception_id
         )
 
-        metadata = {
-            "trade_id": payload.trade_id,
-            "exception_id": payload.exception_id,
-            "type": "exception_with_trade_history"
-        }
+        # Create enriched metadata using the NarrativeFormatter service
+        metadata = formatter.create_metadata(
+            history_data, 
+            exception_data, 
+            payload.trade_id, 
+            payload.exception_id
+        )
 
         # Generate embedding
         bedrock = BedrockService(
