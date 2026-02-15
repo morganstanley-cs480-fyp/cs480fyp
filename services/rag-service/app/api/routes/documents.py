@@ -194,6 +194,12 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
             resp.raise_for_status()
             exception_data = resp.json()
 
+        # Fetch trade details (clearing house, asset type, etc.)
+        async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
+            resp = await client.get(f"/trades/{payload.trade_id}")
+            resp.raise_for_status()
+            trade_data = resp.json()
+
         # Fetch transaction history
         async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
             resp = await client.get(f"/trades/{payload.trade_id}/transactions")
@@ -205,6 +211,7 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
         stitched_text = formatter.format_exception_narrative(
             history_data, 
             exception_data, 
+            trade_data,
             payload.trade_id, 
             payload.exception_id
         )
@@ -213,6 +220,7 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
         metadata = formatter.create_metadata(
             history_data, 
             exception_data, 
+            trade_data,
             payload.trade_id, 
             payload.exception_id
         )

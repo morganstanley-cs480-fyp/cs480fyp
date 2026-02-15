@@ -4,7 +4,6 @@ into human-readable narratives optimized for semantic search in RAG pipelines.
 """
 from typing import List, Dict, Any
 from datetime import datetime
-import re
 
 
 class NarrativeFormatter:
@@ -15,36 +14,6 @@ class NarrativeFormatter:
     that capture business context, temporal relationships, and key metrics for
     improved semantic search performance in vector databases.
     """
-    
-    @staticmethod
-    def extract_product_type(history_data: List[Dict[str, Any]]) -> str:
-        """
-        Extract product type from transaction history metadata.
-        
-        Args:
-            history_data: List of transaction dictionaries
-            
-        Returns:
-            Product type string (e.g., "IRS", "CDS", "FX")
-        """
-        # This would typically come from trade data
-        # Could be enhanced to parse from transaction metadata
-        return "Unknown"
-    
-    @staticmethod
-    def extract_clearing_house(history_data: List[Dict[str, Any]]) -> str:
-        """
-        Extract clearing house entity from first transaction.
-        
-        Args:
-            history_data: List of transaction dictionaries
-            
-        Returns:
-            Clearing house name (e.g., "CME", "LCH", "JSCC")
-        """
-        if history_data and len(history_data) > 0:
-            return history_data[0].get("entity", "Unknown")
-        return "Unknown"
     
     @staticmethod
     def find_rejection_step(history_data: List[Dict[str, Any]]) -> int:
@@ -130,30 +99,12 @@ class NarrativeFormatter:
         except Exception:
             return "Unknown"
     
-    @staticmethod
-    def extract_financial_metrics(exception_msg: str) -> str:
-        """
-        Extract and format financial metrics from exception message.
-        
-        Args:
-            exception_msg: Exception message text
-            
-        Returns:
-            Formatted financial details section, or empty string if none found
-        """
-        metrics_section = ""
-        if "credit" in exception_msg.lower() and "$" in exception_msg:
-            # Extract amounts mentioned in message (e.g., $5M, $8M, $2.3M)
-            amounts = re.findall(r'\$[\d,.]+[MBK]?', exception_msg)
-            if amounts:
-                metrics_section = f"\nFinancial Details:\nMentioned amounts: {', '.join(amounts)}\n"
-        return metrics_section
-    
     @classmethod
     def format_exception_narrative(
         cls,
         history_data: List[Dict[str, Any]],
         exception_data: Dict[str, Any],
+        trade_data: Dict[str, Any],
         trade_id: str,
         exception_id: str
     ) -> str:
@@ -165,10 +116,12 @@ class NarrativeFormatter:
         - Failure points and context
         - Exception details with business impact
         - Timeline and temporal relationships
+        - Trade context (clearing house, asset type)
         
         Args:
             history_data: List of transaction dictionaries
             exception_data: Exception dictionary with msg, priority, status, comment
+            trade_data: Trade dictionary with clearing_house, asset_type, etc.
             trade_id: Trade identifier
             exception_id: Exception identifier
             
@@ -181,16 +134,23 @@ class NarrativeFormatter:
         status = exception_data.get("status", "UNKNOWN")
         comment = exception_data.get("comment", "No comment")
         
+        # Extract trade details
+        clearing_house = trade_data.get("clearing_house", "Unknown")
+        asset_type = trade_data.get("asset_type", "Unknown")
+        
         # Format transaction events
         events = [cls.format_transaction_event(tx) for tx in history_data]
         transaction_flow = "\n".join(events)
         
         # Calculate metrics
         duration = cls.calculate_duration(history_data)
-        metrics_section = cls.extract_financial_metrics(exception_msg)
         
         # Build comprehensive narrative
         narrative = f"""Exception: {exception_msg}
+
+Trade Context:
+Asset Type: {asset_type}
+Clearing House: {clearing_house}
 
 Transaction Flow:
 {transaction_flow}
@@ -198,12 +158,11 @@ Transaction Flow:
 Exception Details:
 Priority: {priority} (Status: {status})
 Current Action: {comment}
-{metrics_section}
+
 Timeline: Transaction progressed through {len(history_data)} steps over {duration} before encountering this issue
 
 Business Context:
-This exception occurred during the {cls.find_rejection_type(history_data).replace('_', ' ').lower()} phase of trade processing. 
-The clearing house {cls.extract_clearing_house(history_data)} was involved in the transaction workflow.
+This exception occurred during the {cls.find_rejection_type(history_data).replace('_', ' ').lower()} phase of trade processing.
 The failure point was at step {cls.find_rejection_step(history_data)} in the processing sequence."""
         
         return narrative.strip()
@@ -213,6 +172,7 @@ The failure point was at step {cls.find_rejection_step(history_data)} in the pro
         cls,
         history_data: List[Dict[str, Any]],
         exception_data: Dict[str, Any],
+        trade_data: Dict[str, Any],
         trade_id: str,
         exception_id: str
     ) -> Dict[str, Any]:
@@ -222,6 +182,7 @@ The failure point was at step {cls.find_rejection_step(history_data)} in the pro
         Args:
             history_data: List of transaction dictionaries
             exception_data: Exception dictionary
+            trade_data: Trade dictionary with clearing_house, asset_type, etc.
             trade_id: Trade identifier
             exception_id: Exception identifier
             
@@ -235,8 +196,8 @@ The failure point was at step {cls.find_rejection_step(history_data)} in the pro
             "exception_msg": exception_data.get("msg", ""),
             "priority": exception_data.get("priority", "UNKNOWN"),
             "status": exception_data.get("status", "UNKNOWN"),
-            "product_type": cls.extract_product_type(history_data),
-            "clearing_house": cls.extract_clearing_house(history_data),
+            "asset_type": trade_data.get("asset_type", "Unknown"),
+            "clearing_house": trade_data.get("clearing_house", "Unknown"),
             "rejection_step": cls.find_rejection_step(history_data),
             "rejection_type": cls.find_rejection_type(history_data),
             "transaction_count": len(history_data),
