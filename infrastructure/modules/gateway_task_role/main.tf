@@ -20,21 +20,6 @@ resource "aws_iam_role" "this" {
 resource "aws_iam_policy" "processing_policy" {
   name        = "${var.service_name}-sqs-policy"
   description = "Allow consuming messages from the processing queue"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "sqs:ReceiveMessage",      # Pull message
-          "sqs:DeleteMessage",       # Remove after processing (ACK)
-          "sqs:GetQueueAttributes"   # Check queue status
-        ]
-        Resource = var.data_processing_queue_arn
-      },
-    ]
-  })
 }
 
 # 3. Attach Policy to Role

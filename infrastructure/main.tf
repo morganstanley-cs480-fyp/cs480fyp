@@ -32,8 +32,9 @@ module "frontend_s3" {
 
 # S3 for XML File
 module "s3_data" {
-  source      = "./modules/s3_data"
-  bucket_name = var.s3_data_bucket_name
+  source           = "./modules/s3_data"
+  bucket_name      = var.s3_data_bucket_name
+  file_key         = var.s3_data_file_key 
 }
 
 # SSM Parameter Store
@@ -50,7 +51,6 @@ module "data_processing_queue" {
   sqs_name                   = var.data_processing_queue_name # Needs to end with .fifo
   is_fifo                    = true
   visibility_timeout_seconds = 240
-
 }
 
 # RDS-SG
@@ -77,6 +77,14 @@ module "main_rds" {
   db_name                = "main_db"
 }
 
+module "redis_cache" {
+  source     = "./modules/elasticache"
+  cluster_id = "main-redis-cache"
+  vpc_id     = module.networking.vpc_id
+  subnet_ids = module.networking.public_subnet_ids
+  ecs_sg_id  = module.ecs_security_group.ecs_service_sg_id
+}
+
 # ECS-SG
 module "ecs_security_group" {
   source    = "./modules/ecs_sg"
@@ -97,17 +105,11 @@ module "ecs_cluster" {
 }
 
 # DATA PROCESSING SERVICE (To add elasticache pub sub)
-# # Data Processing ECR
-# module "data_processing_service_ecr" {
-#   source          = "./modules/ecr"
-#   repository_name = var.data_processing_repo_name
-# }
-
 # data_processing_task_role
 module "data_processing_task_role" {
   source        = "./modules/data_processing_task_role"
   service_name  = var.data_processing_service_name
-  sqs_queue_arn = module.data_processing_queue.sqs_queue_arn
+  data_processing_queue_arn = module.data_processing_queue.sqs_queue_arn
 }
 
 # data_processing_cloudwatch
@@ -149,12 +151,6 @@ module "data_processing_log_group" {
 # }
 
 # EXCEPTION SERVICE (Change Port Group)
-# # Exception ECR
-# module "exception_service_ecr" {
-#   source          = "./modules/ecr"
-#   repository_name = var.exception_repo_name
-# }
-
 # exception_target_group 
 module "exception_target_group" {
   source                = "./modules/alb_tg"
@@ -208,12 +204,6 @@ module "exception_service" {
 }
 
 # GATEWAY SERVICE (To Add elasticache access for pub sub)
-# # Gateway ECR
-# module "gateway_service_ecr" {
-#   source          = "./modules/ecr"
-#   repository_name = var.gateway_repo_name
-# }
-
 # gateway_target_group
 module "gateway_target_group" {
   source                = "./modules/alb_tg"
@@ -239,40 +229,39 @@ module "gateway_log_group" {
   retention_in_days = 14
 }
 
+# gateway_task_role
+module "gateway_task_role" {
+  source        = "./modules/gateway_task_role"
+  service_name  = var.gateway_service_name
+}
+
 # gateway_ecs
 module "gateway_service" {
-  source             = "./modules/ecs"
-  family             = var.gateway_family
-  container_name     = var.gateway_container_name
-  container_image    = var.gateway_container_image
-  container_port     = 3002
-  log_group          = module.gateway_log_group.log_group_name
-  region             = var.region
-  execution_role_arn = module.ecs_execution_role.role_arn
-  task_role_arn      = "" # To Edit
-  service_name       = var.gateway_service_name
-  cluster_id         = module.ecs_cluster.cluster_id
-  desired_count      = 1
-  subnets            = module.networking.public_subnet_ids
-  security_groups    = [module.ecs_security_group.ecs_service_sg_id]
-  assign_public_ip   = true
-  target_group_arn   = module.gateway_target_group.target_group_arn
-  rds_environment    = []
-  sqs_environment    = []
+  source                  = "./modules/ecs"
+  family                  = var.gateway_family
+  container_name          = var.gateway_container_name
+  container_image         = var.gateway_container_image
+  container_port          = 3002
+  log_group               = module.gateway_log_group.log_group_name 
+  region                  = var.region
+  execution_role_arn      = module.ecs_execution_role.role_arn
+  task_role_arn           = module.gateway_task_role.role_arn
+  service_name            = var.gateway_service_name
+  cluster_id              = module.ecs_cluster.cluster_id 
+  desired_count           = 1
+  subnets                 = module.networking.public_subnet_ids
+  security_groups         = [module.ecs_security_group.ecs_service_sg_id]
+  assign_public_ip        = true
+  target_group_arn        = module.gateway_target_group.target_group_arn 
+  rds_environment  = []
+  sqs_environment = []
   other_environment = [
     { name = "ALB_URL", value = "http://${module.alb.alb_dns_name}" }
   ]
 }
 
 # INGESTION SERVICE
-# # Ingestion ECR
-# module "ingestion_service_ecr" {
-#   source          = "./modules/ecr"  # Adjust the path as necessary
-#   repository_name = var.ingestion_repo_name
-# }
-
 # ingestion task role (iam permissions)
-# Create the specific IAM Role for Ingestion
 module "ingestion_task_role" {
   source            = "./modules/ingestion_task_role"
   service_name      = "ingestion-service"
@@ -310,18 +299,16 @@ module "ingestion_service" {
     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
   ]
   other_environment = [
-    { name = "MIGRATE", value = "true" }
+    {name = "MIGRATE", value = "true"},
+    { name = "S3_BUCKET_NAME", value = module.s3_data.bucket_name },
+    { name = "S3_FILE_KEY",    value = module.s3_data.file_key },
+    { name = "SSM_PARAM_NAME", value = module.xml_pointer.parameter_name },
+    { name = "AWS_REGION", value = var.region }
   ]
 }
 
 
 # QUERY SUGGESTION SERVICE
-# # Query Suggestion ECR
-# module "query_suggestion_service_ecr" {
-#   source          = "./modules/ecr"
-#   repository_name = var.query_suggestion_repo_name
-# }
-
 # query_suggestion_target_group
 module "query_suggestion_target_group" {
   source                = "./modules/alb_tg"
@@ -373,12 +360,6 @@ module "query_suggestion_service" {
 }
 
 # RAG SERVICE
-# # RAG ECR
-# module "rag_service_ecr" {
-#   source          = "./modules/ecr" 
-#   repository_name = var.rag_repo_name
-# }
-
 # rag_target_group
 module "rag_target_group" {
   source                = "./modules/alb_tg"
@@ -404,25 +385,31 @@ module "rag_log_group" {
   retention_in_days = 14
 }
 
+module "rag_task_role" {
+  source       = "./modules/rag_task_role"
+  service_name = "rag-service"
+  region       = var.region
+}
+
 # rag_ecs
 module "rag_service" {
-  source             = "./modules/ecs"
-  family             = var.rag_family
-  container_name     = var.rag_container_name
-  container_image    = var.rag_container_image
-  container_port     = 3004
-  log_group          = module.rag_log_group.log_group_name
-  region             = var.region
-  execution_role_arn = module.ecs_execution_role.role_arn
-  task_role_arn      = ""
-  service_name       = var.rag_service_name
-  cluster_id         = module.ecs_cluster.cluster_id
-  desired_count      = 1
-  subnets            = module.networking.public_subnet_ids
-  security_groups    = [module.ecs_security_group.ecs_service_sg_id]
-  assign_public_ip   = true
-  target_group_arn   = module.rag_target_group.target_group_arn
-  rds_environment = [
+  source                  = "./modules/ecs"
+  family                  = var.rag_family
+  container_name          = var.rag_container_name
+  container_image         = var.rag_container_image
+  container_port          = 3004
+  log_group               = module.rag_log_group.log_group_name 
+  region                  = var.region
+  execution_role_arn      = module.ecs_execution_role.role_arn
+  task_role_arn           = module.rag_task_role.role_arn
+  service_name            = var.rag_service_name
+  cluster_id              = module.ecs_cluster.cluster_id 
+  desired_count           = 1
+  subnets                 = module.networking.public_subnet_ids
+  security_groups         = [module.ecs_security_group.ecs_service_sg_id]
+  assign_public_ip        = true
+  target_group_arn        = module.rag_target_group.target_group_arn 
+  rds_environment  = [
     { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
     { name = "DB_USER", value = var.db_username },
     { name = "DB_PASSWORD", value = var.db_password },
@@ -435,12 +422,6 @@ module "rag_service" {
 }
 
 # SEARCH SERVICE
-# # Search ECR
-# module "search_service_ecr" {
-#   source          = "./modules/ecr" 
-#   repository_name = var.search_repo_name
-# }
-
 # search_target_group
 module "search_target_group" {
   source                = "./modules/alb_tg"
@@ -498,12 +479,6 @@ module "search_service" {
 }
 
 # SOLUTION SERVICE
-# # Solution ECR
-# module "solution_service_ecr" {
-#   source          = "./modules/ecr" 
-#   repository_name = var.solution_repo_name
-# }
-
 # solution_target_group
 module "solution_target_group" {
   source                = "./modules/alb_tg"
@@ -557,12 +532,6 @@ module "solution_service" {
 }
 
 # TRADE FLOW SERVICE # To change target port
-# # Trade Flow ECR
-# module "trade_flow_service_ecr" {
-#   source          = "./modules/ecr" 
-#   repository_name = var.trade_flow_repo_name
-# }
-
 # trade_flow target to ALB
 module "trade_flow_target_group" {
   source                = "./modules/alb_tg"
