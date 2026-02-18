@@ -1,6 +1,6 @@
 // Side panel details when you click on an Exception from the table
 
-import { CheckCircle, XCircle, Eye, Check } from "lucide-react";
+import { CheckCircle, XCircle, Eye } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Card,
@@ -46,10 +46,10 @@ export function ExceptionDetailPanel({
       <CardContent>
         <div className="space-y-4">
           <div>
-            <p className="text-sm text-slate-600 mb-1">
+            <p className="text-sm text-black/75 mb-1">
               Exception ID
             </p>
-            <p className="text-slate-900">
+            <p className="text-black">
               {exception.exception_id}
             </p>
           </div>
@@ -57,30 +57,30 @@ export function ExceptionDetailPanel({
           <Separator />
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Trade ID</p>
-            <p className="text-slate-900">
+            <p className="text-sm text-black/75 mb-1">Trade ID</p>
+            <p className="text-black">
               {exception.trade_id}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">
+            <p className="text-sm text-black/75 mb-1">
               Transaction ID
             </p>
-            <p className="text-slate-900">
+            <p className="text-black">
               {exception.trans_id}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">
+            <p className="text-sm text-black/75 mb-1">
               Exception Message
             </p>
-            <p className="text-slate-900">{exception.msg}</p>
+            <p className="text-black">{exception.msg}</p>
           </div>
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Priority</p>
+            <p className="text-sm text-black/75 mb-1">Priority</p>
             <Badge
               variant={getPriorityColor(exception.priority)}
             >
@@ -91,24 +91,24 @@ export function ExceptionDetailPanel({
           <Separator />
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Comments</p>
-            <p className="text-sm text-slate-900">
+            <p className="text-sm text-black/75 mb-1">Comments</p>
+            <p className="text-sm text-black">
               {exception.comment}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">
+            <p className="text-sm text-black/75 mb-1">
               Exception Time
             </p>
-            <p className="text-sm text-slate-900">
+            <p className="text-sm text-black">
               {exception.create_time}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-slate-600 mb-1">Last Update</p>
-            <p className="text-sm text-slate-900">
+            <p className="text-sm text-black/75 mb-1">Last Update</p>
+            <p className="text-sm text-black">
               {exception.update_time}
             </p>
           </div>
@@ -123,11 +123,10 @@ export function ExceptionDetailPanel({
                 onClick={() =>
                   navigate({
                     to: "/trades/$tradeId",
-                    params: { tradeId: exception.trade_id },
+                    params: { tradeId: exception.trade_id.toString() },
                   })
                 }
               >
-                <Eye className="size-4 mr-2" />
                 View Associated Trade
               </Button>
               <Button
@@ -135,12 +134,11 @@ export function ExceptionDetailPanel({
                 onClick={() =>
                   navigate({
                     to: "/exceptions/$exceptionId",
-                    params: { exceptionId: exception.exception_id },
+                    params: { exceptionId: exception.exception_id.toString() },
                   })
                 }
               >
-                <Check className="size-4 mr-2" />
-                Resolve Exception
+                View Exception
               </Button>
             </>
           )}

@@ -1,0 +1,69 @@
+[flake8]
+# Maximum line length
+max-line-length = 120
+
+# Maximum complexity
+max-complexity = 15
+
+# Exclude patterns
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    ENV,
+    .pytest_cache,
+    .coverage,
+    htmlcov,
+    dist,
+    build,
+    *.egg-info,
+    .tox,
+    .mypy_cache
+
+# Ignore specific errors:
+# E203: whitespace before ':' (conflicts with black)
+# E266: too many leading '#' for block comment
+# E501: line too long (handled by max-line-length)
+# W503: line break before binary operator (outdated)
+# W504: line break after binary operator
+# W291: trailing whitespace (auto-fixable)
+# W293: blank line contains whitespace (auto-fixable)
+# D100: missing docstring in public module (some __init__.py files)
+# D102: missing docstring in public method (obvious methods)
+# D104: missing docstring in public package
+# D106: missing docstring in public nested class (Pydantic Config classes)
+# D107: missing docstring in __init__
+# D200: one-line docstring should fit on one line
+# D203: 1 blank line required before class docstring (conflicts with D211)
+# D205: 1 blank line required between summary line and description
+# D212: multi-line docstring summary should start at first line (we prefer second line)
+# D213: multi-line docstring summary should start at second line (conflicts with D212)
+# D401: first line should be in imperative mood
+# D406: section name should end with a newline
+# D407: missing dashed underline after section
+# D415: first line should end with period
+# B008: do not perform function calls in argument defaults (Pydantic Field)
+ignore = E203,E266,E501,W503,W504,W291,W293,D100,D102,D104,D106,D107,D200,D203,D205,D212,D213,D401,D406,D407,D415,B008
+
+# Per-file ignores
+per-file-ignores =
+    __init__.py:F401,F403
+    tests/*:D100,D101,D102,D103,S101
+    conftest.py:D100,D103
+
+# Enable optional checks
+enable-extensions = G
+
+# Show source code for each error
+show-source = True
+
+# Show statistics
+statistics = True
+
+# Count errors
+count = True
+
+# Docstring conventions
+docstring-convention = google

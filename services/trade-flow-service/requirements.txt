@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+psycopg[binary]
+psycopg-pool
+pytest
+pytest-asyncio
+httpx

@@ -2,6 +2,7 @@
 
 import { ChevronDown, X } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import {
   flexRender,
   type Table as TableType,
@@ -27,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Trade } from "@/lib/mockData";
+import { formatDateShort } from "@/lib/utils";
 
 interface TradeResultsTableProps {
   table: TableType<Trade>;
@@ -40,13 +42,40 @@ export function TradeResultsTable({
   columnFiltersCount,
 }: TradeResultsTableProps) {
   const navigate = useNavigate();
+  const [openFilter, setOpenFilter] = useState<string | null>(null);
+  const isDateFilterColumn = (columnId: string) =>
+    columnId === "create_time" || columnId === "update_time";
+
+  const optionMap = useMemo(() => {
+    const rows = table.getPreFilteredRowModel().flatRows;
+    const collect = (key: keyof Trade, formatter?: (value: Trade[keyof Trade]) => string) =>
+      Array.from(
+        new Set(
+          rows.map((r) => {
+            const value = r.original[key];
+            return formatter ? formatter(value) : String(value);
+          })
+        )
+      ).sort();
+    return {
+      trade_id: collect("trade_id"),
+      account: collect("account"),
+      asset_type: collect("asset_type"),
+      booking_system: collect("booking_system"),
+      affirmation_system: collect("affirmation_system"),
+      clearing_house: collect("clearing_house"),
+      create_time: [],
+      update_time: [],
+      status: collect("status"),
+    } as Record<string, string[]>;
+  }, [table]);
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Search Results</CardTitle>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-black/50 mt-1">
             Found {resultsCount} matching trades
           </p>
         </div>
@@ -122,18 +151,118 @@ export function TradeResultsTable({
               {/* Filter Row */}
               <TableRow>
                 {table.getHeaderGroups()[0].headers.map((header) => (
-                  <TableHead key={`filter-${header.id}`} className="py-2">
-                    {header.column.getCanFilter() && (
-                      <Input
-                        placeholder="Filter..."
-                        value={
-                          (header.column.getFilterValue() as string) ?? ""
-                        }
-                        onChange={(event) =>
-                          header.column.setFilterValue(event.target.value)
-                        }
-                        className="h-8 text-xs"
-                      />
+                  <TableHead key={`filter-${header.id}`} className="py-2 overflow-visible">
+                    {header.column.getCanFilter() && !isDateFilterColumn(header.id) && (
+                      <div className="relative">
+                        <Input
+                          placeholder="Filter..."
+                          value={
+                            (header.column.getFilterValue() as string) ?? ""
+                          }
+                          onChange={(event) =>
+                            header.column.setFilterValue(event.target.value)
+                          }
+                          onFocus={() =>
+                            optionMap[header.id]?.length
+                              ? setOpenFilter(header.id)
+                              : setOpenFilter(null)
+                          }
+                          onBlur={() => {
+                            // Defer to allow option click via mousedown
+                            setTimeout(() => setOpenFilter(null), 120);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Escape") setOpenFilter(null);
+                          }}
+                          className="h-8 text-xs pr-16"
+                        />
+                        <div className="absolute inset-y-0 right-1 flex items-center gap-1">
+                          {(header.column.getFilterValue() as string) && (
+                            <button
+                              type="button"
+                              className="flex items-center px-1 text-black/50 hover:text-red-600"
+                              onMouseDown={(event) => {
+                                event.preventDefault();
+                                header.column.setFilterValue("");
+                                setOpenFilter(null);
+                              }}
+                              title="Clear filter"
+                            >
+                              <X className="size-4" />
+                            </button>
+                          )}
+                          {optionMap[header.id]?.length ? (
+                            <Button
+                              variant="ghost"
+                              className="flex items-center size-6"
+                              onMouseDown={(event) => {
+                                event.preventDefault();
+                                setOpenFilter((prev) =>
+                                  prev === header.id ? null : header.id
+                                );
+                              }}
+                            >
+                              <ChevronDown className="size-4" />
+                            </Button>
+                          ) : null}
+                        </div>
+                        {openFilter === header.id && optionMap[header.id]?.length ? (
+                          <div className="absolute left-0 right-auto top-full z-30 mt-1 max-h-64 min-w-48 overflow-y-auto overflow-x-hidden rounded-md border border-slate-200 bg-white shadow-md flex flex-col">
+                            {optionMap[header.id].map((option) => (
+                              <button
+                                key={option}
+                                type="button"
+                                className="w-full px-3 py-2 text-left text-xs hover:bg-slate-100"
+                                onMouseDown={(event) => {
+                                  event.preventDefault();
+                                  header.column.setFilterValue(option);
+                                  setOpenFilter(null);
+                                }}
+                              >
+                                {option}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+                    {header.column.getCanFilter() && isDateFilterColumn(header.id) && (
+                      <div className="flex flex-col gap-2 min-w-[160px]">
+                        <Input
+                          type="date"
+                          value={
+                            (header.column.getFilterValue() as { from?: string; to?: string } | undefined)?.from ?? ""
+                          }
+                          onChange={(event) => {
+                            const current =
+                              (header.column.getFilterValue() as { from?: string; to?: string } | undefined) ?? {};
+                            const next = { ...current, from: event.target.value };
+                            if (!next.from && !next.to) {
+                              header.column.setFilterValue(undefined);
+                              return;
+                            }
+                            header.column.setFilterValue(next);
+                          }}
+                          className="h-8 text-xs"
+                        />
+                        <Input
+                          type="date"
+                          value={
+                            (header.column.getFilterValue() as { from?: string; to?: string } | undefined)?.to ?? ""
+                          }
+                          onChange={(event) => {
+                            const current =
+                              (header.column.getFilterValue() as { from?: string; to?: string } | undefined) ?? {};
+                            const next = { ...current, to: event.target.value };
+                            if (!next.from && !next.to) {
+                              header.column.setFilterValue(undefined);
+                              return;
+                            }
+                            header.column.setFilterValue(next);
+                          }}
+                          className="h-8 text-xs"
+                        />
+                      </div>
                     )}
                   </TableHead>
                 ))}
@@ -147,10 +276,10 @@ export function TradeResultsTable({
                     onClick={() =>
                       navigate({
                         to: "/trades/$tradeId",
-                        params: { tradeId: row.original.trade_id },
+                        params: { tradeId: row.original.trade_id.toString() },
                       })
                     }
-                    className="cursor-pointer hover:bg-blue-50"
+                    className="cursor-pointer hover:bg-[#002B51]/5"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="px-4">
@@ -178,9 +307,18 @@ export function TradeResultsTable({
 
         {/* Pagination */}
         <div className="flex items-center justify-between space-x-2 py-4">
-          <div className="text-sm text-slate-500">
-            Showing {table.getRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} result(s)
+          <div className="text-sm text-black/50">
+            {(() => {
+              const total = table.getFilteredRowModel().rows.length;
+              const { pageIndex, pageSize } = table.getState().pagination;
+              const start = total === 0 ? 0 : pageIndex * pageSize;
+              const end = total === 0 ? 0 : Math.min(start + pageSize, total);
+              return (
+                <>
+                  Showing results {start}-{end} out of {total}
+                </>
+              );
+            })()}
           </div>
           <div className="flex gap-2">
             <Button

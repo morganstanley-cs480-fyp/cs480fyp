@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { X } from "lucide-react";
 
 interface DateRangeFilterProps {
   dateType: 'create_time' | 'update_time';
@@ -51,22 +52,46 @@ export function DateRangeFilter({
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-sm text-slate-600">From</Label>
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => onDateFromChange(e.target.value)}
-            className="h-9"
-          />
+          <Label className="text-sm text-black/75">From</Label>
+          <div className="relative">
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => onDateFromChange(e.target.value)}
+              className="h-9 pr-8"
+            />
+            {dateFrom && (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-black/50 hover:text-red-600"
+                onClick={() => onDateFromChange("")}
+                title="Clear date"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
         </div>
         <div className="space-y-2">
-          <Label className="text-sm text-slate-600">To</Label>
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => onDateToChange(e.target.value)}
-            className="h-9"
-          />
+          <Label className="text-sm text-black/75">To</Label>
+          <div className="relative">
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => onDateToChange(e.target.value)}
+              className="h-9 pr-8"
+            />
+            {dateTo && (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-black/50 hover:text-red-600"
+                onClick={() => onDateToChange("")}
+                title="Clear date"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
       

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { AlertTriangle, Clock } from "lucide-react";
 import { type Transaction, type Exception } from "@/lib/mockData";
 
@@ -14,6 +14,21 @@ export function getStatusColor(status: string): "default" | "destructive" | "sec
       return "outline";
     default:
       return "secondary";
+  }
+}
+
+export function getStatusBadgeClassName(status: string): string {
+  switch (status) {
+    case "CLEARED":
+      return "bg-green-600 text-white border-green-600";
+    case "ALLEGED":
+      return "bg-yellow-400 text-black border-yellow-400";
+    case "CANCELLED":
+      return "bg-black text-white border-black";
+    case "REJECTED":
+      return "bg-red-600 text-white border-red-600";
+    default:
+      return "bg-slate-200 text-black border-slate-200";
   }
 }
 
@@ -64,6 +79,6 @@ export function getTransactionBackgroundColor(transaction: Transaction, exceptio
   return "bg-slate-100 border-slate-300";
 }
 
-export function getRelatedExceptions(transId: string, exceptions: Exception[]): Exception[] {
+export function getRelatedExceptions(transId: number, exceptions: Exception[]): Exception[] {
   return exceptions.filter((exc) => exc.trans_id === transId);
 }

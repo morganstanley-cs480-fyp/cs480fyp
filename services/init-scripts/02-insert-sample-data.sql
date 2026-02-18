@@ -1,0 +1,222 @@
+﻿-- 100 trades with corrected spelling (FIRELINK) and randomized dates (2024-2026)
+-- Synced between frontend and backend for consistent testing
+
+INSERT INTO trades
+  (id, account, asset_type, booking_system, affirmation_system, clearing_house, create_time, update_time, status)
+VALUES
+(69269882, 'ACC084', 'FX', 'HIGHGARDEN', 'TRAI', 'LCH', '2025-10-16 00:00:00', '2026-01-11 00:00:00', 'CANCELLED'),
+(48712564, 'ACC054', 'CDS', 'KINGSLANDING', 'MARC', 'CME', '2024-01-26 00:00:00', '2024-07-14 00:00:00', 'ALLEGED'),
+(54146216, 'ACC071', 'CDS', 'WINTERFELL', 'FIRELINK', 'OTCCHK', '2024-09-07 00:00:00', '2025-01-29 00:00:00', 'ALLEGED'),
+(67515456, 'ACC046', 'CDS', 'KINGSLANDING', 'BLM', 'CME', '2024-05-22 00:00:00', '2024-08-12 00:00:00', 'ALLEGED'),
+(69755320, 'ACC045', 'CDS', 'WINTERFELL', 'FIRELINK', 'LCH', '2025-11-23 00:00:00', '2026-02-03 00:00:00', 'ALLEGED'),
+(77194044, 'ACC040', 'IRS', 'KINGSLANDING', 'MARC', 'LCH', '2025-08-27 00:00:00', '2026-02-03 00:00:00', 'REJECTED'),
+(60724962, 'ACC023', 'IRS', 'RED KEEP', 'BLM', 'OTCCHK', '2024-02-02 00:00:00', '2024-03-18 00:00:00', 'REJECTED'),
+(96904486, 'ACC081', 'CDS', 'WINTERFELL', 'MARC', 'OTCCHK', '2024-04-05 00:00:00', '2024-08-24 00:00:00', 'CANCELLED'),
+(14355627, 'ACC011', 'FX', 'RED KEEP', 'MARC', 'JSCC', '2024-08-26 00:00:00', '2025-06-10 00:00:00', 'ALLEGED'),
+(42511774, 'ACC001', 'IRS', 'RED KEEP', 'MARC', 'CME', '2025-09-08 00:00:00', '2025-10-21 00:00:00', 'REJECTED'),
+(72427554, 'ACC019', 'FX', 'KINGSLANDING', 'FIRELINK', 'OTCCHK', '2025-07-28 00:00:00', '2025-12-06 00:00:00', 'CANCELLED'),
+(81930671, 'ACC031', 'FX', 'WINTERFELL', 'BLM', 'OTCCHK', '2026-01-03 00:00:00', '2026-02-03 00:00:00', 'CANCELLED'),
+(88531321, 'ACC074', 'IRS', 'WINTERFELL', 'BLM', 'LCH', '2024-08-13 00:00:00', '2025-04-29 00:00:00', 'CANCELLED'),
+(56535550, 'ACC034', 'IRS', 'KINGSLANDING', 'TRAI', 'OTCCHK', '2025-08-26 00:00:00', '2026-02-03 00:00:00', 'CANCELLED'),
+(66663488, 'ACC091', 'FX', 'WINTERFELL', 'FIRELINK', 'JSCC', '2024-01-07 00:00:00', '2024-04-27 00:00:00', 'CANCELLED'),
+(64737734, 'ACC005', 'IRS', 'RED KEEP', 'TRAI', 'CME', '2025-12-15 00:00:00', '2026-02-03 00:00:00', 'ALLEGED'),
+(49964172, 'ACC077', 'FX', 'HIGHGARDEN', 'TRAI', 'OTCCHK', '2024-12-14 00:00:00', '2025-06-04 00:00:00', 'ALLEGED'),
+(73001300, 'ACC078', 'CDS', 'RED KEEP', 'BLM', 'LCH', '2024-06-08 00:00:00', '2024-10-26 00:00:00', 'CANCELLED'),
+(27625806, 'ACC013', 'FX', 'KINGSLANDING', 'FIRELINK', 'CME', '2024-12-10 00:00:00', '2025-03-02 00:00:00', 'CANCELLED'),
+(98159040, 'ACC032', 'CDS', 'HIGHGARDEN', 'FIRELINK', 'JSCC', '2024-04-04 00:00:00', '2024-11-14 00:00:00', 'CLEARED'),
+(86836834, 'ACC056', 'CDS', 'KINGSLANDING', 'MARC', 'JSCC', '2024-04-09 00:00:00', '2024-11-08 00:00:00', 'REJECTED'),
+(51883413, 'ACC089', 'CDS', 'HIGHGARDEN', 'MARC', 'LCH', '2024-12-18 00:00:00', '2025-06-01 00:00:00', 'CANCELLED'),
+(15706882, 'ACC027', 'IRS', 'HIGHGARDEN', 'TRAI', 'CME', '2024-02-14 00:00:00', '2024-11-05 00:00:00', 'CLEARED'),
+(77186642, 'ACC043', 'CDS', 'KINGSLANDING', 'BLM', 'LCH', '2025-07-03 00:00:00', '2025-10-04 00:00:00', 'REJECTED'),
+(87472545, 'ACC070', 'CDS', 'HIGHGARDEN', 'FIRELINK', 'LCH', '2025-01-22 00:00:00', '2025-04-02 00:00:00', 'ALLEGED'),
+(61270683, 'ACC016', 'FX', 'RED KEEP', 'BLM', 'LCH', '2025-07-19 00:00:00', '2026-01-15 00:00:00', 'REJECTED'),
+(84171052, 'ACC041', 'FX', 'KINGSLANDING', 'FIRELINK', 'JSCC', '2025-10-05 00:00:00', '2026-02-03 00:00:00', 'ALLEGED'),
+(42668494, 'ACC097', 'IRS', 'RED KEEP', 'FIRELINK', 'JSCC', '2025-08-14 00:00:00', '2025-12-20 00:00:00', 'CLEARED'),
+(25246501, 'ACC010', 'CDS', 'RED KEEP', 'TRAI', 'CME', '2025-12-22 00:00:00', '2026-02-03 00:00:00', 'CLEARED'),
+(67536228, 'ACC073', 'CDS', 'WINTERFELL', 'TRAI', 'OTCCHK', '2024-02-16 00:00:00', '2024-07-11 00:00:00', 'CLEARED'),
+(36106022, 'ACC012', 'IRS', 'KINGSLANDING', 'MARC', 'OTCCHK', '2024-10-23 00:00:00', '2025-01-01 00:00:00', 'CLEARED'),
+(44289340, 'ACC048', 'CDS', 'HIGHGARDEN', 'MARC', 'JSCC', '2024-08-26 00:00:00', '2024-11-15 00:00:00', 'ALLEGED'),
+(98962729, 'ACC086', 'CDS', 'KINGSLANDING', 'BLM', 'JSCC', '2025-01-24 00:00:00', '2025-07-15 00:00:00', 'REJECTED'),
+(54580528, 'ACC029', 'FX', 'RED KEEP', 'FIRELINK', 'JSCC', '2025-04-09 00:00:00', '2025-11-11 00:00:00', 'ALLEGED'),
+(53850480, 'ACC094', 'CDS', 'KINGSLANDING', 'TRAI', 'LCH', '2024-06-15 00:00:00', '2025-01-20 00:00:00', 'REJECTED'),
+(89369810, 'ACC006', 'CDS', 'HIGHGARDEN', 'TRAI', 'LCH', '2024-12-29 00:00:00', '2025-05-15 00:00:00', 'REJECTED'),
+(99202386, 'ACC067', 'IRS', 'KINGSLANDING', 'MARC', 'CME', '2025-11-17 00:00:00', '2026-02-03 00:00:00', 'REJECTED'),
+(60494436, 'ACC066', 'FX', 'KINGSLANDING', 'TRAI', 'OTCCHK', '2025-12-19 00:00:00', '2026-02-03 00:00:00', 'CLEARED'),
+(30157884, 'ACC036', 'FX', 'KINGSLANDING', 'MARC', 'OTCCHK', '2025-09-15 00:00:00', '2026-01-10 00:00:00', 'CANCELLED'),
+(96565146, 'ACC017', 'CDS', 'RED KEEP', 'FIRELINK', 'JSCC', '2025-06-30 00:00:00', '2025-12-02 00:00:00', 'ALLEGED'),
+(26654809, 'ACC050', 'FX', 'HIGHGARDEN', 'FIRELINK', 'LCH', '2024-06-16 00:00:00', '2025-03-09 00:00:00', 'CANCELLED'),
+(21873774, 'ACC035', 'IRS', 'KINGSLANDING', 'TRAI', 'CME', '2025-01-23 00:00:00', '2025-07-10 00:00:00', 'CANCELLED'),
+(15149979, 'ACC008', 'CDS', 'WINTERFELL', 'BLM', 'LCH', '2025-10-17 00:00:00', '2026-02-03 00:00:00', 'CANCELLED'),
+(44994216, 'ACC096', 'FX', 'WINTERFELL', 'MARC', 'JSCC', '2025-12-02 00:00:00', '2026-02-03 00:00:00', 'ALLEGED'),
+(25399440, 'ACC028', 'IRS', 'RED KEEP', 'BLM', 'LCH', '2024-02-27 00:00:00', '2024-07-23 00:00:00', 'REJECTED'),
+(85631648, 'ACC020', 'FX', 'HIGHGARDEN', 'FIRELINK', 'OTCCHK', '2024-02-02 00:00:00', '2024-08-11 00:00:00', 'ALLEGED'),
+(87841659, 'ACC082', 'FX', 'RED KEEP', 'BLM', 'JSCC', '2025-02-14 00:00:00', '2025-07-31 00:00:00', 'CLEARED'),
+(72840839, 'ACC026', 'CDS', 'WINTERFELL', 'BLM', 'JSCC', '2024-03-08 00:00:00', '2024-07-24 00:00:00', 'ALLEGED'),
+(98860229, 'ACC063', 'CDS', 'HIGHGARDEN', 'BLM', 'OTCCHK', '2025-08-03 00:00:00', '2026-02-03 00:00:00', 'REJECTED'),
+(21309141, 'ACC014', 'FX', 'WINTERFELL', 'FIRELINK', 'OTCCHK', '2024-08-05 00:00:00', '2025-05-17 00:00:00', 'CLEARED'),
+(87666057, 'ACC025', 'IRS', 'HIGHGARDEN', 'FIRELINK', 'LCH', '2025-02-09 00:00:00', '2025-10-31 00:00:00', 'CLEARED'),
+(64238205, 'ACC004', 'IRS', 'HIGHGARDEN', 'FIRELINK', 'JSCC', '2024-05-26 00:00:00', '2024-11-07 00:00:00', 'CLEARED'),
+(43458153, 'ACC018', 'CDS', 'WINTERFELL', 'BLM', 'CME', '2024-05-22 00:00:00', '2024-10-25 00:00:00', 'CLEARED'),
+(82105744, 'ACC039', 'IRS', 'RED KEEP', 'FIRELINK', 'OTCCHK', '2026-02-01 00:00:00', '2026-02-03 00:00:00', 'REJECTED'),
+(29290419, 'ACC009', 'CDS', 'RED KEEP', 'BLM', 'OTCCHK', '2026-02-03 00:00:00', '2026-02-03 00:00:00', 'REJECTED'),
+(30461963, 'ACC079', 'IRS', 'HIGHGARDEN', 'MARC', 'CME', '2025-08-20 00:00:00', '2026-02-03 00:00:00', 'CANCELLED'),
+(49364118, 'ACC007', 'IRS', 'RED KEEP', 'TRAI', 'JSCC', '2025-01-05 00:00:00', '2025-05-27 00:00:00', 'CLEARED'),
+(50038309, 'ACC065', 'IRS', 'HIGHGARDEN', 'BLM', 'CME', '2024-05-21 00:00:00', '2025-03-07 00:00:00', 'CANCELLED'),
+(70712244, 'ACC037', 'FX', 'HIGHGARDEN', 'FIRELINK', 'JSCC', '2025-05-20 00:00:00', '2025-08-04 00:00:00', 'CANCELLED'),
+(17881089, 'ACC090', 'IRS', 'RED KEEP', 'FIRELINK', 'LCH', '2024-02-18 00:00:00', '2024-05-14 00:00:00', 'CANCELLED'),
+(35526057, 'ACC057', 'FX', 'RED KEEP', 'BLM', 'CME', '2024-06-05 00:00:00', '2024-09-24 00:00:00', 'ALLEGED'),
+(22322060, 'ACC100', 'FX', 'HIGHGARDEN', 'BLM', 'LCH', '2025-11-27 00:00:00', '2026-02-03 00:00:00', 'ALLEGED'),
+(35141556, 'ACC055', 'CDS', 'HIGHGARDEN', 'MARC', 'OTCCHK', '2025-09-02 00:00:00', '2025-11-03 00:00:00', 'REJECTED'),
+(51259775, 'ACC044', 'CDS', 'KINGSLANDING', 'FIRELINK', 'LCH', '2025-01-29 00:00:00', '2025-09-11 00:00:00', 'ALLEGED'),
+(64428173, 'ACC051', 'IRS', 'HIGHGARDEN', 'FIRELINK', 'OTCCHK', '2025-09-02 00:00:00', '2026-02-03 00:00:00', 'CLEARED'),
+(83728843, 'ACC068', 'IRS', 'KINGSLANDING', 'FIRELINK', 'OTCCHK', '2025-06-25 00:00:00', '2025-11-30 00:00:00', 'CLEARED'),
+(61389948, 'ACC047', 'FX', 'KINGSLANDING', 'FIRELINK', 'LCH', '2025-07-20 00:00:00', '2025-08-24 00:00:00', 'CANCELLED'),
+(88020567, 'ACC069', 'IRS', 'WINTERFELL', 'FIRELINK', 'CME', '2025-11-27 00:00:00', '2026-02-03 00:00:00', 'CLEARED'),
+(63209277, 'ACC062', 'CDS', 'RED KEEP', 'MARC', 'OTCCHK', '2025-11-29 00:00:00', '2026-02-03 00:00:00', 'REJECTED'),
+(25200175, 'ACC098', 'IRS', 'RED KEEP', 'BLM', 'JSCC', '2025-10-18 00:00:00', '2026-02-03 00:00:00', 'ALLEGED'),
+(48871459, 'ACC080', 'CDS', 'RED KEEP', 'BLM', 'CME', '2024-04-24 00:00:00', '2024-10-21 00:00:00', 'CLEARED'),
+(93739599, 'ACC042', 'FX', 'WINTERFELL', 'TRAI', 'JSCC', '2025-03-21 00:00:00', '2025-07-09 00:00:00', 'ALLEGED'),
+(51089450, 'ACC059', 'FX', 'RED KEEP', 'FIRELINK', 'OTCCHK', '2025-04-09 00:00:00', '2025-05-10 00:00:00', 'CANCELLED'),
+(29055274, 'ACC049', 'FX', 'KINGSLANDING', 'MARC', 'LCH', '2026-01-09 00:00:00', '2026-02-03 00:00:00', 'REJECTED'),
+(39461893, 'ACC099', 'IRS', 'WINTERFELL', 'FIRELINK', 'LCH', '2025-05-27 00:00:00', '2025-09-25 00:00:00', 'CLEARED'),
+(69661274, 'ACC058', 'CDS', 'HIGHGARDEN', 'TRAI', 'CME', '2025-06-03 00:00:00', '2025-08-26 00:00:00', 'REJECTED'),
+(37158077, 'ACC076', 'IRS', 'KINGSLANDING', 'TRAI', 'LCH', '2025-10-02 00:00:00', '2026-02-03 00:00:00', 'CLEARED'),
+(11380595, 'ACC033', 'FX', 'KINGSLANDING', 'TRAI', 'JSCC', '2025-10-16 00:00:00', '2026-02-03 00:00:00', 'ALLEGED'),
+(40745908, 'ACC095', 'FX', 'RED KEEP', 'FIRELINK', 'LCH', '2025-09-15 00:00:00', '2026-01-24 00:00:00', 'ALLEGED'),
+(81459852, 'ACC060', 'IRS', 'HIGHGARDEN', 'FIRELINK', 'CME', '2024-06-05 00:00:00', '2025-01-12 00:00:00', 'CLEARED'),
+(87072563, 'ACC064', 'CDS', 'WINTERFELL', 'FIRELINK', 'JSCC', '2024-06-14 00:00:00', '2024-07-14 00:00:00', 'CLEARED'),
+(50899479, 'ACC085', 'FX', 'WINTERFELL', 'TRAI', 'CME', '2025-09-05 00:00:00', '2026-02-03 00:00:00', 'CANCELLED'),
+(87339954, 'ACC038', 'IRS', 'RED KEEP', 'MARC', 'OTCCHK', '2025-05-15 00:00:00', '2025-06-23 00:00:00', 'CANCELLED'),
+(38302945, 'ACC030', 'CDS', 'WINTERFELL', 'BLM', 'OTCCHK', '2024-04-24 00:00:00', '2024-11-25 00:00:00', 'REJECTED'),
+(46902779, 'ACC002', 'FX', 'KINGSLANDING', 'MARC', 'CME', '2024-11-10 00:00:00', '2025-04-11 00:00:00', 'CLEARED'),
+(40547985, 'ACC053', 'CDS', 'WINTERFELL', 'TRAI', 'LCH', '2024-02-29 00:00:00', '2024-07-31 00:00:00', 'ALLEGED'),
+(63244917, 'ACC022', 'IRS', 'HIGHGARDEN', 'BLM', 'OTCCHK', '2025-08-03 00:00:00', '2025-10-12 00:00:00', 'REJECTED'),
+(66340127, 'ACC003', 'CDS', 'HIGHGARDEN', 'MARC', 'CME', '2024-03-28 00:00:00', '2024-12-31 00:00:00', 'REJECTED'),
+(73972538, 'ACC024', 'IRS', 'HIGHGARDEN', 'MARC', 'JSCC', '2024-03-11 00:00:00', '2024-06-13 00:00:00', 'CLEARED'),
+(36629187, 'ACC088', 'FX', 'WINTERFELL', 'MARC', 'CME', '2024-05-11 00:00:00', '2025-02-08 00:00:00', 'CLEARED'),
+(36349602, 'ACC092', 'FX', 'HIGHGARDEN', 'BLM', 'OTCCHK', '2025-07-16 00:00:00', '2025-11-07 00:00:00', 'CANCELLED'),
+(85373053, 'ACC075', 'IRS', 'WINTERFELL', 'MARC', 'JSCC', '2024-09-28 00:00:00', '2025-07-25 00:00:00', 'CANCELLED'),
+(76689540, 'ACC087', 'IRS', 'KINGSLANDING', 'MARC', 'JSCC', '2025-09-13 00:00:00', '2026-02-03 00:00:00', 'REJECTED'),
+(33154292, 'ACC083', 'FX', 'RED KEEP', 'MARC', 'OTCCHK', '2024-08-04 00:00:00', '2024-12-14 00:00:00', 'CANCELLED'),
+(97897651, 'ACC021', 'FX', 'KINGSLANDING', 'BLM', 'CME', '2025-12-31 00:00:00', '2026-02-03 00:00:00', 'REJECTED'),
+(92282247, 'ACC061', 'FX', 'WINTERFELL', 'TRAI', 'LCH', '2025-02-12 00:00:00', '2025-09-21 00:00:00', 'ALLEGED'),
+(54344649, 'ACC072', 'FX', 'RED KEEP', 'FIRELINK', 'CME', '2025-03-24 00:00:00', '2026-01-12 00:00:00', 'ALLEGED'),
+(73847580, 'ACC015', 'CDS', 'WINTERFELL', 'MARC', 'LCH', '2025-04-07 00:00:00', '2025-07-07 00:00:00', 'CANCELLED'),
+(37807798, 'ACC093', 'CDS', 'KINGSLANDING', 'BLM', 'OTCCHK', '2024-09-10 00:00:00', '2025-02-02 00:00:00', 'CLEARED'),
+(76369566, 'ACC052', 'FX', 'RED KEEP', 'TRAI', 'LCH', '2024-03-06 00:00:00', '2024-09-25 00:00:00', 'CANCELLED'),
+
+-- Original 10 trades with linked transactions and exceptions for system flow visualization
+(69690882, 'ACC084', 'CDS', 'HIGHGARDEN', 'TRAI', 'LCH', '2025-01-06 10:33:00', '2025-09-17 06:13:44', 'ALLEGED'),
+(67447216, 'ACC071', 'CDS', 'WINTERFELL', 'FIRELINK', 'OTCCHK', '2025-02-05 03:01:52', '2025-08-10 14:53:23', 'ALLEGED'),
+(17194044, 'ACC040', 'IRS', 'KINGSLANDING', 'MARC', 'LCH', '2025-06-20 11:44:53', '2025-08-19 19:46:50', 'REJECTED'),
+(35821903, 'ACC133', 'FX', 'HIGHGARDEN', 'TRAI', 'JSCC', '2025-03-15 08:15:22', '2025-08-25 16:42:11', 'CLEARED'),
+(42198745, 'ACC0466', 'IRS', 'WINTERFELL', 'FIRELINK', 'CME', '2025-02-28 14:20:45', '2025-09-05 10:33:18', 'CLEARED'),
+(58392014, 'ACC0982', 'CDS', 'RED KEEP', 'MARC', 'LCH', '2025-07-12 18:55:30', '2025-10-02 22:14:05', 'CANCELLED');
+
+-- Sample query history for demo user
+INSERT INTO query_history (user_id, query_text, is_saved, query_name, create_time, last_use_time) VALUES
+('demo_user', 'show me alleged CDS trades', TRUE, 'Alleged CDS Review', '2025-10-15 10:00:00', '2025-10-20 09:00:00');
+
+-- Trades from data.xml (with linked transactions and exceptions)
+INSERT INTO trades
+  (id, account, asset_type, booking_system, affirmation_system, clearing_house, create_time, update_time, status)
+VALUES
+(54707890, 'ACC3848', 'CDS', 'KINGSLANDING', 'TRAI', 'CME', '2025-08-31 18:24:09', '2025-08-31 18:24:09', 'CLEARED'),
+(91404528, 'ACC3147', 'CDS', 'KINGSLANDING', 'MARC', 'CME', '2025-08-19 12:18:34', '2025-08-19 12:18:34', 'CLEARED'),
+(55623053, 'ACC7526', 'IRS', 'RED KEEP', 'TRAI', 'JSCC', '2025-08-07 09:04:05', '2025-08-07 09:04:05', 'PENDING'),
+(68186799, 'ACC7944', 'FX', 'RED KEEP', 'MARC', 'CME', '2025-08-09 03:00:44', '2025-08-09 03:00:44', 'PENDING'),
+(46195889, 'ACC7734', 'FX', 'HIGHGARDEN', 'MARC', 'JSCC', '2025-08-28 04:55:52', '2025-08-28 04:55:52', 'PENDING');
+
+-- Transactions for sample trades (from data.xml)
+INSERT INTO transactions
+  (id, trade_id, create_time, entity, direction, type, status, update_time, step)
+VALUES
+-- Transactions for trade 54707890 (CLEARED)
+(21282644, 54707890, '2025-08-31 18:26:44', 'OCTCCHK', 'receive', 'REQUEST_CONSENT', 'CLEARED', '2025-08-31 18:26:44', 1),
+(33481477, 54707890, '2025-08-31 18:31:38', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-31 18:31:38', 2),
+(15178400, 54707890, '2025-08-31 18:32:35', 'TAS', 'receive', 'CREDIT_APPROVE', 'CLEARED', '2025-08-31 18:32:35', 3),
+(99768484, 54707890, '2025-08-31 18:32:39', 'OCTCCHK', 'send', 'CONSENT_GRANTED', 'ALLEGED', '2025-08-31 18:32:39', 4),
+(89698060, 54707890, '2025-08-31 18:36:58', 'OCTCCHK', 'receive', 'STATUS_UPDATE', 'CLEARED', '2025-08-31 18:36:58', 5),
+(70264903, 54707890, '2025-08-31 18:39:58', 'OCTCCHK', 'receive', 'CLEARING_CONFIRMED', 'CLEARED', '2025-08-31 18:39:58', 6),
+(51150161, 54707890, '2025-08-31 18:44:16', 'WINTERFELL', 'send', 'CLEARED_TRADE', 'CLEARED', '2025-08-31 18:44:16', 7),
+(39130156, 54707890, '2025-08-31 18:44:53', 'WINTERFELL', 'receive', 'CLEARED_TRADE', 'CLEARED', '2025-08-31 18:44:53', 8),
+(33775061, 54707890, '2025-08-31 18:46:39', 'OCTCCHK', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-31 18:46:39', 9),
+(74975320, 54707890, '2025-08-31 18:50:08', 'TAS', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-31 18:50:08', 10),
+
+-- Transactions for trade 91404528 (CLEARED)
+(40019459, 91404528, '2025-08-19 12:19:00', 'CME', 'receive', 'REQUEST_CONSENT', 'CLEARED', '2025-08-19 12:19:00', 1),
+(66394716, 91404528, '2025-08-19 12:22:59', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-19 12:22:59', 2),
+(10196818, 91404528, '2025-08-19 12:26:09', 'TAS', 'receive', 'CREDIT_APPROVE', 'CLEARED', '2025-08-19 12:26:09', 3),
+(51801058, 91404528, '2025-08-19 12:31:00', 'CME', 'send', 'CONSENT_GRANTED', 'ALLEGED', '2025-08-19 12:31:00', 4),
+(89684241, 91404528, '2025-08-19 12:33:44', 'CME', 'receive', 'STATUS_UPDATE', 'CLEARED', '2025-08-19 12:33:44', 5),
+(88833373, 91404528, '2025-08-19 12:37:23', 'CME', 'receive', 'CLEARING_CONFIRMED', 'CLEARED', '2025-08-19 12:37:23', 6),
+(84008912, 91404528, '2025-08-19 12:38:08', 'RED KEEP', 'send', 'CLEARED_TRADE', 'CLEARED', '2025-08-19 12:38:08', 7),
+(10546096, 91404528, '2025-08-19 12:43:05', 'CME', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-19 12:43:05', 8),
+(31313806, 91404528, '2025-08-19 12:43:23', 'CME', 'receive', 'STATUS_UPDATE', 'CLEARED', '2025-08-19 12:43:23', 9),
+(11900072, 91404528, '2025-08-19 12:43:54', 'TAS', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-19 12:43:54', 10),
+(84606322, 91404528, '2025-08-19 12:47:56', 'LCH', 'send', 'REQUEST_CONSENT', 'CLEARED', '2025-08-19 12:47:56', 11),
+(80440424, 91404528, '2025-08-19 12:48:19', 'LCH', 'receive', 'CONSENT_GRANTED', 'CLEARED', '2025-08-19 12:48:19', 12),
+(85925696, 91404528, '2025-08-19 12:51:53', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-19 12:51:53', 13),
+(53151687, 91404528, '2025-08-19 12:52:16', 'TAS', 'receive', 'CREDIT_REJECT', 'CLEARED', '2025-08-19 12:52:16', 14),
+(17352428, 91404528, '2025-08-19 12:56:02', 'LCH', 'send', 'CONSENT_REJECTED', 'CLEARED', '2025-08-19 12:56:02', 15),
+(91671421, 91404528, '2025-08-19 12:59:00', 'LCH', 'receive', 'CLEARING_REFUSED', 'CLEARED', '2025-08-19 12:59:00', 16),
+(39119047, 91404528, '2025-08-19 13:03:09', 'KINGSLANDING', 'send', 'CLEARED_TRADE', 'CLEARED', '2025-08-19 13:03:09', 17),
+(67417886, 91404528, '2025-08-19 13:05:15', 'KINGSLANDING', 'receive', 'CLEARED_TRADE', 'CLEARED', '2025-08-19 13:05:15', 18),
+(10419302, 91404528, '2025-08-19 13:09:28', 'KINGSLANDING', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-19 13:09:28', 19),
+(31510116, 91404528, '2025-08-19 13:10:45', 'TAS', 'send', 'SEND_TRADE_ID', 'CLEARED', '2025-08-19 13:10:45', 20),
+
+-- Transactions for trade 55623053 (PENDING - has exception)
+(86149349, 55623053, '2025-08-07 09:05:44', 'CME', 'receive', 'REQUEST_CONSENT', 'CLEARED', '2025-08-07 09:05:44', 1),
+(98680769, 55623053, '2025-08-07 09:08:31', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-07 09:08:31', 2),
+(88242387, 55623053, '2025-08-07 09:12:18', 'TAS', 'receive', 'CREDIT_REJECT', 'REJECTED', '2025-08-07 09:12:18', 3),
+
+-- Transactions for trade 68186799 (PENDING - has exception)
+(81466877, 68186799, '2025-08-09 03:04:03', 'LCH', 'receive', 'REQUEST_CONSENT', 'CLEARED', '2025-08-09 03:04:03', 1),
+(46170504, 68186799, '2025-08-09 03:08:50', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-09 03:08:50', 2),
+(58746648, 68186799, '2025-08-09 03:13:17', 'TAS', 'receive', 'CREDIT_APPROVE', 'CLEARED', '2025-08-09 03:13:17', 3),
+(26155050, 68186799, '2025-08-09 03:17:20', 'LCH', 'send', 'REQUEST_CONSENT', 'CLEARED', '2025-08-09 03:17:20', 4),
+(15153056, 68186799, '2025-08-09 03:17:23', 'LCH', 'receive', 'CONSENT_REJECTED', 'REJECTED', '2025-08-09 03:17:23', 5),
+
+-- Transactions for trade 46195889 (PENDING - has exception)
+(62291938, 46195889, '2025-08-28 04:58:51', 'CME', 'receive', 'REQUEST_CONSENT', 'CLEARED', '2025-08-28 04:58:51', 1),
+(12724611, 46195889, '2025-08-28 05:02:14', 'TAS', 'send', 'CREDIT_CHECK', 'CLEARED', '2025-08-28 05:02:14', 2),
+(31113850, 46195889, '2025-08-28 05:05:38', 'TAS', 'receive', 'CREDIT_APPROVE', 'CLEARED', '2025-08-28 05:05:38', 3),
+(33084149, 46195889, '2025-08-28 05:10:36', 'CME', 'send', 'CONSENT_GRANTED', 'ALLEGED', '2025-08-28 05:10:36', 4),
+(73573614, 46195889, '2025-08-28 05:12:47', 'CME', 'receive', 'CLEARING_CONFIRMED', 'CLEARED', '2025-08-28 05:12:47', 5),
+(97337730, 46195889, '2025-08-28 05:13:59', 'KINGSLANDING', 'send', 'CLEARED_TRADE', 'REJECTED', '2025-08-28 05:13:59', 6);
+
+-- Sample exceptions for pending trades
+INSERT INTO exceptions (id, trade_id, trans_id, msg, priority, status, comment, create_time, update_time)
+VALUES
+-- Exception 1: Credit rejection for trade 55623053
+(19757932, 55623053, 88242387, 'Credit limit exceeded for counterparty. Available credit: $5M, Required: $8M for IRS trade.', 'HIGH', 'PENDING', 'Awaiting credit committee review and approval for limit increase', '2025-08-07 09:12:25', '2025-08-07 09:12:25'),
+
+-- Exception 2: Consent rejection for trade 68186799
+(86572959, 68186799, 15153056, 'LCH consent rejected due to incomplete LEI documentation. Counterparty LEI verification failed regulatory check.', 'HIGH', 'PENDING', 'Legal team contacted for updated LEI certificate', '2025-08-09 03:17:28', '2025-08-09 03:17:28'),
+
+-- Exception 3: Booking system rejection for trade 46195889
+(36485937, 46195889, 97337730, 'Booking system validation failed: Settlement account mismatch between clearing house (CME) and booking system (KINGSLANDING). Account reference data inconsistency detected.', 'MEDIUM', 'PENDING', 'Operations team investigating account mapping configuration', '2025-08-28 05:14:05', '2025-08-28 05:14:05');
+
+-- Sample solutions for the exceptions
+INSERT INTO solutions (id, exception_id, title, exception_description, reference_event, solution_description, scores, create_time)
+VALUES
+-- Solution 1: Credit limit exception
+(275682, 19757932, 'Credit Limit Increase with Additional Collateral', 
+'Trade execution blocked due to insufficient credit line. The IRS trade requires $8M exposure but only $5M credit is available. Credit check (trans 98680769) passed but final approval (trans 88242387) was rejected by TAS system.',
+'Similar credit rejections occurred on 2025-07-15 for ACC7526 and were resolved within 4 hours using collateral posting method.',
+'1. Request immediate collateral posting of $3M from counterparty to cover shortfall. 2. Submit emergency credit limit increase request to Credit Risk team with trade economics justification. 3. Once collateral posted or limit approved, manually override credit check in TAS. 4. Resubmit consent request to CME clearing house. 5. Monitor transaction flow through to SEND_TRADE_ID step.',
+23, '2025-08-07 09:15:00'),
+
+-- Solution 2: LEI documentation exception  
+(539273, 86572959, 'Update LEI Documentation and Resubmit Clearing Request',
+'Clearing house consent rejection at step 5 after initial consent request succeeded (trans 81466877). Credit approval obtained (trans 58746648) but LCH rejected the second consent request (trans 15153056) due to failed LEI verification in their regulatory database.',
+'Trade 45623890 on 2025-07-22 encountered identical LEI rejection from LCH and was resolved in 2.5 hours after documentation update.',
+'1. Contact Legal/Compliance to obtain updated LEI certificate from Global LEI Foundation database. 2. Upload refreshed LEI documentation to counterparty master data in RED KEEP system. 3. Notify LCH clearing operations of documentation update via secure portal. 4. Request manual LEI re-verification from LCH compliance team. 5. Once verified, resubmit consent request through MARC affirmation system. 6. Continue normal clearing workflow.',
+25, '2025-08-09 03:20:00'),
+
+-- Solution 3: Settlement account mismatch
+(912732, 36485937, 'Reconcile Settlement Account Reference Data Across Systems',
+'Trade successfully cleared at CME (trans 73573614 confirmed) but booking system rejected at final step (trans 97337730). The issue stems from mismatched settlement account identifiers between CME clearing records and KINGSLANDING booking system master data.',
+'Reference data mismatches have occurred 3 times in past month for HIGHGARDEN trades. Root cause identified as manual account updates not syncing across all systems.',
+'1. Extract settlement account details from CME clearing confirmation message. 2. Compare against KINGSLANDING account master file for HIGHGARDEN accounts. 3. Update KINGSLANDING reference data tables with correct CME settlement account mapping. 4. Execute data validation script to ensure sync between all booking and clearing systems. 5. Resubmit cleared trade message from CME to KINGSLANDING. 6. Implement automated daily reconciliation job to prevent future occurrences.',
+20, '2025-08-28 05:16:00');

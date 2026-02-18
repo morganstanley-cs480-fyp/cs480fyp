@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Users, Clock } from "lucide-react";
+import {Users, Clock } from "lucide-react";
 
 export interface AISuggestion {
   id: string;
@@ -17,19 +17,23 @@ export interface AISuggestion {
 interface AISuggestionCardProps {
   suggestion: AISuggestion;
   onClick: () => void;
+  isSelected?: boolean;
 }
 
-export function AISuggestionCard({ suggestion, onClick }: AISuggestionCardProps) {
+export function AISuggestionCard({ suggestion, onClick, isSelected = false }: AISuggestionCardProps) {
   return (
     <Card 
-      className="border-2 hover:border-purple-300 transition-colors cursor-pointer"
+      className={`border-2 transition-colors cursor-pointer py-0 ${
+        isSelected 
+          ? 'border-[#002B51] bg-[#002B51]/5' 
+          : 'border-slate-200 hover:border-[#002B51]/30'
+      }`}
       onClick={onClick}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="size-4 text-purple-600" />
-            <h4 className="font-medium text-slate-900">
+            <h4 className="font-medium text-black">
               {suggestion.title}
             </h4>
           </div>
@@ -46,20 +50,20 @@ export function AISuggestionCard({ suggestion, onClick }: AISuggestionCardProps)
           </Badge>
         </div>
 
-        <p className="text-sm text-slate-700 mb-3">
+        <p className="text-sm text-black/75 mb-3">
           {suggestion.description}
         </p>
 
         <div className="bg-slate-50 border border-slate-200 rounded p-3 mb-3">
-          <p className="text-xs font-semibold text-slate-700 mb-1">
+          <p className="text-xs font-semibold text-black/75 mb-1">
             AI Reasoning:
           </p>
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-black/75">
             {suggestion.reasoning}
           </p>
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-slate-600">
+        <div className="flex items-center gap-4 text-xs text-black/75">
           <div className="flex items-center gap-1">
             <Users className="size-3" />
             <span>Based on {suggestion.similarCases} similar cases</span>

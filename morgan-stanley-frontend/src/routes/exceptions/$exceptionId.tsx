@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import {AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,7 +11,7 @@ import { NewSolutionForm } from '@/components/exceptions-individual/NewSolutionF
 import { AIGeneratorPanel } from '@/components/exceptions-individual/AIGeneratorPanel';
 
 // Hook import
-import { useExceptionResolver } from './useExceptionResolver';
+import { useExceptionResolver } from './-useExceptionResolver';
 
 export const Route = createFileRoute('/exceptions/$exceptionId')({
   component: ResolveExceptionPage,
@@ -25,8 +25,6 @@ function ResolveExceptionPage() {
     exception,
     selectedTab,
     setSelectedTab,
-    searchQuery,
-    setSearchQuery,
     aiSearching,
     aiGenerating,
     aiSuggestions,
@@ -35,9 +33,11 @@ function ResolveExceptionPage() {
     setNewSolutionTitle,
     newSolutionDescription,
     setNewSolutionDescription,
+    aiSolutionType,
+    setAiSolutionType,
+    selectedSuggestion,
     copiedToClipboard,
     filteredSuggestions,
-    handleAISearch,
     handleGenerateAISolution,
     handleCopyToDescription,
     handleCopyToClipboard,
@@ -60,11 +60,10 @@ function ResolveExceptionPage() {
       <div className="p-6 max-w-7xl mx-auto">
         <Card>
           <CardContent className="py-12">
-            <div className="text-center text-slate-500">
+            <div className="text-center text-black/50">
               <AlertCircle className="size-12 mx-auto mb-3" />
               <p className="text-lg mb-2">Exception not found</p>
               <Button onClick={() => navigate({ to: '/exceptions' })}>
-                <ArrowLeft className="size-4 mr-2" />
                 Back to Exceptions
               </Button>
             </div>
@@ -83,14 +82,13 @@ function ResolveExceptionPage() {
           size="sm" 
           onClick={() => window.history.back()}
         >
-          <ArrowLeft className="size-4 mr-2" />
           Back
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Resolve Exception {exception.exception_id}
+          <h1 className="text-2xl font-semibold text-black">
+            View Exception {exception.exception_id}
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-sm text-black/75 mt-1">
             Choose a solution method to resolve this exception
           </p>
         </div>
@@ -104,11 +102,11 @@ function ResolveExceptionPage() {
           getPriorityColor={getPriorityColor} 
         />
 
-        {/* Right Content - Resolution Method */}
+        {/* Right Content - Exception Management */}
         <div className="flex-1 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Resolution Method</CardTitle>
+              <CardTitle>Exception Management</CardTitle>
               <CardDescription>
                 Choose an existing solution or create a new one
               </CardDescription>
@@ -119,43 +117,61 @@ function ResolveExceptionPage() {
                 onValueChange={(v) => setSelectedTab(v as 'existing' | 'new')}
               >
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="existing">Select Existing Solution</TabsTrigger>
-                  <TabsTrigger value="new">Create New Solution</TabsTrigger>
+                  <TabsTrigger value="existing">Select Existing RAG-Powered Solution</TabsTrigger>
+                  <TabsTrigger value="new">Create New Solution with AI</TabsTrigger>
                 </TabsList>
 
                 {/* Select Existing Solution Tab */}
-                <TabsContent value="existing" className="space-y-6 mt-6">
+                <TabsContent value="existing" className="space-y-6">
                   <AISuggestionsTab
-                    searchQuery={searchQuery}
-                    onSearchQueryChange={setSearchQuery}
                     aiSearching={aiSearching}
-                    onSearch={handleAISearch}
                     aiSuggestions={aiSuggestions}
                     filteredSuggestions={filteredSuggestions}
                     onSuggestionClick={handleSuggestionClick}
+                    selectedSuggestion={selectedSuggestion}
                   />
                 </TabsContent>
 
                 {/* Create New Solution Tab */}
-                <TabsContent value="new" className="mt-6">
+                <TabsContent value="new">
                   <div className="grid grid-cols-2 gap-6">
-                    {/* Left - Form */}
-                    <NewSolutionForm
-                      solutionTitle={newSolutionTitle}
-                      onSolutionTitleChange={setNewSolutionTitle}
-                      solutionDescription={newSolutionDescription}
-                      onSolutionDescriptionChange={setNewSolutionDescription}
-                    />
+                    {/* Left - AI Suggested Solution */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-slate-700">
+                        Generate with AI Assistant
+                      </h3>
+                      <Card className="border-[#002B51]">
+                        <CardContent className="pt-2 px-4 pb-4">
+                          <AIGeneratorPanel
+                            aiGenerating={aiGenerating}
+                            onGenerate={handleGenerateAISolution}
+                            aiGeneratedSolution={aiGeneratedSolution}
+                            onCopyToDescription={handleCopyToDescription}
+                            onCopyToClipboard={handleCopyToClipboard}
+                            copiedToClipboard={copiedToClipboard}
+                            aiSolutionType={aiSolutionType}
+                            onAiSolutionTypeChange={setAiSolutionType}
+                          />
+                        </CardContent>
+                      </Card>
+                    </div>
 
-                    {/* Right - AI Suggested Solution */}
-                    <AIGeneratorPanel
-                      aiGenerating={aiGenerating}
-                      onGenerate={handleGenerateAISolution}
-                      aiGeneratedSolution={aiGeneratedSolution}
-                      onCopyToDescription={handleCopyToDescription}
-                      onCopyToClipboard={handleCopyToClipboard}
-                      copiedToClipboard={copiedToClipboard}
-                    />
+                    {/* Right - Form */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-slate-700">
+                        Input and Save Solution to Repository
+                      </h3>
+                      <Card className="border-[#002B51]">
+                        <CardContent className="pt-2 px-4 pb-4">
+                          <NewSolutionForm
+                            solutionTitle={newSolutionTitle}
+                            onSolutionTitleChange={setNewSolutionTitle}
+                            solutionDescription={newSolutionDescription}
+                            onSolutionDescriptionChange={setNewSolutionDescription}
+                          />
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
                 </TabsContent>
               </Tabs>
@@ -167,12 +183,14 @@ function ResolveExceptionPage() {
             className="w-full h-12 bg-slate-700 hover:bg-slate-800 text-base"
             onClick={handleApplySolution}
             disabled={
-              selectedTab === 'new' && (!newSolutionTitle || !newSolutionDescription)
+              selectedTab === 'existing' 
+                ? !selectedSuggestion
+                : !newSolutionTitle || !newSolutionDescription
             }
           >
             {selectedTab === 'existing' 
-              ? 'Apply Selected Solution' 
-              : 'Create & Apply Solution'}
+              ? 'Use Selected Solution and Resolve Exception' 
+              : 'Create Solution and Resolve Exception'}
           </Button>
         </div>
       </div>

@@ -8,15 +8,6 @@ on:
       - ".github/workflows/build-python-service.yml"
       - ".github/workflows/build-js-service.yml"
 
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "services/**"
-      - ".github/workflows/service-builder.yml"
-      - ".github/workflows/build-python-service.yml"
-      - ".github/workflows/build-js-service.yml"
-
-
 permissions:
   contents: read
   pull-requests: read
@@ -168,7 +159,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
-    uses: ./.github/workflows/build-js-service.yml
+    uses: ./.github/workflows/build-python-service.yml
     with:
       service_name: trade-flow-service
     secrets:

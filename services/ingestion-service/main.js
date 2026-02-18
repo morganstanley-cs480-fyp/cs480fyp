@@ -8,132 +8,142 @@ import { SSMClient, GetParameterCommand, PutParameterCommand } from "@aws-sdk/cl
 import { XMLParser } from 'fast-xml-parser';
 
 // Config
-const queueUrl = process.env.QUEUE_URL;
-const bucketName = process.env.S3_BUCKET_NAME;
-const fileName = process.env.S3_FILE_KEY || "data.xml";
-const ssmParamName = process.env.SSM_PARAM_NAME || "/trade-ingestor/last-pos";
-const region = process.env.AWS_REGION || "ap-southeast-1";
-const batchSize = parseInt(process.env.BATCH_SIZE || "10", 10);
+export const config = {
+  queueUrl: process.env.DATA_PROCESSING_QUEUE_URL,
+  bucketName: process.env.S3_BUCKET_NAME,
+  fileName: process.env.S3_FILE_KEY || "data.xml",
+  ssmParamName: process.env.SSM_PARAM_NAME || "/trade-ingestor/last-pos",
+  region: process.env.AWS_REGION || "ap-southeast-1",
+  batchSize: parseInt(process.env.BATCH_SIZE || "10", 10)
+};
 
 // AWS Clients
-const sqs = new SQSClient({ region });
-const s3 = new S3Client({ region });
-const ssm = new SSMClient({ region });
+const sqs = new SQSClient({ region: config.region });
+const s3 = new S3Client({ region: config.region });
+const ssm = new SSMClient({ region: config.region });
 
-async function ingestData() {
+// Export clients for mocking if needed
+export const clients = { sqs, s3, ssm };
+
+export async function ingestData() {
   const parser = new XMLParser({ preserveOrder: true });
   console.log("Ingestor Service Started (AWS Production Mode)");
-  console.log(`Region: ${region}`);
-  console.log(`Target: S3[${bucketName}/${fileName}] -> Queue -> SSM[${ssmParamName}]`);
 
   let allEntries = [];
 
   try {
-    // Read XML once at startup
-    const xmlData = await fetchS3File(bucketName, fileName);
+    const xmlData = await fetchS3File(config.bucketName, config.fileName);
     const parsed = parser.parse(xmlData);
     
-    // Parse Logic
     const rootNode = parsed.find(n => n.root);
     if (!rootNode) throw new Error("Invalid XML: Root node not found");
     
+    // Filter out text nodes (newlines/indentation)
     allEntries = rootNode.root.filter(node => !node['#text']);
     console.log(`Successfully loaded ${allEntries.length} entries from S3.`);
     
   } catch (err) {
     console.error("CRITICAL: Failed to load or parse XML from S3.", err.message);
-    process.exit(1); 
+    if (process.env.NODE_ENV !== 'test') process.exit(1);
+    throw err;
   }
 
   while (true) {
     try {
-      // GET STATE (FROM SSM)
-      let lastPos = await getLastPosition(ssmParamName);
+      const lastPos = await getLastPosition(config.ssmParamName);
+      await processBatch(allEntries, lastPos);
+
+      // For testing purposes, we break the loop if requested
+      if (process.env.NODE_ENV === 'test') break;
+
+      await new Promise(res => setTimeout(res, 60000));
       
-      // slice items (Process next 10 items)
-      const batch = allEntries.slice(lastPos, lastPos + batchSize);
-
-      if (batch.length > 0) {
-        for (const entry of batch) {
-          const type = Object.keys(entry)[0];
-          const fields = entry[type];
-
-          const cleanFields = cleanUpFields(fields);
-        
-          const tradeId = cleanFields.trade_id || "unknown";
-
-          console.log(`Sending [${type}] TradeID: ${tradeId}`);
-
-          // send SQS based on FIFO and Message Group ID (Trade ID)
-          await sqs.send(new SendMessageCommand({
-            QueueUrl: queueUrl,
-            MessageBody: JSON.stringify({ type, data: cleanFields }),
-            MessageGroupId: String(tradeId), 
-            MessageDeduplicationId: `${type}-${tradeId}-${Date.now()}`
-          }));
-
-          lastPos++;
-        }
-
-        // save state to SSM
-        await saveLastPosition(ssmParamName, lastPos);
-        console.log(`Batch success. SSM Updated to index: ${lastPos}`);
-
-      } else {
-        console.log("No more entries to process. Waiting...");
-      }
-
+      // Update position only after wait or successful cycle
     } catch (error) {
       console.error("Ingestion Loop Error:", error.message);
+      if (process.env.NODE_ENV === 'test') break;
     }
-
-    // Wait 60 seconds before next batch
-    await new Promise(res => setTimeout(res, 60000));
   }
 }
 
-// fetch XML file from S3 bucket
-async function fetchS3File(bucket, key) {
+// Logic extracted for easier testing
+export async function processBatch(allEntries, lastPos) {
+  const batch = allEntries.slice(lastPos, lastPos + config.batchSize);
+
+  if (batch.length > 0) {
+    let currentPos = lastPos;
+    for (const entry of batch) {
+      const type = Object.keys(entry)[0];
+      const fields = entry[type];
+      const cleanFields = cleanUpFields(fields);
+      const tradeId = (type === 'trade') 
+        ? cleanFields.id 
+        : (cleanFields.trade_id || "unknown");
+
+      console.log(`Sending [${type}] TradeID: ${tradeId}`);
+
+      await clients.sqs.send(new SendMessageCommand({
+        QueueUrl: config.queueUrl,
+        MessageBody: JSON.stringify({ type, data: cleanFields }),
+        MessageGroupId: String(tradeId), 
+        MessageDeduplicationId: `${type}-${tradeId}-${Date.now()}`
+      }));
+
+      currentPos++;
+    }
+
+    await saveLastPosition(config.ssmParamName, currentPos);
+    console.log(`Batch success. SSM Updated to index: ${currentPos}`);
+    return currentPos;
+  } else {
+    console.log("No more entries to process.");
+    return lastPos;
+  }
+}
+
+export async function fetchS3File(bucket, key) {
   const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-  const response = await s3.send(command);
+  const response = await clients.s3.send(command);
   return response.Body.transformToString();
 }
 
-// get last position of the pointer on the XML file to ensure no overlap
-async function getLastPosition(paramName) {
+export async function getLastPosition(paramName) {
   try {
     const command = new GetParameterCommand({ Name: paramName });
-    const response = await ssm.send(command);
+    const response = await clients.ssm.send(command);
     return parseInt(response.Parameter.Value, 10);
   } catch (error) {
     if (error.name === 'ParameterNotFound') {
       console.log("SSM Parameter not found. Initializing at 0.");
       return 0;
     }
-    throw error;
+    throw error; 
   }
 }
 
-// write the position of the pointer of the next data to be sent after 60s 
-async function saveLastPosition(paramName, pos) {
+export async function saveLastPosition(paramName, pos) {
   const command = new PutParameterCommand({
     Name: paramName,
     Value: String(pos),
     Type: "String",
     Overwrite: true
   });
-  await ssm.send(command);
+  await clients.ssm.send(command);
 }
 
-// clean up fields from XML to JSON
-function cleanUpFields(fields) {
+export function cleanUpFields(fields) {
   const cleanObj = {};
   fields.forEach(field => {
     const key = Object.keys(field)[0];
-    const value = field[key][0]['#text'];
-    cleanObj[key] = value;
+    if (field[key] && field[key][0] && field[key][0]['#text']) {
+        const value = field[key][0]['#text'];
+        cleanObj[key] = value;
+    }
   });
   return cleanObj;
 }
 
-ingestData();
+// Only run immediately if this file is the main entry point (not imported by test)
+if (process.argv[1] && process.argv[1].endsWith('main.js')) {
+    ingestData();
+}

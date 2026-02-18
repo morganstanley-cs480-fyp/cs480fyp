@@ -1,7 +1,7 @@
 resource "aws_db_instance" "this" {
   identifier             = var.db_identifier
   engine                 = "postgres"
-  engine_version         = "16.3"
+  engine_version         = "16.6"
   port                   = 5432
   
   instance_class         = "db.t4g.micro" 
