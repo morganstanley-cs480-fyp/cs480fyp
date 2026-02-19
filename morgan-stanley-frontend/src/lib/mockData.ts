@@ -46,6 +46,17 @@ export interface Exception {
 
 export const mockTrades: Trade[] = [
   {
+    trade_id: 96809076,
+    account: "ACC8991",
+    asset_type: "FX",
+    booking_system: "WINTERFELL",
+    affirmation_system: "MARC",
+    clearing_house: "JSCC",
+    create_time: "2025-08-02T16:37:20",
+    update_time: "2025-08-02T16:37:20",
+    status: "CLEARED"
+},
+  {
     trade_id: 69269882,
     account: 'ACC084',
     asset_type: 'FX',
@@ -1336,6 +1347,117 @@ export const mockTransactions: Transaction[] = [
     update_time: '2025-10-02 22:30:00',
     step: 1,
   },
+{
+    trans_id: 14478043,
+    trade_id: 96809076,
+    create_time: "2025-08-02T16:38:48",
+    entity: "OCTCCHK",
+    direction: "RECEIVE",
+    type: "REQUEST_CONSENT",
+    status: "CLEARED",
+    update_time: "2025-08-02T16:38:48",
+    step: 1
+},
+  {
+    "trans_id": 38982571,
+    "trade_id": 96809076,
+    "create_time": "2025-08-02T16:40:29",
+    "entity": "TAS",
+    "direction": "SEND",
+    "type": "CREDIT_CHECK",
+    "status": "CLEARED",
+    "update_time": "2025-08-02T16:40:29",
+    "step": 2
+},
+{
+    "trans_id": 31546215,
+    "trade_id": 96809076,
+    "create_time": "2025-08-02T16:43:51",
+    "entity": "TAS",
+    "direction": "RECEIVE",
+    "type": "CREDIT_APPROVE",
+    "status": "CLEARED",
+    "update_time": "2025-08-02T16:43:51",
+    "step": 3
+},
+{
+    "trans_id": 49097669,
+    "trade_id": 96809076,
+    "create_time": "2025-08-02T16:46:19",
+    "entity": "OCTCCHK",
+    "direction": "SEND",
+    "type": "CONSENT_GRANTED",
+    "status": "ALLEGED",
+    "update_time": "2025-08-02T16:46:19",
+    "step": 4
+},
+{
+    "trans_id": 97732604,
+    "trade_id": 96809076,
+    "create_time": "2025-08-02T16:49:00",
+    "entity": "OCTCCHK",
+    "direction": "RECEIVE",
+    "type": "STATUS_UPDATE",
+    "status": "CLEARED",
+    "update_time": "2025-08-02T16:49:00",
+    "step": 5
+},
+{
+    "trans_id": 37031509,
+    "trade_id": 96809076,
+    "create_time": "2025-08-02T16:50:39",
+    "entity": "OCTCCHK",
+    "direction": "receive",
+    "type": "CLEARING_CONFIRMED",
+    "status": "CLEARED",
+    "update_time": "2025-08-02T16:50:39",
+    "step": 6
+},
+{
+    "trans_id": 16013484,
+    "trade_id": 96809076,
+    "create_time": "2025-08-02T16:53:35",
+    "entity": "WINTERFELL",
+    "direction": "send",
+    "type": "CLEARED_TRADE",
+    "status": "CLEARED",
+    "update_time": "2025-08-02T16:53:35",
+    "step": 7
+},
+{
+    "trans_id": 83234938,
+    "trade_id": 96809076,
+    "create_time": "2025-08-02T16:56:20",
+    "entity": "WINTERFELL",
+    "direction": "receive",
+    "type": "CLEARED_TRADE",
+    "status": "CLEARED",
+    "update_time": "2025-08-02T16:56:20",
+    "step": 8
+},
+{
+    "trans_id": 73045187,
+    "trade_id": 96809076,
+    "create_time": "2025-08-02T16:56:37",
+    "entity": "OCTCCHK",
+    "direction": "send",
+    "type": "SEND_TRADE_ID",
+    "status": "CLEARED",
+    "update_time": "2025-08-02T16:56:37",
+    "step": 9
+},
+{
+    "trans_id": 14512144,
+    "trade_id": 96809076,
+    "create_time": "2025-08-02T16:58:46",
+    "entity": "TAS",
+    "direction": "send",
+    "type": "SEND_TRADE_ID",
+    "status": "CLEARED",
+    "update_time": "2025-08-02T16:58:46",
+    "step": 10
+}  
+
 ];
 
 export const mockExceptions: Exception[] = [
