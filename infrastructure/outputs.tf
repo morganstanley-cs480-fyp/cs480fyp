@@ -25,3 +25,7 @@ output "milvus_admin_endpoint" {
   description = "Milvus admin endpoint for monitoring"
   value       = module.milvus_ec2.milvus_admin_endpoint
 }
+
+output "frontend_url" {
+  value = module.frontend_cdn.distribution_domain_name
+}

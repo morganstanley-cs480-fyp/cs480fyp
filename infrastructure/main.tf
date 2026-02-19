@@ -23,12 +23,19 @@ module "alb" {
   subnet_ids  = module.networking.public_subnet_ids
 }
 
-# S3 for FRONT END
-module "frontend_s3" {
-  source          = "./modules/s3_client"
-  bucket_name     = var.s3_frontend_bucket_name
-  allowed_origins = ["*"]
+# Look for existing front_end S3 bucket
+data "aws_s3_bucket" "existing_frontend" {
+  bucket = "morgan-stanley-frontend"
 }
+
+# Frontend CloudFront distribution
+module "frontend_cdn" {
+  source                      = "./modules/cloudfront"
+  bucket_name                 = data.aws_s3_bucket.existing_frontend.id
+  bucket_regional_domain_name = data.aws_s3_bucket.existing_frontend.bucket_regional_domain_name
+  alb_dns_name                = module.alb.alb_dns_name
+}
+
 
 # S3 for XML File
 module "s3_data" {
