@@ -23,7 +23,7 @@ services:
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./localstack-data}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - ./localstack-setup.sh:/etc/localstack/init/ready.d/script.sh
+      - ./init-scripts/localstack-setup.sh:/etc/localstack/init/ready.d/script.sh
       - ./generate-dummy-data:/data
     networks:
       - test-network
