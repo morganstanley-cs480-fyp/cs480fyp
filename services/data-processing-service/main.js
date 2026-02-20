@@ -42,9 +42,10 @@ export const pool = new Pool({
   password: process.env.DB_PASSWORD,
   user: process.env.DB_USER,
   port: parseInt(process.env.DB_PORT || "5432"),
-  ssl: {
-    rejectUnauthorized: false
-  },
+  // ssl: {
+  //   rejectUnauthorized: false
+  // },
+  ssl: false,
   max: 10, // Keep up to 10 connections open
   idleTimeoutMillis: 30000 // Close idle connections after 30s
 });

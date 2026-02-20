@@ -14,13 +14,23 @@ export const config = {
   fileName: process.env.S3_FILE_KEY || "data.xml",
   ssmParamName: process.env.SSM_PARAM_NAME || "/trade-ingestor/last-pos",
   region: process.env.AWS_REGION || "ap-southeast-1",
-  batchSize: parseInt(process.env.BATCH_SIZE || "10", 10)
+  batchSize: parseInt(process.env.BATCH_SIZE || "10", 10),
+  awsEndPoint: process.env.AWS_ENDPOINT 
 };
 
 // AWS Clients
-const sqs = new SQSClient({ region: config.region });
-const s3 = new S3Client({ region: config.region });
-const ssm = new SSMClient({ region: config.region });
+const sqs = new SQSClient({ region: config.region,
+                            forcePathStyle: true,
+                            endpoint: config.awsEndPoint
+                            });
+const s3 = new S3Client({ region: config.region,
+                          endpoint: config.awsEndPoint,
+                          forcePathStyle: true
+                         });
+const ssm = new SSMClient({ region: config.region,
+                            endpoint: config.awsEndPoint,
+                            forcePathStyle: true
+                            });
 
 // Export clients for mocking if needed
 export const clients = { sqs, s3, ssm };
@@ -52,7 +62,6 @@ export async function ingestData() {
     try {
       const lastPos = await getLastPosition(config.ssmParamName);
       await processBatch(allEntries, lastPos);
-
       // For testing purposes, we break the loop if requested
       if (process.env.NODE_ENV === 'test') break;
 
