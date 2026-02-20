@@ -81,7 +81,7 @@ services:
       - test-network
     environment:
       HOSTNAME_EXTERNAL: localstack
-      QUEUE_URL: ${QUEUE_URL}
+      DATA_PROCESSING_QUEUE_URL: ${QUEUE_URL}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
       S3_FILE_KEY: ${S3_FILE_KEY}
       SSM_PARAM_NAME: ${SSM_PARAM_NAME}
