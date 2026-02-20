@@ -594,6 +594,7 @@ interface FlowVisualizationProps {
   getRelatedExceptions: (trans_id: number) => Exception[];
   getTransactionBackgroundColor: (transaction: Transaction) => string;
   getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
+  tradeId: number;
 }
 
 export function FlowVisualization({
@@ -608,25 +609,56 @@ export function FlowVisualization({
   getRelatedExceptions,
   getTransactionBackgroundColor,
   getTransactionStatusColor,
+  tradeId,
 }: FlowVisualizationProps) {
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(!transactions || transactions.length === 0 ? false : true);
+  const [liveTransactions, setLiveTransactions] = useState(transactions);
+
+  const { isConnected, lastUpdate } = useTradeWebSocket(tradeId);
+
+  // Handle live transaction updates
+  useEffect(() => {
+    if (lastUpdate) {
+      // Assuming lastUpdate contains transaction data
+      setLiveTransactions(prevTransactions => {
+        const updatedTransactions = [...prevTransactions];
+        
+        // Find and update existing transaction or add new one
+        const existingIndex = updatedTransactions.findIndex(
+          tx => tx.trans_id === lastUpdate.trans_id
+        );
+        
+        if (existingIndex >= 0) {
+          updatedTransactions[existingIndex] = { 
+            ...updatedTransactions[existingIndex], 
+            ...lastUpdate 
+          };
+        } else {
+          updatedTransactions.push(lastUpdate);
+        }
+        
+        return updatedTransactions.sort((a, b) => a.step - b.step);
+      });
+    }
+  }, [lastUpdate]);
+
 
   // Generate dynamic flow visualization based on actual transaction data
   useEffect(() => {
-    if (!transactions || transactions.length === 0) {
+    if (!liveTransactions || liveTransactions.length === 0) {
       return;
     }
 
     // Extract unique entities from transactions (excluding CCP)
     const entities = [...new Set(
-      transactions
+      liveTransactions
         .map(t => t.entity)
         .filter(e => e && e !== 'CCP' && e !== 'Central Clearing House')
     )];
 
     // Sort transactions by step to maintain order
-    const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
+    const sortedTransactions = [...liveTransactions].sort((a, b) => a.step - b.step);
 
     // Build flows based on transaction direction
     const flows: TransactionFlow[] = sortedTransactions.map(tx => {
@@ -671,7 +703,7 @@ export function FlowVisualization({
         console.error('ELK layout failed:', error);
         setIsLoading(false);
       });
-  }, [transactions, clearingHouse, onEntitySelect, exceptions, onTransactionSelect]);
+  }, [liveTransactions, clearingHouse, onEntitySelect, exceptions, onTransactionSelect]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setLayoutData((prev) => ({
@@ -696,18 +728,26 @@ export function FlowVisualization({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as "system" | "timeline")}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="system" className="flex items-center gap-2">
-              <Network className="size-4" />
-              System Flow
-            </TabsTrigger>
-            <TabsTrigger value="timeline" className="flex items-center gap-2">
-              <Clock className="size-4" />
-              Timeline Flow
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex justify-between items-center mb-2">
+          <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as "system" | "timeline")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="system" className="flex items-center gap-2">
+                <Network className="size-4" />
+                System Flow
+              </TabsTrigger>
+              <TabsTrigger value="timeline" className="flex items-center gap-2">
+                <Clock className="size-4" />
+                Timeline Flow
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          {/* Live status indicator */}
+          <div className="flex items-center gap-2 text-xs">
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+            {isConnected ? 'Live' : 'Offline'}
+          </div>
+        </div>
       </CardHeader>
 
       <CardContent>

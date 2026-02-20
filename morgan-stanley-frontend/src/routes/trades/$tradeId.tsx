@@ -148,6 +148,7 @@ function TradeDetailPage() {
                         getRelatedExceptions={(transId) => getRelatedExceptions(transId, exceptions)}
                         getTransactionBackgroundColor={(transaction) => getTransactionBackgroundColor(transaction, exceptions)}
                         getTransactionStatusColor={getTransactionStatusColor}
+                        tradeId={Number(tradeId)}
                     />
                 </div>
 
