@@ -18,14 +18,14 @@ export function NewSolutionForm({
   onSolutionDescriptionChange,
 }: NewSolutionFormProps) {
   return (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="solution-title">Solution Title</Label>
+    <div className="space-y-2">
+      <div className="flex items-center gap-4">
+        <Label htmlFor="solution-title" className="min-w-fit">Solution Title</Label>
         <Select 
           value={solutionTitle} 
           onValueChange={onSolutionTitleChange}
         >
-          <SelectTrigger id="solution-title">
+          <SelectTrigger id="solution-title" className="flex-1">
             <SelectValue placeholder="Select solution type" />
           </SelectTrigger>
           <SelectContent>
@@ -47,7 +47,7 @@ export function NewSolutionForm({
           placeholder="Describe the solution in detail..."
           value={solutionDescription}
           onChange={(e) => onSolutionDescriptionChange(e.target.value)}
-          className="h-64 font-mono text-sm"
+          className="h-64 text-sm mt-2"
         />
       </div>
     </div>

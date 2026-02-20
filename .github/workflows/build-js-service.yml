@@ -15,6 +15,9 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
 
+env:
+  IMAGE_TAG: ${{ github.sha }}
+
 jobs:
   static-analysis:
     runs-on: ubuntu-latest
@@ -38,6 +41,7 @@ jobs:
         run: npm run lint
 
   test:
+    needs: static-analysis
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -63,7 +67,7 @@ jobs:
           fi
 
   build:
-    needs: [static-analysis, test]
+    needs: test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -77,7 +81,9 @@ jobs:
         with:
           context: ./services/${{ inputs.service_name }}
           file: ./services/${{ inputs.service_name }}/Dockerfile
-          tags: ${{ inputs.service_name }}:latest
+          tags: |
+            ${{ inputs.service_name }}:latest
+            ${{ inputs.service_name }}:${{ github.sha }}
           outputs: type=docker,dest=/tmp/${{ inputs.service_name }}.tar
 
       - name: Upload artifact
@@ -91,7 +97,6 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -115,5 +120,53 @@ jobs:
 
       - name: Tag and Push ${{ inputs.service_name }}
         run: |
-          docker tag ${{ inputs.service_name }}:latest ${{ steps.login-ecr.outputs.registry }}/${{ inputs.service_name }}:latest
-          docker push ${{ steps.login-ecr.outputs.registry }}/${{ inputs.service_name }}:latest
+          REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          IMAGE=${{ inputs.service_name }}
+
+          docker tag $IMAGE:latest $REGISTRY/$IMAGE:latest
+          docker tag $IMAGE:${{ github.sha }} $REGISTRY/$IMAGE:${{ github.sha }}
+
+          docker push $REGISTRY/$IMAGE:latest
+          docker push $REGISTRY/$IMAGE:${{ github.sha }}
+
+  deploy:
+    needs: push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Get current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ inputs.deployment_name || inputs.service_name }}-task \
+            --query 'taskDefinition' \
+            --region ap-southeast-1 > task-def.json
+
+      - name: Update task definition with new image
+        id: render
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-def.json
+          container-name: ${{ inputs.deployment_name || inputs.service_name }}-container
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.service_name }}:${{ github.sha }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          cluster: ecs-cluster
+          service: ${{ inputs.service_name }}
+          task-definition: ${{ steps.render.outputs.task-definition }}
+          wait-for-service-stability: true

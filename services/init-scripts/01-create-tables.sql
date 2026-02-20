@@ -53,3 +53,91 @@ CREATE INDEX IF NOT EXISTS idx_trades_status ON trades(status);
 CREATE INDEX IF NOT EXISTS idx_trades_create_time ON trades(create_time DESC);
 CREATE INDEX IF NOT EXISTS idx_trades_update_time ON trades(update_time DESC);
 CREATE INDEX IF NOT EXISTS idx_trades_account ON trades(account);
+
+-- Create transactions table
+-- Schema matches production: stores transaction flow for each trade
+CREATE TABLE IF NOT EXISTS transactions (
+    id INTEGER PRIMARY KEY,
+    trade_id INTEGER NOT NULL,
+    create_time TIMESTAMP NOT NULL,
+    entity VARCHAR(50) NOT NULL,
+    direction VARCHAR(20) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    update_time TIMESTAMP NOT NULL,
+    step INTEGER NOT NULL,
+    
+    -- Foreign key constraint
+    CONSTRAINT fk_transactions_trade_id 
+        FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE CASCADE
+);
+
+-- Create indexes for transactions table
+CREATE INDEX IF NOT EXISTS idx_transactions_trade_id ON transactions(trade_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
+CREATE INDEX IF NOT EXISTS idx_transactions_create_time ON transactions(create_time DESC);
+CREATE INDEX IF NOT EXISTS idx_transactions_step ON transactions(step);
+CREATE INDEX IF NOT EXISTS idx_transactions_entity ON transactions(entity);
+
+-- Create exception status enum type
+CREATE TYPE exception_status AS ENUM ('PENDING', 'RESOLVED', 'IGNORED');
+
+-- Create exceptions table
+-- Schema matches exception-service requirements
+CREATE TABLE IF NOT EXISTS exceptions (
+    id SERIAL PRIMARY KEY,
+    trade_id INTEGER NOT NULL,
+    trans_id INTEGER NOT NULL,
+    msg TEXT NOT NULL,
+    priority VARCHAR(20) NOT NULL,
+    status exception_status DEFAULT 'PENDING',
+    comment TEXT,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Foreign key constraints
+    CONSTRAINT fk_exceptions_trade_id 
+        FOREIGN KEY (trade_id) REFERENCES trades(id) ON DELETE CASCADE,
+    CONSTRAINT fk_exceptions_trans_id 
+        FOREIGN KEY (trans_id) REFERENCES transactions(id) ON DELETE CASCADE
+);
+
+-- Set the sequence to start from 10000000 for 8-digit IDs
+ALTER SEQUENCE exceptions_id_seq RESTART WITH 10000000;
+
+-- Create indexes for exceptions table
+CREATE INDEX IF NOT EXISTS idx_exceptions_trade_id ON exceptions(trade_id);
+CREATE INDEX IF NOT EXISTS idx_exceptions_trans_id ON exceptions(trans_id);
+CREATE INDEX IF NOT EXISTS idx_exceptions_status ON exceptions(status);
+CREATE INDEX IF NOT EXISTS idx_exceptions_priority ON exceptions(priority);
+CREATE INDEX IF NOT EXISTS idx_exceptions_create_time ON exceptions(create_time DESC);
+CREATE INDEX IF NOT EXISTS idx_exceptions_update_time ON exceptions(update_time DESC);
+
+-- Create solutions table
+-- Schema matches solution-service requirements
+CREATE TABLE IF NOT EXISTS solutions (
+    id SERIAL PRIMARY KEY,
+    exception_id INTEGER NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    exception_description TEXT,
+    reference_event TEXT,
+    solution_description TEXT,
+    scores INTEGER NOT NULL,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Foreign key constraint
+    CONSTRAINT fk_solutions_exception_id 
+        FOREIGN KEY (exception_id) REFERENCES exceptions(id) ON DELETE CASCADE,
+    
+    -- Score constraint
+    CONSTRAINT chk_solutions_scores 
+        CHECK (scores >= 0 AND scores <= 27)
+);
+
+-- Set the sequence to start from 100000 for 6-digit IDs
+ALTER SEQUENCE solutions_id_seq RESTART WITH 100000;
+
+-- Create indexes for solutions table
+CREATE INDEX IF NOT EXISTS idx_solutions_exception_id ON solutions(exception_id);
+CREATE INDEX IF NOT EXISTS idx_solutions_scores ON solutions(scores DESC);
+CREATE INDEX IF NOT EXISTS idx_solutions_create_time ON solutions(create_time DESC);

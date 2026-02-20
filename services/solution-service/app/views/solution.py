@@ -5,7 +5,7 @@ from app.models import Solution
 
 # Sample CRUD Routers. Might add pagination in the future
 
-router = APIRouter(prefix="/solutions", tags=["solutions"])
+router = APIRouter(prefix="/api/solutions", tags=["solutions"])
 
 @router.get("/", response_model=List[SolutionResponse])
 async def list_solutions():

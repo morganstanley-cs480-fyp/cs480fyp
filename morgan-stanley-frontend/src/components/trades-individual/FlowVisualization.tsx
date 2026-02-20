@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, Network } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
 import type { Transaction, Exception } from "@/lib/mockData";
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -168,80 +168,184 @@ function WorkflowEdge(props: EdgeProps) {
 
   if (!sourceNode || !targetNode) return null;
 
-  const sourceId: string = data?.sourceId;
-  const targetId: string = data?.targetId;
-
-  const sourceIsHub = sourceId === HUB_ID;
-  const targetIsHub = targetId === HUB_ID;
-
-  const sourceWidth = sourceNode.data?.width ?? NODE_WIDTH;
-  const targetWidth = targetNode.data?.width ?? NODE_WIDTH;
+  const sourceWidth = data?.sourceWidth ?? NODE_WIDTH;
+  const targetWidth = data?.targetWidth ?? NODE_WIDTH;
   
-  const sourceSize: Size = { w: sourceWidth, h: NODE_HEIGHT };
-  const targetSize: Size = { w: targetWidth, h: NODE_HEIGHT };
-
-  const offsetIndex = data?.offsetIndex ?? 0;
-  const totalOffsets = data?.totalOffsets ?? 1;
-  const laneOffset =
-    totalOffsets > 1 ? (offsetIndex - (totalOffsets - 1) / 2) * EDGE_OFFSET : 0;
-
-  const sourceCenter: Point = { 
-    x: sourceNode.position.x + sourceWidth / 2, 
-    y: sourceNode.position.y + NODE_HEIGHT / 2 
+  // Get node bounds
+  const sourceBounds = {
+    left: sourceNode.position.x,
+    right: sourceNode.position.x + sourceWidth,
+    top: sourceNode.position.y,
+    bottom: sourceNode.position.y + NODE_HEIGHT,
+    centerX: sourceNode.position.x + sourceWidth / 2,
+    centerY: sourceNode.position.y + NODE_HEIGHT / 2
   };
-  const targetCenter: Point = { 
-    x: targetNode.position.x + targetWidth / 2, 
-    y: targetNode.position.y + NODE_HEIGHT / 2 
-  };
-
-  const participantCenter = sourceIsHub ? targetCenter : sourceCenter;
-  const hubCenter = sourceIsHub ? sourceCenter : targetCenter;
-
-  const participantHalfW = (sourceIsHub ? targetWidth : sourceWidth) / 2;
-  const hubHalfW = (sourceIsHub ? sourceWidth : targetWidth) / 2;
-
-  const axisX = computeAxisX(
-    participantCenter.x,
-    hubCenter.x,
-    laneOffset,
-    participantHalfW,
-    hubHalfW
-  );
-
-  const halfHeight = NODE_HEIGHT / 2;
-  const start = {
-    x: axisX,
-    y: sourceCenter.y + (targetCenter.y > sourceCenter.y ? halfHeight : -halfHeight)
+  
+  const targetBounds = {
+    left: targetNode.position.x,
+    right: targetNode.position.x + targetWidth,
+    top: targetNode.position.y,
+    bottom: targetNode.position.y + NODE_HEIGHT,
+    centerX: targetNode.position.x + targetWidth / 2,
+    centerY: targetNode.position.y + NODE_HEIGHT / 2
   };
 
-  const end = {
-    x: axisX,
-    y: targetCenter.y + (sourceCenter.y > targetCenter.y ? halfHeight : -halfHeight)
+  const isCCPSource = source === HUB_ID;
+  const isCCPTarget = target === HUB_ID;
+  const isCCPInvolved = isCCPSource || isCCPTarget;
+  
+  // Get pair spacing information
+  const edgeIndexInPair = data?.edgeIndexInPair ?? 0;
+  const totalEdgesInPair = Math.max(1, data?.totalEdgesInPair ?? 1);
+
+  let startPoint: Point;
+  let endPoint: Point;
+
+  if (isCCPInvolved) {
+    // One node is CCP, the other is the outer node
+    const outerBounds = isCCPSource ? targetBounds : sourceBounds;
+    const ccpBounds = isCCPSource ? sourceBounds : targetBounds;
+
+    // Determine which direction the outer node is from CCP
+    const outerAboveCCP = outerBounds.bottom < ccpBounds.top;
+    const outerBelowCCP = outerBounds.top > ccpBounds.bottom;
+    const outerLeftOfCCP = outerBounds.right < ccpBounds.left;
+    const outerRightOfCCP = outerBounds.left > ccpBounds.right;
+
+    // Calculate departure point from outer node (distributed along its edge)
+    let departurePoint: Point;
+
+    if (outerBelowCCP) {
+      // Outer node is below CCP - distribute along its top edge
+      const spacing = outerBounds.right - outerBounds.left;
+      const x = outerBounds.left + (spacing / (totalEdgesInPair + 1)) * (edgeIndexInPair + 1);
+      departurePoint = { x, y: outerBounds.top };
+    } else if (outerAboveCCP) {
+      // Outer node is above CCP - distribute along its bottom edge
+      const spacing = outerBounds.right - outerBounds.left;
+      const x = outerBounds.left + (spacing / (totalEdgesInPair + 1)) * (edgeIndexInPair + 1);
+      departurePoint = { x, y: outerBounds.bottom };
+    } else if (outerRightOfCCP) {
+      // Outer node is to the right of CCP - distribute along its left edge
+      const spacing = NODE_HEIGHT;
+      const y = outerBounds.top + (spacing / (totalEdgesInPair + 1)) * (edgeIndexInPair + 1);
+      departurePoint = { x: outerBounds.left, y };
+    } else {
+      // Outer node is to the left of CCP - distribute along its right edge
+      const spacing = NODE_HEIGHT;
+      const y = outerBounds.top + (spacing / (totalEdgesInPair + 1)) * (edgeIndexInPair + 1);
+      departurePoint = { x: outerBounds.right, y };
+    }
+
+    // Find closest point on CCP to the departure point (shortest distance)
+    let ccpConnectionPoint: Point;
+    
+    // Function to find closest point on a rectangle perimeter
+    const closestPointOnRect = (point: Point, rect: any): { point: Point; dist: number } => {
+      // Clamp the x and y to the rectangle bounds
+      const clampedX = Math.max(rect.left, Math.min(rect.right, point.x));
+      const clampedY = Math.max(rect.top, Math.min(rect.bottom, point.y));
+      
+      // The closest point on the perimeter is the clamped point
+      const closest = { x: clampedX, y: clampedY };
+      
+      // Calculate distance
+      const dx = point.x - closest.x;
+      const dy = point.y - closest.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      return { point: closest, dist };
+    };
+
+    const result = closestPointOnRect(departurePoint, ccpBounds);
+    ccpConnectionPoint = result.point;
+
+    // Set start and end points based on direction
+    if (isCCPSource) {
+      startPoint = ccpConnectionPoint;
+      endPoint = departurePoint;
+    } else {
+      startPoint = departurePoint;
+      endPoint = ccpConnectionPoint;
+    }
+  } else {
+    // Non-CCP connection - distribute normally on both sides
+    const targetBelowSource = targetBounds.top > sourceBounds.bottom;
+    const targetAboveSource = targetBounds.bottom < sourceBounds.top;
+    const targetRightOfSource = targetBounds.left > sourceBounds.right;
+
+    if (targetBelowSource) {
+      const sourceSpacing = sourceWidth / (totalEdgesInPair + 1);
+      const sourceX = sourceBounds.left + sourceSpacing * (edgeIndexInPair + 1);
+      
+      const targetSpacing = targetWidth / (totalEdgesInPair + 1);
+      const targetX = targetBounds.left + targetSpacing * (edgeIndexInPair + 1);
+      
+      startPoint = { x: sourceX, y: sourceBounds.bottom };
+      endPoint = { x: targetX, y: targetBounds.top };
+    } else if (targetAboveSource) {
+      const sourceSpacing = sourceWidth / (totalEdgesInPair + 1);
+      const sourceX = sourceBounds.left + sourceSpacing * (edgeIndexInPair + 1);
+      
+      const targetSpacing = targetWidth / (totalEdgesInPair + 1);
+      const targetX = targetBounds.left + targetSpacing * (edgeIndexInPair + 1);
+      
+      startPoint = { x: sourceX, y: sourceBounds.top };
+      endPoint = { x: targetX, y: targetBounds.bottom };
+    } else if (targetRightOfSource) {
+      const sourceLaneGap = NODE_HEIGHT / (totalEdgesInPair + 1);
+      const sourceY = sourceBounds.top + sourceLaneGap * (edgeIndexInPair + 1);
+      
+      const targetLaneGap = NODE_HEIGHT / (totalEdgesInPair + 1);
+      const targetY = targetBounds.top + targetLaneGap * (edgeIndexInPair + 1);
+      
+      startPoint = { x: sourceBounds.right, y: sourceY };
+      endPoint = { x: targetBounds.left, y: targetY };
+    } else {
+      const sourceLaneGap = NODE_HEIGHT / (totalEdgesInPair + 1);
+      const sourceY = sourceBounds.top + sourceLaneGap * (edgeIndexInPair + 1);
+      
+      const targetLaneGap = NODE_HEIGHT / (totalEdgesInPair + 1);
+      const targetY = targetBounds.top + targetLaneGap * (edgeIndexInPair + 1);
+      
+      startPoint = { x: sourceBounds.left, y: sourceY };
+      endPoint = { x: targetBounds.right, y: targetY };
+    }
+  }
+
+  // Calculate midpoint for label
+  const midX = (startPoint.x + endPoint.x) / 2;
+  const midY = (startPoint.y + endPoint.y) / 2;
+
+  // Straight line - shortest path
+  const path = `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
+
+  const handleEdgeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (data?.onEdgeClick && data?.transaction) {
+      data.onEdgeClick(data.transaction);
+    }
   };
-
-  const startClipped = intersectLineWithRectBorder(end, start, sourceCenter, sourceSize);
-  const endClipped = intersectLineWithRectBorder(startClipped, end, targetCenter, targetSize);
-
-  const midY = (startClipped.y + endClipped.y) / 2;
-  const path = `M ${startClipped.x} ${startClipped.y} L ${axisX} ${midY} L ${axisX} ${endClipped.y}`;
 
   return (
     <>
       <BaseEdge
         id={id}
         path={path}
-        style={{ stroke: EDGE_COLOR, strokeWidth: 2.25, strokeLinecap: 'round' }}
+        style={{ stroke: EDGE_COLOR, strokeWidth: 2.25, strokeLinecap: 'round', cursor:'pointer' }}
         markerEnd={markerEnd}
+        onClick={handleEdgeClick}
       />
       <EdgeLabelRenderer>
         <div
           style={{
             position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${axisX}px, ${(startClipped.y + endClipped.y) / 2}px)`,
-            pointerEvents: 'none',
+            transform: `translate(-50%, -50%) translate(${midX}px, ${midY}px)`,
+            pointerEvents: 'auto',
           }}
+          onClick={handleEdgeClick}
         >
-          <div className="w-6 h-6 rounded-full bg-white border border-slate-300 text-[11px] font-semibold text-black/75 flex items-center justify-center shadow-sm">
+      <div className="w-6 h-6 rounded-full bg-white border border-slate-300 text-[11px] font-semibold text-black/75 flex items-center justify-center shadow-sm cursor-pointer hover:border-[#002B51] hover:shadow-md transition-all">
             {data?.step ?? ''}
           </div>
         </div>
@@ -318,9 +422,6 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
   );
 };
 
-const nodeTypes = { entity: EntityNode };
-const edgeTypes = { workflow: WorkflowEdge };
-
 interface TransactionFlow {
   from: string;
   to: string;
@@ -332,7 +433,10 @@ async function generateElkLayout(
   clearingHouse: string,
   onEntitySelect: (entityName: string, isHub: boolean) => void,
   allTransactions: Transaction[],
-  exceptions: Exception[]
+  sortedTransactions: Transaction[],
+  exceptions: Exception[],
+  onTransactionSelect: (transaction: Transaction) => void // Add this parameter
+
 ) {
   const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
   const bottomCount = participants.length - topCount;
@@ -428,26 +532,32 @@ async function generateElkLayout(
     });
   });
 
+  // Count edges per node pair
   const pairCounts: Record<string, number> = {};
   layout.edges?.forEach((e) => {
-    const s = e.sources[0];
-    const t = e.targets[0];
-    const key = [s, t].sort().join('::');
-    pairCounts[key] = (pairCounts[key] || 0) + 1;
+    const sourceId = e.sources[0];
+    const targetId = e.targets[0];
+    const pairKey = [sourceId, targetId].sort().join('::');
+    pairCounts[pairKey] = (pairCounts[pairKey] || 0) + 1;
   });
 
+  // Track which index this edge is within its node pair
   const pairSeen: Record<string, number> = {};
+  
   layout.edges?.forEach((e, idx) => {
     const sourceId = e.sources[0];
     const targetId = e.targets[0];
-    const key = [sourceId, targetId].sort().join('::');
+    const pairKey = [sourceId, targetId].sort().join('::');
 
-    const offsetIndex = pairSeen[key] || 0;
-    const totalOffsets = pairCounts[key] || 1;
-    pairSeen[key] = offsetIndex + 1;
+    const edgeIndexInPair = pairSeen[pairKey] || 0;
+    const totalEdgesInPair = pairCounts[pairKey] || 1;
+    pairSeen[pairKey] = edgeIndexInPair + 1;
 
     const sourceNode = nodeLookup[sourceId];
     const targetNode = nodeLookup[targetId];
+
+    // Find the corresponding transaction for this edge
+    const correspondingTransaction = sortedTransactions[idx] || null;
 
     edges.push({
       id: e.id!,
@@ -458,10 +568,12 @@ async function generateElkLayout(
         sourceId,
         targetId,
         step: idx + 1,
-        offsetIndex,
-        totalOffsets,
-        sourceSize: { w: sourceNode.width ?? NODE_WIDTH, h: NODE_HEIGHT },
-        targetSize: { w: targetNode.width ?? NODE_WIDTH, h: NODE_HEIGHT },
+        edgeIndexInPair,
+        totalEdgesInPair,
+        sourceWidth: sourceNode.width ?? NODE_WIDTH,
+        targetWidth: targetNode.width ?? NODE_WIDTH,
+        transaction: correspondingTransaction,
+        onEdgeClick: onTransactionSelect,
       },
       markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 },
     });
@@ -479,7 +591,7 @@ interface FlowVisualizationProps {
   onTransactionSelect: (transaction: Transaction) => void;
   onEntitySelect: (entityName: string, isHub: boolean) => void;
   exceptions: Exception[];
-  getRelatedExceptions: (transId: string) => Exception[];
+  getRelatedExceptions: (trans_id: number) => Exception[];
   getTransactionBackgroundColor: (transaction: Transaction) => string;
   getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
 }
@@ -550,7 +662,7 @@ export function FlowVisualization({
       return;
     }
 
-    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, exceptions)
+    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect)
       .then((result) => {
         setLayoutData(result);
         setIsLoading(false);
@@ -559,7 +671,7 @@ export function FlowVisualization({
         console.error('ELK layout failed:', error);
         setIsLoading(false);
       });
-  }, [transactions, clearingHouse, onEntitySelect, exceptions]);
+  }, [transactions, clearingHouse, onEntitySelect, exceptions, onTransactionSelect]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setLayoutData((prev) => ({
@@ -567,6 +679,19 @@ export function FlowVisualization({
       nodes: applyNodeChanges(changes, prev.nodes),
     }));
   }, []);
+
+  const nodeTypes = useMemo(() => ({ entity: EntityNode }), []);
+  const edgeTypes = useMemo(() => ({ workflow: WorkflowEdge }), []);
+
+  // Dynamically calculate padding based on number of nodes to fit all entities
+  const calculateFitViewPadding = () => {
+    const nodeCount = layoutData.nodes.length;
+    if (nodeCount <= 1) return 0.8;
+    if (nodeCount <= 3) return 0.6;
+    if (nodeCount <= 5) return 0.4;
+    if (nodeCount <= 10) return 0.25;
+    return 0.15;
+  };
 
   return (
     <Card>
@@ -633,11 +758,13 @@ export function FlowVisualization({
                   nodesDraggable
                   nodesConnectable={false}
                   elementsSelectable
-                  panOnDrag={[1, 2]}
+                  panOnDrag={true}
                   selectionOnDrag={false}
                   zoomOnScroll
                   fitView
-                  fitViewOptions={{ padding: 0.2 }}
+                  fitViewOptions={{ padding: calculateFitViewPadding() }}
+                  minZoom={0.1}
+                  maxZoom={2}
                 >
                   <Background color="#e2e8f0" gap={20} />
                   <Controls />

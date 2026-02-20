@@ -341,9 +341,9 @@ async def generic_exception_handler(request: Request, exc: Exception):
 # Import routers (will be created in subsequent tasks)
 # These imports are at the bottom to avoid circular dependencies
 # pylint: disable=wrong-import-position
-from app.api.routes.health import router as health_router
-from app.api.routes.search import router as search_router
-from app.api.routes.history import router as history_router
+from app.api.routes.health import router as health_router  # noqa: E402
+from app.api.routes.search import router as search_router  # noqa: E402
+from app.api.routes.history import router as history_router  # noqa: E402
 
 # Register routers
 app.include_router(health_router)

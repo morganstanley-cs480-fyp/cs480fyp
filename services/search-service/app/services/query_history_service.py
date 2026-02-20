@@ -44,7 +44,7 @@ class QueryHistoryService:
             INSERT INTO query_history 
             (user_id, query_text, is_saved, query_name, create_time, last_use_time)
             VALUES ($1, $2, FALSE, NULL, NOW(), NOW())
-            RETURNING query_id
+            RETURNING id
         """
         
         try:
@@ -215,7 +215,7 @@ class QueryHistoryService:
         query = """
             UPDATE query_history 
             SET is_saved = $1, query_name = $2
-            WHERE query_id = $3 AND user_id = $4
+            WHERE id = $3 AND user_id = $4
             RETURNING *
         """
         
@@ -277,7 +277,7 @@ class QueryHistoryService:
         # Delete query
         query = """
             DELETE FROM query_history 
-            WHERE query_id = $1 AND user_id = $2
+            WHERE id = $1 AND user_id = $2
         """
         
         try:
@@ -307,6 +307,50 @@ class QueryHistoryService:
                 details={"error": str(e), "query_id": query_id}
             )
     
+    async def delete_all_user_queries(
+        self,
+        user_id: str
+    ) -> int:
+        """
+        Delete all query history for a user.
+        
+        Args:
+            user_id: User ID whose history should be cleared
+        
+        Returns:
+            Number of queries deleted
+        
+        Raises:
+            DatabaseQueryError: If deletion fails
+        """
+        query = """
+            DELETE FROM query_history 
+            WHERE user_id = $1
+        """
+        
+        try:
+            result = await db_manager.execute(query, user_id)
+            
+            # Extract number of deleted rows from result (e.g., "DELETE 5")
+            deleted_count = int(result.split()[-1]) if result else 0
+            
+            logger.info(
+                "All query history deleted for user",
+                extra={"user_id": user_id, "deleted_count": deleted_count}
+            )
+            
+            return deleted_count
+            
+        except Exception as e:
+            logger.error(
+                f"Failed to delete all query history: {e}",
+                extra={"user_id": user_id}
+            )
+            raise DatabaseQueryError(
+                "Failed to delete all query history",
+                details={"error": str(e), "user_id": user_id}
+            )
+    
     async def update_last_use_time(
         self,
         query_id: int,
@@ -326,7 +370,7 @@ class QueryHistoryService:
         query = """
             UPDATE query_history 
             SET last_use_time = NOW()
-            WHERE query_id = $1 AND user_id = $2
+            WHERE id = $1 AND user_id = $2
         """
         
         try:
@@ -362,7 +406,7 @@ class QueryHistoryService:
         """
         query = """
             SELECT user_id FROM query_history 
-            WHERE query_id = $1
+            WHERE id = $1
         """
         
         try:

@@ -9,6 +9,7 @@ CRITICAL SECURITY:
 """
 
 from typing import Tuple, Any
+from datetime import datetime
 from app.config.settings import settings
 from app.models.domain import ExtractedParams
 from app.models.request import ManualSearchFilters
@@ -99,14 +100,18 @@ class QueryBuilder:
         # Handle date_from filter (always uses update_time)
         if params.date_from:
             conditions.append(f"update_time >= ${param_index}::timestamp")
-            values.append(params.date_from)
+            # Convert string date to datetime object for asyncpg
+            date_value = datetime.strptime(params.date_from, "%Y-%m-%d").date()
+            values.append(date_value)
             param_index += 1
         
         # Handle date_to filter (always uses update_time)
         if params.date_to:
             # Add 1 day to include the entire end date
             conditions.append(f"update_time < (${param_index}::timestamp + INTERVAL '1 day')")
-            values.append(params.date_to)
+            # Convert string date to datetime object for asyncpg
+            date_value = datetime.strptime(params.date_to, "%Y-%m-%d").date()
+            values.append(date_value)
             param_index += 1
         
         # Handle with_exceptions_only filter
@@ -205,14 +210,18 @@ class QueryBuilder:
         # Handle date_from filter
         if filters.date_from:
             conditions.append(f"{date_field} >= ${param_index}::timestamp")
-            values.append(filters.date_from)
+            # Convert string date to datetime object for asyncpg
+            date_value = datetime.strptime(filters.date_from, "%Y-%m-%d").date()
+            values.append(date_value)
             param_index += 1
         
         # Handle date_to filter
         if filters.date_to:
             # Add 1 day to include the entire end date
             conditions.append(f"{date_field} < (${param_index}::timestamp + INTERVAL '1 day')")
-            values.append(filters.date_to)
+            # Convert string date to datetime object for asyncpg
+            date_value = datetime.strptime(filters.date_to, "%Y-%m-%d").date()
+            values.append(date_value)
             param_index += 1
         
         # Handle with_exceptions_only filter
@@ -314,6 +323,41 @@ class QueryBuilder:
         count_query = f"SELECT COUNT(*) FROM trades {where_clause}"
         
         return count_query
+    
+    def build_enriched_data_query(self, trade_ids: list[int]) -> Tuple[str, list[Any]]:
+        """
+        Build query to fetch enriched data for ranking (transactions only).
+        
+        This query efficiently fetches transaction counts for a list of trade IDs.
+        Exception data is not included as exceptions are managed via dedicated page.
+        
+        Performance: Optimized for small result sets (typically 50 trades).
+        Uses simple LEFT JOIN with GROUP BY - efficient with proper indexes.
+        
+        Args:
+            trade_ids: List of trade IDs to fetch enriched data for
+        
+        Returns:
+            Tuple of (sql_query, parameter_values)
+        """
+        if not trade_ids:
+            return "", []
+        
+        query = """
+            SELECT 
+                t.id as trade_id,
+                COUNT(DISTINCT tr.id) as transaction_count
+            FROM trades t
+            LEFT JOIN transactions tr ON t.id = tr.trade_id
+            WHERE t.id = ANY($1::integer[])
+            GROUP BY t.id
+        """
+        
+        logger.debug(
+            f"Building enriched data query for {len(trade_ids)} trades"
+        )
+        
+        return query, [trade_ids]
 
 
 # Global singleton instance

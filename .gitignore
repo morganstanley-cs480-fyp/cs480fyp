@@ -99,6 +99,7 @@ terraform.tfvars
 .env
 .env.local
 .env.production
+.env.development
 .env.staging
 *.pem
 *.key
@@ -125,7 +126,6 @@ node_modules/
 
 # Other
 .java-version
-backend/verification/src/main/resources/application.properties
 
 .roo
 .tanstack/

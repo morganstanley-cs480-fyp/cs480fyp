@@ -1,15 +1,14 @@
 // Individual transaction details
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, AlertCircle, Check } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import type { Transaction, Exception } from "@/lib/mockData";
 import { formatDateShort } from "@/lib/utils";
 
 interface TransactionDetailPanelProps {
-  selectedTransaction: Transaction | null;
+  selectedTransaction: Transaction;
   relatedExceptions: Exception[];
   getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
   getPriorityColor: (priority: string) => "default" | "destructive" | "secondary";
@@ -25,24 +24,25 @@ export function TransactionDetailPanel({
   getPriorityIcon,
   onResolveException,
 }: TransactionDetailPanelProps) {
-  if (!selectedTransaction) {
-    return (
-      <Card className="sticky top-6">
-        <CardHeader>
-          <CardTitle>Transaction Details</CardTitle>
-          <CardDescription>
-            Click on a transaction in the timeline to view details
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 text-black/50">
-            <ArrowRight className="size-12 mx-auto mb-3 opacity-50" />
-            <p>Select a transaction from the timeline</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+
+    // if (!selectedTransaction) {
+    //   return (
+    //     <Card className="sticky top-6">
+    //       <CardHeader>
+    //         <CardTitle>Transaction Details</CardTitle>
+    //         <CardDescription>
+    //           Click on a transaction in the timeline to view details
+    //         </CardDescription>
+    //       </CardHeader>
+    //       <CardContent>
+    //         <div className="text-center py-12 text-black/50">
+    //           <ArrowRight className="size-12 mx-auto mb-3 opacity-50" />
+    //           <p>Select a transaction from the timeline</p>
+    //         </div>
+    //       </CardContent>
+    //     </Card>
+    //   );
+    // }
 
   return (
     <Card className="sticky top-6">
@@ -175,10 +175,9 @@ export function TransactionDetailPanel({
                         <Separator />
                         <Button
                           className="w-full"
-                          onClick={() => onResolveException(exception.exception_id)}
+                          onClick={() => onResolveException(String(exception.exception_id))}
                         >
-                          <Check className="size-4 mr-2" />
-                          Resolve Exception
+                          View Exception
                         </Button>
                       </>
                     )}

@@ -1,6 +1,37 @@
 # Morgan Stanley Front (SMUMS :>)
 
-To run the project, remember to `cd morgan-stanley-frontend` before running `npm run install` followed by `npm run dev`
+## Quick Start
+
+### Frontend Setup
+To run the frontend:
+```bash
+cd morgan-stanley-frontend
+npm install
+npm run dev
+```
+
+### Backend Setup
+To run the backend services (required for search functionality):
+```bash
+cd services
+
+# Start PostgreSQL and Redis first
+docker-compose up -d postgres redis
+
+# Wait for services to be healthy, then start search service
+docker-compose up search-service
+```
+
+The backend services will be available at:
+- Search Service API: http://localhost:8000
+- PostgreSQL: localhost:5432
+- Redis: localhost:6379
+
+To stop all services:
+```bash
+cd services
+docker-compose down
+```
 
 - Directory setup in `src`
   - `assets` -> just contains the icon on the browser.

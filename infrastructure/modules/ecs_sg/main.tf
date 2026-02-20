@@ -3,68 +3,25 @@ resource "aws_security_group" "ecs_service_sg" {
   vpc_id      = var.vpc_id
   description = "Allow inbound traffic from ALB to ECS service"
 
-  # Ingress rules for multiple ports (3000, 3001, 3002, 3003)
+  # --- SIMPLIFIED INGRESS RULE ---
+  # Allow ALL TCP ports (0-65535) from the ALB.
+  # This covers port 3001, 3002, 3003... and any future ports automatically.
   ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    security_groups = [var.alb_sg_id]  # Reference ALB security group from module
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "tcp"
+    security_groups = [var.alb_sg_id] # Trust the Load Balancer
   }
 
-  ingress {
-    from_port   = 3001
-    to_port     = 3001
-    protocol    = "tcp"
-    security_groups = [var.alb_sg_id]  # Reference ALB security group from module
-  }
-
-  ingress {
-    from_port   = 3002
-    to_port     = 3002
-    protocol    = "tcp"
-    security_groups = [var.alb_sg_id]  # Reference ALB security group from module
-  }
-
-  ingress {
-    from_port   = 3003
-    to_port     = 3003
-    protocol    = "tcp"
-    security_groups = [var.alb_sg_id]  # Reference ALB security group from module
-  }
-
-  ingress {
-    from_port   = 3004
-    to_port     = 3004
-    protocol    = "tcp"
-    security_groups = [var.alb_sg_id]  # Reference ALB security group from module
-  }
-
-  ingress {
-    from_port   = 3005
-    to_port     = 3005
-    protocol    = "tcp"
-    security_groups = [var.alb_sg_id]  # Reference ALB security group from module
-  }
-
-  ingress {
-    from_port   = 3006
-    to_port     = 3006
-    protocol    = "tcp"
-    security_groups = [var.alb_sg_id]  # Reference ALB security group from module
-  }
-
-    ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "tcp"
-    security_groups = [var.alb_sg_id]  # Reference ALB security group from module
-  }
-
-  # Egress rule for all traffic
+  # Egress rule (Standard: Allow everything out)
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+  
+  tags = {
+    Name = "ecs-service-sg"
   }
 }

@@ -54,7 +54,11 @@ class Settings(BaseSettings):
     MAX_SEARCH_RESULTS: int = 50
     LOG_LEVEL: str = "INFO"
     ENABLE_CORS: bool = True
-    CORS_ORIGINS: list[str] = ["*"]  # Override in production
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:5173",  # Vite dev server
+        "http://localhost:4173",  # Vite preview server
+        "http://localhost:3000",  # Alternative dev port
+    ]  # Override in production
     
     # Retry Configuration
     BEDROCK_RETRY_ATTEMPTS: int = 3

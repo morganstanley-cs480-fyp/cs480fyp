@@ -3,7 +3,6 @@ Unit tests for query_builder service.
 Tests SQL generation and safety validation.
 """
 
-import pytest
 from app.services.query_builder import query_builder
 from app.models.domain import ExtractedParams
 from app.models.request import ManualSearchFilters
@@ -58,6 +57,7 @@ class TestQueryBuilderFromExtractedParams:
     
     def test_build_with_date_range(self):
         """Test query with date filters."""
+        from datetime import date
         params = ExtractedParams(
             accounts=None,
             asset_types=None,
@@ -73,8 +73,8 @@ class TestQueryBuilderFromExtractedParams:
         assert "update_time <" in query
         assert "INTERVAL '1 day'" in query  # End date inclusive
         assert len(values) == 2
-        assert values[0] == "2025-01-01"
-        assert values[1] == "2025-01-31"
+        assert values[0] == date(2025, 1, 1)
+        assert values[1] == date(2025, 1, 31)
     
     def test_build_cleared_trades_only(self):
         """Test cleared_trades_only flag."""

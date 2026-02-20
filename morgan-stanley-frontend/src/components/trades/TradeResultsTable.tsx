@@ -43,6 +43,8 @@ export function TradeResultsTable({
 }: TradeResultsTableProps) {
   const navigate = useNavigate();
   const [openFilter, setOpenFilter] = useState<string | null>(null);
+  const isDateFilterColumn = (columnId: string) =>
+    columnId === "create_time" || columnId === "update_time";
 
   const optionMap = useMemo(() => {
     const rows = table.getPreFilteredRowModel().flatRows;
@@ -62,8 +64,8 @@ export function TradeResultsTable({
       booking_system: collect("booking_system"),
       affirmation_system: collect("affirmation_system"),
       clearing_house: collect("clearing_house"),
-      create_time: collect("create_time", (value) => formatDateShort(String(value))),
-      update_time: collect("update_time", (value) => formatDateShort(String(value))),
+      create_time: [],
+      update_time: [],
       status: collect("status"),
     } as Record<string, string[]>;
   }, [table]);
@@ -150,7 +152,7 @@ export function TradeResultsTable({
               <TableRow>
                 {table.getHeaderGroups()[0].headers.map((header) => (
                   <TableHead key={`filter-${header.id}`} className="py-2 overflow-visible">
-                    {header.column.getCanFilter() && (
+                    {header.column.getCanFilter() && !isDateFilterColumn(header.id) && (
                       <div className="relative">
                         <Input
                           placeholder="Filter..."
@@ -190,9 +192,9 @@ export function TradeResultsTable({
                             </button>
                           )}
                           {optionMap[header.id]?.length ? (
-                            <button
-                              type="button"
-                              className="flex items-center px-1 text-black/50 hover:text-black/75"
+                            <Button
+                              variant="ghost"
+                              className="flex items-center size-6"
                               onMouseDown={(event) => {
                                 event.preventDefault();
                                 setOpenFilter((prev) =>
@@ -201,11 +203,11 @@ export function TradeResultsTable({
                               }}
                             >
                               <ChevronDown className="size-4" />
-                            </button>
+                            </Button>
                           ) : null}
                         </div>
                         {openFilter === header.id && optionMap[header.id]?.length ? (
-                          <div className="absolute left-0 right-auto top-full z-30 mt-1 max-h-64 min-w-[12rem] overflow-y-auto overflow-x-hidden rounded-md border border-slate-200 bg-white shadow-md flex flex-col">
+                          <div className="absolute left-0 right-auto top-full z-30 mt-1 max-h-64 min-w-48 overflow-y-auto overflow-x-hidden rounded-md border border-slate-200 bg-white shadow-md flex flex-col">
                             {optionMap[header.id].map((option) => (
                               <button
                                 key={option}
@@ -224,6 +226,44 @@ export function TradeResultsTable({
                         ) : null}
                       </div>
                     )}
+                    {header.column.getCanFilter() && isDateFilterColumn(header.id) && (
+                      <div className="flex flex-col gap-2 min-w-[160px]">
+                        <Input
+                          type="date"
+                          value={
+                            (header.column.getFilterValue() as { from?: string; to?: string } | undefined)?.from ?? ""
+                          }
+                          onChange={(event) => {
+                            const current =
+                              (header.column.getFilterValue() as { from?: string; to?: string } | undefined) ?? {};
+                            const next = { ...current, from: event.target.value };
+                            if (!next.from && !next.to) {
+                              header.column.setFilterValue(undefined);
+                              return;
+                            }
+                            header.column.setFilterValue(next);
+                          }}
+                          className="h-8 text-xs"
+                        />
+                        <Input
+                          type="date"
+                          value={
+                            (header.column.getFilterValue() as { from?: string; to?: string } | undefined)?.to ?? ""
+                          }
+                          onChange={(event) => {
+                            const current =
+                              (header.column.getFilterValue() as { from?: string; to?: string } | undefined) ?? {};
+                            const next = { ...current, to: event.target.value };
+                            if (!next.from && !next.to) {
+                              header.column.setFilterValue(undefined);
+                              return;
+                            }
+                            header.column.setFilterValue(next);
+                          }}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -236,7 +276,7 @@ export function TradeResultsTable({
                     onClick={() =>
                       navigate({
                         to: "/trades/$tradeId",
-                        params: { tradeId: row.original.trade_id },
+                        params: { tradeId: row.original.trade_id.toString() },
                       })
                     }
                     className="cursor-pointer hover:bg-[#002B51]/5"

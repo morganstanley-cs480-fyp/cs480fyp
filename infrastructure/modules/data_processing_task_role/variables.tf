@@ -3,7 +3,7 @@ variable "service_name" {
   type        = string
 }
 
-variable "sqs_queue_arn" {
-  description = "The ARN of the SQS queue to consume from"
+variable "data_processing_queue_arn" {
+  description = "The ARN of the data_proccessing queue to consume from"
   type        = string
 }

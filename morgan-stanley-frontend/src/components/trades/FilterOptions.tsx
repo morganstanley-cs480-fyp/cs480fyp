@@ -44,7 +44,7 @@ export function FilterOptions({
           Clear All Filters
         </Button>
         <Button onClick={onSearch} disabled={searching} className="hover:bg-[#002B51] hover:text-white">
-          {searching ? 'Searching...' : 'Search Now'}
+          {searching ? 'Searching...' : 'Search'}
         </Button>
       </div>
     </div>
