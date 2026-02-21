@@ -13,6 +13,7 @@ from pymilvus import (
 )
 
 from app.config.settings import settings
+from app.utils.text_cleaner import clean_retrieved_text
 
 
 class MilvusVectorStore:
@@ -171,6 +172,29 @@ class MilvusVectorStore:
             "vector": doc.get("vector")
         }
     
+    def get_by_exception_id(self, exception_id: str) -> Dict[str, Any]:
+        """
+        Retrieve a document by exception_id.
+        
+        Args:
+            exception_id: The exception ID to search for
+            
+        Returns:
+            Document dict with text, metadata, etc.
+            
+        Raises:
+            ValueError: If exception not found
+        """
+        doc = self.get_document_by_exception_id(exception_id)
+        if not doc:
+            raise ValueError(f"Exception {exception_id} not found in vector store")
+        
+        # Clean the text before returning
+        if "text" in doc:
+            doc["text"] = clean_retrieved_text(doc["text"])
+        
+        return doc
+    
     def find_similar_by_exception_id(
         self, 
         exception_id: str, 
@@ -187,7 +211,7 @@ class MilvusVectorStore:
             
         Returns:
             List of similar documents with similarity scores (0-100%)
-            Each document contains: exception_id, trade_id, score, metadata
+            Each document contains: exception_id, trade_id, text, score, metadata
             
         Raises:
             ValueError: If document with exception_id not found
@@ -212,6 +236,10 @@ class MilvusVectorStore:
             # Convert cosine similarity (0-1) to percentage (0-100)
             similarity_percentage = round(result["score"] * 100, 2)
             
+            # Get and clean the narrative text
+            raw_text = result.get("text", "")
+            cleaned_text = clean_retrieved_text(raw_text)
+            
             similar_docs.append({
                 "exception_id": metadata.get("exception_id"),
                 "trade_id": metadata.get("trade_id"),
@@ -220,7 +248,8 @@ class MilvusVectorStore:
                 "status": metadata.get("status"),
                 "asset_type": metadata.get("asset_type"),
                 "clearing_house": metadata.get("clearing_house"),
-                "exception_msg": metadata.get("exception_msg")
+                "exception_msg": metadata.get("exception_msg"),
+                "text": cleaned_text  # Include cleaned full narrative text
             })
         
         return similar_docs

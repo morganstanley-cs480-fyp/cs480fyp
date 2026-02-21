@@ -10,6 +10,7 @@ import logging
 
 from app.config.settings import settings
 from app.services.bedrock_service import BedrockService
+from app.services.gemini_service import GeminiService
 from app.services.narrative_formatter import NarrativeFormatter
 from app.schemas.document import (
     Document,
@@ -147,22 +148,25 @@ async def search_documents(request: Request, query: SearchQuery) -> List[Dict[st
 async def find_similar_exceptions(
     request: Request,
     exception_id: str,
-    limit: int = 3
+    limit: int = 3,
+    explain: bool = True
 ) -> SimilarExceptionsResponse:
     """
-    Find similar exceptions using vector similarity search.
+    Find similar exceptions using vector similarity search with optional LLM explanations.
     
     This endpoint performs the following:
     1. Retrieves the exception document from Milvus by exception_id
     2. Uses its embedding vector to search for similar exceptions
-    3. Returns top N most similar exceptions with similarity scores (0-100%)
+    3. Optionally generates LLM explanations for why each exception is similar (single batch call)
+    4. Returns top N most similar exceptions with similarity scores and explanations
     
     Args:
         exception_id: The exception ID to find similar exceptions for
         limit: Maximum number of similar exceptions to return (default: 3, max: 10)
+        explain: Whether to generate LLM explanations (default: True)
         
     Returns:
-        SimilarExceptionsResponse with similar exceptions and their scores
+        SimilarExceptionsResponse with similar exceptions, scores, and explanations
         
     Raises:
         HTTPException 404: If exception_id not found in vector store
@@ -176,17 +180,84 @@ async def find_similar_exceptions(
         )
     
     try:
-        # Find similar exceptions using vector store
+        # Step 1: Find similar exceptions using vector store
         similar_docs = request.app.state.vector_store.find_similar_by_exception_id(
             exception_id=exception_id,
             limit=limit,
             exclude_self=True
         )
         
+        # Step 2: Get source exception text
+        source_doc = request.app.state.vector_store.get_by_exception_id(exception_id)
+        source_text = source_doc.get("text", "")
+        
+        if not similar_docs:
+            # No similar exceptions found
+            return SimilarExceptionsResponse(
+                source_exception_id=exception_id,
+                source_text=source_text,
+                similar_exceptions=[],
+                count=0
+            )
+        
+        # Step 3: Generate explanations in a single batch call (if requested)
+        explanations = []
+        if explain and settings.LLM_PROVIDER == "google":
+            try:
+                # Initialize Gemini service
+                gemini = GeminiService(
+                    model_id=settings.GOOGLE_MODEL_ID,
+                    google_api_key=settings.GOOGLE_API_KEY,
+                )
+                
+                # Prepare similar texts for batch processing
+                similar_texts = [
+                    {
+                        "exception_id": doc["exception_id"],
+                        "text": doc["text"]
+                    }
+                    for doc in similar_docs
+                ]
+                
+                # Generate batch explanations
+                explanations = gemini.batch_explain_similarities(
+                    source_text=source_text,
+                    similar_texts=similar_texts,
+                    temperature=0.3,  # Lower for factual explanations
+                    max_tokens=1500,  # Enough for multiple explanations
+                )
+                
+            except Exception as e:
+                logging.error(f"Failed to generate LLM explanations: {str(e)}")
+                # Fall back to no explanations on error
+                explanations = [None] * len(similar_docs)
+        else:
+            # Explanations not requested or LLM provider doesn't support batch
+            explanations = [None] * len(similar_docs)
+        
+        # Step 4: Combine similar docs with explanations
+        similar_exceptions = []
+        for doc, explanation in zip(similar_docs, explanations):
+            similar_exceptions.append(
+                SimilarException(
+                    exception_id=doc["exception_id"],
+                    trade_id=doc["trade_id"],
+                    similarity_score=doc["similarity_score"],
+                    priority=doc["priority"],
+                    status=doc["status"],
+                    asset_type=doc["asset_type"],
+                    clearing_house=doc["clearing_house"],
+                    exception_msg=doc["exception_msg"],
+                    text=doc["text"],
+                    explanation=explanation
+                )
+            )
+        
         return SimilarExceptionsResponse(
             source_exception_id=exception_id,
-            similar_exceptions=[SimilarException(**doc) for doc in similar_docs],
-            count=len(similar_docs)
+            source_text=source_text,
+            similar_exceptions=similar_exceptions,
+            count=len(similar_exceptions)
         )
         
     except ValueError as e:
@@ -196,6 +267,7 @@ async def find_similar_exceptions(
             detail=str(e)
         )
     except Exception as e:
+        logging.error(f"Error in find_similar_exceptions: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error finding similar exceptions: {str(e)}"

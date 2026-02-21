@@ -1,7 +1,7 @@
 """
 Document-related Pydantic schemas for request/response validation.
 """
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
 
@@ -45,11 +45,14 @@ class SimilarException(BaseModel):
     asset_type: str
     clearing_house: str
     exception_msg: str
+    text: str = Field(..., description="Exception narrative text")
+    explanation: Optional[str] = Field(None, description="LLM-generated explanation of similarity")
 
 
 class SimilarExceptionsResponse(BaseModel):
     """Response containing similar exceptions."""
     source_exception_id: str
+    source_text: str = Field(..., description="Source exception narrative text")
     similar_exceptions: List[SimilarException]
     count: int
 
