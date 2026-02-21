@@ -162,7 +162,7 @@ services:
       BEDROCK_EMBED_MODEL_ID: cohere.embed-english-v3
       BEDROCK_CHAT_MODEL_ID: apac.amazon.nova-lite-v1:0
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
-      GOOGLE_MODEL_ID: gemini-2.5-flash
+      GOOGLE_MODEL_ID: gemini-2.5-flash-lite
       MILVUS_HOST: milvus-standalone
       MILVUS_PORT: 19530
       MILVUS_USER: ""

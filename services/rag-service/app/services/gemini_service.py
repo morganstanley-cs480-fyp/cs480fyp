@@ -13,7 +13,7 @@ class GeminiService:
     Google Gemini service wrapper for LLM chat completion.
     """
 
-    DEFAULT_MODEL_ID = os.getenv("GOOGLE_MODEL_ID", "gemini-2.5-flash")
+    DEFAULT_MODEL_ID = os.getenv("GOOGLE_MODEL_ID", "gemini-2.5-flash-lite")
 
     def __init__(
         self,
@@ -24,7 +24,7 @@ class GeminiService:
         Initialize Gemini service.
         
         Args:
-            model_id: Gemini model ID (e.g., "gemini-2.5-flash")
+            model_id: Gemini model ID (e.g., "gemini-2.5-flash-lite")
             google_api_key: Google AI API key
         """
         self.model_id = model_id or self.DEFAULT_MODEL_ID

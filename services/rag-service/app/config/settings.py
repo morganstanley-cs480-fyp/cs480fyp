@@ -38,7 +38,7 @@ class Settings(BaseSettings):
 
     # Google AI (for chat/LLM)
     GOOGLE_API_KEY: Optional[str] = None
-    GOOGLE_MODEL_ID: str = "gemini-2.5-flash"
+    GOOGLE_MODEL_ID: str = "gemini-2.5-flash-lite"
     
     # LLM Provider Selection ("bedrock" or "google")
     LLM_PROVIDER: str = "google"
