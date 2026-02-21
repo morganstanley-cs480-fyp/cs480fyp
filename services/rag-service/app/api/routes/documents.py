@@ -164,6 +164,84 @@ async def search_documents(request: Request, query: SearchQuery) -> List[Dict[st
     )
 
 
+class SimilarException(BaseModel):
+    """Similar exception result with similarity score."""
+    exception_id: str
+    trade_id: str
+    similarity_score: float = Field(..., description="Similarity percentage (0-100)")
+    priority: str
+    status: str
+    asset_type: str
+    clearing_house: str
+    exception_msg: str
+
+
+class SimilarExceptionsResponse(BaseModel):
+    """Response containing similar exceptions."""
+    source_exception_id: str
+    similar_exceptions: List[SimilarException]
+    count: int
+
+
+@router.get("/similar-exceptions/{exception_id}", response_model=SimilarExceptionsResponse)
+async def find_similar_exceptions(
+    request: Request,
+    exception_id: str,
+    limit: int = 3
+) -> SimilarExceptionsResponse:
+    """
+    Find similar exceptions using vector similarity search.
+    
+    This endpoint performs the following:
+    1. Retrieves the exception document from Milvus by exception_id
+    2. Uses its embedding vector to search for similar exceptions
+    3. Returns top N most similar exceptions with similarity scores (0-100%)
+    
+    Args:
+        exception_id: The exception ID to find similar exceptions for
+        limit: Maximum number of similar exceptions to return (default: 3, max: 10)
+        
+    Returns:
+        SimilarExceptionsResponse with similar exceptions and their scores
+        
+    Raises:
+        HTTPException 404: If exception_id not found in vector store
+        HTTPException 400: If limit is invalid
+    """
+    # Validate limit
+    if limit < 1 or limit > 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Limit must be between 1 and 10"
+        )
+    
+    try:
+        # Find similar exceptions using vector store
+        similar_docs = request.app.state.vector_store.find_similar_by_exception_id(
+            exception_id=exception_id,
+            limit=limit,
+            exclude_self=True
+        )
+        
+        return SimilarExceptionsResponse(
+            source_exception_id=exception_id,
+            similar_exceptions=[SimilarException(**doc) for doc in similar_docs],
+            count=len(similar_docs)
+        )
+        
+    except ValueError as e:
+        # Exception ID not found in vector store
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error finding similar exceptions: {str(e)}"
+        )
+
+
 class IngestException(BaseModel):
     trade_id: str
     exception_id: str

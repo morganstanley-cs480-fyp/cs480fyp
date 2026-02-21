@@ -16,6 +16,121 @@ class NarrativeFormatter:
     """
     
     @staticmethod
+    def categorize_exception(error_msg: str) -> str:
+        """
+        Map error messages to problem categories for semantic clustering.
+        
+        This function analyzes exception messages and assigns them to one or more
+        problem categories based on keyword matching. Categories provide semantic
+        anchors that improve vector similarity search by clustering related exceptions.
+        
+        Args:
+            error_msg: The exception message text to categorize
+            
+        Returns:
+            Pipe-separated string of matching categories (e.g., "Credit Capacity | Collateral Issue")
+            Returns "General Exception" if no specific category matches
+        """
+        error_lower = error_msg.lower()
+        categories = []
+        
+        # Category 1: Settlement Instructions Problem
+        if any(kw in error_lower for kw in [
+            'ssi', 'settlement instruction', 'payment routing', 'correspondent bank',
+            'intermediary bank', 'settlement bank', 'nostro', 'vostro'
+        ]):
+            categories.append("Settlement Instructions Problem")
+        
+        # Category 2: Collateral and Margin Issue
+        if any(kw in error_lower for kw in [
+            'collateral', 'margin', 'csa', 'variation margin', 'initial margin',
+            'margin call', 'vm', 'im', 'posting requirement'
+        ]):
+            categories.append("Collateral and Margin Issue")
+        
+        # Category 3: Legal Documentation Gap
+        if any(kw in error_lower for kw in [
+            'isda', 'lei', 'legal entity identifier', 'documentation', 'master agreement',
+            'confirmation', 'legal documentation', 'legal terms', 'credit support annex'
+        ]):
+            categories.append("Legal Documentation Gap")
+        
+        # Category 4: Credit Capacity Constraint
+        if any(kw in error_lower for kw in [
+            'credit limit', 'credit line', 'downgrade', 'credit rating', 'exposure',
+            'credit capacity', 'creditworthiness', 'moody', 'fitch', 's&p'
+        ]):
+            categories.append("Credit Capacity Constraint")
+        
+        # Category 5: Holiday Calendar Conflict
+        if any(kw in error_lower for kw in [
+            'holiday', 'bank holiday', 'closed market', 'non-business day',
+            'market closure', 'calendar', 'settlement date'
+        ]):
+            categories.append("Holiday Calendar Conflict")
+        
+        # Category 6: Rate and Pricing Validation
+        if any(kw in error_lower for kw in [
+            'libor', 'sofr', 'off-market', 'rate', 'fixing', 'benchmark',
+            'pricing', 'market rate', 'reference rate'
+        ]):
+            categories.append("Rate and Pricing Validation")
+        
+        # Category 7: Reference Entity Credit Event
+        if any(kw in error_lower for kw in [
+            'succession', 'restructuring', 'credit event', 'isda determinations committee',
+            'reference entity', 'merger', 'spin-off', 'isda dc'
+        ]):
+            categories.append("Reference Entity Credit Event")
+        
+        # Category 8: Regulatory Compliance Failure
+        if any(kw in error_lower for kw in [
+            'mifid', 'aml', 'kyc', 'ofac', 'sanctions', 'compliance', 'regulatory',
+            'emir', 'dodd-frank', 'screening'
+        ]):
+            categories.append("Regulatory Compliance Failure")
+        
+        # Category 9: System and Infrastructure Failure
+        if any(kw in error_lower for kw in [
+            'swift', 'connectivity', 'timeout', 'system', 'booking system',
+            'outage', 'infrastructure', 'technical failure', 'network'
+        ]):
+            categories.append("System and Infrastructure Failure")
+        
+        # Category 10: Trade Structure Non-Standard
+        if any(kw in error_lower for kw in [
+            'maturity', 'notional', 'imm date', 'tenor', 'effective date',
+            'trade structure', 'non-standard', 'trade economics'
+        ]):
+            categories.append("Trade Structure Non-Standard")
+        
+        # Category 11: Trade Lifecycle Workflow Issue
+        if any(kw in error_lower for kw in [
+            'affirmation', 'dtcc', 'compression', 'bilateral', 'novation',
+            'lifecycle', 'workflow', 'trade confirmation'
+        ]):
+            categories.append("Trade Lifecycle Workflow Issue")
+        
+        # Category 12: Capital Controls and Restrictions
+        if any(kw in error_lower for kw in [
+            'safe quota', 'capital control', 'cross-border', 'foreign exchange control',
+            'pboc', 'onshore', 'offshore', 'rmb restriction'
+        ]):
+            categories.append("Capital Controls and Restrictions")
+        
+        # Category 13: Settlement Netting Optimization
+        if any(kw in error_lower for kw in [
+            'netting', 'gross settlement', 'net settlement', 'bilateral netting',
+            'multilateral netting', 'settlement optimization'
+        ]):
+            categories.append("Settlement Netting Optimization")
+        
+        # Return categories or default
+        if categories:
+            return ' | '.join(categories)
+        return "General Exception"
+    
+    @staticmethod
     def find_rejection_step(history_data: List[Dict[str, Any]]) -> int:
         """
         Find the step number where rejection occurred.
@@ -138,22 +253,24 @@ class NarrativeFormatter:
         clearing_house = trade_data.get("clearing_house", "Unknown")
         asset_type = trade_data.get("asset_type", "Unknown")
         
-        # Format transaction events
-        events = [cls.format_transaction_event(tx) for tx in history_data]
-        transaction_flow = "\n".join(events)
+        # Categorize exception for semantic clustering
+        problem_categories = cls.categorize_exception(exception_msg)
+        
+        # # Format transaction events
+        # events = [cls.format_transaction_event(tx) for tx in history_data]
+        # transaction_flow = "\n".join(events)
         
         # Calculate metrics
         duration = cls.calculate_duration(history_data)
         
-        # Build comprehensive narrative
-        narrative = f"""Exception: {exception_msg}
+        # Build comprehensive narrative with problem categories at the start
+        narrative = f"""Problem Category: {problem_categories}
+
+Exception: {exception_msg}
 
 Trade Context:
 Asset Type: {asset_type}
 Clearing House: {clearing_house}
-
-Transaction Flow:
-{transaction_flow}
 
 Exception Details:
 Priority: {priority} (Status: {status})
