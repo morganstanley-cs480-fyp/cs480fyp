@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     BEDROCK_EMBED_MODEL_ID: str = "amazon.nova-2-embedding-v1"
     BEDROCK_CHAT_MODEL_ID: str = "meta.llama2-13b-chat-v1"
 
+    # Google AI (for chat/LLM)
+    GOOGLE_API_KEY: Optional[str] = None
+    GOOGLE_MODEL_ID: str = "gemini-2.5-flash"
+    
+    # LLM Provider Selection ("bedrock" or "google")
+    LLM_PROVIDER: str = "google"
+
     # Milvus
     MILVUS_HOST: str = "localhost"
     MILVUS_PORT: int = 19530

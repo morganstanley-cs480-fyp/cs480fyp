@@ -1,10 +1,11 @@
 """
-Chat completion routes using AWS Bedrock LLM.
+Chat completion routes using LLM (Bedrock or Google Gemini).
 """
 from fastapi import APIRouter, HTTPException, status
 
 from app.config.settings import settings
 from app.services.bedrock_service import BedrockService
+from app.services.gemini_service import GeminiService
 from app.schemas.chat import (
     Message,
     ChatCompletionRequest,
@@ -18,12 +19,12 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 @router.post("/completion", response_model=ChatCompletionResponse)
 async def chat_completion(request: ChatCompletionRequest) -> ChatCompletionResponse:
     """
-    Generate a chat completion using AWS Bedrock Llama 2.
+    Generate a chat completion using configured LLM provider.
     
     This endpoint:
     1. Takes a list of messages (system, user, assistant)
-    2. Formats them for Llama 2 chat model
-    3. Generates a completion using Amazon Bedrock
+    2. Routes to appropriate LLM provider (Bedrock or Google Gemini)
+    3. Generates a completion
     
     Args:
         request: Chat completion request with messages and parameters
@@ -35,28 +36,51 @@ async def chat_completion(request: ChatCompletionRequest) -> ChatCompletionRespo
         HTTPException: If chat completion generation fails
     """
     try:
-        # Initialize Bedrock service with credentials from settings
-        bedrock = BedrockService(
-            region_name=settings.AWS_REGION,
-            embed_model_id=settings.BEDROCK_EMBED_MODEL_ID,
-            chat_model_id=settings.BEDROCK_CHAT_MODEL_ID,
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        )
-        
-        # Convert Pydantic models to dict format expected by BedrockService
+        # Convert Pydantic models to dict format
         messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]
         
-        # Generate chat completion
-        completion = bedrock.chat_completion(
-            messages=messages,
-            temperature=request.temperature,
-            max_tokens=request.max_tokens,
-        )
+        # Route to appropriate LLM provider
+        if settings.LLM_PROVIDER == "google":
+            # Use Google Gemini
+            gemini = GeminiService(
+                model_id=settings.GOOGLE_MODEL_ID,
+                google_api_key=settings.GOOGLE_API_KEY,
+            )
+            
+            completion = gemini.chat_completion(
+                messages=messages,
+                temperature=request.temperature,
+                max_tokens=request.max_tokens,
+            )
+            
+            model_used = settings.GOOGLE_MODEL_ID
+            
+        elif settings.LLM_PROVIDER == "bedrock":
+            # Use AWS Bedrock (legacy/fallback)
+            bedrock = BedrockService(
+                region_name=settings.AWS_REGION,
+                embed_model_id=settings.BEDROCK_EMBED_MODEL_ID,
+                chat_model_id=settings.BEDROCK_CHAT_MODEL_ID,
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            )
+            
+            completion = bedrock.chat_completion(
+                messages=messages,
+                temperature=request.temperature,
+                max_tokens=request.max_tokens,
+            )
+            
+            model_used = settings.BEDROCK_CHAT_MODEL_ID
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Unknown LLM provider: {settings.LLM_PROVIDER}"
+            )
         
         return ChatCompletionResponse(
             completion=completion,
-            model=settings.BEDROCK_CHAT_MODEL_ID
+            model=model_used
         )
         
     except ValueError as e:
