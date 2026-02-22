@@ -111,7 +111,11 @@ class TestBedrockServiceInvokeBedrock:
         }
         mock_response["body"].read.return_value = json.dumps(response_body).encode()
         
-        with patch.object(bedrock_service.client, 'invoke_model', return_value=mock_response):
+        # Mock the async context manager for session.client()
+        mock_client = AsyncMock()
+        mock_client.invoke_model = AsyncMock(return_value=mock_response)
+        
+        with patch.object(bedrock_service.session, 'client', return_value=AsyncMock(__aenter__=AsyncMock(return_value=mock_client))):
             result = await bedrock_service._invoke_bedrock(query_text)
             
             # _invoke_bedrock returns the text content string, not a dict
@@ -136,8 +140,11 @@ class TestBedrockServiceInvokeBedrock:
         }
         mock_response_success["body"].read.return_value = json.dumps(response_body).encode()
         
-        with patch.object(bedrock_service.client, 'invoke_model', return_value=mock_response_success):
-            
+        # Mock the async context manager for session.client()
+        mock_client = AsyncMock()
+        mock_client.invoke_model = AsyncMock(return_value=mock_response_success)
+        
+        with patch.object(bedrock_service.session, 'client', return_value=AsyncMock(__aenter__=AsyncMock(return_value=mock_client))):
             result = await bedrock_service._invoke_bedrock(query_text)
             assert isinstance(result, str)
             result_dict = json.loads(result)
@@ -145,9 +152,11 @@ class TestBedrockServiceInvokeBedrock:
     
     @pytest.mark.asyncio
     async def test_invoke_max_retries_exceeded(self):
-        """Test that max retries raises exception."""
-        query_text = "test query"
+        # Mock the async context manager with a client that raises an error
+        mock_client = AsyncMock()
+        mock_client.invoke_model = AsyncMock(side_effect=BedrockAPIError("API Error"))
         
+        with patch.object(bedrock_service.session, 'client', return_value=AsyncMock(__aenter__=AsyncMock(return_value=mock_client))):
         with patch.object(bedrock_service.client, 'invoke_model', 
                          side_effect=BedrockAPIError("API Error")):
             
