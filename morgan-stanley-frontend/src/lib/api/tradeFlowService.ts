@@ -52,6 +52,11 @@ export const tradeFlowService = {
     return trades.map(mapTrade);
   },
 
+  async getRecentTrades(limit: number = 20): Promise<Trade[]> {
+    const trades = await request<TradeApiResponse[]>(`/trades/recent?limit=${limit}`);
+    return trades.map(mapTrade);
+  },
+
   async getTransactionsByTradeId(tradeId: number): Promise<Transaction[]> {
     const transactions = await request<TransactionApiResponse[]>(
       `/trades/${tradeId}/transactions`

@@ -56,6 +56,22 @@ async def health_check():
                             detail="Database connection failed")
 
 
+@app.get("/trades/recent")
+async def get_recent_trades(limit: int = 20):
+    """Get the most recent trades sorted by update_time in descending order"""
+    try:
+        async with app.state.pool.connection() as conn:
+            async with conn.cursor(row_factory=dict_row) as cur:
+                await cur.execute(
+                    "SELECT * FROM trades ORDER BY update_time DESC LIMIT %s", (limit,)
+                )
+                trades = await cur.fetchall()
+            return trades
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Server Error")
+
+
 @app.get("/trades/{id}")
 async def get_trade_by_id(id: int):
     try:
@@ -109,10 +125,7 @@ async def get_transaction_by_id(id: int):
         raise he
     except Exception as e:
         print(f"Error: {e}")
-        raise HTTPException(status_code=500, detail="Server Error")
-
-
-@app.get("/trades/{trade_id}/transactions")
+        raise HTTPException(status_code=500, detail="Server Error")@app.get("/trades/{trade_id}/transactions")
 async def get_transactions_by_trade_id(trade_id: int):
     try:
         async with app.state.pool.connection() as conn:

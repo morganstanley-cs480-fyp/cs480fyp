@@ -129,11 +129,23 @@ function TradeSearchPage() {
       // Silently fail - saved queries not critical
     }
   };
+
+  // Fetch recent trades on component mount
+  const fetchRecentTrades = async () => {
+    try {
+      const recentTrades = await tradeFlowService.getRecentTrades(20);
+      setResults(recentTrades);
+    } catch (error) {
+      console.error('Failed to fetch recent trades:', error);
+      // Silently fail - recent trades not critical
+    }
+  };
   
-  // Fetch history and saved queries on mount
+  // Fetch history, saved queries, and recent trades on mount
   useEffect(() => {
     fetchSearchHistory();
     fetchSavedQueries();
+    fetchRecentTrades();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
