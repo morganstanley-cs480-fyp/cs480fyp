@@ -15,7 +15,7 @@ import type {
   PaginationState,
 } from "@tanstack/react-table";
 
-import type { Trade } from "@/lib/api/types";
+import type { Trade, TypeaheadSuggestion } from "@/lib/api/types";
 
 import type { QueryHistory } from "@/lib/api/types";
 
@@ -83,6 +83,7 @@ function TradeSearchPage() {
 
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
   const [savedQueries, setSavedQueries] = useState<QueryHistory[]>([]);
+  const [suggestions, setSuggestions] = useState<TypeaheadSuggestion[]>([]);
   const [searchQuery, setSearchQuery] = useState(() => {
     if (typeof window === "undefined") return "";
     const saved = sessionStorage.getItem(SEARCH_KEY);
@@ -236,6 +237,33 @@ function TradeSearchPage() {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
   }, [filters]);
 
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    const timer = window.setTimeout(async () => {
+      const query = searchQuery.trim();
+      if (query.length < 2) {
+        setSuggestions([]);
+        return;
+      }
+
+      try {
+        const results = await searchService.getTypeaheadSuggestions(userId, query, 8);
+        setSuggestions(results);
+      } catch (error) {
+        console.error('Failed to fetch suggestions:', error);
+        setSuggestions([]);
+      }
+    }, 200);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [searchQuery, userId]);
+
   // Sync pagination state to URL
   useEffect(() => {
     navigate({
@@ -350,6 +378,8 @@ function TradeSearchPage() {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
+    setSuggestions([]);
+
     setSearching(true);
     setSearchError(null);
     
@@ -383,6 +413,7 @@ function TradeSearchPage() {
 
   const handleRecentSearchClick = async (query: string) => {
     setSearchQuery(query);
+    setSuggestions([]);
     if (!query.trim()) return;
 
     setSearching(true);
@@ -452,9 +483,14 @@ function TradeSearchPage() {
   const handleSelectSavedQuery = async (queryText: string) => {
     // Just populate the search bar - user can manually trigger search
     setSearchQuery(queryText);
+    setSuggestions([]);
     setShowSavedQueries(false);
     // Note: Not auto-triggering search or updating last_use_time
     // User needs to click Search button themselves
+  };
+
+  const handleSuggestionClick = (query: string) => {
+    setSearchQuery(query);
   };
 
   const handleDeleteSavedQuery = async (queryId: number) => {
@@ -481,11 +517,13 @@ function TradeSearchPage() {
         searching={searching}
         showFilters={showFilters}
         recentSearches={recentSearches}
+        suggestions={suggestions}
         showSavedQueries={showSavedQueries}
         onSearchQueryChange={setSearchQuery}
         onSearch={handleSearch}
         onToggleFilters={() => setShowFilters(!showFilters)}
         onToggleSavedQueries={() => setShowSavedQueries(!showSavedQueries)}
+        onSuggestionClick={handleSuggestionClick}
         onRecentSearchClick={handleRecentSearchClick}
         onDeleteSearch={(id) => setRecentSearches((prev) => prev.filter((s) => s.id !== id))}
         onClearAllSearches={handleClearAllSearches}

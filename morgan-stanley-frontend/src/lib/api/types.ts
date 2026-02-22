@@ -53,6 +53,42 @@ export interface QueryHistory {
   last_use_time: string;
 }
 
+/**
+ * Typeahead Autocomplete System
+ * 
+ * How it works:
+ * 
+ * When you start typing in the search box, the system springs into action after a brief 
+ * 200ms pause (giving you time to type a few characters without hammering the server).
+ * 
+ * Behind the scenes, the backend queries the actual trades database, looking across seven 
+ * different fields: trade IDs, accounts, asset types, booking systems, affirmation systems, 
+ * clearing houses, and statuses. For each field, it pulls distinct values that match what 
+ * you've typed using a fuzzy search (so "fx" will find "FX", "fxd", etc.).
+ * 
+ * The magic happens in the scoring. Each potential match gets rated based on how closely 
+ * it resembles your input - exact prefix matches score highest, followed by substring 
+ * matches, then fuzzy word-overlap matches. Only suggestions scoring above 0.3 make the cut.
+ * 
+ * The results come back formatted as natural suggestions like "asset type FX" or 
+ * "account ACC001", with a category label so you know which field you're looking at. 
+ * These aren't from your search history - they're real values currently in the database, 
+ * which means you're always seeing what actually exists right now.
+ * 
+ * Click a suggestion and it fills your search box, ready to submit. The whole flow feels 
+ * instant and intuitive, like Google's autocomplete but tailored specifically to your 
+ * trade data.
+ */
+export interface TypeaheadSuggestion {
+  query_id: number;
+  query_text: string;
+  is_saved: boolean;
+  query_name: string | null;
+  last_use_time?: string | null;
+  score: number;
+  category?: string | null;
+}
+
 export interface ExtractedParams {
   accounts?: string[] | null;
   asset_types?: string[] | null;

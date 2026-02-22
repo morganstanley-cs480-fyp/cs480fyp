@@ -7,6 +7,7 @@ import type {
   HealthCheckResponse,
   UpdateHistoryRequest,
   Exception,
+  TypeaheadSuggestion,
 } from './types';
 
 /**
@@ -103,6 +104,20 @@ export const searchService = {
   ): Promise<QueryHistory[]> {
     return apiClient.get<QueryHistory[]>(
       `/history/saved-queries?user_id=${userId}&limit=${limit}`
+    );
+  },
+
+  /**
+   * Get typeahead suggestions for the current input
+   */
+  async getTypeaheadSuggestions(
+    userId: string,
+    query: string,
+    limit: number = 10
+  ): Promise<TypeaheadSuggestion[]> {
+    const encoded = encodeURIComponent(query);
+    return apiClient.get<TypeaheadSuggestion[]>(
+      `/history/suggestions?user_id=${userId}&q=${encoded}&limit=${limit}`
     );
   },
 
