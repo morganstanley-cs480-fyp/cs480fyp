@@ -122,16 +122,8 @@ async def get_transactions_by_trade_id(trade_id: int):
                 )
                 transactions = await cur.fetchall()
 
-                if not transactions:
-                    raise HTTPException(
-                        status_code=404,
-                        detail=(
-                            f"Transctions with trade_id {trade_id} not found"
-                            ),
-                    )
-                return transactions
-    except HTTPException as he:
-        raise he
+                # Return empty array if no transactions found (not an error)
+                return transactions if transactions else []
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")

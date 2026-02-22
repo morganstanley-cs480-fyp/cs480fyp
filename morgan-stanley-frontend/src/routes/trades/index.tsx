@@ -15,16 +15,7 @@ import type {
   PaginationState,
 } from "@tanstack/react-table";
 
-import { 
-  mockTrades, 
-  type Trade,
-  getUniqueAssetTypes,
-  getUniqueAccounts,
-  getUniqueBookingSystems,
-  getUniqueAffirmationSystems,
-  getUniqueClearingHouses,
-  getUniqueStatuses,
-} from "@/lib/mockData";
+import type { Trade } from "@/lib/api/types";
 
 import type { QueryHistory } from "@/lib/api/types";
 
@@ -37,6 +28,7 @@ import { useTradeColumns } from "@/components/trades/useTradeColumns";
 import { useUser } from "@/contexts/UserContext";
 import { searchService } from "@/lib/api/searchService";
 import { APIError } from "@/lib/api/client";
+import { tradeFlowService } from "@/lib/api/tradeFlowService";
 
 // Define search params schema for pagination
 type TradeSearchParams = {
@@ -65,11 +57,11 @@ function TradeSearchPage() {
 
   const getDefaultFilters = (): ManualSearchFilters => ({
     trade_id: "",
-    account: "",
-    asset_type: "",
-    booking_system: "",
-    affirmation_system: "",
-    clearing_house: "",
+    account: "all",
+    asset_type: "all",
+    booking_system: "all",
+    affirmation_system: "all",
+    clearing_house: "all",
     status: [],
     date_type: "update_time",
     date_from: "",
@@ -100,7 +92,15 @@ function TradeSearchPage() {
   const [showSavedQueries, setShowSavedQueries] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [results, setResults] = useState<Trade[]>(mockTrades);
+  const [results, setResults] = useState<Trade[]>([]);
+  const [filterOptions, setFilterOptions] = useState({
+    accounts: [] as string[],
+    assetTypes: [] as string[],
+    bookingSystems: [] as string[],
+    affirmationSystems: [] as string[],
+    clearingHouses: [] as string[],
+    statuses: [] as string[],
+  });
   
   // Fetch search history from backend
   const fetchSearchHistory = async () => {
@@ -135,6 +135,45 @@ function TradeSearchPage() {
     fetchSearchHistory();
     fetchSavedQueries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadFilterOptions = async () => {
+      try {
+        const trades = await tradeFlowService.getTrades(1000, 0);
+        if (!isActive) return;
+
+        const uniqueValues = <T,>(items: T[]) => Array.from(new Set(items));
+
+        setFilterOptions({
+          accounts: uniqueValues(trades.map((trade) => trade.account)).sort(),
+          assetTypes: uniqueValues(trades.map((trade) => trade.asset_type)).sort(),
+          bookingSystems: uniqueValues(trades.map((trade) => trade.booking_system)).sort(),
+          affirmationSystems: uniqueValues(trades.map((trade) => trade.affirmation_system)).sort(),
+          clearingHouses: uniqueValues(trades.map((trade) => trade.clearing_house)).sort(),
+          statuses: uniqueValues(trades.map((trade) => trade.status)).sort(),
+        });
+      } catch (error) {
+        if (!isActive) return;
+        console.error('Failed to load filter options:', error);
+        setFilterOptions({
+          accounts: [],
+          assetTypes: [],
+          bookingSystems: [],
+          affirmationSystems: [],
+          clearingHouses: [],
+          statuses: [],
+        });
+      }
+    };
+
+    loadFilterOptions();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
   const [sorting, setSorting] = useState<SortingState>(() => {
     if (typeof window === "undefined") return [];
@@ -247,8 +286,6 @@ function TradeSearchPage() {
       } else {
         setSearchError('An unexpected error occurred during search');
       }
-      // Fallback to mock data on error
-      setResults(mockTrades);
     } finally {
       setSearching(false);
     }
@@ -260,17 +297,22 @@ function TradeSearchPage() {
     setSearchError(null);
     
     try {
+      // Helper function to filter out empty or "all" values
+      const filterValue = (value: string | undefined) => {
+        return value && value !== "" && value !== "all" ? value : undefined;
+      };
+
       // Build manual search request
       const response = await searchService.searchTrades({
         search_type: "manual",
         user_id: userId,
         filters: {
-          trade_id: filters.trade_id || undefined,
-          account: filters.account || undefined,
-          asset_type: filters.asset_type || undefined,
-          booking_system: filters.booking_system || undefined,
-          affirmation_system: filters.affirmation_system || undefined,
-          clearing_house: filters.clearing_house || undefined,
+          trade_id: filterValue(filters.trade_id),
+          account: filterValue(filters.account),
+          asset_type: filterValue(filters.asset_type),
+          booking_system: filterValue(filters.booking_system),
+          affirmation_system: filterValue(filters.affirmation_system),
+          clearing_house: filterValue(filters.clearing_house),
           status: filters.status.length > 0 ? filters.status : undefined,
           date_type: filters.date_type,
           date_from: filters.date_from || undefined,
@@ -288,8 +330,6 @@ function TradeSearchPage() {
       } else {
         setSearchError('An unexpected error occurred during search');
       }
-      // Fallback to mock data on error
-      setResults(mockTrades);
     } finally {
       setSearching(false);
     }
@@ -320,8 +360,7 @@ function TradeSearchPage() {
       } else {
         setSearchError('An unexpected error occurred during search');
       }
-      // Fallback to mock data on error
-      setResults(mockTrades);
+      setResults([]);
       
       // Refresh history even on error (backend should save failed searches now)
       await fetchSearchHistory();
@@ -355,7 +394,7 @@ function TradeSearchPage() {
       } else {
         setSearchError('An unexpected error occurred during search');
       }
-      setResults(mockTrades);
+      setResults([]);
       
       // Refresh history even on error
       await fetchSearchHistory();
@@ -485,12 +524,12 @@ function TradeSearchPage() {
           onFiltersChange={setFilters}
           onSearch={handleManualSearch}
           onClearFilters={clearAllFilters}
-          getUniqueAccounts={getUniqueAccounts}
-          getUniqueAssetTypes={getUniqueAssetTypes}
-          getUniqueBookingSystems={getUniqueBookingSystems}
-          getUniqueAffirmationSystems={getUniqueAffirmationSystems}
-          getUniqueClearingHouses={getUniqueClearingHouses}
-          getUniqueStatuses={getUniqueStatuses}
+          getUniqueAccounts={() => filterOptions.accounts}
+          getUniqueAssetTypes={() => filterOptions.assetTypes}
+          getUniqueBookingSystems={() => filterOptions.bookingSystems}
+          getUniqueAffirmationSystems={() => filterOptions.affirmationSystems}
+          getUniqueClearingHouses={() => filterOptions.clearingHouses}
+          getUniqueStatuses={() => filterOptions.statuses}
         />
       )}
 

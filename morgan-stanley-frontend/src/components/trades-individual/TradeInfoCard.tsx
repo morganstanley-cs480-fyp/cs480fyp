@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronDown, ChevronUp, Info, Calendar, Clock, Activity, AlertTriangle } from "lucide-react";
-import type { Trade, Transaction, Exception } from "@/lib/mockData";
+import type { Trade, Transaction, Exception } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
 import { getPriorityColor } from "@/routes/trades/-tradeDetailUtils";
 import { useNavigate } from "@tanstack/react-router";

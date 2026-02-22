@@ -16,7 +16,31 @@ export interface Trade {
   clearing_house: string;
   create_time: string;
   update_time: string;
-  status: 'CANCELLED' | 'ALLEGED' | 'REJECTED' | 'CLEARED';
+  status: 'CANCELLED' | 'ALLEGED' | 'REJECTED' | 'CLEARED' | 'PENDING';
+}
+
+export interface Transaction {
+  trade_id: number;
+  trans_id: number;
+  create_time: string;
+  entity: string;
+  direction: string;
+  type: string;
+  status: string;
+  update_time: string;
+  step: number;
+}
+
+export interface Exception {
+  trade_id: number;
+  trans_id: number;
+  exception_id: number;
+  status: 'PENDING' | 'RESOLVED' | 'IGNORED' | 'CLOSED';
+  msg: string;
+  create_time: string;
+  comment: string | null;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  update_time: string;
 }
 
 export interface QueryHistory {
@@ -30,15 +54,16 @@ export interface QueryHistory {
 }
 
 export interface ExtractedParams {
-  trade_id: number | null;
-  account: string | null;
-  asset_type: string | null;
-  booking_system: string | null;
-  affirmation_system: string | null;
-  clearing_house: string | null;
-  status: string[];
-  date_from: string | null;
-  date_to: string | null;
+  accounts?: string[] | null;
+  asset_types?: string[] | null;
+  booking_systems?: string[] | null;
+  affirmation_systems?: string[] | null;
+  clearing_houses?: string[] | null;
+  statuses?: string[] | null;
+  date_from?: string | null;
+  date_to?: string | null;
+  with_exceptions_only?: boolean;
+  cleared_trades_only?: boolean;
 }
 
 // ============================================================================
@@ -75,7 +100,7 @@ export interface ManualSearchRequest {
 export type SearchRequest = NaturalLanguageSearchRequest | ManualSearchRequest;
 
 export interface UpdateHistoryRequest {
-  is_saved?: boolean;
+  is_saved: boolean;
   query_name?: string;
 }
 
@@ -104,9 +129,11 @@ export interface HistoryListResponse {
 export interface UpdateHistoryResponse {
   query_id: number;
   user_id: string;
+  query_text: string;
   is_saved: boolean;
   query_name: string | null;
-  message: string;
+  create_time: string;
+  last_use_time: string;
 }
 
 export interface DeleteHistoryResponse {
@@ -116,16 +143,20 @@ export interface DeleteHistoryResponse {
 }
 
 export interface HealthCheckResponse {
-  status: string;
+  status: "healthy" | "unhealthy" | "degraded";
   service: string;
   version: string;
   timestamp: string;
-  database: {
-    connected: boolean;
-    latency_ms: number | null;
-  };
-  redis: {
-    connected: boolean;
-    latency_ms: number | null;
+  checks: {
+    database: {
+      status: "ok" | "failed" | "error";
+      required: boolean;
+      error?: string;
+    };
+    cache: {
+      status: "ok" | "degraded" | "error";
+      required: boolean;
+      error?: string;
+    };
   };
 }
