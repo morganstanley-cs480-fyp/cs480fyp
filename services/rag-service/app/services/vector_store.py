@@ -13,6 +13,7 @@ from pymilvus import (
 )
 
 from app.config.settings import settings
+from app.utils.text_cleaner import clean_retrieved_text
 
 
 class MilvusVectorStore:
@@ -124,6 +125,134 @@ class MilvusVectorStore:
             })
             
         return hits
+
+    def exists_by_exception_id(self, exception_id: str) -> bool:
+        """
+        Check if a document with the given exception_id already exists.
+        
+        Args:
+            exception_id: The exception ID to check
+            
+        Returns:
+            True if document exists, False otherwise
+        """
+        expr = f'metadata["exception_id"] == "{exception_id}"'
+        results = self._collection.query(
+            expr=expr,
+            output_fields=["id"],
+            limit=1
+        )
+        return len(results) > 0
+    
+    def get_document_by_exception_id(self, exception_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve a document by its exception_id.
+        
+        Args:
+            exception_id: The exception ID to search for
+            
+        Returns:
+            Document dictionary with id, text, metadata, and vector, or None if not found
+        """
+        expr = f'metadata["exception_id"] == "{exception_id}"'
+        results = self._collection.query(
+            expr=expr,
+            output_fields=["id", "text", "metadata", "vector"],
+            limit=1
+        )
+        
+        if not results:
+            return None
+        
+        doc = results[0]
+        return {
+            "id": doc.get("id"),
+            "text": doc.get("text"),
+            "metadata": doc.get("metadata"),
+            "vector": doc.get("vector")
+        }
+    
+    def get_by_exception_id(self, exception_id: str) -> Dict[str, Any]:
+        """
+        Retrieve a document by exception_id.
+        
+        Args:
+            exception_id: The exception ID to search for
+            
+        Returns:
+            Document dict with text, metadata, etc.
+            
+        Raises:
+            ValueError: If exception not found
+        """
+        doc = self.get_document_by_exception_id(exception_id)
+        if not doc:
+            raise ValueError(f"Exception {exception_id} not found in vector store")
+        
+        # Clean the text before returning
+        if "text" in doc:
+            doc["text"] = clean_retrieved_text(doc["text"])
+        
+        return doc
+    
+    def find_similar_by_exception_id(
+        self, 
+        exception_id: str, 
+        limit: int = 3,
+        exclude_self: bool = True
+    ) -> List[Dict[str, Any]]:
+        """
+        Find similar documents to the one with the given exception_id.
+        
+        Args:
+            exception_id: The exception ID to find similar documents for
+            limit: Maximum number of similar documents to return
+            exclude_self: Whether to exclude the source document from results
+            
+        Returns:
+            List of similar documents with similarity scores (0-100%)
+            Each document contains: exception_id, trade_id, text, score, metadata
+            
+        Raises:
+            ValueError: If document with exception_id not found
+        """
+        # Get the source document
+        source_doc = self.get_document_by_exception_id(exception_id)
+        if not source_doc:
+            raise ValueError(f"Document with exception_id {exception_id} not found")
+        
+        # Search using its embedding
+        search_limit = limit + 1 if exclude_self else limit
+        results = self.search(source_doc["vector"], limit=search_limit)
+        
+        # Filter out the source document if requested
+        if exclude_self:
+            results = [r for r in results if r["metadata"].get("exception_id") != exception_id]
+        
+        # Format results with percentage scores
+        similar_docs = []
+        for result in results[:limit]:
+            metadata = result["metadata"]
+            # Convert cosine similarity (0-1) to percentage (0-100)
+            similarity_percentage = round(result["score"] * 100, 2)
+            
+            # Get and clean the narrative text
+            raw_text = result.get("text", "")
+            cleaned_text = clean_retrieved_text(raw_text)
+            
+            similar_docs.append({
+                "exception_id": metadata.get("exception_id"),
+                "trade_id": metadata.get("trade_id"),
+                "similarity_score": similarity_percentage,
+                "priority": metadata.get("priority"),
+                "status": metadata.get("status"),
+                "asset_type": metadata.get("asset_type"),
+                "clearing_house": metadata.get("clearing_house"),
+                "exception_msg": metadata.get("exception_msg"),
+                "text": cleaned_text  # Include cleaned full narrative text
+            })
+        
+        return similar_docs
 
     def close(self) -> None:
         """Close Milvus connection."""

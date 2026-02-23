@@ -358,6 +358,7 @@ logger.info(
             "GET /health",
             "POST /search",
             "GET /history",
+            "GET /history/suggestions",
             "PUT /history/{query_id}",
             "DELETE /history/{query_id}"
         ]

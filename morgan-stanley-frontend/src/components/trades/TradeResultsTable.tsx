@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Trade } from "@/lib/mockData";
+import type { Trade } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
 
 interface TradeResultsTableProps {

@@ -3,6 +3,8 @@ Query History Service - CRUD Operations for Query History
 Manages user query history: saving, retrieving, updating, and deleting queries.
 """
 
+from datetime import datetime
+from difflib import SequenceMatcher
 from typing import Optional
 from app.database.connection import db_manager
 from app.models.domain import QueryHistory
@@ -387,6 +389,118 @@ class QueryHistoryService:
                 extra={"query_id": query_id, "user_id": user_id}
             )
             # Don't raise - this is non-critical
+
+    async def get_suggestions(
+        self,
+        user_id: str,
+        query: str,
+        limit: int = 10,
+        max_candidates: int = 200,
+        min_score: float = 0.3
+    ) -> list[dict]:
+        """
+        Get fuzzy typeahead suggestions from trade database values.
+
+        Args:
+            user_id: User ID to fetch suggestions for
+            query: User-typed query string
+            limit: Maximum number of suggestions to return
+            max_candidates: Max recent history rows to scan
+            min_score: Minimum similarity score to include
+
+        Returns:
+            List of suggestion dicts with query metadata
+        """
+        normalized_query = self._normalize_text(query)
+        if len(normalized_query) < 2:
+            return []
+
+        pattern = f"%{query.strip()}%"
+        per_field_limit = max(5, min(25, max_candidates // 6))
+
+        field_specs = [
+            ("Account", "account", "account", "text"),
+            ("Asset type", "asset_type", "asset type", "text"),
+            ("Booking system", "booking_system", "booking system", "text"),
+            ("Affirmation system", "affirmation_system", "affirmation system", "text"),
+            ("Clearing house", "clearing_house", "clearing house", "text"),
+            ("Status", "status", "status", "text"),
+            ("Trade id", "id", "trade id", "id"),
+        ]
+
+        scored: dict[str, tuple[float, dict]] = {}
+
+        for category, column, label, value_type in field_specs:
+            if value_type == "id":
+                sql_query = f"""
+                    SELECT DISTINCT {column}::text AS value
+                    FROM trades
+                    WHERE {column}::text ILIKE $1
+                    ORDER BY {column}::text
+                    LIMIT $2
+                """
+            else:
+                sql_query = f"""
+                    SELECT DISTINCT {column} AS value
+                    FROM trades
+                    WHERE {column} ILIKE $1
+                    ORDER BY {column}
+                    LIMIT $2
+                """
+
+            try:
+                records = await db_manager.fetch(sql_query, pattern, per_field_limit)
+            except Exception as e:
+                logger.error(
+                    f"Failed to fetch suggestions for {column}: {e}",
+                    extra={"user_id": user_id}
+                )
+                raise DatabaseQueryError(
+                    "Failed to fetch suggestions",
+                    details={"error": str(e), "user_id": user_id, "field": column}
+                )
+
+            for record in records:
+                raw_value = (record.get("value") or "").strip()
+                if not raw_value:
+                    continue
+
+                query_text = f"{label} {raw_value}"
+                normalized_value = self._normalize_text(raw_value)
+                normalized_phrase = self._normalize_text(query_text)
+
+                score = max(
+                    self._similarity_score(normalized_query, normalized_value),
+                    self._similarity_score(normalized_query, normalized_phrase)
+                )
+
+                if score < min_score:
+                    continue
+
+                suggestion = {
+                    "query_id": 0,
+                    "user_id": user_id,
+                    "query_text": query_text,
+                    "is_saved": False,
+                    "query_name": None,
+                    "create_time": None,
+                    "last_use_time": None,
+                    "score": score,
+                    "category": category,
+                }
+
+                existing = scored.get(query_text)
+                if existing is None or score > existing[0]:
+                    scored[query_text] = (score, suggestion)
+
+        suggestions = [item[1] for item in scored.values()]
+
+        suggestions.sort(
+            key=lambda item: item["score"],
+            reverse=True
+        )
+
+        return suggestions[:limit]
     
     async def _verify_ownership(
         self,
@@ -417,7 +531,6 @@ class QueryHistoryService:
                     f"Query {query_id} not found",
                     details={"query_id": query_id}
                 )
-            
             if record["user_id"] != user_id:
                 logger.warning(
                     "Unauthorized access attempt",
@@ -443,6 +556,50 @@ class QueryHistoryService:
                 "Failed to verify query ownership",
                 details={"error": str(e), "query_id": query_id}
             )
+
+    @staticmethod
+    def _normalize_text(text: str) -> str:
+        return " ".join(text.lower().split())
+
+    @staticmethod
+    def _looks_like_manual_filters(text: str) -> bool:
+        # Manual search filters are saved as JSON strings.
+        return text.lstrip().startswith("{")
+
+    @staticmethod
+    def _tokenize(text: str) -> set[str]:
+        return {token for token in text.split(" ") if token}
+
+    def _similarity_score(self, query: str, candidate: str) -> float:
+        ratio = SequenceMatcher(None, query, candidate).ratio()
+
+        if candidate.startswith(query):
+            ratio += 0.3
+        elif query in candidate:
+            ratio += 0.1
+
+        query_tokens = self._tokenize(query)
+        candidate_tokens = self._tokenize(candidate)
+        if query_tokens and candidate_tokens:
+            intersection = query_tokens.intersection(candidate_tokens)
+            union = query_tokens.union(candidate_tokens)
+            ratio += 0.2 * (len(intersection) / len(union))
+
+        return min(ratio, 1.5)
+
+    @staticmethod
+    def _coerce_datetime(value) -> datetime:
+        if isinstance(value, datetime):
+            return value
+
+        if isinstance(value, str):
+            cleaned = value.replace("Z", "+00:00")
+            try:
+                return datetime.fromisoformat(cleaned)
+            except ValueError:
+                pass
+
+        return datetime.min
 
 
 # Global singleton instance
