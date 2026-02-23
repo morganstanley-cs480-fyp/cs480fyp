@@ -19,6 +19,30 @@ export interface Trade {
   status: 'CANCELLED' | 'ALLEGED' | 'REJECTED' | 'CLEARED';
 }
 
+export interface Transaction {
+  trans_id: number;
+  trade_id: number;
+  create_time: string;
+  entity: string;
+  direction: string;
+  type: string;
+  status: string;
+  update_time: string;
+  step: number;
+}
+
+export interface Exception {
+  trade_id: number; 
+  trans_id: number;  
+  exception_id: number;  
+  status: string;
+  msg: string;
+  create_time: string;
+  comment: string;
+  priority: string;
+  update_time: string;
+}
+
 export interface QueryHistory {
   query_id: number;
   user_id: string;
