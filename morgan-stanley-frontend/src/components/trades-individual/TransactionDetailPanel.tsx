@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AlertCircle } from "lucide-react";
-import type { Transaction, Exception } from "@/lib/mockData";
+import type { Transaction, Exception } from '@/lib/api/types';
 import { formatDateShort } from "@/lib/utils";
 
 interface TransactionDetailPanelProps {

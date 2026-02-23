@@ -28,11 +28,22 @@ class TransactionClient {
 const transactionClient = new TransactionClient();
 
 export const transactionService = {
-  async getTransactionsByTradeId(tradeId: string | number): Promise<Transaction[]> {
+  async getTransactionsByTradeId(tradeId: number): Promise<Transaction[]> {
+//     return [{
+//     trans_id: 14478043,
+//     trade_id: 96809076,
+//     create_time: "2025-08-02T16:38:48",
+//     entity: "OCTCCHK",
+//     direction: "RECEIVE",
+//     type: "REQUEST_CONSENT",
+//     status: "CLEARED",
+//     update_time: "2025-08-02T16:38:48",
+//     step: 1
+// }]}
     console.log(`📡 Fetching transactions for trade ${tradeId}...`);
     
     try {
-      const transactions = await transactionClient.get<Transaction[]>(`/api/trades/${tradeId}/transactions`);
+      const transactions = await transactionClient.get<Transaction[]>(`/${tradeId}/transactions`);
       console.log(`✅ Fetched ${transactions.length} transactions for trade ${tradeId}`);
       return transactions;
     } catch (error) {
@@ -42,11 +53,7 @@ export const transactionService = {
   },
 
   async getTransactionById(transactionId: string | number): Promise<Transaction> {
-    return transactionClient.get<Transaction>(`/api/transactions/${transactionId}`);
+    return transactionClient.get<Transaction>(`/${transactionId}`);
   },
 
-  // Add more transaction-related methods as needed
-  async getTransactionsByStatus(status: string): Promise<Transaction[]> {
-    return transactionClient.get<Transaction[]>(`/api/transactions?status=${status}`);
-  }
 }

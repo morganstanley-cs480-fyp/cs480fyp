@@ -2,7 +2,7 @@ import { transactionService } from '@/lib/api/transactionService';
 import { useState, useEffect } from 'react';
 import type { Transaction } from '@/lib/api/types';
 
-export function useTransactions(tradeId: string | null) {
+export function useTransactions(tradeId: number | null) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

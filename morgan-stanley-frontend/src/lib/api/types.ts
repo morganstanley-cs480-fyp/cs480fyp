@@ -32,14 +32,14 @@ export interface Transaction {
 }
 
 export interface Exception {
-  trade_id: number; 
-  trans_id: number;  
-  exception_id: number;  
-  status: string;
+  trade_id: number;
+  trans_id: number;
+  exception_id: number;
+  status: 'PENDING' | 'RESOLVED' | 'IGNORED' | 'CLOSED';
   msg: string;
   create_time: string;
-  comment: string;
-  priority: string;
+  comment: string | null;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
   update_time: string;
 }
 
@@ -152,4 +152,9 @@ export interface HealthCheckResponse {
     connected: boolean;
     latency_ms: number | null;
   };
+}
+
+export interface WebSocketMessage {
+  type: string;
+  data: Transaction | Exception | { exception_id: number; resolved_by: string; timestamp: string };
 }

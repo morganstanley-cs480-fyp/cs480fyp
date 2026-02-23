@@ -1,21 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import type { Transaction, Exception, WebSocketMessage } from '@/lib/api/types';
 
 const GATEWAY_URL = import.meta.env.VITE_WEBSOCKET_URL|| 'ws://localhost:3002';
 
-interface Transaction {
-  trans_id: number;
-  trade_id: number;
-  create_time: string;
-  entity: string;
-  direction: string;
-  type: string;
-  status: string;
-  update_time: string;
-  step: number;
-}
-
 export function useTradeWebSocket(
-  tradeId: string | null,
+  tradeId: number | null,
   initialTransactions: Transaction[] = []
 ) {
   const ws = useRef<WebSocket | null>(null);
@@ -75,7 +64,7 @@ export function useTradeWebSocket(
       
       const subscribeMessage = { 
         action: 'SUBSCRIBE', 
-        trade_id: parseInt(tradeId)
+        trade_id: tradeId
       };
       console.log('📤 Sending subscription message:', subscribeMessage);
       ws.current?.send(JSON.stringify(subscribeMessage));

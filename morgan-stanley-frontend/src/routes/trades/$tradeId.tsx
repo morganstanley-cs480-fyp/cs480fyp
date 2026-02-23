@@ -27,6 +27,8 @@ import {
     getRelatedExceptions,
 } from "./-tradeDetailUtils";
 import {EntityAndTransactionDetailPanel} from "@/components/trades-individual/EntityAndTransactionDetailPanel.tsx";
+import { useTradeWebSocket } from "@/hooks/useTradeWebSocket";
+import { useTransactions } from "@/hooks/useTransactions";
 
 export const Route = createFileRoute("/trades/$tradeId")({
     component: TradeDetailPage,
@@ -37,8 +39,21 @@ function TradeDetailPage() {
     const navigate = useNavigate();
 
     const trade = getTradeById(Number(tradeId));
-    const transactions = getTransactionsForTrade(Number(tradeId));
+    const staticTransactions = getTransactionsForTrade(Number(tradeId));
     const exceptions = getExceptionsForTrade(Number(tradeId));
+
+    const { 
+        transactions: apiTransactions, 
+        loading, 
+        error 
+    } = useTransactions(Number(tradeId));
+
+    const { 
+        mergedTransactions, 
+        isConnected, 
+        connectionStatus 
+    } = useTradeWebSocket(Number(tradeId), apiTransactions);
+
 
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [selectedEntity, setSelectedEntity] = useState<{ name: string; isHub: boolean } | null>(null);
@@ -64,6 +79,33 @@ function TradeDetailPage() {
         setSelectedTransaction(transaction);
         setLastSelectedType("transaction");
     };
+
+    // Handle loading and error states
+    if (loading) {
+        return (
+            <div className="p-6 max-w-[1800px] mx-auto">
+                <Card>
+                    <CardContent className="p-12 text-center">
+                        <div className="text-lg font-semibold mb-2">Loading trade details...</div>
+                        <div className="text-sm text-gray-600">Fetching transactions and data</div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6 max-w-[1800px] mx-auto">
+                <Card>
+                    <CardContent className="p-12 text-center">
+                        <div className="text-lg font-semibold mb-2 text-red-600">Error loading trade</div>
+                        <div className="text-sm text-gray-600">{error}</div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
 
     if (!trade) {
         return (
@@ -123,7 +165,7 @@ function TradeDetailPage() {
                 <CardContent className="pt-0">
                     <TradeInfoCard
                         trade={trade}
-                        transactions={transactions}
+                        transactions={mergedTransactions}
                         exceptions={exceptions}
                         showTradeInfo={showTradeInfo}
                         onToggle={() => setShowTradeInfo(!showTradeInfo)}
@@ -139,7 +181,7 @@ function TradeDetailPage() {
                     <FlowVisualization
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
-                        transactions={transactions}
+                        transactions={mergedTransactions}
                         clearingHouse={trade.clearing_house}
                         selectedTransaction={selectedTransaction}
                         onTransactionSelect={handleTransactionSelect}
@@ -160,7 +202,7 @@ function TradeDetailPage() {
                         selectedEntity={selectedEntity}
                         selectedTransaction={selectedTransaction}
                         lastSelectedType={lastSelectedType}
-                        transactions={transactions}
+                        transactions={mergedTransactions}
                         relatedExceptions={selectedTransaction ? getRelatedExceptions(selectedTransaction.trans_id, exceptions) : []}
                         onResolveException={handleResolveException}
                     />

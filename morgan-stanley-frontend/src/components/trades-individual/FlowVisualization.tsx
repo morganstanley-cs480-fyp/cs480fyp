@@ -25,8 +25,6 @@ import {
 import "@xyflow/react/dist/style.css";
 import { Landmark, ShieldCheck } from 'lucide-react';
 import ELK, { type ElkNode } from 'elkjs/lib/elk.bundled.js';
-import { useTradeWebSocket } from "@/hooks/useTradeWebSocket";
-import { useTransactions } from "@/hooks/useTransactions";
 
 const elk = new ELK();
 
@@ -585,8 +583,9 @@ async function generateElkLayout(
 }
 
 interface FlowVisualizationProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
+  activeTab: "timeline" | "system";
+  onTabChange: (tab: "timeline" | "system") => void;
+  transactions: Transaction[];
   clearingHouse: string;
   selectedTransaction: Transaction | null;
   onTransactionSelect: (transaction: Transaction) => void;
@@ -594,13 +593,14 @@ interface FlowVisualizationProps {
   exceptions: Exception[];
   getRelatedExceptions: (transactionId: number) => Exception[];
   getTransactionBackgroundColor: (transaction: Transaction) => string;
-  getTransactionStatusColor: (transaction: Transaction) => string;
-  tradeId: string;
+  getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
+  tradeId: number;
 }
 
 export function FlowVisualization({
   activeTab,
   onTabChange,
+  transactions,
   clearingHouse,
   selectedTransaction,
   onTransactionSelect,
@@ -611,26 +611,18 @@ export function FlowVisualization({
   getTransactionStatusColor,
   tradeId,
 }: FlowVisualizationProps) {
-  // Fetch initial transactions from API
-  const { transactions: apiTransactions, loading, error } = useTransactions(tradeId);
-  
-  // Connect to WebSocket and merge with API data
-  const { 
-    isConnected, 
-    connectionStatus, 
-    mergedTransactions 
-  } = useTradeWebSocket(tradeId, apiTransactions);
+
 
   // State for system flow
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(false);
 
   // Use mergedTransactions for all rendering (combines API + WebSocket data)
-  const sortedTransactions = mergedTransactions.sort((a, b) => a.step - b.step);
+  const sortedTransactions = transactions.sort((a, b) => a.step - b.step);
 
   // Generate dynamic flow visualization based on merged transaction data
   useEffect(() => {
-    if (!mergedTransactions || mergedTransactions.length === 0) {
+    if (!transactions || transactions.length === 0) {
       setLayoutData({ nodes: [], edges: [] });
       setIsLoading(false);
       return;
@@ -640,7 +632,7 @@ export function FlowVisualization({
 
     // Extract unique entities from transactions (excluding CCP)
     const entities = [...new Set(
-      mergedTransactions
+      transactions
         .map(t => t.entity)
         .filter(e => e && e !== 'CCP' && e !== 'Central Clearing House')
     )];
@@ -674,7 +666,7 @@ export function FlowVisualization({
       return;
     }
 
-    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, mergedTransactions, sortedTransactions, exceptions, onTransactionSelect)
+    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect)
       .then((result) => {
         setLayoutData(result);
         setIsLoading(false);
@@ -683,7 +675,7 @@ export function FlowVisualization({
         console.error('ELK layout failed:', error);
         setIsLoading(false);
       });
-  }, [mergedTransactions, clearingHouse, onEntitySelect, exceptions, onTransactionSelect]);
+  }, [transactions, clearingHouse, onEntitySelect, exceptions, onTransactionSelect]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setLayoutData((prev) => ({
@@ -705,35 +697,6 @@ export function FlowVisualization({
     return 0.15;
   };
 
-  // Show loading state
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading transactions...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <div className="text-red-500 mb-2">⚠️ Error loading transactions</div>
-          <p className="text-sm text-gray-600">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Retry
-          </button>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card>
@@ -752,12 +715,6 @@ export function FlowVisualization({
             </TabsList>
           </Tabs>
           
-          {/* Live status indicator */}
-          <div className="flex items-center gap-2 text-xs">
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span>{isConnected ? 'Live' : connectionStatus}</span>
-            <span>({sortedTransactions.length} transactions)</span>
-          </div>
         </div>
       </CardHeader>
 
