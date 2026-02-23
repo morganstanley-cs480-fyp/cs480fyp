@@ -1,6 +1,6 @@
 import React from "react";
 import { AlertTriangle, Clock } from "lucide-react";
-import type { Transaction, Exception } from "@/lib/api/types";
+import { type Transaction, type Exception } from "@/lib/mockData";
 
 export function getStatusColor(status: string): "default" | "destructive" | "secondary" | "outline" {
   switch (status) {

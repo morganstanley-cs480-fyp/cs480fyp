@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowDownRight, AlertCircle } from "lucide-react";
-import type { Transaction, Exception } from "@/lib/api/types";
+import type { Transaction, Exception } from "@/lib/mockData";
 import { formatDateShort } from "@/lib/utils";
 
 interface TimelineTransactionCardProps {

@@ -97,8 +97,8 @@ export async function start() {
 
   // Return server instance for testing
   return new Promise((resolve) => {
-    server.listen(PORT, '0.0.0.0', () => {
-      console.log(`Gateway service running on port ${PORT}`);
+    server.listen(PORT, () => {
+      console.log(`Gateway service running on ${PORT}`);
       resolve(server);
     });
   });

@@ -23,7 +23,7 @@ class Trade(BaseModel):
     clearing_house: str = Field(..., description="Clearing house (DTCC, LCH, CME, NSCC, JSCC, OTCCHK)")
     create_time: str = Field(..., description="Trade creation timestamp")
     update_time: str = Field(..., description="Trade last update timestamp")
-    status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED", "PENDING"] = Field(
+    status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED"] = Field(
         ..., 
         description="Trade status"
     )

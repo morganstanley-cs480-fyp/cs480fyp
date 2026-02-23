@@ -15,7 +15,16 @@ import type {
   PaginationState,
 } from "@tanstack/react-table";
 
-import type { Trade, TypeaheadSuggestion } from "@/lib/api/types";
+import { 
+  mockTrades, 
+  type Trade,
+  getUniqueAssetTypes,
+  getUniqueAccounts,
+  getUniqueBookingSystems,
+  getUniqueAffirmationSystems,
+  getUniqueClearingHouses,
+  getUniqueStatuses,
+} from "@/lib/mockData";
 
 import type { QueryHistory } from "@/lib/api/types";
 
@@ -28,7 +37,6 @@ import { useTradeColumns } from "@/components/trades/useTradeColumns";
 import { useUser } from "@/contexts/UserContext";
 import { searchService } from "@/lib/api/searchService";
 import { APIError } from "@/lib/api/client";
-import { tradeFlowService } from "@/lib/api/tradeFlowService";
 
 // Define search params schema for pagination
 type TradeSearchParams = {
@@ -57,11 +65,11 @@ function TradeSearchPage() {
 
   const getDefaultFilters = (): ManualSearchFilters => ({
     trade_id: "",
-    account: "all",
-    asset_type: "all",
-    booking_system: "all",
-    affirmation_system: "all",
-    clearing_house: "all",
+    account: "",
+    asset_type: "",
+    booking_system: "",
+    affirmation_system: "",
+    clearing_house: "",
     status: [],
     date_type: "update_time",
     date_from: "",
@@ -83,7 +91,6 @@ function TradeSearchPage() {
 
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
   const [savedQueries, setSavedQueries] = useState<QueryHistory[]>([]);
-  const [suggestions, setSuggestions] = useState<TypeaheadSuggestion[]>([]);
   const [searchQuery, setSearchQuery] = useState(() => {
     if (typeof window === "undefined") return "";
     const saved = sessionStorage.getItem(SEARCH_KEY);
@@ -93,15 +100,7 @@ function TradeSearchPage() {
   const [showSavedQueries, setShowSavedQueries] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [results, setResults] = useState<Trade[]>([]);
-  const [filterOptions, setFilterOptions] = useState({
-    accounts: [] as string[],
-    assetTypes: [] as string[],
-    bookingSystems: [] as string[],
-    affirmationSystems: [] as string[],
-    clearingHouses: [] as string[],
-    statuses: [] as string[],
-  });
+  const [results, setResults] = useState<Trade[]>(mockTrades);
   
   // Fetch search history from backend
   const fetchSearchHistory = async () => {
@@ -130,63 +129,12 @@ function TradeSearchPage() {
       // Silently fail - saved queries not critical
     }
   };
-
-  // Fetch recent trades on component mount
-  const fetchRecentTrades = async () => {
-    try {
-      const recentTrades = await tradeFlowService.getRecentTrades(20);
-      setResults(recentTrades);
-    } catch (error) {
-      console.error('Failed to fetch recent trades:', error);
-      // Silently fail - recent trades not critical
-    }
-  };
   
-  // Fetch history, saved queries, and recent trades on mount
+  // Fetch history and saved queries on mount
   useEffect(() => {
     fetchSearchHistory();
     fetchSavedQueries();
-    fetchRecentTrades();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    let isActive = true;
-
-    const loadFilterOptions = async () => {
-      try {
-        const trades = await tradeFlowService.getTrades(1000, 0);
-        if (!isActive) return;
-
-        const uniqueValues = <T,>(items: T[]) => Array.from(new Set(items));
-
-        setFilterOptions({
-          accounts: uniqueValues(trades.map((trade) => trade.account)).sort(),
-          assetTypes: uniqueValues(trades.map((trade) => trade.asset_type)).sort(),
-          bookingSystems: uniqueValues(trades.map((trade) => trade.booking_system)).sort(),
-          affirmationSystems: uniqueValues(trades.map((trade) => trade.affirmation_system)).sort(),
-          clearingHouses: uniqueValues(trades.map((trade) => trade.clearing_house)).sort(),
-          statuses: uniqueValues(trades.map((trade) => trade.status)).sort(),
-        });
-      } catch (error) {
-        if (!isActive) return;
-        console.error('Failed to load filter options:', error);
-        setFilterOptions({
-          accounts: [],
-          assetTypes: [],
-          bookingSystems: [],
-          affirmationSystems: [],
-          clearingHouses: [],
-          statuses: [],
-        });
-      }
-    };
-
-    loadFilterOptions();
-
-    return () => {
-      isActive = false;
-    };
   }, []);
   const [sorting, setSorting] = useState<SortingState>(() => {
     if (typeof window === "undefined") return [];
@@ -236,33 +184,6 @@ function TradeSearchPage() {
     if (typeof window === "undefined") return;
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
   }, [filters]);
-
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSuggestions([]);
-      return;
-    }
-
-    const timer = window.setTimeout(async () => {
-      const query = searchQuery.trim();
-      if (query.length < 2) {
-        setSuggestions([]);
-        return;
-      }
-
-      try {
-        const results = await searchService.getTypeaheadSuggestions(userId, query, 8);
-        setSuggestions(results);
-      } catch (error) {
-        console.error('Failed to fetch suggestions:', error);
-        setSuggestions([]);
-      }
-    }, 200);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [searchQuery, userId]);
 
   // Sync pagination state to URL
   useEffect(() => {
@@ -326,6 +247,8 @@ function TradeSearchPage() {
       } else {
         setSearchError('An unexpected error occurred during search');
       }
+      // Fallback to mock data on error
+      setResults(mockTrades);
     } finally {
       setSearching(false);
     }
@@ -337,22 +260,17 @@ function TradeSearchPage() {
     setSearchError(null);
     
     try {
-      // Helper function to filter out empty or "all" values
-      const filterValue = (value: string | undefined) => {
-        return value && value !== "" && value !== "all" ? value : undefined;
-      };
-
       // Build manual search request
       const response = await searchService.searchTrades({
         search_type: "manual",
         user_id: userId,
         filters: {
-          trade_id: filterValue(filters.trade_id),
-          account: filterValue(filters.account),
-          asset_type: filterValue(filters.asset_type),
-          booking_system: filterValue(filters.booking_system),
-          affirmation_system: filterValue(filters.affirmation_system),
-          clearing_house: filterValue(filters.clearing_house),
+          trade_id: filters.trade_id || undefined,
+          account: filters.account || undefined,
+          asset_type: filters.asset_type || undefined,
+          booking_system: filters.booking_system || undefined,
+          affirmation_system: filters.affirmation_system || undefined,
+          clearing_house: filters.clearing_house || undefined,
           status: filters.status.length > 0 ? filters.status : undefined,
           date_type: filters.date_type,
           date_from: filters.date_from || undefined,
@@ -370,6 +288,8 @@ function TradeSearchPage() {
       } else {
         setSearchError('An unexpected error occurred during search');
       }
+      // Fallback to mock data on error
+      setResults(mockTrades);
     } finally {
       setSearching(false);
     }
@@ -377,8 +297,6 @@ function TradeSearchPage() {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
-
-    setSuggestions([]);
 
     setSearching(true);
     setSearchError(null);
@@ -402,7 +320,8 @@ function TradeSearchPage() {
       } else {
         setSearchError('An unexpected error occurred during search');
       }
-      setResults([]);
+      // Fallback to mock data on error
+      setResults(mockTrades);
       
       // Refresh history even on error (backend should save failed searches now)
       await fetchSearchHistory();
@@ -413,7 +332,6 @@ function TradeSearchPage() {
 
   const handleRecentSearchClick = async (query: string) => {
     setSearchQuery(query);
-    setSuggestions([]);
     if (!query.trim()) return;
 
     setSearching(true);
@@ -437,7 +355,7 @@ function TradeSearchPage() {
       } else {
         setSearchError('An unexpected error occurred during search');
       }
-      setResults([]);
+      setResults(mockTrades);
       
       // Refresh history even on error
       await fetchSearchHistory();
@@ -483,14 +401,9 @@ function TradeSearchPage() {
   const handleSelectSavedQuery = async (queryText: string) => {
     // Just populate the search bar - user can manually trigger search
     setSearchQuery(queryText);
-    setSuggestions([]);
     setShowSavedQueries(false);
     // Note: Not auto-triggering search or updating last_use_time
     // User needs to click Search button themselves
-  };
-
-  const handleSuggestionClick = (query: string) => {
-    setSearchQuery(query);
   };
 
   const handleDeleteSavedQuery = async (queryId: number) => {
@@ -517,13 +430,11 @@ function TradeSearchPage() {
         searching={searching}
         showFilters={showFilters}
         recentSearches={recentSearches}
-        suggestions={suggestions}
         showSavedQueries={showSavedQueries}
         onSearchQueryChange={setSearchQuery}
         onSearch={handleSearch}
         onToggleFilters={() => setShowFilters(!showFilters)}
         onToggleSavedQueries={() => setShowSavedQueries(!showSavedQueries)}
-        onSuggestionClick={handleSuggestionClick}
         onRecentSearchClick={handleRecentSearchClick}
         onDeleteSearch={(id) => setRecentSearches((prev) => prev.filter((s) => s.id !== id))}
         onClearAllSearches={handleClearAllSearches}
@@ -574,12 +485,12 @@ function TradeSearchPage() {
           onFiltersChange={setFilters}
           onSearch={handleManualSearch}
           onClearFilters={clearAllFilters}
-          getUniqueAccounts={() => filterOptions.accounts}
-          getUniqueAssetTypes={() => filterOptions.assetTypes}
-          getUniqueBookingSystems={() => filterOptions.bookingSystems}
-          getUniqueAffirmationSystems={() => filterOptions.affirmationSystems}
-          getUniqueClearingHouses={() => filterOptions.clearingHouses}
-          getUniqueStatuses={() => filterOptions.statuses}
+          getUniqueAccounts={getUniqueAccounts}
+          getUniqueAssetTypes={getUniqueAssetTypes}
+          getUniqueBookingSystems={getUniqueBookingSystems}
+          getUniqueAffirmationSystems={getUniqueAffirmationSystems}
+          getUniqueClearingHouses={getUniqueClearingHouses}
+          getUniqueStatuses={getUniqueStatuses}
         />
       )}
 

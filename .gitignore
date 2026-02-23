@@ -123,7 +123,7 @@ logs/
 
 # Node.js (if any frontend parts)
 node_modules/
- 
+
 # Other
 .java-version
 
@@ -132,4 +132,3 @@ node_modules/
 
 # Localstack
 services/localstack-data
-services/volumes/

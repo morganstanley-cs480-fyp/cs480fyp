@@ -18,16 +18,12 @@ redis==5.0.1
 # AWS SDK
 boto3==1.34.0
 botocore==1.34.0
-aioboto3==12.3.0
 
 # Retry Logic
 tenacity==8.2.3
 
 # Logging
 python-json-logger==2.0.7
-
-# Token Counting
-tiktoken==0.5.2
 
 # Development & Testing
 pytest==7.4.3

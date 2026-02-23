@@ -4,7 +4,7 @@ import { ArrowUpDown } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Exception } from "@/lib/api/types";
+import type { Exception } from "@/lib/mockData";
 
 interface UseExceptionColumnsOptions {
   getPriorityColor: (priority: string) => "destructive" | "default" | "secondary";

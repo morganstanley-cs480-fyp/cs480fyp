@@ -30,7 +30,7 @@ async def sample_exception():
         trans_id=56789,
         msg="Test exception message",
         priority="High",
-        status="PENDING",
+        status="Pending",
         comment="Test comment"
     )
     yield exception
@@ -47,7 +47,7 @@ async def multiple_exceptions():
             trans_id=10000 + i,
             msg=f"Test message {i}",
             priority=["Low", "Medium", "High", "Critical"][i % 4],
-            status="PENDING" if i % 2 == 0 else "CLOSED",
+            status="Pending" if i % 2 == 0 else "Closed",
             comment=f"Comment {i}" if i % 2 == 0 else None
         )
         exceptions.append(exception)

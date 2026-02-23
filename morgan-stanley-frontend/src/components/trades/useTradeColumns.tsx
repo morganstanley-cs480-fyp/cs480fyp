@@ -4,7 +4,7 @@ import { ArrowUpDown } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Trade } from "@/lib/api/types";
+import type { Trade } from "@/lib/mockData";
 import { formatDateShort } from "@/lib/utils";
 import { getStatusBadgeClassName } from "@/routes/trades/-tradeDetailUtils";
 

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import type { Exception } from "@/lib/api/types";
-import { searchService } from "@/lib/api/searchService";
+import { getExceptionById, type Exception } from "@/lib/mockData";
 import { type AISuggestion } from "@/components/exceptions-individual/AISuggestionCard";
 
 export function useExceptionResolver(exceptionId: string) {
@@ -60,26 +59,14 @@ export function useExceptionResolver(exceptionId: string) {
   }, [exception]);
 
   useEffect(() => {
-    let isActive = true;
-
-    const loadException = async () => {
-      try {
-        const exc = await searchService.getExceptionById(Number(exceptionId));
-        if (!isActive) return;
+    const loadException = () => {
+      const exc = getExceptionById(Number(exceptionId));
+      if (exc) {
         setException(exc);
         handleAISearch(exc);
-      } catch (error) {
-        if (!isActive) return;
-        console.error('Failed to load exception:', error);
-        setException(null);
       }
     };
-
     loadException();
-
-    return () => {
-      isActive = false;
-    };
   }, [exceptionId, handleAISearch]);
 
   const handleGenerateAISolution = useCallback(() => {

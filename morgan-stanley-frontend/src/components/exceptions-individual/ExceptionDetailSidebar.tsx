@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import type { Exception } from "@/lib/api/types";
+import type { Exception } from "@/lib/mockData";
 
 interface ExceptionDetailSidebarProps {
   exception: Exception;

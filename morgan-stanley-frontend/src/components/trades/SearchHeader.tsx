@@ -12,28 +12,16 @@ export interface RecentSearch {
   queryId: number; // Add query_id for saving
 }
 
-export interface TypeaheadSuggestion {
-  query_id: number;
-  query_text: string;
-  is_saved: boolean;
-  query_name: string | null;
-  last_use_time?: string | null;
-  score: number;
-  category?: string | null;
-}
-
 interface SearchHeaderProps {
   searchQuery: string;
   searching: boolean;
   showFilters: boolean;
   recentSearches: RecentSearch[];
-  suggestions: TypeaheadSuggestion[];
   showSavedQueries: boolean;
   onSearchQueryChange: (query: string) => void;
   onSearch: () => void;
   onToggleFilters: () => void;
   onToggleSavedQueries: () => void;
-  onSuggestionClick: (query: string) => void;
   onRecentSearchClick: (query: string) => void;
   onDeleteSearch: (id: string) => void;
   onClearAllSearches: () => void;
@@ -44,13 +32,11 @@ export function SearchHeader({
   searchQuery,
   searching,
   recentSearches,
-  suggestions,
   showSavedQueries,
   onSearchQueryChange,
   onSearch,
   onToggleFilters,
   onToggleSavedQueries,
-  onSuggestionClick,
   onRecentSearchClick,
   onDeleteSearch,
   onClearAllSearches,
@@ -94,11 +80,6 @@ export function SearchHeader({
     setShowDropdown(false);
   };
 
-  const handleSuggestionClick = (query: string) => {
-    onSuggestionClick(query);
-    setShowDropdown(false);
-  };
-
   const handleSaveSearch = (queryId: number, query: string) => {
     const queryName = window.prompt(
       "Enter a name for this saved query:",
@@ -133,104 +114,63 @@ export function SearchHeader({
           />
           
           {/* Recent Searches Dropdown */}
-          {showDropdown && (suggestions.length > 0 || recentSearches.length > 0) && (
+          {showDropdown && recentSearches.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-slate-200 z-50 max-h-80 overflow-y-auto">
-              {suggestions.length > 0 && (
-                <>
-                  <div className="flex items-center justify-between p-3 border-b border-slate-200">
-                    <div className="flex items-center gap-2 text-black/75 text-sm font-medium">
-                      <Search className="size-4" />
-                      Suggestions
-                    </div>
-                  </div>
-                  <div className="py-1">
-                    {suggestions.map((suggestion) => (
-                      <button
-                        key={suggestion.query_id}
-                        className="w-full flex items-start gap-3 px-3 py-2 hover:bg-slate-50 text-left"
-                        onClick={() => handleSuggestionClick(suggestion.query_text)}
-                      >
-                        <Search className="size-4 text-black/50 shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-black text-sm break-words line-clamp-2">
-                            {suggestion.query_text}
-                          </div>
-                          {suggestion.category && (
-                            <div className="text-xs text-black/50 mt-0.5">
-                              {suggestion.category}
-                            </div>
-                          )}
-                          {suggestion.query_name && (
-                            <div className="text-xs text-black/50 mt-0.5">
-                              Saved as: {suggestion.query_name}
-                            </div>
-                          )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {recentSearches.length > 0 && (
-                <>
-                  <div className="flex items-center justify-between p-3 border-b border-slate-200">
-                    <div className="flex items-center gap-2 text-black/75 text-sm font-medium">
-                      <Clock className="size-4" />
-                      Recent Searches
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onClearAllSearches}
-                      className="h-auto py-1 px-2 text-xs text-black/50 hover:text-red-600"
+              <div className="flex items-center justify-between p-3 border-b border-slate-200">
+                <div className="flex items-center gap-2 text-black/75 text-sm font-medium">
+                  <Clock className="size-4" />
+                  Recent Searches
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClearAllSearches}
+                  className="h-auto py-1 px-2 text-xs text-black/50 hover:text-red-600"
+                >
+                  Clear All
+                </Button>
+              </div>
+              <div className="py-1">
+                {recentSearches.map((search) => (
+                  <div
+                    key={search.id}
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 group"
+                  >
+                    <button
+                      className="flex-1 flex items-start gap-3 text-left min-w-0"
+                      onClick={() => handleSearchClick(search.query)}
                     >
-                      Clear All
-                    </Button>
-                  </div>
-                  <div className="py-1">
-                    {recentSearches.map((search) => (
-                      <div
-                        key={search.id}
-                        className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 group"
-                      >
-                        <button
-                          className="flex-1 flex items-start gap-3 text-left min-w-0"
-                          onClick={() => handleSearchClick(search.query)}
-                        >
-                          <Search className="size-4 text-black/50 shrink-0 mt-0.5" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-black text-sm break-words line-clamp-2">{search.query}</div>
-                            <div className="text-xs text-black/50 mt-0.5">
-                              {formatTimestamp(search.timestamp)}
-                            </div>
-                          </div>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSaveSearch(search.queryId, search.query);
-                          }}
-                          className="p-1 hover:bg-amber-100 rounded text-amber-600 shrink-0"
-                          title="Save query"
-                        >
-                          <Star className="size-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteSearch(search.id);
-                          }}
-                          className="p-1 hover:bg-slate-100 rounded text-black/50 hover:text-red-600 shrink-0"
-                          title="Delete search"
-                        >
-                          <X className="size-4" />
-                        </button>
+                      <Search className="size-4 text-black/50 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-black text-sm break-words line-clamp-2">{search.query}</div>
+                        <div className="text-xs text-black/50 mt-0.5">
+                          {formatTimestamp(search.timestamp)}
+                        </div>
                       </div>
-                    ))}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveSearch(search.queryId, search.query);
+                      }}
+                      className="p-1 hover:bg-amber-100 rounded text-amber-600 shrink-0"
+                      title="Save query"
+                    >
+                      <Star className="size-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteSearch(search.id);
+                      }}
+                      className="p-1 hover:bg-slate-100 rounded text-black/50 hover:text-red-600 shrink-0"
+                      title="Delete search"
+                    >
+                      <X className="size-4" />
+                    </button>
                   </div>
-                </>
-              )}
+                ))}
+              </div>
             </div>
           )}
         </div>

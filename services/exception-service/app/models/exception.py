@@ -5,8 +5,8 @@ from enum import Enum
 # Tortoise ORM uses this to generate SQL and perform database operations
 
 class ExceptionStatus(str, Enum):
-    PENDING = "PENDING"
-    CLOSED = "CLOSED"
+    PENDING = "Pending"
+    CLOSED = "Closed"
 
 # Note: Tentative model. Might change
 class Exception(models.Model):

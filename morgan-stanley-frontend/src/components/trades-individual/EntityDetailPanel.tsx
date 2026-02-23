@@ -1,7 +1,7 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Landmark, ShieldCheck, ArrowRight, ArrowLeft, Activity} from "lucide-react";
-import type { Transaction } from "@/lib/api/types";
+import type {Transaction} from "@/lib/mockData";
 
 interface EntityDetailPanelProps {
     entityName: string;

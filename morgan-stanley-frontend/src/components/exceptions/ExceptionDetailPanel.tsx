@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { Exception } from "@/lib/api/types";
+import type { Exception } from "@/lib/mockData";
 
 interface ExceptionDetailPanelProps {
   exception: Exception | null;

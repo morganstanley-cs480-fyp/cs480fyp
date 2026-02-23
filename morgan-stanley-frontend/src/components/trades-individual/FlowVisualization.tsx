@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, Network } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
-import type { Transaction, Exception } from "@/lib/api/types";
+import type { Transaction, Exception } from "@/lib/mockData";
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   ReactFlow,

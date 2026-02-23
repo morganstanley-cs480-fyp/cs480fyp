@@ -38,11 +38,11 @@ class Settings(BaseSettings):
     REDIS_SOCKET_CONNECT_TIMEOUT: int = 5
     
     # AWS Bedrock Configuration
-    BEDROCK_REGION: str = "ap-southeast-2"
-    BEDROCK_MODEL_ID: str = "anthropic.claude-3-haiku-20240307-v1:0"
+    BEDROCK_REGION: str = "us-east-1"
+    BEDROCK_MODEL_ID: str = "anthropic.claude-3-5-sonnet-20241022-v2:0"
     AWS_ACCESS_KEY_ID: Optional[str] = None  # Use IAM role in production
     AWS_SECRET_ACCESS_KEY: Optional[str] = None  # Use IAM role in production
-    BEDROCK_MAX_TOKENS: int = 500
+    BEDROCK_MAX_TOKENS: int = 1000
     BEDROCK_TEMPERATURE: float = 0.0
     
     # Cache TTL (Time To Live) in seconds
@@ -64,7 +64,6 @@ class Settings(BaseSettings):
     BEDROCK_RETRY_ATTEMPTS: int = 3
     BEDROCK_RETRY_MIN_WAIT: int = 2
     BEDROCK_RETRY_MAX_WAIT: int = 10
-    
     
     model_config = SettingsConfigDict(
         env_file=".env",

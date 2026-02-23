@@ -13,8 +13,7 @@ import type {
   VisibilityState,
   ColumnFiltersState,
 } from "@tanstack/react-table";
-import type { Exception } from "@/lib/api/types";
-import { searchService } from "@/lib/api/searchService";
+import { mockExceptions, type Exception } from "@/lib/mockData";
 
 // Component imports
 import { StatsOverview } from "@/components/exceptions/StatsOverview";
@@ -29,11 +28,10 @@ export const Route = createFileRoute("/exceptions/")({
 });
 
 function ExceptionsPage() {
-  const [exceptions, setExceptions] = useState<Exception[]>([]);
+  const [exceptions] = useState<Exception[]>(mockExceptions);
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [results, setResults] = useState<Exception[]>([]);
+  const [results, setResults] = useState<Exception[]>(mockExceptions);
   const [selectedException, setSelectedException] = useState<Exception | null>(
     null
   );
@@ -46,29 +44,6 @@ function ExceptionsPage() {
   const [priorityFilter, setPriorityFilter] = useState<
     "ALL" | "HIGH" | "MEDIUM" | "LOW"
   >("ALL");
-  const [searchError, setSearchError] = useState<string | null>(null);
-
-  // Fetch exceptions from backend on component mount
-  useEffect(() => {
-    const fetchExceptions = async () => {
-      try {
-        setLoading(true);
-        setSearchError(null);
-        const exceptionData = await searchService.getExceptions();
-        setExceptions(exceptionData);
-        setResults(exceptionData);
-      } catch (error) {
-        console.error('Failed to fetch exceptions:', error);
-        setSearchError('Failed to load exceptions from database');
-        setExceptions([]);
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchExceptions();
-  }, []);
 
   const getPriorityColor = (priority: string) => {
     if (priority === "HIGH") return "destructive";
@@ -169,68 +144,49 @@ function ExceptionsPage() {
     setStatusFilter("ALL");
     setPriorityFilter("ALL");
     setSearchQuery("");
-    setResults(exceptions);
+    setResults(mockExceptions);
     setColumnFilters([]);
   };
 
   return (
     <div className="p-6 max-w-[90vw] mx-auto space-y-6">
-      {loading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p className="mt-2 text-muted-foreground">Loading exceptions from database...</p>
-          </div>
-        </div>
+      <StatsOverview stats={stats} />
+
+      {results.length > 0 && (
+        <ExceptionFilters
+          table={table}
+          onClearFilters={handleClearFilters}
+        />
       )}
 
-      {searchError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-800">{searchError}</p>
-        </div>
-      )}
-
-      {!loading && (
-        <>
-          <StatsOverview stats={stats} />
-
-          {results.length > 0 && (
-            <ExceptionFilters
+      {results.length > 0 && (
+        <div className={selectedException ? "grid grid-cols-3 gap-6" : ""}>
+          <div className={selectedException ? "col-span-2" : ""}>
+            <ExceptionResultsTable
               table={table}
-              onClearFilters={handleClearFilters}
+              resultsCount={results.length}
+              selectedExceptionId={selectedException?.exception_id || null}
+              statusFilter={statusFilter}
+              priorityFilter={priorityFilter}
+              onStatusFilterChange={setStatusFilter}
+              onPriorityFilterChange={setPriorityFilter}
+              onRowClick={setSelectedException}
             />
-          )}
+          </div>
 
-          {results.length > 0 && (
-            <div className={selectedException ? "grid grid-cols-3 gap-6" : ""}>
-              <div className={selectedException ? "col-span-2" : ""}>
-                <ExceptionResultsTable
-                  table={table}
-                  resultsCount={results.length}
-                  selectedExceptionId={selectedException?.exception_id || null}
-                  statusFilter={statusFilter}
-                  priorityFilter={priorityFilter}
-                  onStatusFilterChange={setStatusFilter}
-                  onPriorityFilterChange={setPriorityFilter}
-                  onRowClick={setSelectedException}
-                />
-              </div>
-
-              {selectedException && (
-                <div>
-                  <ExceptionDetailPanel
-                    exception={selectedException}
-                    onClose={() => setSelectedException(null)}
-                    getPriorityColor={getPriorityColor}
-                  />
-                </div>
-              )}
+          {selectedException && (
+            <div>
+              <ExceptionDetailPanel
+                exception={selectedException}
+                onClose={() => setSelectedException(null)}
+                getPriorityColor={getPriorityColor}
+              />
             </div>
           )}
-
-          {results.length === 0 && !searching && <EmptyState />}
-        </>
+        </div>
       )}
+
+      {results.length === 0 && !searching && <EmptyState />}
     </div>
   );
 }
