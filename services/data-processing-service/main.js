@@ -7,7 +7,7 @@ import { Pool } from 'pg';
 import { createClient } from 'redis';
 
 // Config
-export const queueUrl = process.env.QUEUE_URL;
+export const queueUrl = process.env.DATA_PROCESSING_QUEUE_URL;
 export const awsRegion = process.env.AWS_REGION || "ap-southeast-1";
 export const redisHost = process.env.REDIS_HOST || "localhost";
 
