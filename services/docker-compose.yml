@@ -156,7 +156,7 @@ services:
       - "8004:8000"
     environment:
       LOG_LEVEL: DEBUG
-      AWS_REGION: us-west-1
+      AWS_REGION: ap-southeast-1
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       BEDROCK_EMBED_MODEL_ID: cohere.embed-english-v3
