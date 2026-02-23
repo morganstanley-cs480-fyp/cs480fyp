@@ -156,11 +156,11 @@ services:
       - "8004:8000"
     environment:
       LOG_LEVEL: DEBUG
-      AWS_REGION: ap-southeast-1
+      AWS_REGION: us-west-1
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       BEDROCK_EMBED_MODEL_ID: cohere.embed-english-v3
-      BEDROCK_CHAT_MODEL_ID: apac.amazon.nova-lite-v1:0
+      BEDROCK_CHAT_MODEL_ID: us.amazon.nova-lite-v1:0
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       GOOGLE_MODEL_ID: gemini-2.5-flash-lite
       MILVUS_HOST: milvus-standalone
