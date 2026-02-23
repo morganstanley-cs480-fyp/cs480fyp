@@ -1,6 +1,22 @@
 import type { Transaction } from "./types";
 
 const TRANSACTION_API_BASE_URL = import.meta.env.VITE_TRANSACTION_API_BASE_URL || 'http://localhost:8000';
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_TRANSACTION_DATA === 'true';
+
+// Mock data for development/testing
+const MOCK_TRANSACTIONS: Transaction[] = [
+  {
+    trans_id: 14478043,
+    trade_id: 96809076,
+    create_time: "2025-08-02T16:38:48",
+    entity: "OCTCCHK",
+    direction: "RECEIVE",
+    type: "REQUEST_CONSENT",
+    status: "CLEARED",
+    update_time: "2025-08-02T16:38:48",
+    step: 1
+  }
+];
 
 class TransactionClient {
   private baseUrl: string;
@@ -29,17 +45,13 @@ const transactionClient = new TransactionClient();
 
 export const transactionService = {
   async getTransactionsByTradeId(tradeId: number): Promise<Transaction[]> {
-//     return [{
-//     trans_id: 14478043,
-//     trade_id: 96809076,
-//     create_time: "2025-08-02T16:38:48",
-//     entity: "OCTCCHK",
-//     direction: "RECEIVE",
-//     type: "REQUEST_CONSENT",
-//     status: "CLEARED",
-//     update_time: "2025-08-02T16:38:48",
-//     step: 1
-// }]}
+    if (USE_MOCK_DATA) {
+      console.log(`🎭 Using mock transactions for trade ${tradeId}`);
+      // Return mock data filtered by trade_id or just return all mock data
+      const filteredTransactions = MOCK_TRANSACTIONS.filter(t => t.trade_id === tradeId);
+      return filteredTransactions.length > 0 ? filteredTransactions : MOCK_TRANSACTIONS;
+    }
+
     console.log(`📡 Fetching transactions for trade ${tradeId}...`);
     
     try {
