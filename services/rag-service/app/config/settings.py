@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     ]
 
     # AWS Bedrock
-    AWS_REGION: str = "us-west-1"
+    AWS_REGION: str = "ap-southeast-1"
     AWS_ACCESS_KEY_ID: Optional[str] = None
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
     BEDROCK_EMBED_MODEL_ID: str = "amazon.nova-2-embedding-v1"
