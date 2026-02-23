@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     GOOGLE_MODEL_ID: str = "gemini-2.5-flash-lite"
     
     # LLM Provider Selection ("bedrock" or "google")
-    LLM_PROVIDER: str = "google"
+    LLM_PROVIDER: str = "bedrock"
 
     # Milvus
     MILVUS_HOST: str = "localhost"

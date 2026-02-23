@@ -5,10 +5,12 @@ Integrates with AWS Bedrock to extract structured parameters from natural langua
 
 import json
 import hashlib
+import logging
 from datetime import datetime
 from typing import Optional
 
-import boto3
+import aioboto3
+import tiktoken
 from botocore.exceptions import ClientError, BotoCoreError
 from tenacity import (
     retry,
@@ -41,21 +43,31 @@ class BedrockService:
     
     def __init__(self):
         """Initialize Bedrock client with configuration"""
-        # Configure boto3 client for Bedrock Runtime
-        client_config = {
-            "region_name": settings.BEDROCK_REGION,
-            "service_name": "bedrock-runtime"
-        }
+        # Configure aioboto3 session for Bedrock Runtime
+        session_config = {}
         
         # Use explicit credentials if provided (dev/test), otherwise use IAM role (production)
         if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
-            client_config["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
-            client_config["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY
-            logger.info("Using explicit AWS credentials for Bedrock")
+            session_config["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
+            session_config["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY
+            logger.info(
+                "Using explicit AWS credentials for Bedrock",
+                extra={
+                    "access_key_prefix": settings.AWS_ACCESS_KEY_ID[:10] if settings.AWS_ACCESS_KEY_ID else "N/A"
+                }
+            )
         else:
-            logger.info("Using IAM role for Bedrock authentication (production mode)")
+            logger.warning(
+                "AWS credentials not found - will use IAM role",
+                extra={
+                    "has_access_key": bool(settings.AWS_ACCESS_KEY_ID),
+                    "has_secret_key": bool(settings.AWS_SECRET_ACCESS_KEY)
+                }
+            )
         
-        self.client = boto3.client(**client_config)
+        # Create aioboto3 session
+        self.session = aioboto3.Session(**session_config)
+        self.region = settings.BEDROCK_REGION
         self.cache = redis_manager
         self.validation_rules = build_validation_rules()
         
@@ -176,7 +188,7 @@ class BedrockService:
             max=settings.BEDROCK_RETRY_MAX_WAIT
         ),
         retry=retry_if_exception_type((ClientError, BotoCoreError)),
-        before_sleep=before_sleep_log(logger, "WARNING")
+        before_sleep=before_sleep_log(logger, logging.WARNING)
     )
     async def _invoke_bedrock(
         self, 
@@ -184,7 +196,7 @@ class BedrockService:
         current_date: Optional[datetime] = None
     ) -> str:
         """
-        Invoke Bedrock API with retry logic.
+        Invoke Bedrock API with retry logic using async boto3.
         
         Args:
             query: Natural language query
@@ -199,6 +211,16 @@ class BedrockService:
         """
         # Build prompts
         user_prompt = build_user_prompt(query, current_date)
+        
+        # Log component sizes BEFORE constructing request
+        logger.info(
+            "Bedrock prompt component sizes",
+            extra={
+                "query_length": len(query),
+                "system_prompt_length": len(SYSTEM_PROMPT),
+                "user_prompt_length": len(user_prompt),
+            }
+        )
         
         # Construct Bedrock API request
         request_body = {
@@ -223,37 +245,89 @@ class BedrockService:
             }
         )
         
+        # Log payload size before invoking
+        payload_str = json.dumps(request_body)
+        logger.info(
+            "Bedrock payload size",
+            extra={
+                "bytes": len(payload_str.encode("utf-8")),
+                "chars": len(payload_str),
+                "max_tokens": request_body.get("max_tokens")
+            }
+        )
+        
+        # Before invoking Bedrock, count tokens:
+        encoding = tiktoken.get_encoding("cl100k_base")
+        system_tokens = len(encoding.encode(SYSTEM_PROMPT))
+        user_tokens = len(encoding.encode(user_prompt))
+
+        logger.info(
+            f"Token count - system: {system_tokens}, user: {user_tokens}, total_input: {system_tokens + user_tokens}, max_output: 500",
+            extra={
+                "system_tokens": system_tokens,
+                "user_tokens": user_tokens,
+                "total_input": system_tokens + user_tokens,
+                "max_output_tokens": 500
+            }
+        )
+        
         try:
-            # Call Bedrock API
-            response = self.client.invoke_model(
-                modelId=settings.BEDROCK_MODEL_ID,
-                body=json.dumps(request_body)
-            )
-            
-            # Parse response
-            response_body = json.loads(response["body"].read())
-            
-            # Extract text from Claude's response
-            if "content" not in response_body or len(response_body["content"]) == 0:
-                raise BedrockResponseError(
-                    "Empty response from Bedrock",
-                    details={"response_body": response_body}
+            # Use async context manager for the Bedrock client
+            async with self.session.client(
+                "bedrock-runtime",
+                region_name=self.region
+            ) as client:
+                # Log invocation details
+                logger.info(
+                    "Bedrock invocation details",
+                    extra={
+                        "region": self.region,
+                        "model_id": settings.BEDROCK_MODEL_ID
+                    }
                 )
-            
-            extracted_text = response_body["content"][0]["text"]
-            
-            # Log token usage for cost tracking
-            usage = response_body.get("usage", {})
-            logger.info(
-                "Bedrock API call successful",
-                extra={
-                    "input_tokens": usage.get("input_tokens", 0),
-                    "output_tokens": usage.get("output_tokens", 0),
-                    "model": settings.BEDROCK_MODEL_ID
-                }
-            )
-            
-            return extracted_text
+                
+                # Call Bedrock API asynchronously
+                response = await client.invoke_model(
+                    modelId=settings.BEDROCK_MODEL_ID,
+                    body=json.dumps(request_body)
+                )
+                
+                # Log token usage from response headers
+                headers = response.get("ResponseMetadata", {}).get("HTTPHeaders", {})
+                logger.info(
+                    "Bedrock usage from headers",
+                    extra={
+                        "region": self.region,
+                        "model_id": settings.BEDROCK_MODEL_ID,
+                        "input_tokens": headers.get("x-amzn-bedrock-input-token-count"),
+                        "output_tokens": headers.get("x-amzn-bedrock-output-token-count"),
+                    }
+                )
+                
+                # Parse response
+                response_body = json.loads(response["body"].read())
+                
+                # Extract text from Claude's response
+                if "content" not in response_body or len(response_body["content"]) == 0:
+                    raise BedrockResponseError(
+                        "Empty response from Bedrock",
+                        details={"response_body": response_body}
+                    )
+                
+                extracted_text = response_body["content"][0]["text"]
+                
+                # Log token usage for cost tracking
+                usage = response_body.get("usage", {})
+                logger.info(
+                    "Bedrock API call successful",
+                    extra={
+                        "input_tokens": usage.get("input_tokens", 0),
+                        "output_tokens": usage.get("output_tokens", 0),
+                        "model": settings.BEDROCK_MODEL_ID
+                    }
+                )
+                
+                return extracted_text
             
         except ClientError as e:
             error_code = e.response.get("Error", {}).get("Code", "Unknown")
