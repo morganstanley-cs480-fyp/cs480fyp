@@ -19,7 +19,10 @@ const app = express();
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ 
+  server, 
+  path: '/api/ws' // This must match what your frontend calls
+});
 
 // Map: trade_id -> Set of Client Sockets
 export const tradeRooms = new Map();
