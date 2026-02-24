@@ -98,7 +98,8 @@ jobs:
           VITE_COGNITO_DOMAIN: ${{ secrets.VITE_COGNITO_DOMAIN }}
           VITE_EXCEPTION_API_BASE_URL: ${{ secrets.VITE_EXCEPTION_API_BASE_URL }}
           VITE_TRADE_FLOW_API_BASE_URL: ${{ secrets.VITE_TRADE_FLOW_API_BASE_URL }}
-
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          
       - name: Write build metadata
         run: |
           echo '{
