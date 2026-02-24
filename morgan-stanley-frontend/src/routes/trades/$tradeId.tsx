@@ -1,4 +1,4 @@
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
+import {createFileRoute, useNavigate, redirect} from "@tanstack/react-router";
 import {useEffect, useState} from "react";
 import {ArrowLeft, AlertCircle} from "lucide-react";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
@@ -23,10 +23,12 @@ import {
     getTransactionBackgroundColor,
     getRelatedExceptions,
 } from "./-tradeDetailUtils";
+import { requireAuth } from "@/lib/utils";
 import {EntityAndTransactionDetailPanel} from "@/components/trades-individual/EntityAndTransactionDetailPanel.tsx";
 
 export const Route = createFileRoute("/trades/$tradeId")({
-    component: TradeDetailPage,
+  beforeLoad: requireAuth,
+  component: TradeDetailPage,
 });
 
 function TradeDetailPage() {

@@ -90,7 +90,16 @@ jobs:
       - name: Build frontend
         working-directory: ./morgan-stanley-frontend
         run: npm run build
-
+        env:
+          VITE_COGNITO_AUTHORITY: ${{ secrets.VITE_COGNITO_AUTHORITY }}
+          VITE_COGNITO_CLIENT_ID: ${{ secrets.VITE_COGNITO_CLIENT_ID }}
+          VITE_COGNITO_REDIRECT_URI: ${{ secrets.VITE_COGNITO_REDIRECT_URI }}
+          VITE_COGNITO_LOGOUT_URI: ${{ secrets.VITE_COGNITO_LOGOUT_URI }}
+          VITE_COGNITO_DOMAIN: ${{ secrets.VITE_COGNITO_DOMAIN }}
+          VITE_EXCEPTION_API_BASE_URL: ${{ vars.VITE_EXCEPTION_API_BASE_URL }}
+          VITE_TRADE_FLOW_API_BASE_URL: ${{ vars.VITE_TRADE_FLOW_API_BASE_URL }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          
       - name: Write build metadata
         run: |
           echo '{

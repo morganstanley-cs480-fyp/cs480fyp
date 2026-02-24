@@ -23,8 +23,10 @@ import { ExceptionResultsTable } from "@/components/exceptions/ExceptionResultsT
 import { ExceptionDetailPanel } from "@/components/exceptions/ExceptionDetailPanel";
 import { useExceptionColumns } from "@/components/exceptions/useExceptionColumns";
 import { EmptyState } from "@/components/exceptions/EmptyState";
+import { requireAuth } from "@/lib/utils";
 
 export const Route = createFileRoute("/exceptions/")({
+  beforeLoad: requireAuth,
   component: ExceptionsPage,
 });
 
@@ -35,7 +37,7 @@ function ExceptionsPage() {
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState<Exception[]>([]);
   const [selectedException, setSelectedException] = useState<Exception | null>(
-    null
+    null,
   );
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -138,7 +140,7 @@ function ExceptionsPage() {
             exc.exception_id.toString().includes(query) ||
             exc.trade_id.toString().includes(query) ||
             exc.msg.toLowerCase().includes(query) ||
-            exc.comment.toLowerCase().includes(query)
+            exc.comment.toLowerCase().includes(query),
         );
       }
 
@@ -154,13 +156,13 @@ function ExceptionsPage() {
   const stats = {
     total: exceptions.filter((e) => e.status === "PENDING").length,
     high: exceptions.filter(
-      (e) => e.status === "PENDING" && e.priority === "HIGH"
+      (e) => e.status === "PENDING" && e.priority === "HIGH",
     ).length,
     medium: exceptions.filter(
-      (e) => e.status === "PENDING" && e.priority === "MEDIUM"
+      (e) => e.status === "PENDING" && e.priority === "MEDIUM",
     ).length,
     low: exceptions.filter(
-      (e) => e.status === "PENDING" && e.priority === "LOW"
+      (e) => e.status === "PENDING" && e.priority === "LOW",
     ).length,
     closed: exceptions.filter((e) => e.status === "CLOSED").length,
   };
