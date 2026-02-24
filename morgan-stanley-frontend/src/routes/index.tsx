@@ -46,6 +46,7 @@ function LoginComponent() {
   }
 }
 
+
 export const Route = createFileRoute("/")({
   component: LoginComponent,
 });
