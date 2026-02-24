@@ -50,7 +50,7 @@ describe('Gateway Service', () => {
   });
 
   test('WebSocket Subscription', (done) => {
-    wsClient = new WebSocket(`ws://127.0.0.1:${PORT}`);
+    wsClient = new WebSocket(`ws://127.0.0.1:${PORT}/api/ws`);
 
     // FIX 2: Catch connection errors
     wsClient.on('error', (err) => {
@@ -75,7 +75,7 @@ describe('Gateway Service', () => {
   });
 
   test('Broadcast Message', (done) => {
-    wsClient = new WebSocket(`ws://127.0.0.1:${PORT}`);
+    wsClient = new WebSocket(`ws://127.0.0.1:${PORT}/api/ws`);
 
     wsClient.on('error', (err) => done(err));
 
