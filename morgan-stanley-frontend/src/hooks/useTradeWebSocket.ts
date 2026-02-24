@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Transaction, Exception } from '@/lib/api/types';
+import { getWebSocketUrl } from '@/lib/utils';
 
-const PROTOCOL = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-const HOST = window.location.host;
-const GATEWAY_URL = `${PROTOCOL}//${HOST}/api/ws`;
-// const GATEWAY_URL = 'ws://localhost:3002';
+
+const GATEWAY_URL = getWebSocketUrl();
 
 export function useTradeWebSocket(
   tradeId: number | null,

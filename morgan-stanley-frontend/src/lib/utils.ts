@@ -42,3 +42,20 @@ export const requireAuth = ({ context }: { context: RouterContext }) => {
     throw redirect({ to: "/" });
   }
 };
+
+export const getWebSocketUrl = () => {
+  // 1. If you explicitly set a VITE var (like for local testing), use it!
+  if (import.meta.env.VITE_WEBSOCKET_URL) {
+    return import.meta.env.VITE_WEBSOCKET_URL;
+  }
+
+  // 2. Otherwise, dynamically build the CloudFront URL
+  // If the site is HTTPS, use WSS. If HTTP, use WS.
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  
+  // Grab the current domain (e.g., d1oo9htiiea9na.cloudfront.net)
+  const host = window.location.host;
+  
+  // Attach the routing prefix so CloudFront knows to send it to the ALB
+  return `${protocol}//${host}/api/ws`;
+};
