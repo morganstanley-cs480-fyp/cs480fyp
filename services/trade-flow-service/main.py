@@ -1,6 +1,6 @@
 import os
 import contextlib
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from psycopg_pool import AsyncConnectionPool
 from psycopg.rows import dict_row
@@ -55,41 +55,9 @@ async def health_check():
         raise HTTPException(status_code=500,
                             detail="Database connection failed")
 
+api_router = APIRouter(prefix="/api")
 
-@app.get("/trades/recent")
-async def get_recent_trades(limit: int = 20):
-    """Get the most recent trades sorted by update_time in descending order"""
-    try:
-        async with app.state.pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(
-                    "SELECT * FROM trades ORDER BY update_time DESC LIMIT %s", (limit,)
-                )
-                trades = await cur.fetchall()
-            return trades
-    except Exception as e:
-        print(f"Error: {e}")
-        raise HTTPException(status_code=500, detail="Server Error")
-
-
-@app.get("/trades/{trade_id}/transactions")
-async def get_transactions_by_trade_id(trade_id: int):
-    try:
-        async with app.state.pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(
-                    "SELECT * FROM transactions WHERE trade_id=%s", (trade_id,)
-                )
-                transactions = await cur.fetchall()
-
-                # Return empty array if no transactions found (not an error)
-                return transactions if transactions else []
-    except Exception as e:
-        print(f"Error: {e}")
-        raise HTTPException(status_code=500, detail="Server Error")
-
-
-@app.get("/trades/{id}")
+@api_router.get("/trades/{id}")
 async def get_trade_by_id(id: int):
     try:
         async with app.state.pool.connection() as conn:
@@ -109,7 +77,7 @@ async def get_trade_by_id(id: int):
         raise HTTPException(status_code=500, detail="Server Error")
 
 
-@app.get("/trades")
+@api_router.get("/trades")
 async def get_trades(limit: int = 100, offset: int = 0):
     try:
         async with app.state.pool.connection() as conn:
@@ -124,7 +92,7 @@ async def get_trades(limit: int = 100, offset: int = 0):
         raise HTTPException(status_code=500, detail="Server Error")
 
 
-@app.get("/transactions/{id}")
+@api_router.get("/transactions/{id}")
 async def get_transaction_by_id(id: int):
     try:
         async with app.state.pool.connection() as conn:
@@ -143,3 +111,30 @@ async def get_transaction_by_id(id: int):
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
+
+
+@api_router.get("/trades/{trade_id}/transactions")
+async def get_transactions_by_trade_id(trade_id: int):
+    try:
+        async with app.state.pool.connection() as conn:
+            async with conn.cursor(row_factory=dict_row) as cur:
+                await cur.execute(
+                    "SELECT * FROM transactions WHERE trade_id=%s", (trade_id,)
+                )
+                transactions = await cur.fetchall()
+
+                if not transactions:
+                    raise HTTPException(
+                        status_code=404,
+                        detail=(
+                            f"Transctions with trade_id {trade_id} not found"
+                            ),
+                    )
+                return transactions
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Server Error")
+
+app.include_router(api_router)

@@ -127,35 +127,35 @@ module "data_processing_log_group" {
 }
 
 # data_processing_ecs
-# module "data_processing_service" {
-#   source                  = "./modules/ecs"
-#   family                  = var.data_processing_family
-#   container_name          = var.data_processing_container_name
-#   container_image         = var.data_processing_container_image
-#   container_port          = 0
-#   log_group               = module.data_processing_log_group.log_group_name
-#   region                  = var.region
-#   execution_role_arn      = module.ecs_execution_role.role_arn
-#   task_role_arn           = module.data_processing_task_role.role_arn
-#   service_name            = var.data_processing_service_name
-#   cluster_id              = module.ecs_cluster.cluster_id
-#   desired_count           = 1
-#   subnets                 = module.networking.public_subnet_ids
-#   security_groups         = [module.ecs_security_group.ecs_service_sg_id]
-#   assign_public_ip        = true
-#   rds_environment = [
-#     { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
-#     { name = "DB_USER", value = var.db_username },
-#     { name = "DB_PASSWORD", value = var.db_password },
-#     { name = "DB_NAME", value = module.main_rds.db_name }
-#   ]
-#   sqs_environment = [
-#     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
-#   ]
-#   other_environment = [
-#    { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
-#   ]
-# }
+module "data_processing_service" {
+source                  = "./modules/ecs"
+family                  = var.data_processing_family
+container_name          = var.data_processing_container_name
+container_image         = var.data_processing_container_image
+container_port          = 0
+log_group               = module.data_processing_log_group.log_group_name
+region                  = var.region
+execution_role_arn      = module.ecs_execution_role.role_arn
+task_role_arn           = module.data_processing_task_role.role_arn
+service_name            = var.data_processing_service_name
+cluster_id              = module.ecs_cluster.cluster_id
+desired_count           = 1
+subnets                 = module.networking.public_subnet_ids
+security_groups         = [module.ecs_security_group.ecs_service_sg_id]
+assign_public_ip        = true
+rds_environment = [
+     { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
+     { name = "DB_USER", value = var.db_username },
+     { name = "DB_PASSWORD", value = var.db_password },
+     { name = "DB_NAME", value = module.main_rds.db_name }
+   ]
+   sqs_environment = [
+     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
+   ]
+   other_environment = [
+    { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
+   ]
+}
 
 # EXCEPTION SERVICE (Change Port Group)
 # exception_target_group 
@@ -172,7 +172,7 @@ module "exception_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 101
-  path_pattern     = ["/exception*"]
+  path_pattern     = ["/api/exception*"]
   target_group_arn = module.exception_target_group.target_group_arn
 }
 
@@ -233,7 +233,6 @@ module "gateway_service" {
   subnets                 = module.networking.public_subnet_ids
   security_groups         = [module.ecs_security_group.ecs_service_sg_id]
   assign_public_ip        = true
-  target_group_arn        = module.gateway_target_group.target_group_arn 
   rds_environment  = []
   sqs_environment = []
   other_environment = [
@@ -304,7 +303,7 @@ module "query_suggestion_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 103
-  path_pattern     = ["/query_suggestion*"]
+  path_pattern     = ["/api/query_suggestion*"]
   target_group_arn = module.query_suggestion_target_group.target_group_arn
 }
 
@@ -353,7 +352,7 @@ module "rag_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 104
-  path_pattern     = ["/rag*"]
+  path_pattern     = ["/api/rag*"]
   target_group_arn = module.rag_target_group.target_group_arn
 }
 
@@ -413,7 +412,7 @@ module "search_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 105
-  path_pattern     = ["/search*"]
+  path_pattern     = ["/api/search*"]
   target_group_arn = module.search_target_group.target_group_arn
 }
 
@@ -469,7 +468,7 @@ module "solution_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 106
-  path_pattern     = ["/solution*"]
+  path_pattern     = ["/api/solution*"]
   target_group_arn = module.solution_target_group.target_group_arn
 }
 
@@ -520,7 +519,7 @@ module "trade_flow_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 107
-  path_pattern     = ["/trades*", "/transactions*"]
+  path_pattern     = ["/api/trades*", "/api/transactions*"]
   target_group_arn = module.trade_flow_target_group.target_group_arn
 }
 
