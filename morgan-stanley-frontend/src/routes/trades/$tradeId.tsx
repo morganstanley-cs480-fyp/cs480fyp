@@ -1,15 +1,12 @@
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
-import {useState} from "react";
+import {createFileRoute, useNavigate, redirect} from "@tanstack/react-router";
+import {useEffect, useState} from "react";
 import {ArrowLeft, AlertCircle} from "lucide-react";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {
-    getTradeById,
-    getTransactionsForTrade,
-    getExceptionsForTrade,
-    type Transaction,
-} from "@/lib/mockData";
+import type { Exception, Trade, Transaction } from "@/lib/api/types";
+import { tradeFlowService } from "@/lib/api/tradeFlowService";
+import { searchService } from "@/lib/api/searchService";
 
 // Component imports
 import {TradeInfoCard} from "@/components/trades-individual/TradeInfoCard";
@@ -26,34 +23,31 @@ import {
     getTransactionBackgroundColor,
     getRelatedExceptions,
 } from "./-tradeDetailUtils";
+import { requireAuth } from "@/lib/utils";
 import {EntityAndTransactionDetailPanel} from "@/components/trades-individual/EntityAndTransactionDetailPanel.tsx";
 import { useTradeWebSocket } from "@/hooks/useTradeWebSocket";
 import { useTransactions } from "@/hooks/useTransactions";
 
 export const Route = createFileRoute("/trades/$tradeId")({
-    component: TradeDetailPage,
+  beforeLoad: requireAuth,
+  component: TradeDetailPage,
 });
 
 function TradeDetailPage() {
     const {tradeId} = Route.useParams();
     const navigate = useNavigate();
 
-    const trade = getTradeById(Number(tradeId));
-    const staticTransactions = getTransactionsForTrade(Number(tradeId));
-    const exceptions = getExceptionsForTrade(Number(tradeId));
+    const [trade, setTrade] = useState<Trade | null>(null);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [exceptions, setExceptions] = useState<Exception[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
-    const { 
-        transactions: apiTransactions, 
-        loading, 
-        error 
-    } = useTransactions(Number(tradeId));
-
-    const { 
-        mergedTransactions, 
-        isConnected, 
-        connectionStatus 
-    } = useTradeWebSocket(Number(tradeId), apiTransactions);
-
+    const {
+        mergedTransactions,
+        isConnected,
+        connectionStatus
+    } = useTradeWebSocket(Number(tradeId), transactions);
 
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [selectedEntity, setSelectedEntity] = useState<{ name: string; isHub: boolean } | null>(null);
@@ -80,34 +74,61 @@ function TradeDetailPage() {
         setLastSelectedType("transaction");
     };
 
-    // Handle loading and error states
-    if (loading) {
+    useEffect(() => {
+        let isActive = true;
+
+        const loadTradeData = async () => {
+            setIsLoading(true);
+            setLoadError(null);
+
+            try {
+                const tradeIdNumber = Number(tradeId);
+                const [tradeData, transactionsData, exceptionsData] = await Promise.all([
+                    tradeFlowService.getTradeById(tradeIdNumber),
+                    tradeFlowService.getTransactionsByTradeId(tradeIdNumber),
+                    searchService.getExceptionsByTrade(tradeIdNumber),
+                ]);
+
+                if (!isActive) return;
+                setTrade(tradeData);
+                setTransactions(transactionsData);
+                setExceptions(exceptionsData);
+            } catch (error) {
+                if (!isActive) return;
+                console.error('Failed to load trade detail data:', error);
+                setLoadError('Failed to load trade details from the database.');
+                setTrade(null);
+                setTransactions([]);
+                setExceptions([]);
+            } finally {
+                if (!isActive) return;
+                setIsLoading(false);
+            }
+        };
+
+        loadTradeData();
+
+        return () => {
+            isActive = false;
+        };
+    }, [tradeId]);
+
+    if (isLoading) {
         return (
-            <div className="p-6 max-w-[1800px] mx-auto">
+            <div className="p-6 w-full mx-auto">
                 <Card>
-                    <CardContent className="p-12 text-center">
-                        <div className="text-lg font-semibold mb-2">Loading trade details...</div>
-                        <div className="text-sm text-gray-600">Fetching transactions and data</div>
+                    <CardContent className="py-12">
+                        <div className="text-center text-black/50">
+                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <p className="mt-2 text-sm">Loading trade details...</p>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
         );
     }
 
-    if (error) {
-        return (
-            <div className="p-6 max-w-[1800px] mx-auto">
-                <Card>
-                    <CardContent className="p-12 text-center">
-                        <div className="text-lg font-semibold mb-2 text-red-600">Error loading trade</div>
-                        <div className="text-sm text-gray-600">{error}</div>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
-
-    if (!trade) {
+    if (loadError || !trade) {
         return (
             <div className="p-6 w-full mx-auto">
                 <Card>
@@ -116,7 +137,7 @@ function TradeDetailPage() {
                             <AlertCircle className="size-12 mx-auto mb-3 opacity-50"/>
                             <p className="text-lg font-medium mb-2">Trade Not Found</p>
                             <p className="text-sm mb-4">
-                                The trade with ID "{tradeId}" could not be found.
+                                {loadError ?? `The trade with ID "${tradeId}" could not be found.`}
                             </p>
                             <Button onClick={() => navigate({to: "/trades"})}>
                                 <ArrowLeft className="size-4 mr-2"/>

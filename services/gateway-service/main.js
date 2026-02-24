@@ -19,7 +19,10 @@ const app = express();
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ 
+  server, 
+  path: '/api/ws' // This must match what your frontend calls
+});
 
 // Map: trade_id -> Set of Client Sockets
 export const tradeRooms = new Map();
@@ -31,7 +34,7 @@ export async function start() {
   await redisSub.subscribe('trade-updates', (message) => {
     try {
       const { trade_id, data } = JSON.parse(message);
-
+      console.log(JSON.stringify(message))
       if (tradeRooms.has(trade_id)) {
         // console.log(`Broadcasting update to Trade ${trade_id}`);
         const clients = tradeRooms.get(trade_id);
