@@ -155,6 +155,7 @@ async def find_similar_exceptions(
     Find similar exceptions using vector similarity search with optional LLM explanations.
     
     This endpoint performs the following:
+    0. Checks if exception exists in Milvus, auto-ingests if not found
     1. Retrieves the exception document from Milvus by exception_id
     2. Uses its embedding vector to search for similar exceptions
     3. Optionally generates LLM explanations for why each exception is similar (single batch call)
@@ -169,7 +170,7 @@ async def find_similar_exceptions(
         SimilarExceptionsResponse with similar exceptions, scores, and explanations
         
     Raises:
-        HTTPException 404: If exception_id not found in vector store
+        HTTPException 404: If exception_id not found in exception service
         HTTPException 400: If limit is invalid
     """
     # Validate limit
@@ -180,6 +181,86 @@ async def find_similar_exceptions(
         )
     
     try:
+        # Step 0: Check if exception exists in Milvus, auto-ingest if not
+        if not request.app.state.vector_store.exists_by_exception_id(exception_id):
+            logging.info(f"Exception {exception_id} not found in Milvus, auto-ingesting...")
+            
+            try:
+                # Fetch exception data to get trade_id
+                async with httpx.AsyncClient(base_url=settings.EXCEPTION_SERVICE_URL) as client:
+                    resp = await client.get(f"/api/exceptions/{exception_id}")
+                    resp.raise_for_status()
+                    exception_data = resp.json()
+                
+                trade_id = exception_data.get("trade_id")
+                if not trade_id:
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Exception {exception_id} has no associated trade_id"
+                    )
+                
+                # Fetch trade details
+                async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
+                    resp = await client.get(f"/trades/{trade_id}")
+                    resp.raise_for_status()
+                    trade_data = resp.json()
+
+                # Fetch transaction history
+                async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
+                    resp = await client.get(f"/trades/{trade_id}/transactions")
+                    resp.raise_for_status()
+                    history_data = resp.json()
+
+                # Format as human-readable narrative
+                formatter = NarrativeFormatter()
+                stitched_text = formatter.format_exception_narrative(
+                    history_data, 
+                    exception_data, 
+                    trade_data,
+                    trade_id, 
+                    exception_id
+                )
+
+                # Create metadata
+                metadata = formatter.create_metadata(
+                    history_data, 
+                    exception_data, 
+                    trade_data,
+                    trade_id, 
+                    exception_id
+                )
+
+                # Generate embedding
+                bedrock = BedrockService(
+                    region_name=settings.AWS_REGION,
+                    embed_model_id=settings.BEDROCK_EMBED_MODEL_ID,
+                    chat_model_id=settings.BEDROCK_CHAT_MODEL_ID,
+                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                )
+                embedding = bedrock.get_embedding(stitched_text)
+
+                # Store in Milvus
+                request.app.state.vector_store.add_documents(
+                    texts=[stitched_text],
+                    embeddings=[embedding],
+                    metadata=[metadata]
+                )
+                
+                logging.info(f"Successfully auto-ingested exception {exception_id}")
+                
+            except HTTPStatusError as e:
+                raise HTTPException(
+                    status_code=e.response.status_code,
+                    detail=f"Failed to fetch exception data: {e.response.text}"
+                )
+            except Exception as e:
+                logging.error(f"Failed to auto-ingest exception {exception_id}: {str(e)}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to auto-ingest exception: {str(e)}"
+                )
+        
         # Step 1: Find similar exceptions using vector store
         similar_docs = request.app.state.vector_store.find_similar_by_exception_id(
             exception_id=exception_id,
@@ -266,6 +347,8 @@ async def find_similar_exceptions(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Error in find_similar_exceptions: {str(e)}")
         raise HTTPException(
