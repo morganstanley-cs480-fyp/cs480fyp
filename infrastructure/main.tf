@@ -208,11 +208,30 @@ module "exception_service" {
   other_environment = []
 }
 
-# GATEWAY SERVICE (To Add elasticache access for pub sub)
+# GATEWAY SERVICE
+# gateway target to ALB
+module "gateway_target_group" {
+  source                = "./modules/alb_tg"
+  target_group_name     = var.gateway_target_group_name
+  target_group_port     = 3002
+  target_group_protocol = "HTTP"
+  vpc_id                = module.networking.vpc_id
+}
+
+# gateway listener rule
+module "gateway_listener_rule" {
+  source           = "./modules/alb_rule"
+  listener_arn     = module.alb.http_listener_arn
+  priority         = 102
+  # FIX: You must specify which requests go to the gateway
+  path_pattern     = ["/api/ws*"]
+  target_group_arn = module.gateway_target_group.target_group_arn
+}
+
 # gateway_cloudwatch
 module "gateway_log_group" {
   source            = "./modules/cloudwatch"
-  log_group_name    = "/ecs/gateway-logs"
+  log_group_name    = var.gateway_log_group_name
   retention_in_days = 14
 }
 
@@ -222,7 +241,7 @@ module "gateway_service" {
   family                  = var.gateway_family
   container_name          = var.gateway_container_name
   container_image         = var.gateway_container_image
-  container_port          = 0
+  container_port          = 3002
   log_group               = module.gateway_log_group.log_group_name 
   region                  = var.region
   execution_role_arn      = module.ecs_execution_role.role_arn
@@ -233,6 +252,7 @@ module "gateway_service" {
   subnets                 = module.networking.public_subnet_ids
   security_groups         = [module.ecs_security_group.ecs_service_sg_id]
   assign_public_ip        = true
+  target_group_arn        = module.gateway_target_group.target_group_arn
   rds_environment  = []
   sqs_environment = []
   other_environment = [
