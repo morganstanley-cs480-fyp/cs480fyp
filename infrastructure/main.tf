@@ -172,7 +172,7 @@ module "exception_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 101
-  path_pattern     = ["/exception*"]
+  path_pattern     = ["/api/exception*"]
   target_group_arn = module.exception_target_group.target_group_arn
 }
 
@@ -303,7 +303,7 @@ module "query_suggestion_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 103
-  path_pattern     = ["/query_suggestion*"]
+  path_pattern     = ["/api/query_suggestion*"]
   target_group_arn = module.query_suggestion_target_group.target_group_arn
 }
 
@@ -352,7 +352,7 @@ module "rag_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 104
-  path_pattern     = ["/rag*"]
+  path_pattern     = ["/api/rag*"]
   target_group_arn = module.rag_target_group.target_group_arn
 }
 
@@ -412,7 +412,7 @@ module "search_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 105
-  path_pattern     = ["/search*"]
+  path_pattern     = ["/api/search*"]
   target_group_arn = module.search_target_group.target_group_arn
 }
 
@@ -468,7 +468,7 @@ module "solution_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 106
-  path_pattern     = ["/solution*"]
+  path_pattern     = ["/api/solution*"]
   target_group_arn = module.solution_target_group.target_group_arn
 }
 
@@ -519,7 +519,7 @@ module "trade_flow_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 107
-  path_pattern     = ["/trades*", "/transactions*"]
+  path_pattern     = ["/api/trades*", "/api/transactions*"]
   target_group_arn = module.trade_flow_target_group.target_group_arn
 }
 
