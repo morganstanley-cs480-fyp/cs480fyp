@@ -42,3 +42,4 @@ export const requireAuth = ({ context }: { context: RouterContext }) => {
     throw redirect({ to: "/" });
   }
 };
+
