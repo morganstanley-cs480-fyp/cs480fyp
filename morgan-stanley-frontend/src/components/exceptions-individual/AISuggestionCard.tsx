@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Users, Clock } from "lucide-react";
+import {Users, Clock } from "lucide-react";
 
 export interface AISuggestion {
   id: string;
@@ -17,18 +17,22 @@ export interface AISuggestion {
 interface AISuggestionCardProps {
   suggestion: AISuggestion;
   onClick: () => void;
+  isSelected?: boolean;
 }
 
-export function AISuggestionCard({ suggestion, onClick }: AISuggestionCardProps) {
+export function AISuggestionCard({ suggestion, onClick, isSelected = false }: AISuggestionCardProps) {
   return (
     <Card 
-      className="border-2 hover:border-purple-300 transition-colors cursor-pointer"
+      className={`border-2 transition-colors cursor-pointer py-0 ${
+        isSelected 
+          ? 'border-[#002B51] bg-[#002B51]/5' 
+          : 'border-slate-200 hover:border-[#002B51]/30'
+      }`}
       onClick={onClick}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="size-4 text-purple-600" />
             <h4 className="font-medium text-black">
               {suggestion.title}
             </h4>

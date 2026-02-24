@@ -90,10 +90,10 @@ htmlcov/
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
-*.tfvars
 terraform.tfvars
 .terraform/modules/
 .terraform/providers/
+*.tfplan
 
 # Environment variables and secrets
 .env
@@ -124,13 +124,13 @@ logs/
 
 # Node.js (if any frontend parts)
 node_modules/
-
+ 
 # Other
 .java-version
-backend/verification/src/main/resources/application.properties
 
 .roo
 .tanstack/
 
 # Localstack
 services/localstack-data
+services/volumes/

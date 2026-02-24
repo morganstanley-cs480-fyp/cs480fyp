@@ -8,7 +8,6 @@ from httpx import AsyncClient
 from unittest.mock import AsyncMock, patch
 
 from app.main import app
-from app.models.domain import ExtractedParams
 
 
 @pytest.fixture

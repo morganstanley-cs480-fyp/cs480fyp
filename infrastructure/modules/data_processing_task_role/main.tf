@@ -31,8 +31,8 @@ resource "aws_iam_policy" "processing_policy" {
           "sqs:DeleteMessage",       # Remove after processing (ACK)
           "sqs:GetQueueAttributes"   # Check queue status
         ]
-        Resource = var.sqs_queue_arn
-      }
+        Resource = var.data_processing_queue_arn
+      },
     ]
   })
 }

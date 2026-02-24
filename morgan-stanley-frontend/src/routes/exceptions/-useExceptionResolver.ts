@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { getExceptionById, type Exception } from "@/lib/mockData";
+import type { Exception } from "@/lib/api/types";
+import { searchService } from "@/lib/api/searchService";
 import { type AISuggestion } from "@/components/exceptions-individual/AISuggestionCard";
 
 export function useExceptionResolver(exceptionId: string) {
@@ -12,7 +13,14 @@ export function useExceptionResolver(exceptionId: string) {
   const [aiGeneratedSolution, setAiGeneratedSolution] = useState<string>("");
   const [newSolutionTitle, setNewSolutionTitle] = useState<string>("");
   const [newSolutionDescription, setNewSolutionDescription] = useState<string>("");
+  const [aiSolutionType, setAiSolutionType] = useState<string>("");
+  const [selectedSuggestion, setSelectedSuggestion] = useState<AISuggestion | null>(null);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
+
+  // Clear selected suggestion when switching tabs
+  useEffect(() => {
+    setSelectedSuggestion(null);
+  }, [selectedTab]);
 
   const handleAISearch = useCallback((exc?: Exception) => {
     const targetException = exc || exception;
@@ -52,14 +60,26 @@ export function useExceptionResolver(exceptionId: string) {
   }, [exception]);
 
   useEffect(() => {
-    const loadException = () => {
-      const exc = getExceptionById(Number(exceptionId));
-      if (exc) {
+    let isActive = true;
+
+    const loadException = async () => {
+      try {
+        const exc = await searchService.getExceptionById(Number(exceptionId));
+        if (!isActive) return;
         setException(exc);
         handleAISearch(exc);
+      } catch (error) {
+        if (!isActive) return;
+        console.error('Failed to load exception:', error);
+        setException(null);
       }
     };
+
     loadException();
+
+    return () => {
+      isActive = false;
+    };
   }, [exceptionId, handleAISearch]);
 
   const handleGenerateAISolution = useCallback(() => {
@@ -147,8 +167,7 @@ RESOLUTION APPROACH:
   }, [aiGeneratedSolution]);
 
   const handleSuggestionClick = useCallback((suggestion: AISuggestion) => {
-    setNewSolutionTitle(suggestion.title);
-    setNewSolutionDescription(suggestion.description);
+    setSelectedSuggestion(suggestion);
   }, []);
 
   const filteredSuggestions = aiSuggestions.filter(
@@ -172,6 +191,9 @@ RESOLUTION APPROACH:
     setNewSolutionTitle,
     newSolutionDescription,
     setNewSolutionDescription,
+    aiSolutionType,
+    setAiSolutionType,
+    selectedSuggestion,
     copiedToClipboard,
     filteredSuggestions,
     handleAISearch,

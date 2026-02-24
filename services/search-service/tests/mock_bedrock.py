@@ -7,13 +7,13 @@ Useful for local development and testing.
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from datetime import datetime, timedelta
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.utils.logger import logger
+from app.utils.logger import logger  # noqa: E402
 
 
 class MockBedrockService:
@@ -148,7 +148,7 @@ class MockBedrockService:
         if "exception" in query_lower or "error" in query_lower or "issue" in query_lower:
             params["with_exceptions_only"] = True
         
-        logger.info(f"[MOCK] Extracted parameters: {json.dumps(params, indent=2)}")
+        logger.info("[MOCK] Extracted parameters: {json.dumps(params, indent=2)}")
         
         return params
     
@@ -217,30 +217,30 @@ MOCK_TEST_CASES = [
 
 async def test_mock_bedrock():
     """Test the mock Bedrock service with various queries"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("TESTING MOCK BEDROCK SERVICE")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
     
     mock = MockBedrockService()
     
     for i, test_case in enumerate(MOCK_TEST_CASES, 1):
-        print(f"\nTest {i}: {test_case['query']}")
+        print("\nTest {i}: {test_case['query']}")
         print("-" * 60)
         
         result = await mock.extract_parameters(test_case['query'])
         
         print("Extracted:")
         for key, value in result.items():
-            if value and value != [] and value != False:
-                print(f"  {key}: {value}")
+            if value and value != [] and value is not False:
+                print("  {key}: {value}")
         
-        print(f"\nExpected:")
+        print("\nExpected:")
         for key, value in test_case['expected'].items():
-            print(f"  {key}: {value}")
+            print("  {key}: {value}")
     
-    print("\n" + "="*60)
-    print(f"Total mock calls: {mock.get_call_count()}")
-    print("="*60 + "\n")
+    print("\n" + "=" * 60)
+    print("Total mock calls: {mock.get_call_count()}")
+    print("=" * 60 + "\n")
 
 
 if __name__ == "__main__":

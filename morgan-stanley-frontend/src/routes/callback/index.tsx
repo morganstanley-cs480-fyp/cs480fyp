@@ -13,7 +13,7 @@ function CallbackComponent() {
       navigate({ to: '/trades' });
     } else if (auth.error) {
       console.error('Auth error:', auth.error);
-      navigate({ to: '/login' });
+      navigate({ to: '/' });
     }
   }, [auth, navigate]);
 

@@ -5,11 +5,17 @@ from app.models import Exception
 
 # Sample CRUD Routers. Might add pagination in the future
 
-router = APIRouter(prefix="/exceptions", tags=["exceptions"])
+router = APIRouter(prefix="/api/exceptions", tags=["exceptions"])
 
 @router.get("/", response_model=List[ExceptionResponse])
 async def list_exceptions():
     exceptions = await Exception.all()
+    return exceptions
+
+@router.get("/trade/{trade_id}", response_model=List[ExceptionResponse])
+async def get_exceptions_by_trade(trade_id: int):
+    """Get all exceptions for a specific trade"""
+    exceptions = await Exception.filter(trade_id=trade_id).all()
     return exceptions
 
 @router.get("/{exception_id}", response_model=ExceptionResponse)

@@ -1,0 +1,62 @@
+@baseUrl = http://localhost:8004
+
+### Health Check
+GET {{baseUrl}}/health
+
+### Root Endpoint
+GET {{baseUrl}}/
+
+### Store Simple Test Document (1536-dim)
+POST {{baseUrl}}/documents/store
+Content-Type: application/json
+
+### Ingest Document
+POST {{baseUrl}}/documents/ingest
+Content-Type: application/json
+
+[
+  {
+    "text": "Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience.",
+    "metadata": {
+      "source": "knowledge_base",
+      "category": "AI"
+    }
+  }
+]
+
+### LLM Chat Completion
+POST {{baseUrl}}/chat/completion
+Content-Type: application/json
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a helpful AI assistant specializing in technology."
+    },
+    {
+      "role": "user",
+      "content": "What is machine learning?"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 512
+}
+
+### Find Similar Exceptions with LLM Explanations (Default)
+GET {{baseUrl}}/documents/similar-exceptions/EXC-2024-001?limit=3
+
+### Find Similar Exceptions without LLM Explanations
+GET {{baseUrl}}/documents/similar-exceptions/EXC-2024-001?limit=3&explain=false
+
+### Find More Similar Exceptions (5 results with explanations)
+GET {{baseUrl}}/documents/similar-exceptions/EXC-2024-001?limit=5&explain=true
+
+### Ingest Exception Document
+POST {{baseUrl}}/documents/ingest-exception
+Content-Type: application/json
+
+{
+  "trade_id": "TRD-2024-001",
+  "exception_id": "EXC-2024-001"
+}

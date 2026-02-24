@@ -25,9 +25,8 @@ if test_env_file.exists():
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.config.settings import settings
-from app.database.connection import db_manager
-from app.cache.redis_client import redis_manager
+from app.database.connection import db_manager  # noqa: E402
+from app.cache.redis_client import redis_manager  # noqa: E402
 
 
 def pytest_configure(config):
@@ -39,7 +38,7 @@ def pytest_configure(config):
 
 @pytest.fixture(scope="function")
 async def db_connection() -> AsyncGenerator[asyncpg.Pool, None]:
-    """PostgreSQL connection pool for tests"""
+    """PostgreSQL connection pool for tests."""
     await db_manager.connect()
     yield db_manager.pool
     await db_manager.disconnect()
@@ -83,7 +82,7 @@ async def clean_redis(redis_connection: Redis):
 
 @pytest.fixture(scope="session")
 def aws_credentials():
-    """LocalStack dummy credentials"""
+    """LocalStack dummy credentials."""
     os.environ["AWS_ACCESS_KEY_ID"] = "test"
     os.environ["AWS_SECRET_ACCESS_KEY"] = "test"
     os.environ["AWS_REGION"] = "us-east-1"
@@ -91,7 +90,7 @@ def aws_credentials():
 
 @pytest.fixture(scope="session")
 def localstack_endpoint():
-    """LocalStack endpoint URL"""
+    """LocalStack endpoint URL."""
     return os.getenv("AWS_ENDPOINT_URL", "http://localhost:4566")
 
 

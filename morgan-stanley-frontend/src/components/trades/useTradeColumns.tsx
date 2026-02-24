@@ -4,11 +4,31 @@ import { ArrowUpDown } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Trade } from "@/lib/mockData";
+import type { Trade } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
 import { getStatusBadgeClassName } from "@/routes/trades/-tradeDetailUtils";
 
 export function useTradeColumns(): ColumnDef<Trade>[] {
+  const matchesDateRange = (
+    value: string,
+    filterValue: string | { from?: string; to?: string } | undefined
+  ) => {
+    if (!filterValue) return true;
+    if (typeof filterValue === "string") {
+      const formatted = formatDateShort(value);
+      return formatted.toLowerCase().includes(filterValue.toLowerCase());
+    }
+    const { from, to } = filterValue;
+    if (!from && !to) return true;
+    const timestamp = new Date(value).getTime();
+    if (Number.isNaN(timestamp)) return false;
+    const fromTime = from ? new Date(`${from}T00:00:00`).getTime() : null;
+    const toTime = to ? new Date(`${to}T23:59:59.999`).getTime() : null;
+    if (fromTime && timestamp < fromTime) return false;
+    if (toTime && timestamp > toTime) return false;
+    return true;
+  };
+
   return [
     {
       accessorKey: "trade_id",
@@ -126,10 +146,8 @@ export function useTradeColumns(): ColumnDef<Trade>[] {
       cell: ({ row }) => (
         <div className="text-sm ml-2">{formatDateShort(row.getValue("create_time") as string)}</div>
       ),
-      filterFn: (row, columnId, filterValue) => {
-        const formatted = formatDateShort(row.getValue(columnId) as string);
-        return formatted.toLowerCase().includes(String(filterValue ?? "").toLowerCase());
-      },
+      filterFn: (row, columnId, filterValue) =>
+        matchesDateRange(row.getValue(columnId) as string, filterValue),
     },
     {
       accessorKey: "update_time",
@@ -148,10 +166,8 @@ export function useTradeColumns(): ColumnDef<Trade>[] {
       cell: ({ row }) => (
         <div className="text-sm ml-2">{formatDateShort(row.getValue("update_time") as string)}</div>
       ),
-      filterFn: (row, columnId, filterValue) => {
-        const formatted = formatDateShort(row.getValue(columnId) as string);
-        return formatted.toLowerCase().includes(String(filterValue ?? "").toLowerCase());
-      },
+      filterFn: (row, columnId, filterValue) =>
+        matchesDateRange(row.getValue(columnId) as string, filterValue),
     },
     {
       accessorKey: "status",

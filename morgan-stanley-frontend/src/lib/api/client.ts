@@ -62,11 +62,17 @@ async function request<T>(
 
     // Parse response
     let data: unknown;
-    const contentType = response.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
-      data = await response.json();
+    
+    // Handle 204 No Content - no body to parse
+    if (response.status === 204) {
+      data = null;
     } else {
-      data = await response.text();
+      const contentType = response.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
     }
 
     if (ENABLE_DEBUG_LOGGING) {

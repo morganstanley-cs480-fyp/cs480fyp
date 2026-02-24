@@ -4,7 +4,6 @@ import ReactFlowWithElkAutoLayout from '@/components/visualisations-prototype/Re
 import { requireAuth } from '@/lib/utils';
 
 // To use - just throw in a component from visualisations-prototype
-
 export const Route = createFileRoute('/visualisation/')({
   beforeLoad: requireAuth,
   component: ReactFlowWithElkAutoLayout,

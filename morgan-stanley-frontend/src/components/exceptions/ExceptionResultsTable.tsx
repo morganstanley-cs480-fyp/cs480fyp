@@ -29,12 +29,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Exception } from "@/lib/mockData";
+import type { Exception } from "@/lib/api/types";
 
 interface ExceptionResultsTableProps {
   table: TableType<Exception>;
   resultsCount: number;
-  selectedExceptionId: string | null;
+  selectedExceptionId: number | null;
   statusFilter: "ALL" | "PENDING" | "CLOSED";
   priorityFilter: "ALL" | "HIGH" | "MEDIUM" | "LOW";
   onStatusFilterChange: (value: "ALL" | "PENDING" | "CLOSED") => void;
