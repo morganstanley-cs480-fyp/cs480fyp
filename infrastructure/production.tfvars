@@ -71,7 +71,7 @@ ingestion_container_name = "ingestion-service-container"
 ingestion_container_image = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/ingestion-service:latest"
 ingestion_service_name = "ingestion-service"
 
-query_suggestion_target_group_name = "query-suggestion-service-target-group"
+query_suggestion_target_group_name = "query-suggestion-target-group"
 query_suggestion_log_group_name = "/ecs/query-suggestion-service-logs"
 query_suggestion_family = "query-suggestion-service-task"
 query_suggestion_container_name = "query-suggestion-service-container"
