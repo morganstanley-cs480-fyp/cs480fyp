@@ -17,7 +17,6 @@ import type {
 } from "@tanstack/react-table";
 
 import type { Trade, TypeaheadSuggestion } from "@/lib/api/types";
-
 import type { QueryHistory } from "@/lib/api/types";
 
 // Component imports
@@ -26,7 +25,6 @@ import { SavedQueriesPanel } from "@/components/trades/SavedQueriesPanel";
 import { TradeFilters, type ManualSearchFilters } from "@/components/trades/TradeFilters";
 import { TradeResultsTable } from "@/components/trades/TradeResultsTable";
 import { useTradeColumns } from "@/components/trades/useTradeColumns";
-// import { useUser } from "@/contexts/UserContext";
 import { searchService } from "@/lib/api/searchService";
 import { APIError } from "@/lib/api/client";
 import { requireAuth } from "@/lib/utils";
