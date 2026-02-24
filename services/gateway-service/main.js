@@ -34,7 +34,7 @@ export async function start() {
   await redisSub.subscribe('trade-updates', (message) => {
     try {
       const { trade_id, data } = JSON.parse(message);
-
+      console.log(JSON.stringify(message))
       if (tradeRooms.has(trade_id)) {
         // console.log(`Broadcasting update to Trade ${trade_id}`);
         const clients = tradeRooms.get(trade_id);
