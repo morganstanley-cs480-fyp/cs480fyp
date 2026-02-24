@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import {AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,8 +12,10 @@ import { AIGeneratorPanel } from '@/components/exceptions-individual/AIGenerator
 
 // Hook import
 import { useExceptionResolver } from './-useExceptionResolver';
+import { requireAuth } from '@/lib/utils';
 
 export const Route = createFileRoute('/exceptions/$exceptionId')({
+    beforeLoad: requireAuth,
   component: ResolveExceptionPage,
 });
 
