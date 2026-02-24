@@ -19,7 +19,6 @@ import type {
 import type { Trade, TypeaheadSuggestion } from "@/lib/api/types";
 import type { QueryHistory } from "@/lib/api/types";
 
-// Component imports
 import { SearchHeader, type RecentSearch } from "@/components/trades/SearchHeader";
 import { SavedQueriesPanel } from "@/components/trades/SavedQueriesPanel";
 import { TradeFilters, type ManualSearchFilters } from "@/components/trades/TradeFilters";
