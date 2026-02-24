@@ -99,7 +99,7 @@ services:
       dockerfile: Dockerfile
     container_name: fyp-exception-service
     ports:
-      - "8001:8001"
+      - "8001:3001"
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/trading_db
     depends_on:
@@ -116,7 +116,7 @@ services:
       dockerfile: Dockerfile
     container_name: fyp-solution-service
     ports:
-      - "8002:8001"
+      - "8002:3006"
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/trading_db
     depends_on:
@@ -172,7 +172,7 @@ services:
       VECTOR_DIM: 1024
       ENABLE_CORS: "true"
       CORS_ORIGINS: '["http://localhost:3000","http://localhost:5173"]'
-      EXCEPTION_SERVICE_URL: http://exception-service:8001
+      EXCEPTION_SERVICE_URL: http://exception-service:3001
       TRADE_FLOW_SERVICE_URL: http://trade-flow-service:8000
     depends_on:
       milvus-standalone:
