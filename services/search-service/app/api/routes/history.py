@@ -3,10 +3,12 @@ Query History API Routes
 GET /history, PUT /history/{query_id}, DELETE /history/{query_id}
 """
 
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query, Path, status
 
 from app.models.request import UpdateHistoryRequest
 from app.models.domain import QueryHistory
+from app.models.response import TypeaheadSuggestion
 from app.services.query_history_service import query_history_service
 from app.utils.logger import logger
 from app.utils.exceptions import (
@@ -392,6 +394,78 @@ async def get_saved_queries(
     except Exception as e:
         logger.error(
             f"Unexpected error fetching saved queries: {e}",
+            extra={"user_id": user_id},
+            exc_info=True
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": "Internal server error",
+                "message": "An unexpected error occurred."
+            }
+        )
+
+
+@router.get("/suggestions", response_model=list[TypeaheadSuggestion])
+async def get_typeahead_suggestions(
+    user_id: str = Query(..., description="User ID to fetch suggestions for", min_length=1),
+    q: str = Query(..., description="Search input to match", min_length=1),
+    limit: int = Query(10, description="Maximum number of suggestions to return", ge=1, le=20)
+):
+    """
+    Get typeahead suggestions for a user's search input.
+
+    Uses fuzzy matching against recent query history (natural language only).
+
+    **Query Parameters:**
+    - `user_id`: User ID (required)
+    - `q`: Search input string (required)
+    - `limit`: Max suggestions to return (1-20, default: 10)
+
+    **Example Request:**
+    ```
+    GET /history/suggestions?user_id=user123&q=pending%20fx&limit=8
+    ```
+    """
+    logger.info(
+        "Fetching typeahead suggestions",
+        extra={"user_id": user_id, "query": q, "limit": limit}
+    )
+
+    try:
+        suggestions = await query_history_service.get_suggestions(
+            user_id=user_id,
+            query=q,
+            limit=limit
+        )
+
+        def format_time(value) -> str | None:
+            if isinstance(value, datetime):
+                return value.strftime("%Y-%m-%dT%H:%M:%SZ")
+            if value is None:
+                return None
+            return str(value)
+
+        return [
+            TypeaheadSuggestion(
+                query_id=item["query_id"],
+                query_text=item["query_text"],
+                is_saved=item["is_saved"],
+                query_name=item["query_name"],
+                last_use_time=format_time(item.get("last_use_time")),
+                score=round(float(item["score"]), 4),
+                category=item.get("category")
+            )
+            for item in suggestions
+        ]
+
+    except DatabaseQueryError:
+        raise
+
+    except Exception as e:
+        logger.error(
+            f"Unexpected error fetching suggestions: {e}",
             extra={"user_id": user_id},
             exc_info=True
         )

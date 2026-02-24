@@ -30,11 +30,18 @@ class Settings(BaseSettings):
     ]
 
     # AWS Bedrock
-    AWS_REGION: str = "us-east-1"
+    AWS_REGION: str = "ap-southeast-1"
     AWS_ACCESS_KEY_ID: Optional[str] = None
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
     BEDROCK_EMBED_MODEL_ID: str = "amazon.nova-2-embedding-v1"
-    BEDROCK_CHAT_MODEL_ID: str = "meta.llama2-13b-chat-v1"
+    BEDROCK_CHAT_MODEL_ID: str = "us.amazon.nova-lite-v1:0"
+
+    # Google AI (for chat/LLM)
+    GOOGLE_API_KEY: Optional[str] = None
+    GOOGLE_MODEL_ID: str = "gemini-2.5-flash-lite"
+    
+    # LLM Provider Selection ("bedrock" or "google")
+    LLM_PROVIDER: str = "bedrock"
 
     # Milvus
     MILVUS_HOST: str = "localhost"
@@ -44,6 +51,10 @@ class Settings(BaseSettings):
     MILVUS_COLLECTION: str = "documents"
     MILVUS_SSL: bool = False  # Enable SSL in production
     VECTOR_DIM: int = 1024  # Cohere embedding dimension
+
+    # Service URLs
+    EXCEPTION_SERVICE_URL: str = "http://exception-service:8000"
+    TRADE_FLOW_SERVICE_URL: str = "http://trade-flow-service:8000"
 
     model_config = SettingsConfigDict(
         env_file=".env",

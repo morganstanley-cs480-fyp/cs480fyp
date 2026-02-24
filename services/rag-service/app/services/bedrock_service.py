@@ -36,7 +36,7 @@ class BedrockService:
         aws_access_key_id: Optional[str] = None,
         aws_secret_access_key: Optional[str] = None,
     ) -> None:
-        self.region_name = region_name or os.getenv("AWS_REGION", "us-east-1")
+        self.region_name = region_name or os.getenv("AWS_REGION", "ap-southeast-1")
         self.embed_model_id = embed_model_id or self.DEFAULT_EMBED_MODEL_ID
         self.chat_model_id = chat_model_id or self.DEFAULT_CHAT_MODEL_ID
 

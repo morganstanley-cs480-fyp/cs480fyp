@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Table as TableType } from "@tanstack/react-table";
-import type { Exception } from "@/lib/mockData";
+import type { Exception } from "@/lib/api/types";
 
 interface ExceptionFiltersProps {
   table: TableType<Exception>;
