@@ -1,45 +1,81 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import type { Transaction, Exception, WebSocketMessage } from '@/lib/api/types';
+import type { Transaction, Exception } from '@/lib/api/types';
 
-const GATEWAY_URL = import.meta.env.VITE_WEBSOCKET_URL|| 'ws://localhost:3002';
+const PROTOCOL = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const HOST = window.location.host;
+// const GATEWAY_URL = `${PROTOCOL}//${HOST}/api/ws`;
+const GATEWAY_URL = 'ws://localhost:3002';
 
 export function useTradeWebSocket(
   tradeId: number | null,
-  initialTransactions: Transaction[] = []
+  initialTransactions: Transaction[] = [],
+  initialExceptions: Exception[] = []
 ) {
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Transaction | null>(null);
+  const [lastExceptionUpdate, setLastExceptionUpdate] = useState<Exception | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<string>('Disconnected');
   const [mergedTransactions, setMergedTransactions] = useState<Transaction[]>(initialTransactions);
+  const [mergedExceptions, setMergedExceptions] = useState<Exception[]>(initialExceptions);
 
   // Update merged transactions when initial data changes
   useEffect(() => {
     setMergedTransactions(initialTransactions);
   }, [initialTransactions]);
 
+  // Update merged exceptions when initial data changes
+  useEffect(() => {
+    setMergedExceptions(initialExceptions);
+  }, [initialExceptions]);
+
   const onMessage = useCallback((event: MessageEvent) => {
     try {
-      const data = JSON.parse(event.data) as Transaction;
+      const data = JSON.parse(event.data);
       console.log('🎯 RAW WebSocket message received:', data);
-      setLastUpdate(data);
+      
+      // Check if the data is a transaction or exception based on properties
+      if (data.exception_id == undefined) {
+        // Handle transaction update
+        const transactionData = data as Transaction;
+        setLastUpdate(transactionData);
 
-      // Merge the live update with existing transactions
-      setMergedTransactions(prev => {
-        const existingIndex = prev.findIndex(t => t.trans_id === data.trans_id);
-        
-        if (existingIndex !== -1) {
-          // Update existing transaction
-          const updated = [...prev];
-          updated[existingIndex] = { ...updated[existingIndex], ...data };
-          console.log('🔄 Updated existing transaction:', data.trans_id);
-          return updated.sort((a, b) => a.step - b.step);
-        } else {
-          // Add new transaction
-          console.log('➕ Added new transaction:', data.trans_id);
-          return [...prev, data].sort((a, b) => a.step - b.step);
-        }
-      });
+        setMergedTransactions(prev => {
+          const existingIndex = prev.findIndex(t => t.trans_id === transactionData.trans_id);
+          
+          if (existingIndex !== -1) {
+            // Update existing transaction
+            const updated = [...prev];
+            updated[existingIndex] = { ...updated[existingIndex], ...transactionData };
+            console.log('🔄 Updated existing transaction:', transactionData.trans_id);
+            return updated.sort((a, b) => a.step - b.step);
+          } else {
+            // Add new transaction
+            console.log('➕ Added new transaction:', transactionData.trans_id);
+            return [...prev, transactionData].sort((a, b) => a.step - b.step);
+          }
+        });
+      } else if (data.exception_id !== undefined) {
+        // Handle exception update
+        const exceptionData = data as Exception;
+        setLastExceptionUpdate(exceptionData);
+
+        setMergedExceptions(prev => {
+          const existingIndex = prev.findIndex(e => e.exception_id === exceptionData.exception_id);
+          
+          if (existingIndex !== -1) {
+            // Update existing exception
+            const updated = [...prev];
+            updated[existingIndex] = { ...updated[existingIndex], ...exceptionData };
+            console.log('🔄 Updated existing exception:', exceptionData.exception_id);
+            return updated;
+          } else {
+            // Add new exception
+            console.log('➕ Added new exception:', exceptionData.exception_id);
+            return [...prev, exceptionData];
+          }
+        });
+      }
     } catch (e) {
       console.error('Invalid JSON received:', e);
     }
@@ -55,7 +91,7 @@ export function useTradeWebSocket(
     console.log(`🔗 WebSocket URL: ${GATEWAY_URL}`);
     setConnectionStatus('Connecting...');
     
-    ws.current = new WebSocket(GATEWAY_URL);
+     ws.current = new WebSocket(GATEWAY_URL);
 
     ws.current.onopen = () => {
       setIsConnected(true);
@@ -93,8 +129,10 @@ export function useTradeWebSocket(
 
   return { 
     isConnected, 
-    lastUpdate, 
+    lastUpdate,
+    lastExceptionUpdate,
     connectionStatus, 
-    mergedTransactions // Return the merged data
+    mergedTransactions,
+    mergedExceptions
   };
 }

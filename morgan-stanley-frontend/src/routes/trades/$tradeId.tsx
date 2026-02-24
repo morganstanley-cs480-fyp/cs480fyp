@@ -7,12 +7,8 @@ import {Button} from "@/components/ui/button";
 import type { Exception, Trade, Transaction } from "@/lib/api/types";
 import { tradeFlowService } from "@/lib/api/tradeFlowService";
 import { searchService } from "@/lib/api/searchService";
-
-// Component imports
 import {TradeInfoCard} from "@/components/trades-individual/TradeInfoCard";
 import {FlowVisualization} from "@/components/trades-individual/FlowVisualization";
-// import {TransactionDetailPanel} from "@/components/trades-individual/TransactionDetailPanel";
-// import {EntityDetailPanel} from "@/components/trades-individual/EntityDetailPanel";
 
 // Utility imports
 import {
@@ -26,7 +22,6 @@ import {
 import { requireAuth } from "@/lib/utils";
 import {EntityAndTransactionDetailPanel} from "@/components/trades-individual/EntityAndTransactionDetailPanel.tsx";
 import { useTradeWebSocket } from "@/hooks/useTradeWebSocket";
-import { useTransactions } from "@/hooks/useTransactions";
 
 export const Route = createFileRoute("/trades/$tradeId")({
   beforeLoad: requireAuth,
@@ -45,9 +40,10 @@ function TradeDetailPage() {
 
     const {
         mergedTransactions,
+        mergedExceptions,
         isConnected,
-        connectionStatus
-    } = useTradeWebSocket(Number(tradeId), transactions);
+        connectionStatus // kept for now, can include in UI to let user know that it is listening for live updates.
+    } = useTradeWebSocket(Number(tradeId), transactions, exceptions);
 
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [selectedEntity, setSelectedEntity] = useState<{ name: string; isHub: boolean } | null>(null);
@@ -187,7 +183,7 @@ function TradeDetailPage() {
                     <TradeInfoCard
                         trade={trade}
                         transactions={mergedTransactions}
-                        exceptions={exceptions}
+                        exceptions={mergedExceptions}
                         showTradeInfo={showTradeInfo}
                         onToggle={() => setShowTradeInfo(!showTradeInfo)}
                         getStatusBadgeClassName={getStatusBadgeClassName}
@@ -207,9 +203,9 @@ function TradeDetailPage() {
                         selectedTransaction={selectedTransaction}
                         onTransactionSelect={handleTransactionSelect}
                         onEntitySelect={handleEntitySelect}
-                        exceptions={exceptions}
-                        getRelatedExceptions={(transId) => getRelatedExceptions(transId, exceptions)}
-                        getTransactionBackgroundColor={(transaction) => getTransactionBackgroundColor(transaction, exceptions)}
+                        exceptions={mergedExceptions}
+                        getRelatedExceptions={(transId) => getRelatedExceptions(transId, mergedExceptions)}
+                        getTransactionBackgroundColor={(transaction) => getTransactionBackgroundColor(transaction, mergedExceptions)}
                         getTransactionStatusColor={getTransactionStatusColor}
                         tradeId={Number(tradeId)}
                     />
@@ -224,7 +220,7 @@ function TradeDetailPage() {
                         selectedTransaction={selectedTransaction}
                         lastSelectedType={lastSelectedType}
                         transactions={mergedTransactions}
-                        relatedExceptions={selectedTransaction ? getRelatedExceptions(selectedTransaction.trans_id, exceptions) : []}
+                        relatedExceptions={selectedTransaction ? getRelatedExceptions(selectedTransaction.trans_id, mergedExceptions) : []}
                         onResolveException={handleResolveException}
                     />
 

@@ -3,8 +3,7 @@
 
 import {EntityDetailPanel} from "@/components/trades-individual/EntityDetailPanel.tsx";
 import {TransactionDetailPanel} from "@/components/trades-individual/TransactionDetailPanel.tsx";
-// import type {Exception, Transaction} from "@/lib/mockData.ts";
-import type { Transaction, Exception } from '@/lib/api/types';
+import type { Exception, Transaction } from "@/lib/api/types";
 import {Card, CardContent, CardHeader, CardTitle, CardDescription} from "@/components/ui/card";
 import {ArrowRight} from "lucide-react";
 import {
