@@ -15,7 +15,6 @@ export const Header = () => {
     const routerState = useRouterState();
     const currentPath = routerState.location.pathname;
     const auth = useAuth();
-    console.log(auth.user?.profile);
 
     const handleLogout = async () => {
         // Clear local auth state
