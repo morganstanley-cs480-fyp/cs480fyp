@@ -64,7 +64,7 @@ async def test_get_trade_by_id_success(client, mock_cursor):
     }
     mock_cursor.fetchone.return_value = fake_trade
     
-    response = client.get("api/trades/10000001")
+    response = client.get("/api/trades/10000001")
     assert response.status_code == 200
     assert response.json() == fake_trade
 
@@ -72,7 +72,7 @@ async def test_get_trade_by_id_success(client, mock_cursor):
 @pytest.mark.asyncio
 async def test_get_trade_by_id_404(client, mock_cursor):
     mock_cursor.fetchone.return_value = None
-    response = client.get("api/trades/99999999")
+    response = client.get("/api/trades/99999999")
     assert response.status_code == 404
     assert response.json()["detail"] == "Trade 99999999 not found"
 
@@ -101,7 +101,7 @@ async def test_get_trades_list(client, mock_cursor):
     ]
     mock_cursor.fetchall.return_value = fake_trades
     
-    response = client.get("api/trades?limit=10&offset=0")
+    response = client.get("/api/trades?limit=10&offset=0")
     assert response.status_code == 200
     assert len(response.json()) == 2
 
@@ -121,7 +121,7 @@ async def test_get_transaction_by_id(client, mock_cursor):
     }
     mock_cursor.fetchone.return_value = fake_trans
     
-    response = client.get("api/transactions/50000001")
+    response = client.get("/api/transactions/50000001")
     assert response.status_code == 200
     assert response.json() == fake_trans
 
@@ -154,7 +154,7 @@ async def test_get_transactions_by_trade_id(client, mock_cursor):
     ]
     mock_cursor.fetchall.return_value = fake_history
     
-    response = client.get("api/trades/10000001/transactions")
+    response = client.get("/api/trades/10000001/transactions")
     assert response.status_code == 200
     assert len(response.json()) == 2
 
@@ -163,7 +163,7 @@ async def test_get_transactions_by_trade_id(client, mock_cursor):
 async def test_db_failure(client, mock_cursor):
     mock_cursor.execute.side_effect = Exception("DB Connection Lost")
     
-    response = client.get("api/trades/10000001")
+    response = client.get("/api/trades/10000001")
     
     assert response.status_code == 500
     assert response.json()["detail"] == "Server Error"
