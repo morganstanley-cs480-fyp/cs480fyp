@@ -3,8 +3,8 @@ import type { Transaction, Exception } from '@/lib/api/types';
 
 const PROTOCOL = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 const HOST = window.location.host;
-// const GATEWAY_URL = `${PROTOCOL}//${HOST}/api/ws`;
-const GATEWAY_URL = 'ws://localhost:3002';
+const GATEWAY_URL = `${PROTOCOL}//${HOST}/api/ws`;
+// const GATEWAY_URL = 'ws://localhost:3002';
 
 export function useTradeWebSocket(
   tradeId: number | null,
