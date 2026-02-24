@@ -93,6 +93,7 @@ htmlcov/
 terraform.tfvars
 .terraform/modules/
 .terraform/providers/
+*.tfplan
 
 # Environment variables and secrets
 .env
@@ -122,7 +123,7 @@ logs/
 
 # Node.js (if any frontend parts)
 node_modules/
-
+ 
 # Other
 .java-version
 
@@ -131,3 +132,4 @@ node_modules/
 
 # Localstack
 services/localstack-data
+services/volumes/

@@ -120,6 +120,31 @@ class UpdateHistoryResponse(BaseModel):
         }
 
 
+class TypeaheadSuggestion(BaseModel):
+    """
+    Suggestion returned from typeahead search.
+    """
+    query_id: int = Field(..., description="Query ID associated with the suggestion")
+    query_text: str = Field(..., description="Suggested query text")
+    is_saved: bool = Field(False, description="Whether the query is saved")
+    query_name: Optional[str] = Field(None, description="Saved query name, if present")
+    last_use_time: Optional[str] = Field(None, description="Last time query was executed")
+    score: float = Field(..., description="Similarity score used for ranking")
+    category: Optional[str] = Field(None, description="Suggestion category label")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "query_id": 42,
+                "query_text": "show me pending FX trades from last week",
+                "is_saved": True,
+                "query_name": "Weekly FX Review",
+                "last_use_time": "2026-02-05T14:22:00Z",
+                "score": 0.82
+            }
+        }
+
+
 class DeleteHistoryResponse(BaseModel):
     """
     Response from DELETE /history/{query_id} endpoint.
