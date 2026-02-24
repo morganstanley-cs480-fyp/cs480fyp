@@ -6,6 +6,6 @@ router = APIRouter(tags=["health"])
 async def root():
     return {"message": "Solution Service is running"}
 
-@router.get("/health")
+@router.get("/api/solutions/health")
 async def health():
     return {"status": "healthy"}

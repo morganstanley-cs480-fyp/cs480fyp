@@ -14,7 +14,7 @@ from app.schemas.chat import (
 )
 
 
-router = APIRouter(prefix="/chat", tags=["chat"])
+router = APIRouter(prefix="/api/rag/chat", tags=["chat"])
 
 
 def _inject_plain_text_instruction(messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
