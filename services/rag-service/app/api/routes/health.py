@@ -22,7 +22,7 @@ async def root():
     }
 
 
-@router.get("/health")
+@router.get("/api/rag/health")
 async def health():
     """Health check for ALB/ECS. Returns 200 when the service can accept traffic."""
     return {
@@ -33,7 +33,7 @@ async def health():
     }
 
 
-@router.get("/health/live")
+@router.get("/api/rag/health/live")
 async def liveness():
     """Liveness probe - process is running. No dependency checks."""
     return {

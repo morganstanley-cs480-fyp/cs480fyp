@@ -24,7 +24,7 @@ from app.schemas.document import (
 )
 
 logging.basicConfig(level=logging.INFO)
-router = APIRouter(prefix="/documents", tags=["documents"])
+router = APIRouter(prefix="/api/rag/documents", tags=["documents"])
 
 
 @router.post("/ingest", response_model=IngestResponse, status_code=status.HTTP_201_CREATED)

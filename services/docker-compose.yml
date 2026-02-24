@@ -154,7 +154,7 @@ services:
       dockerfile: Dockerfile
     container_name: fyp-rag-service
     ports:
-      - "8004:8000"
+      - "8004:3004"
     environment:
       LOG_LEVEL: DEBUG
       AWS_REGION: us-west-1
