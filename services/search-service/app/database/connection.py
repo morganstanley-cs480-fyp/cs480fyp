@@ -59,6 +59,10 @@ class DatabaseManager:
             await self._pool.close()
             logger.info("Database connection pool closed")
             self._pool = None
+
+    async def close(self) -> None:
+        """Alias for disconnect (for scripts)."""
+        await self.disconnect()
     
     @property
     def pool(self) -> asyncpg.Pool:

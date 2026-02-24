@@ -29,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Exception } from "@/lib/mockData";
+import type { Exception } from "@/lib/api/types";
 
 interface ExceptionResultsTableProps {
   table: TableType<Exception>;
