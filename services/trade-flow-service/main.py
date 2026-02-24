@@ -136,3 +136,5 @@ async def get_transactions_by_trade_id(trade_id: int):
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
+
+app.include_router(api_router)
