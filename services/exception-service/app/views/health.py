@@ -1,11 +1,15 @@
 from fastapi import APIRouter
 
-router = APIRouter(tags=["health"])
+# Root endpoint
+health_router = APIRouter(tags=["health"])
 
-@router.get("/")
+@health_router.get("/")
 async def root():
     return {"message": "Exception Service is running"}
 
-@router.get("/api/exceptions/health")
+# Health check endpoint under /api/exceptions
+exception_health_router = APIRouter(prefix="/api/exceptions", tags=["health"])
+
+@exception_health_router.get("/health")
 async def health():
     return {"status": "healthy"}
