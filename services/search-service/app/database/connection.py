@@ -15,10 +15,10 @@ from app.utils.exceptions import DatabaseConnectionError, DatabaseQueryError
 
 class DatabaseManager:
     """Manages PostgreSQL connection pool"""
-    
+
     def __init__(self):
         self._pool: Optional[asyncpg.Pool] = None
-    
+
     async def connect(self) -> None:
         """
         Initialize database connection pool.
@@ -40,16 +40,16 @@ class DatabaseManager:
                 extra={
                     "host": settings.RDS_HOST,
                     "database": settings.RDS_DB,
-                    "pool_size": f"{settings.DB_POOL_MIN_SIZE}-{settings.DB_POOL_MAX_SIZE}"
-                }
+                    "pool_size": f"{settings.DB_POOL_MIN_SIZE}-{settings.DB_POOL_MAX_SIZE}",
+                },
             )
         except Exception as e:
             logger.error(f"Failed to connect to database: {e}")
             raise DatabaseConnectionError(
                 "Failed to initialize database connection pool",
-                details={"error": str(e), "host": settings.RDS_HOST}
+                details={"error": str(e), "host": settings.RDS_HOST},
             )
-    
+
     async def disconnect(self) -> None:
         """
         Close database connection pool.
@@ -63,37 +63,37 @@ class DatabaseManager:
     async def close(self) -> None:
         """Alias for disconnect (for scripts)."""
         await self.disconnect()
-    
+
     @property
     def pool(self) -> asyncpg.Pool:
         """Get connection pool instance"""
         if self._pool is None:
             raise DatabaseConnectionError("Database pool not initialized")
         return self._pool
-    
+
     @asynccontextmanager
     async def acquire(self):
         """
         Context manager to acquire a connection from the pool.
-        
+
         Usage:
             async with db_manager.acquire() as conn:
                 result = await conn.fetch("SELECT * FROM trades")
         """
         if self._pool is None:
             raise DatabaseConnectionError("Database pool not initialized")
-        
+
         async with self._pool.acquire() as connection:
             yield connection
-    
+
     async def execute(self, query: str, *args) -> str:
         """
         Execute a query that doesn't return results (INSERT, UPDATE, DELETE).
-        
+
         Args:
             query: SQL query string
             *args: Query parameters
-        
+
         Returns:
             Query execution status
         """
@@ -105,17 +105,17 @@ class DatabaseManager:
             logger.error(f"Database execute error: {e}", extra={"query": query})
             raise DatabaseQueryError(
                 "Failed to execute database query",
-                details={"error": str(e), "query": query}
+                details={"error": str(e), "query": query},
             )
-    
+
     async def fetch(self, query: str, *args) -> list[asyncpg.Record]:
         """
         Execute a query and fetch all results.
-        
+
         Args:
             query: SQL query string
             *args: Query parameters
-        
+
         Returns:
             List of database records
         """
@@ -127,17 +127,17 @@ class DatabaseManager:
             logger.error(f"Database fetch error: {e}", extra={"query": query})
             raise DatabaseQueryError(
                 "Failed to fetch database results",
-                details={"error": str(e), "query": query}
+                details={"error": str(e), "query": query},
             )
-    
+
     async def fetchrow(self, query: str, *args) -> Optional[asyncpg.Record]:
         """
         Execute a query and fetch one result.
-        
+
         Args:
             query: SQL query string
             *args: Query parameters
-        
+
         Returns:
             Single database record or None
         """
@@ -149,17 +149,17 @@ class DatabaseManager:
             logger.error(f"Database fetchrow error: {e}", extra={"query": query})
             raise DatabaseQueryError(
                 "Failed to fetch database row",
-                details={"error": str(e), "query": query}
+                details={"error": str(e), "query": query},
             )
-    
+
     async def fetchval(self, query: str, *args):
         """
         Execute a query and fetch a single value.
-        
+
         Args:
             query: SQL query string
             *args: Query parameters
-        
+
         Returns:
             Single value
         """
@@ -171,14 +171,14 @@ class DatabaseManager:
             logger.error(f"Database fetchval error: {e}", extra={"query": query})
             raise DatabaseQueryError(
                 "Failed to fetch database value",
-                details={"error": str(e), "query": query}
+                details={"error": str(e), "query": query},
             )
-    
+
     async def health_check(self) -> bool:
         """
         Check if database connection is healthy.
         Used by health endpoint.
-        
+
         Returns:
             True if healthy, False otherwise
         """

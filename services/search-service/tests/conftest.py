@@ -36,6 +36,7 @@ def pytest_configure(config):
 
 # Database Fixtures
 
+
 @pytest.fixture(scope="function")
 async def db_connection() -> AsyncGenerator[asyncpg.Pool, None]:
     """PostgreSQL connection pool for tests."""
@@ -45,7 +46,9 @@ async def db_connection() -> AsyncGenerator[asyncpg.Pool, None]:
 
 
 @pytest.fixture(scope="function")
-async def db_transaction(db_connection: asyncpg.Pool) -> AsyncGenerator[asyncpg.Connection, None]:
+async def db_transaction(
+    db_connection: asyncpg.Pool,
+) -> AsyncGenerator[asyncpg.Connection, None]:
     """Database transaction that auto-rolls back after test"""
     async with db_connection.acquire() as conn:
         async with conn.transaction():
@@ -61,6 +64,7 @@ async def clean_db(db_connection: asyncpg.Pool):
 
 
 # Redis Fixtures
+
 
 @pytest.fixture(scope="function")
 async def redis_connection() -> AsyncGenerator[Redis, None]:
@@ -80,6 +84,7 @@ async def clean_redis(redis_connection: Redis):
 
 # AWS LocalStack Fixtures (for future AWS integration tests)
 
+
 @pytest.fixture(scope="session")
 def aws_credentials():
     """LocalStack dummy credentials."""
@@ -97,18 +102,22 @@ def localstack_endpoint():
 @pytest.fixture(scope="function")
 def mock_bedrock_response():
     """Generate mock Bedrock AI responses"""
-    def _create_response(extracted_query: str = "SELECT * FROM trades", 
-                         confidence: float = 0.95):
+
+    def _create_response(
+        extracted_query: str = "SELECT * FROM trades", confidence: float = 0.95
+    ):
         return {
             "extracted_query": extracted_query,
             "confidence": confidence,
             "query_type": "trade_search",
-            "filters": {}
+            "filters": {},
         }
+
     return _create_response
 
 
 # Test Data Fixtures
+
 
 @pytest.fixture(scope="function")
 def sample_trade_data():
@@ -122,7 +131,7 @@ def sample_trade_data():
         "clearing_house": "DTCC",
         "create_time": "2026-01-27 09:30:00",
         "update_time": "2026-01-27 10:00:00",
-        "status": "CLEARED"
+        "status": "CLEARED",
     }
 
 
@@ -131,22 +140,20 @@ def sample_search_query():
     """Sample search query"""
     return {
         "query": "Show me all FX trades for ACC12345",
-        "filters": {
-            "asset_type": "FX",
-            "account": "ACC12345"
-        },
-        "limit": 50
+        "filters": {"asset_type": "FX", "account": "ACC12345"},
+        "limit": 50,
     }
 
 
 # Utility Fixtures
+
 
 @pytest.fixture(scope="function")
 async def wait_for_services():
     """Wait for DB and Redis to be ready (with retry logic)"""
     max_retries = 30
     retry_delay = 1
-    
+
     for i in range(max_retries):
         try:
             await db_manager.connect()
@@ -155,7 +162,7 @@ async def wait_for_services():
             if i == max_retries - 1:
                 raise
             await asyncio.sleep(retry_delay)
-    
+
     for i in range(max_retries):
         try:
             await redis_manager.connect()
@@ -164,8 +171,8 @@ async def wait_for_services():
             if i == max_retries - 1:
                 raise
             await asyncio.sleep(retry_delay)
-    
+
     yield
-    
+
     await db_manager.disconnect()
     await redis_manager.disconnect()

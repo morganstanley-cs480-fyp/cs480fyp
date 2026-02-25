@@ -22,7 +22,9 @@ class FilterOptions(BaseModel):
     statuses: list[str]
 
 
-@router.get("/filter-options", response_model=FilterOptions, status_code=status.HTTP_200_OK)
+@router.get(
+    "/filter-options", response_model=FilterOptions, status_code=status.HTTP_200_OK
+)
 async def get_filter_options():
     """
     Return all distinct values for each trade filter dropdown.

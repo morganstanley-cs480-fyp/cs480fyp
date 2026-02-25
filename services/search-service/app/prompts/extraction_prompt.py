@@ -31,26 +31,26 @@ CRITICAL: You must ONLY return valid JSON. No explanatory text, no markdown form
 def build_user_prompt(query: str, current_date: Optional[datetime] = None) -> str:
     """
     Build the user prompt for parameter extraction.
-    
+
     Args:
         query: The natural language query from the user
         current_date: Current date for relative date calculation (defaults to now)
-    
+
     Returns:
         Formatted prompt string for Bedrock
     """
     if current_date is None:
         current_date = datetime.now()
-    
+
     # Format current date for the prompt
     today = current_date.strftime("%Y-%m-%d")
     day_of_week = current_date.strftime("%A")
-    
+
     # Calculate reference dates for examples
     yesterday = (current_date - timedelta(days=1)).strftime("%Y-%m-%d")
     one_week_ago = (current_date - timedelta(days=7)).strftime("%Y-%m-%d")
     one_month_ago = (current_date - timedelta(days=30)).strftime("%Y-%m-%d")
-    
+
     prompt = f"""Extract trade search parameters from this query and return them as JSON.
 
 Query: "{query}"
@@ -212,55 +212,25 @@ def build_validation_rules() -> dict:
     """
     Define validation rules for extracted parameters.
     Used to validate Bedrock's response before using it.
-    
+
     Returns:
         Dictionary of validation rules
     """
     return {
-        "trade_id": {
-            "type": "int",
-            "nullable": True
-        },
-        "asset_types": {
-            "type": "list",
-            "nullable": True
-        },
+        "trade_id": {"type": "int", "nullable": True},
+        "asset_types": {"type": "list", "nullable": True},
         "statuses": {
             "allowed_values": ["ALLEGED", "CLEARED", "REJECTED", "CANCELLED"],
             "type": "list",
-            "nullable": True
-        },
-        "booking_systems": {
-            "type": "list",
-            "nullable": True
-        },
-        "affirmation_systems": {
-            "type": "list",
-            "nullable": True
-        },
-        "clearing_houses": {
-            "type": "list",
-            "nullable": True
-        },
-        "accounts": {
-            "type": "list",
-            "nullable": True
-        },
-        "date_from": {
-            "type": "date",
             "nullable": True,
-            "format": "%Y-%m-%d"
         },
-        "date_to": {
-            "type": "date",
-            "nullable": True,
-            "format": "%Y-%m-%d"
-        },
-        "with_exceptions_only": {
-            "type": "bool",
-            "nullable": False,
-            "default": False
-        }
+        "booking_systems": {"type": "list", "nullable": True},
+        "affirmation_systems": {"type": "list", "nullable": True},
+        "clearing_houses": {"type": "list", "nullable": True},
+        "accounts": {"type": "list", "nullable": True},
+        "date_from": {"type": "date", "nullable": True, "format": "%Y-%m-%d"},
+        "date_to": {"type": "date", "nullable": True, "format": "%Y-%m-%d"},
+        "with_exceptions_only": {"type": "bool", "nullable": False, "default": False},
     }
 
 
@@ -272,8 +242,8 @@ TEST_QUERIES = [
             "asset_types": ["FX"],
             "statuses": ["ALLEGED"],
             "accounts": None,
-            "with_exceptions_only": False
-        }
+            "with_exceptions_only": False,
+        },
     },
     {
         "query": "cleared EQUITY trades for ACC012345",
@@ -281,24 +251,24 @@ TEST_QUERIES = [
             "accounts": ["ACC012345"],
             "asset_types": ["EQUITY"],
             "statuses": ["CLEARED"],
-            "cleared_trades_only": True
-        }
+            "cleared_trades_only": True,
+        },
     },
     {
         "query": "all rejected IRS trades",
         "expected_params": {
             "asset_types": ["IRS"],
             "statuses": ["REJECTED"],
-            "accounts": None
-        }
+            "accounts": None,
+        },
     },
     {
         "query": "show me trades with exceptions from WINTERFELL",
         "expected_params": {
             "booking_systems": ["WINTERFELL"],
             "with_exceptions_only": True,
-            "statuses": None
-        }
+            "statuses": None,
+        },
     },
     {
         "query": "FX and CDS trades cleared by LCH from Jan 1 to Jan 15 2025",
@@ -307,7 +277,7 @@ TEST_QUERIES = [
             "clearing_houses": ["LCH"],
             "statuses": ["CLEARED"],
             "date_from": "2025-01-01",
-            "date_to": "2025-01-15"
-        }
-    }
+            "date_to": "2025-01-15",
+        },
+    },
 ]

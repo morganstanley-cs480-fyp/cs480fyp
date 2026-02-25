@@ -21,13 +21,10 @@ from app.models.domain import ExtractedParams
 from app.prompts.extraction_prompt import (
     SYSTEM_PROMPT,
     build_user_prompt,
-    build_validation_rules
+    build_validation_rules,
 )
 from app.utils.logger import logger
-from app.utils.exceptions import (
-    BedrockAPIError,
-    BedrockResponseError
-)
+from app.utils.exceptions import BedrockAPIError, BedrockResponseError
 
 
 class GeminiService:
@@ -57,8 +54,7 @@ class GeminiService:
         self.validation_rules = build_validation_rules()
 
         logger.info(
-            "Gemini service initialized",
-            extra={"model": settings.GOOGLE_MODEL_ID}
+            "Gemini service initialized", extra={"model": settings.GOOGLE_MODEL_ID}
         )
 
     # ------------------------------------------------------------------
@@ -175,7 +171,7 @@ class GeminiService:
         user_prompt = build_user_prompt(query, current_date)
 
         generation_config = genai.types.GenerationConfig(
-            temperature=0.0,           # Deterministic extraction
+            temperature=0.0,  # Deterministic extraction
             max_output_tokens=500,
         )
 
@@ -264,7 +260,9 @@ class GeminiService:
                     value = [value] if value else []
 
                 if "allowed_values" in rules:
-                    invalid_values = [v for v in value if v not in rules["allowed_values"]]
+                    invalid_values = [
+                        v for v in value if v not in rules["allowed_values"]
+                    ]
                     if invalid_values:
                         logger.warning(
                             f"Invalid values in {field}: {invalid_values}",
@@ -309,7 +307,9 @@ class GeminiService:
                 return ExtractedParams(**json.loads(cached_json))
             return None
         except Exception as e:
-            logger.warning(f"Cache retrieval error: {e}", extra={"cache_key": cache_key})
+            logger.warning(
+                f"Cache retrieval error: {e}", extra={"cache_key": cache_key}
+            )
             return None
 
     async def _save_to_cache(self, cache_key: str, params: ExtractedParams) -> None:

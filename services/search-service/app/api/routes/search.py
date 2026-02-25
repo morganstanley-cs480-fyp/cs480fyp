@@ -13,7 +13,7 @@ from app.utils.exceptions import (
     SearchServiceException,
     InvalidSearchRequestError,
     BedrockAPIError,
-    DatabaseQueryError
+    DatabaseQueryError,
 )
 
 
@@ -24,20 +24,20 @@ router = APIRouter(tags=["search"])
 async def search_trades(request: SearchRequest):
     """
     Execute trade search using natural language query or manual filters.
-    
+
     **Natural Language Search Flow:**
     1. Extract parameters from query using AWS Bedrock (Claude 3.5 Sonnet)
     2. Build parameterized SQL query from extracted parameters
     3. Execute query against trades database
     4. Save query to history
     5. Return results with metadata
-    
+
     **Manual Search Flow:**
     1. Build parameterized SQL query from manual filters
     2. Execute query against trades database
     3. Save query to history
     4. Return results with metadata
-    
+
     **Request Body (Natural Language):**
     ```json
     {
@@ -46,7 +46,7 @@ async def search_trades(request: SearchRequest):
       "query_text": "show me pending FX trades from last week"
     }
     ```
-    
+
     **Request Body (Manual):**
     ```json
     {
@@ -60,7 +60,7 @@ async def search_trades(request: SearchRequest):
       }
     }
     ```
-    
+
     **Response:**
     ```json
     {
@@ -73,7 +73,7 @@ async def search_trades(request: SearchRequest):
       "extracted_params": {...}
     }
     ```
-    
+
     **Error Responses:**
     - 400: Invalid request (missing required fields, validation failed)
     - 422: AI response parsing error or validation error
@@ -83,50 +83,47 @@ async def search_trades(request: SearchRequest):
     """
     logger.info(
         "Received search request",
-        extra={
-            "user_id": request.user_id,
-            "search_type": request.search_type
-        }
+        extra={"user_id": request.user_id, "search_type": request.search_type},
     )
-    
+
     try:
         # Execute search through orchestrator
         result = await search_orchestrator.execute_search(request)
-        
+
         return result
-        
+
     except InvalidSearchRequestError:
         # 400 - already handled by exception handler
         raise
-        
+
     except BedrockAPIError:
         # 502 Bad Gateway - already handled by exception handler
         raise
-        
+
     except DatabaseQueryError:
         # 500/503 - already handled by exception handler
         raise
-        
+
     except SearchServiceException as e:
         # Generic search service error
         logger.error(
             f"Search service error: {e.message}",
-            extra={"user_id": request.user_id, "details": e.details}
+            extra={"user_id": request.user_id, "details": e.details},
         )
         raise
-        
+
     except Exception as e:
         # Unexpected error
         logger.error(
             f"Unexpected error in search endpoint: {e}",
             extra={"user_id": request.user_id},
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
                 "success": False,
                 "error": "Internal server error",
-                "message": "An unexpected error occurred during search execution."
-            }
+                "message": "An unexpected error occurred during search execution.",
+            },
         )
