@@ -23,7 +23,7 @@ docker-compose up search-service
 ```
 
 The backend services will be available at:
-- Search Service API: http://localhost:8000
+- Search Service API: http://localhost:3005
 - PostgreSQL: localhost:5432
 - Redis: localhost:6379
 

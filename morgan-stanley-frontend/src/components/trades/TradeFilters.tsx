@@ -1,6 +1,6 @@
 // Manual search filter panel with date range, trade attributes, and status filters
 
-import { Filter } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { DateRangeFilter } from "./DateRangeFilter";
@@ -78,10 +78,10 @@ export function TradeFilters({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Filter className="size-5" />
+    <Card className="border-black/8">
+      <CardHeader className="pb-3 border-b border-black/6">
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold text-black">
+          <SlidersHorizontal className="size-4 text-[#002B51]" />
           Advanced Search Filters
         </CardTitle>
       </CardHeader>
@@ -119,7 +119,7 @@ export function TradeFilters({
           getUniqueStatuses={getUniqueStatuses}
         />
 
-        <Separator />
+        <Separator className="bg-black/6" />
 
         <FilterOptions
           withExceptionsOnly={filters.with_exceptions_only}

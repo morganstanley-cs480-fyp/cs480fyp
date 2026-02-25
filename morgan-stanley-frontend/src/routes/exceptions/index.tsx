@@ -96,7 +96,6 @@ function ExceptionsPage() {
     getStatusBadgeVariant,
   });
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: results,
     columns,
@@ -176,7 +175,7 @@ function ExceptionsPage() {
   };
 
   return (
-    <div className="p-6 max-w-[90vw] mx-auto space-y-6">
+    <div className="p-6 mx-auto space-y-6">
       {loading && (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">

@@ -37,8 +37,10 @@ export function formatDateShort(value?: string | number | Date | null): string {
   return `${padDatePart(parsed.getDate())}/${padDatePart(parsed.getMonth() + 1)}/${parsed.getFullYear()}`;
 }
 
+const isCognitoConfigured = !!import.meta.env.VITE_COGNITO_CLIENT_ID;
+
 export const requireAuth = ({ context }: { context: RouterContext }) => {
-  if (!context.authentication.isAuthenticated) {
+  if (isCognitoConfigured && !context.authentication.isAuthenticated) {
     throw redirect({ to: "/" });
   }
 };

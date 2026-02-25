@@ -38,9 +38,9 @@ export function TimelineTransactionCard({
         }`}
       >
         {/* Timeline line and dot */}
-        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200">
+        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-black/10">
           {isLast && (
-            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-slate-300 rounded-full"></div>
+            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-black/12 rounded-full"></div>
           )}
         </div>
         <div

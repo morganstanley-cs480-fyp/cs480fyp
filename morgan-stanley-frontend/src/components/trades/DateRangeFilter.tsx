@@ -23,9 +23,9 @@ export function DateRangeFilter({
   onQuickDateRange,
 }: DateRangeFilterProps) {
   return (
-    <div className="space-y-4 p-4 bg-slate-50 rounded-lg">
+    <div className="space-y-4 p-4 bg-black/[0.02] rounded-lg border border-black/6">
       <div className="flex items-center gap-4">
-        <Label className="font-semibold text-base">Date Range</Label>
+        <Label className="font-semibold text-sm text-black">Date Range</Label>
         <div className="flex gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -33,9 +33,9 @@ export function DateRangeFilter({
               name="dateType"
               checked={dateType === 'update_time'}
               onChange={() => onDateTypeChange('update_time')}
-              className="w-4 h-4"
+              className="w-3.5 h-3.5 accent-[#002B51]"
             />
-            <span className="text-sm">Update Date</span>
+            <span className="text-sm text-black/75">Update Date</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -43,22 +43,22 @@ export function DateRangeFilter({
               name="dateType"
               checked={dateType === 'create_time'}
               onChange={() => onDateTypeChange('create_time')}
-              className="w-4 h-4"
+              className="w-3.5 h-3.5 accent-[#002B51]"
             />
-            <span className="text-sm">Create Date</span>
+            <span className="text-sm text-black/75">Create Date</span>
           </label>
         </div>
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-sm text-black/75">From</Label>
+          <Label className="text-xs text-black/50 font-medium">From</Label>
           <div className="relative">
             <Input
               type="date"
               value={dateFrom}
               onChange={(e) => onDateFromChange(e.target.value)}
-              className="h-9 pr-8"
+              className="h-9 pr-8 border-black/10 text-sm"
             />
             {dateFrom && (
               <button
@@ -73,13 +73,13 @@ export function DateRangeFilter({
           </div>
         </div>
         <div className="space-y-2">
-          <Label className="text-sm text-black/75">To</Label>
+          <Label className="text-xs text-black/50 font-medium">To</Label>
           <div className="relative">
             <Input
               type="date"
               value={dateTo}
               onChange={(e) => onDateToChange(e.target.value)}
-              className="h-9 pr-8"
+              className="h-9 pr-8 border-black/10 text-sm"
             />
             {dateTo && (
               <button
@@ -100,7 +100,7 @@ export function DateRangeFilter({
           variant="outline"
           size="sm"
           onClick={() => onQuickDateRange('today')}
-          className="h-8"
+          className="h-7 text-xs border-black/10 text-black/60 hover:border-[#002B51] hover:text-[#002B51]"
         >
           Today
         </Button>
@@ -108,7 +108,7 @@ export function DateRangeFilter({
           variant="outline"
           size="sm"
           onClick={() => onQuickDateRange('3days')}
-          className="h-8"
+          className="h-7 text-xs border-black/10 text-black/60 hover:border-[#002B51] hover:text-[#002B51]"
         >
           3 Days
         </Button>
@@ -116,7 +116,7 @@ export function DateRangeFilter({
           variant="outline"
           size="sm"
           onClick={() => onQuickDateRange('1week')}
-          className="h-8"
+          className="h-7 text-xs border-black/10 text-black/60 hover:border-[#002B51] hover:text-[#002B51]"
         >
           1 Week
         </Button>
@@ -124,7 +124,7 @@ export function DateRangeFilter({
           variant="outline"
           size="sm"
           onClick={() => onQuickDateRange('2weeks')}
-          className="h-8"
+          className="h-7 text-xs border-black/10 text-black/60 hover:border-[#002B51] hover:text-[#002B51]"
         >
           2 Weeks
         </Button>
@@ -132,7 +132,7 @@ export function DateRangeFilter({
           variant="outline"
           size="sm"
           onClick={() => onQuickDateRange('1month')}
-          className="h-8"
+          className="h-7 text-xs border-black/10 text-black/60 hover:border-[#002B51] hover:text-[#002B51]"
         >
           1 Month
         </Button>
