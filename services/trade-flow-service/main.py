@@ -152,21 +152,23 @@ async def get_trades(filters: TradeFilterParams = Depends()):
         print(f"Error fetching trades: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-
-@api_router.get("/trades")
-async def get_trades(limit: int = 100, offset: int = 0):
+@api_router.get("/trades/{id}")
+async def get_trade_by_id(id: int):
     try:
         async with app.state.pool.connection() as conn:
             async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(
-                    "SELECT * FROM trades LIMIT %s OFFSET %s", (limit, offset)
-                )
-                trades = await cur.fetchall()
-            return trades
+                await cur.execute("SELECT * FROM trades WHERE id = %s", (id,))
+                trade = await cur.fetchone()
+
+            if not trade:
+                raise HTTPException(status_code=404, detail=f"Trade {id} not found")
+            return trade
+
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
-
 
 @api_router.get("/transactions/{id}")
 async def get_transaction_by_id(id: int):
