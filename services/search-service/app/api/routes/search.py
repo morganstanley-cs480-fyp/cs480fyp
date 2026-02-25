@@ -17,7 +17,7 @@ from app.utils.exceptions import (
 )
 
 
-router = APIRouter(tags=["search"])
+router = APIRouter(prefix="/api", tags=["search"])
 
 
 @router.post("/search", response_model=SearchResponse, status_code=status.HTTP_200_OK)

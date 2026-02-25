@@ -35,12 +35,23 @@ class GeminiService:
     """
 
     def __init__(self):
-        """Initialize Gemini client with configuration."""
+        """Initialize Gemini client with configuration.
+
+        Validation of GOOGLE_API_KEY is deferred to first use so that the
+        module can be imported (and mocked) during tests without the key
+        being present in the environment.
+        """
         api_key = settings.GOOGLE_API_KEY
+        self._initialized = False
+        self.model = None
+        self.cache = redis_manager
+        self.validation_rules = build_validation_rules()
+
         if not api_key:
-            raise ValueError(
-                "Google API key is required. Set GOOGLE_API_KEY environment variable."
+            logger.warning(
+                "GOOGLE_API_KEY is not set – GeminiService will raise on first use."
             )
+            return
 
         genai.configure(api_key=api_key)
 
@@ -49,9 +60,7 @@ class GeminiService:
             model_name=settings.GOOGLE_MODEL_ID,
             system_instruction=SYSTEM_PROMPT,
         )
-
-        self.cache = redis_manager
-        self.validation_rules = build_validation_rules()
+        self._initialized = True
 
         logger.info(
             "Gemini service initialized", extra={"model": settings.GOOGLE_MODEL_ID}
@@ -89,6 +98,11 @@ class GeminiService:
             BedrockAPIError: Re-used for API-call failures (keeps orchestrator unchanged)
             BedrockResponseError: Re-used for parse/validation failures
         """
+        if not self._initialized:
+            raise ValueError(
+                "Google API key is required. Set GOOGLE_API_KEY environment variable."
+            )
+
         normalized_query = query.strip().lower()
         cache_key = self._generate_cache_key(normalized_query)
 

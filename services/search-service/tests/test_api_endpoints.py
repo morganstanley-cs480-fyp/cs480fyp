@@ -119,7 +119,7 @@ class TestSearchEndpoint:
                 "filters": {"asset_type": "FX", "status": ["CLEARED"]},
             }
 
-            response = await client.post("/search", json=request_data)
+            response = await client.post("/api/search", json=request_data)
 
             assert response.status_code == 200
             data = response.json()
@@ -148,7 +148,7 @@ class TestSearchEndpoint:
                 "query_text": "show me pending FX trades",
             }
 
-            response = await client.post("/search", json=request_data)
+            response = await client.post("/api/search", json=request_data)
 
             assert response.status_code == 200
             data = response.json()
@@ -160,7 +160,7 @@ class TestSearchEndpoint:
         """Test search fails without user_id."""
         request_data = {"search_type": "manual", "filters": {"asset_type": "FX"}}
 
-        response = await client.post("/search", json=request_data)
+        response = await client.post("/api/search", json=request_data)
 
         assert response.status_code == 422  # Validation error
 
@@ -173,7 +173,7 @@ class TestSearchEndpoint:
             "filters": {},
         }
 
-        response = await client.post("/search", json=request_data)
+        response = await client.post("/api/search", json=request_data)
 
         assert response.status_code == 422
 
@@ -199,7 +199,7 @@ class TestHistoryEndpoints:
                 }
             ]
 
-            response = await client.get("/history?user_id=test_user")
+            response = await client.get("/api/history?user_id=test_user")
 
             assert response.status_code == 200
             data = response.json()
@@ -209,7 +209,7 @@ class TestHistoryEndpoints:
     @pytest.mark.asyncio
     async def test_get_history_missing_user_id(self, client):
         """Test GET /history fails without user_id."""
-        response = await client.get("/history")
+        response = await client.get("/api/history")
 
         assert response.status_code == 422
 
@@ -232,7 +232,7 @@ class TestHistoryEndpoints:
             request_data = {"is_saved": True, "query_name": "My Saved Query"}
 
             response = await client.put(
-                "/history/1?user_id=test_user", json=request_data
+                "/api/history/1?user_id=test_user", json=request_data
             )
 
             assert response.status_code == 200
@@ -248,7 +248,7 @@ class TestHistoryEndpoints:
         ) as mock_delete:
             mock_delete.return_value = None
 
-            response = await client.delete("/history/1?user_id=test_user")
+            response = await client.delete("/api/history/1?user_id=test_user")
 
             assert response.status_code == 204  # No Content is correct for DELETE
 
@@ -261,7 +261,7 @@ class TestHistoryEndpoints:
             "app.services.query_history_service.query_history_service.delete_query",
             side_effect=UnauthorizedAccessError("Not your query"),
         ):
-            response = await client.delete("/history/1?user_id=wrong_user")
+            response = await client.delete("/api/history/1?user_id=wrong_user")
 
             assert response.status_code == 403
 

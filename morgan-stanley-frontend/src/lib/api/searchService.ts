@@ -53,7 +53,7 @@ export const searchService = {
    * Perform trade search (natural language or manual filters)
    */
   async searchTrades(request: SearchRequest): Promise<SearchResponse> {
-    return apiClient.post<SearchResponse>('/search', request);
+    return apiClient.post<SearchResponse>('/api/search', request);
   },
 
   /**
@@ -64,7 +64,7 @@ export const searchService = {
     limit: number = 5
   ): Promise<QueryHistory[]> {
     return apiClient.get<QueryHistory[]>(
-      `/history?user_id=${userId}&limit=${limit}`
+      `/api/history?user_id=${userId}&limit=${limit}`
     );
   },
 
@@ -77,7 +77,7 @@ export const searchService = {
     update: UpdateHistoryRequest
   ): Promise<UpdateHistoryResponse> {
     return apiClient.put<UpdateHistoryResponse>(
-      `/history/${historyId}?user_id=${userId}`,
+      `/api/history/${historyId}?user_id=${userId}`,
       update
     );
   },
@@ -86,14 +86,14 @@ export const searchService = {
    * Delete a search history entry
    */
   async deleteSearchHistory(historyId: number, userId: string): Promise<void> {
-    return apiClient.delete<void>(`/history/${historyId}?user_id=${userId}`);
+    return apiClient.delete<void>(`/api/history/${historyId}?user_id=${userId}`);
   },
 
   /**
    * Clear all search history for a user
    */
   async clearSearchHistory(userId: string): Promise<void> {
-    return apiClient.delete<void>(`/history?user_id=${userId}`);
+    return apiClient.delete<void>(`/api/history?user_id=${userId}`);
   },
 
   /**
@@ -104,7 +104,7 @@ export const searchService = {
     limit: number = 50
   ): Promise<QueryHistory[]> {
     return apiClient.get<QueryHistory[]>(
-      `/history/saved-queries?user_id=${userId}&limit=${limit}`
+      `/api/history/saved-queries?user_id=${userId}&limit=${limit}`
     );
   },
 
@@ -118,7 +118,7 @@ export const searchService = {
   ): Promise<TypeaheadSuggestion[]> {
     const encoded = encodeURIComponent(query);
     return apiClient.get<TypeaheadSuggestion[]>(
-      `/history/suggestions?user_id=${userId}&q=${encoded}&limit=${limit}`
+      `/api/history/suggestions?user_id=${userId}&q=${encoded}&limit=${limit}`
     );
   },
 
@@ -131,7 +131,7 @@ export const searchService = {
     queryName: string
   ): Promise<QueryHistory> {
     return apiClient.put<QueryHistory>(
-      `/history/${queryId}/save?user_id=${userId}&query_name=${encodeURIComponent(queryName)}`
+      `/api/history/${queryId}/save?user_id=${userId}&query_name=${encodeURIComponent(queryName)}`
     );
   },
 
@@ -143,7 +143,7 @@ export const searchService = {
     userId: string
   ): Promise<{ success: boolean; message: string }> {
     return apiClient.put<{ success: boolean; message: string }>(
-      `/history/${queryId}/use?user_id=${userId}`
+      `/api/history/${queryId}/use?user_id=${userId}`
     );
   },
 
@@ -182,7 +182,7 @@ export const searchService = {
    * Uses a single aggregation query on the backend — does not fetch trade rows.
    */
   async getFilterOptions(): Promise<FilterOptions> {
-    return apiClient.get<FilterOptions>('/filter-options');
+    return apiClient.get<FilterOptions>('/api/filter-options');
   },
 
   /**

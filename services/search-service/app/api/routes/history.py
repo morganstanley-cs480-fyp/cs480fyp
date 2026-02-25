@@ -1,6 +1,6 @@
 """
 Query History API Routes
-GET /history, PUT /history/{query_id}, DELETE /history/{query_id}
+GET /api/history, PUT /api/history/{query_id}, DELETE /api/history/{query_id}
 """
 
 from datetime import datetime
@@ -18,7 +18,7 @@ from app.utils.exceptions import (
 )
 
 
-router = APIRouter(prefix="/history", tags=["history"])
+router = APIRouter(prefix="/api/history", tags=["history"])
 
 
 @router.get("/", response_model=list[QueryHistory])

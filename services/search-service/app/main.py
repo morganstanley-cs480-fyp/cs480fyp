@@ -364,12 +364,12 @@ logger.info(
         "routes": [
             "GET /",
             "GET /health",
-            "POST /search",
-            "GET /history",
-            "GET /history/suggestions",
-            "PUT /history/{query_id}",
-            "DELETE /history/{query_id}",
-            "GET /filter-options",
+            "POST /api/search",
+            "GET /api/history",
+            "GET /api/history/suggestions",
+            "PUT /api/history/{query_id}",
+            "DELETE /api/history/{query_id}",
+            "GET /api/filter-options",
         ]
     },
 )

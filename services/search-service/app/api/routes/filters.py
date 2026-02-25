@@ -10,10 +10,12 @@ from app.database.connection import db_manager
 from app.utils.logger import logger
 
 
-router = APIRouter(tags=["filters"])
+router = APIRouter(prefix="/api", tags=["filters"])
 
 
 class FilterOptions(BaseModel):
+    """Distinct values for each trade filter dropdown field."""
+
     accounts: list[str]
     asset_types: list[str]
     booking_systems: list[str]
