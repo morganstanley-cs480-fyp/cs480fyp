@@ -344,11 +344,13 @@ async def generic_exception_handler(request: Request, exc: Exception):
 from app.api.routes.health import router as health_router  # noqa: E402
 from app.api.routes.search import router as search_router  # noqa: E402
 from app.api.routes.history import router as history_router  # noqa: E402
+from app.api.routes.filters import router as filters_router  # noqa: E402
 
 # Register routers
 app.include_router(health_router)
 app.include_router(search_router)
 app.include_router(history_router)
+app.include_router(filters_router)
 
 logger.info(
     "API routes registered",
@@ -360,7 +362,8 @@ logger.info(
             "GET /history",
             "GET /history/suggestions",
             "PUT /history/{query_id}",
-            "DELETE /history/{query_id}"
+            "DELETE /history/{query_id}",
+            "GET /filter-options"
         ]
     }
 )

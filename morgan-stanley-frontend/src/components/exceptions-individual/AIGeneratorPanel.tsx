@@ -77,12 +77,12 @@ export function AIGeneratorPanel({
       {aiGeneratedSolution && (
         <div>
           <Label>AI-Generated Solution Description</Label>
-          <Card className="bg-slate-50 border-slate-200 mt-2">
+          <Card className="bg-black/[0.02] border-black/10 mt-2">
             <CardContent className="p-4">
               <div className="flex items-start gap-2 mb-3">
                 <Lightbulb className="size-5 text-[#002B51] mt-0.5" />
                 <div className="flex-1">
-                  <div className="text-sm text-black/75 bg-white border border-slate-200 rounded p-3 whitespace-pre-wrap">
+                  <div className="text-sm text-black/75 bg-white border border-black/10 rounded p-3 whitespace-pre-wrap">
                     {aiGeneratedSolution}
                   </div>
                 </div>

@@ -123,6 +123,7 @@ class ExtractedParams(BaseModel):
     Used internally to translate NL query → SQL.
     All fields use lists to support multiple values (e.g., ["FX", "EQUITY"]).
     """
+    trade_id: Optional[int] = None
     accounts: Optional[list[str]] = None
     asset_types: Optional[list[str]] = None
     booking_systems: Optional[list[str]] = None
@@ -133,12 +134,13 @@ class ExtractedParams(BaseModel):
     date_to: Optional[str] = None
     with_exceptions_only: bool = False
     cleared_trades_only: bool = False
-    
+
     class Config:
         json_schema_extra = {
             "example": {
+                "trade_id": None,
                 "accounts": ["ACC123", "ACC456"],
-                "asset_types": ["FX", "EQUITY"],
+                "asset_types": ["FX", "IRS"],
                 "booking_systems": None,
                 "affirmation_systems": None,
                 "clearing_houses": ["LCH"],

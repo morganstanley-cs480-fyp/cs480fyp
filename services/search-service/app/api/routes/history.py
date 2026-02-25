@@ -110,6 +110,114 @@ async def get_history(
         )
 
 
+@router.get("/saved-queries", response_model=list[QueryHistory])
+async def get_saved_queries(
+    user_id: str = Query(..., description="User ID to fetch saved queries for", min_length=1),
+    limit: int = Query(50, description="Maximum number of records to return", ge=1, le=100)
+):
+    """
+    Get saved/bookmarked queries for a user.
+
+    Returns only queries where is_saved = TRUE, ordered by last_use_time DESC.
+
+    **Query Parameters:**
+    - `user_id`: User ID (required)
+    - `limit`: Max records to return (1-100, default: 50)
+    """
+    logger.info(
+        "Fetching saved queries",
+        extra={"user_id": user_id, "limit": limit}
+    )
+
+    try:
+        saved_queries = await query_history_service.get_user_history(
+            user_id=user_id,
+            limit=limit,
+            saved_only=True
+        )
+
+        return saved_queries
+
+    except DatabaseQueryError:
+        raise
+
+    except Exception as e:
+        logger.error(
+            f"Unexpected error fetching saved queries: {e}",
+            extra={"user_id": user_id},
+            exc_info=True
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": "Internal server error",
+                "message": "An unexpected error occurred."
+            }
+        )
+
+
+@router.get("/suggestions", response_model=list[TypeaheadSuggestion])
+async def get_typeahead_suggestions(
+    user_id: str = Query(..., description="User ID to fetch suggestions for", min_length=1),
+    q: str = Query(..., description="Search input to match", min_length=1),
+    limit: int = Query(10, description="Maximum number of suggestions to return", ge=1, le=20)
+):
+    """
+    Get typeahead suggestions for a user's search input.
+    Uses fuzzy matching against recent query history.
+    """
+    logger.info(
+        "Fetching typeahead suggestions",
+        extra={"user_id": user_id, "query": q, "limit": limit}
+    )
+
+    try:
+        suggestions = await query_history_service.get_suggestions(
+            user_id=user_id,
+            query=q,
+            limit=limit
+        )
+
+        def format_time(value) -> str | None:
+            if isinstance(value, datetime):
+                return value.strftime("%Y-%m-%dT%H:%M:%SZ")
+            if value is None:
+                return None
+            return str(value)
+
+        return [
+            TypeaheadSuggestion(
+                query_id=item["query_id"],
+                query_text=item["query_text"],
+                is_saved=item["is_saved"],
+                query_name=item["query_name"],
+                last_use_time=format_time(item.get("last_use_time")),
+                score=round(float(item["score"]), 4),
+                category=item.get("category")
+            )
+            for item in suggestions
+        ]
+
+    except DatabaseQueryError:
+        raise
+
+    except Exception as e:
+        logger.error(
+            f"Unexpected error fetching suggestions: {e}",
+            extra={"user_id": user_id},
+            exc_info=True
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": "Internal server error",
+                "message": "An unexpected error occurred."
+            }
+        )
+
+
 @router.put("/{query_id}", response_model=QueryHistory)
 async def update_history(
     query_id: int = Path(..., description="Query ID to update", ge=1),
@@ -327,145 +435,6 @@ async def clear_all_history(
     except Exception as e:
         logger.error(
             f"Unexpected error clearing history: {e}",
-            extra={"user_id": user_id},
-            exc_info=True
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "success": False,
-                "error": "Internal server error",
-                "message": "An unexpected error occurred."
-            }
-        )
-
-
-@router.get("/saved-queries", response_model=list[QueryHistory])
-async def get_saved_queries(
-    user_id: str = Query(..., description="User ID to fetch saved queries for", min_length=1),
-    limit: int = Query(50, description="Maximum number of records to return", ge=1, le=100)
-):
-    """
-    Get saved/bookmarked queries for a user.
-    
-    Returns only queries where is_saved = TRUE, ordered by last_use_time DESC.
-    
-    **Query Parameters:**
-    - `user_id`: User ID (required)
-    - `limit`: Max records to return (1-100, default: 50)
-    
-    **Example Request:**
-    ```
-    GET /saved-queries?user_id=user123&limit=10
-    ```
-    
-    **Success Response:**
-    ```json
-    [
-      {
-        "query_id": 42,
-        "user_id": "user123",
-        "query_text": "show me pending FX trades from last week",
-        "is_saved": true,
-        "query_name": "Weekly FX Pending Trades",
-        "create_time": "2026-02-01T10:30:00Z",
-        "last_use_time": "2026-02-05T14:22:00Z"
-      }
-    ]
-    ```
-    """
-    logger.info(
-        "Fetching saved queries",
-        extra={"user_id": user_id, "limit": limit}
-    )
-    
-    try:
-        saved_queries = await query_history_service.get_user_history(
-            user_id=user_id,
-            limit=limit,
-            saved_only=True
-        )
-        
-        return saved_queries
-        
-    except DatabaseQueryError:
-        raise
-        
-    except Exception as e:
-        logger.error(
-            f"Unexpected error fetching saved queries: {e}",
-            extra={"user_id": user_id},
-            exc_info=True
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "success": False,
-                "error": "Internal server error",
-                "message": "An unexpected error occurred."
-            }
-        )
-
-
-@router.get("/suggestions", response_model=list[TypeaheadSuggestion])
-async def get_typeahead_suggestions(
-    user_id: str = Query(..., description="User ID to fetch suggestions for", min_length=1),
-    q: str = Query(..., description="Search input to match", min_length=1),
-    limit: int = Query(10, description="Maximum number of suggestions to return", ge=1, le=20)
-):
-    """
-    Get typeahead suggestions for a user's search input.
-
-    Uses fuzzy matching against recent query history (natural language only).
-
-    **Query Parameters:**
-    - `user_id`: User ID (required)
-    - `q`: Search input string (required)
-    - `limit`: Max suggestions to return (1-20, default: 10)
-
-    **Example Request:**
-    ```
-    GET /history/suggestions?user_id=user123&q=pending%20fx&limit=8
-    ```
-    """
-    logger.info(
-        "Fetching typeahead suggestions",
-        extra={"user_id": user_id, "query": q, "limit": limit}
-    )
-
-    try:
-        suggestions = await query_history_service.get_suggestions(
-            user_id=user_id,
-            query=q,
-            limit=limit
-        )
-
-        def format_time(value) -> str | None:
-            if isinstance(value, datetime):
-                return value.strftime("%Y-%m-%dT%H:%M:%SZ")
-            if value is None:
-                return None
-            return str(value)
-
-        return [
-            TypeaheadSuggestion(
-                query_id=item["query_id"],
-                query_text=item["query_text"],
-                is_saved=item["is_saved"],
-                query_name=item["query_name"],
-                last_use_time=format_time(item.get("last_use_time")),
-                score=round(float(item["score"]), 4),
-                category=item.get("category")
-            )
-            for item in suggestions
-        ]
-
-    except DatabaseQueryError:
-        raise
-
-    except Exception as e:
-        logger.error(
-            f"Unexpected error fetching suggestions: {e}",
             extra={"user_id": user_id},
             exc_info=True
         )

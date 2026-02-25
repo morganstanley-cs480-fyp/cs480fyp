@@ -60,6 +60,18 @@ class QueryBuilder:
         conditions = []
         values = []
         param_index = 1
+
+        # Handle trade_id filter — exact lookup, short-circuits all other filters
+        if params.trade_id is not None:
+            conditions.append(f"id = ${param_index}::integer")
+            values.append(params.trade_id)
+            param_index += 1
+            query = f"{self.BASE_QUERY} AND {conditions[0]} LIMIT 1"
+            logger.info(
+                "Built SQL query from extracted parameters (trade_id exact lookup)",
+                extra={"trade_id": params.trade_id}
+            )
+            return query, values
         
         # Handle accounts filter
         if params.accounts:
@@ -119,13 +131,13 @@ class QueryBuilder:
         # TODO: Implement when exceptions table is available
         if params.with_exceptions_only:
             logger.warning("with_exceptions_only filter not yet implemented")
-        
+
         # Handle cleared_trades_only filter
         if params.cleared_trades_only:
             conditions.append(f"status = ${param_index}::text")
             values.append("CLEARED")
             param_index += 1
-        
+
         # Build final query
         where_clause = " AND ".join(conditions) if conditions else "TRUE"
         query = f"{self.BASE_QUERY} AND {where_clause} ORDER BY update_time DESC LIMIT {settings.MAX_SEARCH_RESULTS}"

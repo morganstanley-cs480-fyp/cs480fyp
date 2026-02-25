@@ -11,7 +11,9 @@ from app.database.connection import db_manager
 from app.models.request import SearchRequest
 from app.models.response import SearchResponse
 from app.models.domain import Trade, ExtractedParams
-from app.services.bedrock_service import bedrock_service
+# NOTE: Using Gemini temporarily while Bedrock access is being resolved.
+#       Switch back to: from app.services.bedrock_service import bedrock_service
+from app.services.gemini_service import gemini_service as bedrock_service
 from app.services.query_builder import query_builder
 from app.services.query_history_service import query_history_service
 from app.services.ranking_service import trade_ranker
@@ -181,7 +183,13 @@ class SearchOrchestrator:
         
         # Build SQL from extracted parameters
         sql_query, params = self.builder.build_from_extracted_params(extracted_params)
-        
+
+        logger.info(
+            "[SQL QUERY]\n%s\n[SQL PARAMS] %s",
+            sql_query,
+            params,
+        )
+
         return sql_query, params, extracted_params
     
     async def _handle_manual_search(

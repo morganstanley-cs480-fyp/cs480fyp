@@ -8,6 +8,7 @@ import type {
   UpdateHistoryRequest,
   Exception,
   TypeaheadSuggestion,
+  FilterOptions,
 } from './types';
 
 /**
@@ -174,6 +175,14 @@ export const searchService = {
       `/api/exceptions/trade/${tradeId}`
     );
     return exceptions.map(mapException);
+  },
+
+  /**
+   * Fetch all distinct values for trade filter dropdowns.
+   * Uses a single aggregation query on the backend — does not fetch trade rows.
+   */
+  async getFilterOptions(): Promise<FilterOptions> {
+    return apiClient.get<FilterOptions>('/filter-options');
   },
 
   /**

@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: Optional[str] = None  # Use IAM role in production
     BEDROCK_MAX_TOKENS: int = 500
     BEDROCK_TEMPERATURE: float = 0.0
+
+    # Google Gemini Configuration (temporary local dev alternative to Bedrock)
+    GOOGLE_API_KEY: Optional[str] = None
+    GOOGLE_MODEL_ID: str = "gemini-2.5-flash-lite"
     
     # Cache TTL (Time To Live) in seconds
     CACHE_TTL_AI_EXTRACTION: int = 3600  # 1 hour
@@ -64,8 +68,7 @@ class Settings(BaseSettings):
     BEDROCK_RETRY_ATTEMPTS: int = 3
     BEDROCK_RETRY_MIN_WAIT: int = 2
     BEDROCK_RETRY_MAX_WAIT: int = 10
-    
-    
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

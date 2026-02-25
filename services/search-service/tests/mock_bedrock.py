@@ -26,7 +26,7 @@ class MockBedrockService:
         self.call_count = 0
         self.mock_enabled = True
     
-    async def extract_parameters(self, query_text: str) -> Dict[str, Any]:
+    async def extract_parameters(self, query_text: str) -> Dict[str, Any]:  # noqa: C901
         """
         Mock parameter extraction from natural language query.
         
@@ -223,20 +223,20 @@ async def test_mock_bedrock():
     
     mock = MockBedrockService()
     
-    for i, test_case in enumerate(MOCK_TEST_CASES, 1):
-        print("\nTest {i}: {test_case['query']}")
+    for _i, test_case in enumerate(MOCK_TEST_CASES, 1):
+        print("\nTest {_i}: {test_case['query']}")
         print("-" * 60)
         
         result = await mock.extract_parameters(test_case['query'])
         
         print("Extracted:")
-        for key, value in result.items():
+        for _key, value in result.items():
             if value and value != [] and value is not False:
-                print("  {key}: {value}")
+                print("  {_key}: {value}")
         
         print("\nExpected:")
-        for key, value in test_case['expected'].items():
-            print("  {key}: {value}")
+        for _key, _value in test_case['expected'].items():
+            print("  {_key}: {_value}")
     
     print("\n" + "=" * 60)
     print("Total mock calls: {mock.get_call_count()}")

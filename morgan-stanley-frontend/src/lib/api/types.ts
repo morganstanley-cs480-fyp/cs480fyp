@@ -16,7 +16,7 @@ export interface Trade {
   clearing_house: string;
   create_time: string;
   update_time: string;
-  status: 'CANCELLED' | 'ALLEGED' | 'REJECTED' | 'CLEARED' | 'PENDING';
+  status: 'CANCELLED' | 'ALLEGED' | 'REJECTED' | 'CLEARED';
 }
 
 export interface Transaction {
@@ -87,6 +87,15 @@ export interface TypeaheadSuggestion {
   last_use_time?: string | null;
   score: number;
   category?: string | null;
+}
+
+export interface FilterOptions {
+  accounts: string[];
+  asset_types: string[];
+  booking_systems: string[];
+  affirmation_systems: string[];
+  clearing_houses: string[];
+  statuses: string[];
 }
 
 export interface ExtractedParams {

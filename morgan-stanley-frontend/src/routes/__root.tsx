@@ -1,6 +1,5 @@
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { Header } from '@/components/Header'
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useAuth } from "react-oidc-context";
 import type { AuthContextProps } from 'react-oidc-context';
 
@@ -27,10 +26,9 @@ function RootComponent() {
 
   return (
     <>
-      {/* Only show Header if authenticated */}
-      {auth.isAuthenticated && <Header />}
+      {/* Only show Header if authenticated (or in dev without Cognito) */}
+      {(auth.isAuthenticated || !import.meta.env.VITE_COGNITO_CLIENT_ID) && <Header />}
       <Outlet />
-      <TanStackRouterDevtools />
     </>
   );
 }
