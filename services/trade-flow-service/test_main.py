@@ -99,11 +99,19 @@ async def test_get_trades_list(client, mock_cursor):
         "update_time": "2025-08-20T16:30:00",
         "status": "Failed"}
     ]
+    
+    # NEW: Mock the total count query (fetchone)
+    mock_cursor.fetchone.return_value = {"count": 2}
+    # Mock the data query (fetchall)
     mock_cursor.fetchall.return_value = fake_trades
     
     response = client.get("/api/trades?limit=10&offset=0")
     assert response.status_code == 200
-    assert len(response.json()) == 2
+    
+    # NEW: Assert against the "data" key, not the whole JSON object
+    data = response.json()
+    assert len(data["data"]) == 2
+    assert data["total"] == 2
 
 # 5. Test get transaction by id
 @pytest.mark.asyncio
