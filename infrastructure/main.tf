@@ -414,7 +414,11 @@ module "rag_service" {
     { name = "DB_NAME", value = module.main_rds.db_name }
   ]
   sqs_environment = []
-  other_environment = []
+  other_environment = [
+    { name = "MILVUS_HOST", value = module.milvus_db.milvus_private_ip },
+    { name = "MILVUS_PORT", value = "19530" },
+    { name = "MILVUS_COLLECTION", value = "exceptions" }
+  ]
 }
 
 # SEARCH SERVICE
@@ -576,4 +580,11 @@ module "trade_flow_service" {
   ]
   sqs_environment = []
   other_environment = []
+}
+
+module "milvus_db" {
+  source          = "./modules/milvus_ec2"
+  vpc_id          = module.networking.vpc_id
+  subnet_id       = module.networking.public_subnet_ids[0] 
+  vpc_cidr_block  = var.vpc_cidr_block
 }
