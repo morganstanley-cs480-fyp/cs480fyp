@@ -1,4 +1,4 @@
-# Search Service
+# Search Service 
 
 AI-powered trade search service using natural language queries and manual filters.
 
