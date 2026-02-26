@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     GOOGLE_MODEL_ID: str = "gemini-2.5-flash-lite"
     
     # LLM Provider Selection ("bedrock" or "google")
-    LLM_PROVIDER: str = "bedrock"
+    LLM_PROVIDER: str = "google"
 
     # Milvus
     MILVUS_HOST: str = "localhost"
@@ -53,8 +53,9 @@ class Settings(BaseSettings):
     VECTOR_DIM: int = 1024  # Cohere embedding dimension
 
     # Service URLs
-    EXCEPTION_SERVICE_URL: str = "http://exception-service:8000"
-    TRADE_FLOW_SERVICE_URL: str = "http://trade-flow-service:8000"
+    EXCEPTION_SERVICE_URL: str = "http://exception-service:3001"
+    TRADE_FLOW_SERVICE_URL: str = "http://trade-flow-service:3007"
+    SOLUTION_SERVICE_URL: str = "http://solution-service:3006"
 
     model_config = SettingsConfigDict(
         env_file=".env",
