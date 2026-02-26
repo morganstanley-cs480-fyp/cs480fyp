@@ -1,4 +1,4 @@
-import {createFileRoute, useNavigate, redirect} from "@tanstack/react-router";
+import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {useEffect, useState} from "react";
 import {ArrowLeft, AlertCircle} from "lucide-react";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
