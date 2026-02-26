@@ -372,7 +372,7 @@ export function TradeResultsTable({
                     onClick={() => {
                       navigate({
                         to: "/trades/$tradeId",
-                        params: { tradeId: row.original.trade_id.toString() },
+                        params: { tradeId: row.original.id.toString() },
                       });
                     }}
                   >

@@ -122,14 +122,14 @@ function TradeSearchPage() {
   };
 
   // Fetch all trades and set results (filter options are loaded separately)
-  const fetchAllTrades = async () => {
-    try {
-      const allTrades = await tradeFlowService.getTrades(1000, 0);
-      setResults(allTrades);
-    } catch (error) {
-      console.error('Failed to fetch trades:', error);
-    }
-  };
+    const fetchAllTrades = async () => {
+        try {
+            const allTrades = await tradeFlowService.getTrades(1000, 0);
+            setResults(allTrades);
+        } catch (error) {
+            console.error('Failed to fetch trades:', error);
+        }
+    };
 
   // Fetch filter dropdown options from the dedicated aggregation endpoint.
   // This is independent of trade results — one cheap DB query, not a 1000-row fetch.
