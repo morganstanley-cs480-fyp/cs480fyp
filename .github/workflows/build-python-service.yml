@@ -169,7 +169,9 @@ jobs:
         run: |
           if aws ecs describe-task-definition \
             --task-definition ${{ inputs.deployment_name || inputs.service_name }}-task \
-            --region ap-southeast-1 > task-def.json 2>&1; then
+            --region ap-southeast-1 \
+            --query taskDefinition \
+            --output json > task-def.json 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
