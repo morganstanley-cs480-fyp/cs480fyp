@@ -163,7 +163,7 @@ function TradeDetailPage() {
                                 <CardTitle>Trade Clearing Flow Visualization</CardTitle>
                                 <CardDescription className="mt-2">
                                     Interactive flow diagram and transaction timeline for{" "}
-                                    <span className="font-extrabold">Trade {trade.trade_id}</span>
+                                    <span className="font-extrabold">Trade {trade.id}</span>
                                 </CardDescription>
                             </div>
                         </div>
