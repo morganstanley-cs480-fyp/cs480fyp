@@ -612,7 +612,10 @@ export function FlowVisualization({
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(!transactions || transactions.length === 0 ? false : true);
 
-  // Generate dynamic flow visualization based on actual transaction data
+  // Use mergedTransactions for all rendering (combines API + WebSocket data)
+  const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
+
+    // Generate dynamic flow visualization based on actual transaction data
   useEffect(() => {
     if (!transactions || transactions.length === 0) {
       return;
@@ -624,9 +627,6 @@ export function FlowVisualization({
         .map(t => t.entity)
         .filter(e => e && e !== 'CCP' && e !== 'Central Clearing House')
     )];
-
-    // Sort transactions by step to maintain order
-    const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
 
     // Build flows based on transaction direction
     const flows: TransactionFlow[] = sortedTransactions.map(tx => {
@@ -671,7 +671,7 @@ export function FlowVisualization({
         console.error('ELK layout failed:', error);
         setIsLoading(false);
       });
-  }, [transactions, clearingHouse, onEntitySelect, exceptions, onTransactionSelect]);
+  }, [sortedTransactions, transactions, clearingHouse, onEntitySelect, exceptions, onTransactionSelect]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setLayoutData((prev) => ({
@@ -712,32 +712,38 @@ export function FlowVisualization({
 
       <CardContent>
         {activeTab === "timeline" ? (
-          <>
-            <CardDescription className="mb-4">
-              Click on a transaction to view details
-            </CardDescription>
-            <div className="max-h-[800px] overflow-y-auto">
-              <div className="space-y-4 px-4 py-2">
-                {transactions.map((transaction, index) => {
-                  const relatedExceptions = getRelatedExceptions(transaction.trans_id);
+            <>
+                <CardDescription className="mb-4">
+                    Click on a transaction to view details
+                </CardDescription>
+                <div className="max-h-[800px] overflow-y-auto">
+                    <div className="space-y-4 px-4 py-2">
+                        {sortedTransactions.length === 0 ? (
+                            <div className="text-center text-gray-500 py-8">
+                                No transactions found for this trade.
+                            </div>
+                        ) : (
+                            sortedTransactions.map((transaction, index) => {
+                                const relatedExceptions = getRelatedExceptions(transaction.trans_id);
 
-                  return (
-                    <TimelineTransactionCard
-                      key={transaction.trans_id}
-                      transaction={transaction}
-                      index={index}
-                      isSelected={selectedTransaction?.trans_id === transaction.trans_id}
-                      isLast={index === transactions.length - 1}
-                      relatedExceptions={relatedExceptions}
-                      getTransactionBackgroundColor={getTransactionBackgroundColor}
-                      getTransactionStatusColor={getTransactionStatusColor}
-                      onClick={() => onTransactionSelect(transaction)}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </>
+                                return (
+                                    <TimelineTransactionCard
+                                        key={transaction.trans_id}
+                                        transaction={transaction}
+                                        index={index}
+                                        isSelected={selectedTransaction?.trans_id === transaction.trans_id}
+                                        isLast={index === sortedTransactions.length - 1}
+                                        relatedExceptions={relatedExceptions}
+                                        getTransactionBackgroundColor={getTransactionBackgroundColor}
+                                        getTransactionStatusColor={getTransactionStatusColor}
+                                        onClick={() => onTransactionSelect(transaction)}
+                                    />
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
+            </>
         ) : (
           <>
             <CardDescription className="mb-4">
