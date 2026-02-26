@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from app.config import settings
-from app.views import exception_router, health_router
+from app.views import exception_router, health_router, exception_health_router
 
 # Creates the FastAPI app instance
 app = FastAPI(title="Exception Service")
@@ -16,8 +16,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Include routers (order matters: specific routes before parameterized ones)
 app.include_router(health_router)
+app.include_router(exception_health_router)  # Must be before exception_router
 app.include_router(exception_router)
 
 # Register Tortoise ORM to PostgreSQL

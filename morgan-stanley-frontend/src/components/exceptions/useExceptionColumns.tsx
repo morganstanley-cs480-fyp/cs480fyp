@@ -1,7 +1,7 @@
 // Column definitions hook
 
 import { ArrowUpDown } from "lucide-react";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { Column, ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Exception } from "@/lib/api/types";
@@ -17,53 +17,42 @@ export function useExceptionColumns({
   getPriorityIcon,
   getStatusBadgeVariant,
 }: UseExceptionColumnsOptions): ColumnDef<Exception>[] {
+  const SortHeader = ({ column, label }: { column: Column<Exception>; label: string }) => (
+    <Button
+      variant="ghost"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      className="h-8 p-0 hover:bg-transparent text-sm font-semibold text-black uppercase tracking-wider"
+    >
+      {label}
+      <ArrowUpDown className="ml-1.5 size-3 opacity-50" />
+    </Button>
+  );
+
   return [
     {
       accessorKey: "exception_id",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 p-0 hover:bg-transparent"
-          >
-            Exception ID
-            <ArrowUpDown className="ml-2 size-4" />
-          </Button>
-        );
-      },
+      header: ({ column }) => <SortHeader column={column} label="Exception ID" />,
       cell: ({ row }) => (
-        <div className="font-medium text-black">
+        <span className="text-sm text-black">
           {row.getValue("exception_id")}
-        </div>
+        </span>
       ),
       enableColumnFilter: true,
     },
     {
       accessorKey: "trade_id",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 p-0 hover:bg-transparent"
-          >
-            Trade ID
-            <ArrowUpDown className="ml-2 size-4" />
-          </Button>
-        );
-      },
+      header: ({ column }) => <SortHeader column={column} label="Trade ID" />,
       cell: ({ row }) => (
-        <div className="font-medium text-black">
+        <span className="text-sm text-black">
           {row.getValue("trade_id")}
-        </div>
+        </span>
       ),
       enableColumnFilter: true,
     },
     {
       accessorKey: "msg",
       header: "Exception Message / Type",
-      cell: ({ row }) => <div className="text-sm">{row.getValue("msg")}</div>,
+      cell: ({ row }) => <div className="text-sm text-black">{row.getValue("msg")}</div>,
       enableColumnFilter: true,
     },
     {
@@ -97,49 +86,27 @@ export function useExceptionColumns({
       accessorKey: "comment",
       header: "Comments",
       cell: ({ row }) => (
-        <div className="text-sm text-black/75">{row.getValue("comment")}</div>
+        <div className="text-sm text-black">{row.getValue("comment")}</div>
       ),
       enableColumnFilter: true,
     },
     {
       accessorKey: "create_time",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 p-0 hover:bg-transparent"
-          >
-            Create Time
-            <ArrowUpDown className="size-4 ml-2" />
-          </Button>
-        );
-      },
+      header: ({ column }) => <SortHeader column={column} label="Create Time" />,
       cell: ({ row }) => (
-        <div className="text-sm text-black/75">
+        <span className="text-sm text-black">
           {row.getValue("create_time")}
-        </div>
+        </span>
       ),
       enableColumnFilter: true,
     },
     {
       accessorKey: "update_time",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 p-0 hover:bg-transparent"
-          >
-            Update Time
-            <ArrowUpDown className="ml-2 size-4" />
-          </Button>
-        );
-      },
+      header: ({ column }) => <SortHeader column={column} label="Update Time" />,
       cell: ({ row }) => (
-        <div className="text-sm text-black/75">
+        <span className="text-sm text-black">
           {row.getValue("update_time")}
-        </div>
+        </span>
       ),
       enableColumnFilter: true,
     },

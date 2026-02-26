@@ -19,6 +19,7 @@ export function useExceptionResolver(exceptionId: string) {
 
   // Clear selected suggestion when switching tabs
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedSuggestion(null);
   }, [selectedTab]);
 

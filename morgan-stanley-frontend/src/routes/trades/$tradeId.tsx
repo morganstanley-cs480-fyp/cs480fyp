@@ -97,8 +97,9 @@ function TradeDetailPage() {
                 setTransactions([]);
                 setExceptions([]);
             } finally {
-                if (!isActive) return;
-                setIsLoading(false);
+                if (isActive) {
+                    setIsLoading(false);
+                }
             }
         };
 

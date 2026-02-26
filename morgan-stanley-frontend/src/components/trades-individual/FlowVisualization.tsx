@@ -44,6 +44,7 @@ function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function hubBorderPoint(
   hubCenter: Point,
   hubSize: Size,
@@ -67,6 +68,7 @@ function hubBorderPoint(
   return { x, y };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function participantBorderPoint(
   nodeCenter: Point,
   nodeSize: Size,
@@ -92,6 +94,7 @@ function participantBorderPoint(
   return { x, y };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function intersectLineWithRectBorder(from: Point, to: Point, rectCenter: Point, rectSize: Size): Point {
   const halfW = rectSize.w / 2;
   const halfH = rectSize.h / 2;
@@ -141,6 +144,7 @@ function intersectLineWithRectBorder(from: Point, to: Point, rectCenter: Point, 
   return best;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function computeAxisX(
   participantX: number,
   hubX: number,
@@ -209,7 +213,6 @@ function WorkflowEdge(props: EdgeProps) {
     // Determine which direction the outer node is from CCP
     const outerAboveCCP = outerBounds.bottom < ccpBounds.top;
     const outerBelowCCP = outerBounds.top > ccpBounds.bottom;
-    const outerLeftOfCCP = outerBounds.right < ccpBounds.left;
     const outerRightOfCCP = outerBounds.left > ccpBounds.right;
 
     // Calculate departure point from outer node (distributed along its edge)
@@ -237,11 +240,8 @@ function WorkflowEdge(props: EdgeProps) {
       departurePoint = { x: outerBounds.right, y };
     }
 
-    // Find closest point on CCP to the departure point (shortest distance)
-    let ccpConnectionPoint: Point;
-    
     // Function to find closest point on a rectangle perimeter
-    const closestPointOnRect = (point: Point, rect: any): { point: Point; dist: number } => {
+    const closestPointOnRect = (point: Point, rect: typeof ccpBounds): { point: Point; dist: number } => {
       // Clamp the x and y to the rectangle bounds
       const clampedX = Math.max(rect.left, Math.min(rect.right, point.x));
       const clampedY = Math.max(rect.top, Math.min(rect.bottom, point.y));
@@ -257,8 +257,8 @@ function WorkflowEdge(props: EdgeProps) {
       return { point: closest, dist };
     };
 
-    const result = closestPointOnRect(departurePoint, ccpBounds);
-    ccpConnectionPoint = result.point;
+    // Find closest point on CCP to the departure point (shortest distance)
+    const ccpConnectionPoint: Point = closestPointOnRect(departurePoint, ccpBounds).point;
 
     // Set start and end points based on direction
     if (isCCPSource) {
@@ -345,7 +345,7 @@ function WorkflowEdge(props: EdgeProps) {
           }}
           onClick={handleEdgeClick}
         >
-      <div className="w-6 h-6 rounded-full bg-white border border-slate-300 text-[11px] font-semibold text-black/75 flex items-center justify-center shadow-sm cursor-pointer hover:border-[#002B51] hover:shadow-md transition-all">
+      <div className="w-6 h-6 rounded-full bg-white border border-black/10 text-[11px] font-semibold text-black/75 flex items-center justify-center shadow-sm cursor-pointer hover:border-[#002B51] hover:shadow-md transition-all">
             {data?.step ?? ''}
           </div>
         </div>
@@ -365,11 +365,11 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
       case 'COMPLETED':
         return 'bg-green-50';
       case 'PENDING':
-        return 'bg-slate-50';
+        return 'bg-black/[0.02]';
       case 'FAILED':
         return 'bg-red-50';
       default:
-        return 'bg-slate-50';
+        return 'bg-black/[0.02]';
     }
   };
 
@@ -378,11 +378,11 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
       case 'COMPLETED':
         return 'border-green-400';
       case 'PENDING':
-        return 'border-slate-300';
+        return 'border-black/10';
       case 'FAILED':
         return 'border-red-400';
       default:
-        return 'border-slate-300';
+        return 'border-black/10';
     }
   };
 
@@ -398,7 +398,7 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
       onClick={handleClick}
       className={`p-3 rounded-lg border-2 shadow-md flex flex-col justify-center cursor-pointer hover:shadow-lg transition-all text-center ${
         getStatusBgColor(status)} ${getStatusBorderColor(status)} ${
-        isHub ? 'hover:border-[#002B51]' : 'hover:border-slate-400'
+        isHub ? 'hover:border-[#002B51]' : 'hover:border-black/15'
       }`}
       style={{ width, height: NODE_HEIGHT, boxSizing: 'border-box' }}
     >
@@ -757,7 +757,7 @@ export function FlowVisualization({
             <CardDescription className="mb-4">
               System architecture and data flow visualization
             </CardDescription>
-            <div className="h-[800px] border rounded-lg bg-slate-50 relative">
+            <div className="h-[800px] border rounded-lg bg-black/[0.02] relative">
               {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-black/75 font-bold">Computing ELK Layout...</div>

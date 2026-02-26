@@ -8,7 +8,7 @@ from typing import Optional, Any
 
 class SearchServiceException(Exception):
     """Base exception for all search service errors"""
-    
+
     def __init__(self, message: str, details: Optional[dict[str, Any]] = None):
         self.message = message
         self.details = details or {}

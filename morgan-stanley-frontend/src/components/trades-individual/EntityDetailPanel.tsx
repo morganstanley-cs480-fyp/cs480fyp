@@ -59,7 +59,7 @@ export function EntityDetailPanel({entityName, isHub, transactions}: EntityDetai
                         Transaction Activity
                     </h3>
                     <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-slate-50 rounded-lg p-3 text-center border border-slate-200">
+                        <div className="bg-black/[0.02] rounded-lg p-3 text-center border border-black/10">
                             <div className="text-2xl font-bold text-black">{entityTransactions.length}</div>
                             <div className="text-xs text-black/75 mt-1">Total</div>
                         </div>
@@ -86,7 +86,7 @@ export function EntityDetailPanel({entityName, isHub, transactions}: EntityDetai
                     <div className="space-y-2">
                         {Object.entries(statusCounts).map(([status, count]) => (
                             <div key={status}
-                                 className="flex items-center justify-between p-2 bg-slate-50 rounded border border-slate-200">
+                                 className="flex items-center justify-between p-2 bg-black/[0.02] rounded border border-black/10">
                                 <Badge variant="secondary" className="text-xs">
                                     {status}
                                 </Badge>
@@ -103,8 +103,7 @@ export function EntityDetailPanel({entityName, isHub, transactions}: EntityDetai
                         {entityTransactions.slice(0, 5).map((transaction) => (
                             <div
                                 key={transaction.trans_id}
-                                className="p-2 bg-white rounded border border-slate-200 hover:border-slate-300 transition-colors"
-                            >
+                                className="p-2 bg-white rounded border border-black/10 hover:border-black/12 transition-colors">
                                 <div className="flex items-center justify-between mb-1">
                                     <span className="text-xs font-mono text-black/75">{transaction.trans_id}</span>
                                     <Badge variant="secondary" className="text-xs">

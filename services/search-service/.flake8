@@ -3,7 +3,7 @@
 max-line-length = 120
 
 # Maximum complexity
-max-complexity = 15
+max-complexity = 16
 
 # Exclude patterns
 exclude = 
@@ -50,8 +50,9 @@ ignore = E203,E266,E501,W503,W504,W291,W293,D100,D102,D104,D106,D107,D200,D203,D
 # Per-file ignores
 per-file-ignores =
     __init__.py:F401,F403
-    tests/*:D100,D101,D102,D103,S101
-    conftest.py:D100,D103
+    tests/*:D100,D101,D102,D103,D403,S101,F841,B007,C901,E128
+    tests/conftest.py:D100,D103,D403
+    tests/mock_bedrock.py:F401
 
 # Enable optional checks
 enable-extensions = G

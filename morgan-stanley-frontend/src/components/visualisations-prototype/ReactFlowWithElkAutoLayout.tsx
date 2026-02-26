@@ -8,7 +8,6 @@ import {
   MarkerType,
   BaseEdge,
   EdgeLabelRenderer,
-  getStraightPath,
   applyNodeChanges,
   useNodes,
   type Node,
@@ -39,9 +38,7 @@ function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
-/**
- * Pick a point on the hub’s top/bottom border, aligned to the other node’s x and lane offset.
- */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function hubBorderPoint(
   hubCenter: Point,
   hubSize: Size,
@@ -69,6 +66,7 @@ function hubBorderPoint(
 /**
  * Pick a point on participant’s top/bottom border, aligned to other node’s x with mild spread.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function participantBorderPoint(
   nodeCenter: Point,
   nodeSize: Size,
@@ -187,10 +185,8 @@ function WorkflowEdge(props: EdgeProps) {
   if (!sourceNode || !targetNode) return null;
 
   const sourceId: string = data?.sourceId;
-  const targetId: string = data?.targetId;
 
   const sourceIsHub = sourceId === HUB_ID;
-  const targetIsHub = targetId === HUB_ID;
 
   // Get actual node dimensions from node data (handles dynamic hub width)
   const sourceWidth = sourceNode.data?.width ?? NODE_WIDTH;

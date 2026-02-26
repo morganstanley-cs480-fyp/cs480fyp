@@ -8,9 +8,7 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,15 +52,12 @@ export function ExceptionResultsTable({
 }: ExceptionResultsTableProps) {
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Exception Results</CardTitle>
-            <CardDescription>
-              Found {resultsCount} exception
-              {resultsCount !== 1 ? "s" : ""}
-            </CardDescription>
-          </div>
+      <CardHeader className="flex flex-row items-center justify-between py-4 px-6 border-b border-black/6">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-semibold text-black">Exception Results</span>
+          <span className="text-xs font-mono bg-black/5 text-black/50 px-2.5 py-0.5 rounded-full">
+            {resultsCount} {resultsCount !== 1 ? "exceptions" : "exception"}
+          </span>
         </div>
       </CardHeader>
       <CardContent>
@@ -71,9 +66,9 @@ export function ExceptionResultsTable({
             <TableHeader>
               {/* Column Headers Row */}
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
+                <TableRow key={headerGroup.id} className="bg-black/[0.02] border-b border-black/6 hover:bg-black/[0.02]">
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="px-4">
+                    <TableHead key={header.id} className="text-xs font-semibold text-black/50 uppercase tracking-wider h-10 px-4">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -85,7 +80,7 @@ export function ExceptionResultsTable({
                 </TableRow>
               ))}
               {/* Filter Row */}
-              <TableRow>
+              <TableRow className="border-b border-black/6 hover:bg-transparent">
                 {table.getHeaderGroups()[0].headers.map((header) => (
                   <TableHead
                     key={`filter-${header.id}`}
@@ -150,16 +145,16 @@ export function ExceptionResultsTable({
                 ))}
               </TableRow>
             </TableHeader>
-            <TableBody className="border-t-4 border-slate-100">
+            <TableBody className="border-t-4 border-black/6">
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className={`cursor-pointer ${
+                    className={`cursor-pointer border-b border-black/4 transition-colors ${
                       selectedExceptionId === row.original.exception_id
                         ? "bg-[#002B51]/5"
-                        : ""
+                        : "hover:bg-[#002B51]/[0.03]"
                     }`}
                     onClick={() => onRowClick(row.original)}
                   >
@@ -177,7 +172,7 @@ export function ExceptionResultsTable({
                 <TableRow>
                   <TableCell
                     colSpan={table.getAllColumns().length}
-                    className="h-24 text-center"
+                    className="h-32 text-center text-black/40 text-sm"
                   >
                     No results found.
                   </TableCell>
@@ -188,8 +183,8 @@ export function ExceptionResultsTable({
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-black/75">
+        <div className="flex items-center justify-between px-6 py-3 border-t border-black/6">
+          <div className="text-xs text-black/40">
             Showing{" "}
             {table.getState().pagination.pageIndex *
               table.getState().pagination.pageSize +
@@ -208,6 +203,7 @@ export function ExceptionResultsTable({
               size="sm"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
+              className="h-7 px-3 text-xs"
             >
               <ChevronLeft className="size-4 mr-1" />
               Previous
@@ -217,6 +213,7 @@ export function ExceptionResultsTable({
               size="sm"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
+              className="h-7 px-3 text-xs"
             >
               Next
               <ChevronRight className="size-4 ml-1" />

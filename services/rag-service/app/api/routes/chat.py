@@ -10,7 +10,7 @@ from app.config.settings import settings
 from app.services.bedrock_service import BedrockService
 
 
-router = APIRouter(prefix="/chat", tags=["chat"])
+router = APIRouter(prefix="/api/rag/chat", tags=["chat"])
 
 
 class Message(BaseModel):

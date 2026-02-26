@@ -12,49 +12,69 @@ from pydantic import BaseModel, Field
 # REQUEST MODELS (Frontend → Backend)
 # ============================================================================
 
+
 class ManualSearchFilters(BaseModel):
     """
     Manual search filters from frontend dropdown selections.
     Maps directly to frontend ManualSearchFilters interface.
     """
+
     trade_id: Optional[str] = Field(None, description="Trade ID to search for")
     account: Optional[str] = Field(None, description="Account filter")
-    asset_type: Optional[str] = Field(None, description="Asset type (FX, EQUITY, BOND, etc.)")
+    asset_type: Optional[str] = Field(
+        None, description="Asset type (FX, EQUITY, BOND, etc.)"
+    )
     booking_system: Optional[str] = Field(None, description="Booking system filter")
-    affirmation_system: Optional[str] = Field(None, description="Affirmation system filter")
+    affirmation_system: Optional[str] = Field(
+        None, description="Affirmation system filter"
+    )
     clearing_house: Optional[str] = Field(None, description="Clearing house filter")
-    status: Optional[list[str]] = Field(default_factory=list, description="Status filters (can be multiple)")
-    date_type: Literal["create_time", "update_time"] = Field("update_time", description="Which date field to filter on")
+    status: Optional[list[str]] = Field(
+        default_factory=list, description="Status filters (can be multiple)"
+    )
+    date_type: Literal["create_time", "update_time"] = Field(
+        "update_time", description="Which date field to filter on"
+    )
     date_from: Optional[str] = Field(None, description="Start date (YYYY-MM-DD)")
     date_to: Optional[str] = Field(None, description="End date (YYYY-MM-DD)")
-    with_exceptions_only: bool = Field(False, description="Only show trades with exceptions")
+    with_exceptions_only: bool = Field(
+        False, description="Only show trades with exceptions"
+    )
     cleared_trades_only: bool = Field(False, description="Only show cleared trades")
 
 
 class SearchRequest(BaseModel):
     """
     Main search request supporting both natural language and manual search.
-    
+
     Frontend Usage:
     - Natural Language: { user_id, search_type: "natural_language", query_text }
     - Manual Search: { user_id, search_type: "manual", filters }
     """
+
     user_id: str = Field(..., description="User ID from authentication")
-    search_type: Literal["natural_language", "manual"] = Field(..., description="Type of search")
-    
+    search_type: Literal["natural_language", "manual"] = Field(
+        ..., description="Type of search"
+    )
+
     # For natural language search
-    query_text: Optional[str] = Field(None, description="Natural language query (required if search_type='natural_language')")
-    
+    query_text: Optional[str] = Field(
+        None,
+        description="Natural language query (required if search_type='natural_language')",
+    )
+
     # For manual search
-    filters: Optional[ManualSearchFilters] = Field(None, description="Manual search filters (required if search_type='manual')")
-    
+    filters: Optional[ManualSearchFilters] = Field(
+        None, description="Manual search filters (required if search_type='manual')"
+    )
+
     class Config:
         json_schema_extra = {
             "examples": [
                 {
                     "user_id": "user123",
                     "search_type": "natural_language",
-                    "query_text": "show me pending FX trades from last week"
+                    "query_text": "show me pending FX trades from last week",
                 },
                 {
                     "user_id": "user123",
@@ -64,9 +84,9 @@ class SearchRequest(BaseModel):
                         "status": ["PENDING", "ALLEGED"],
                         "date_type": "update_time",
                         "date_from": "2025-01-13",
-                        "date_to": "2025-01-20"
-                    }
-                }
+                        "date_to": "2025-01-20",
+                    },
+                },
             ]
         }
 
@@ -76,15 +96,15 @@ class UpdateHistoryRequest(BaseModel):
     Request to update a query history record (save/rename).
     Used when user clicks "Save" button on a search result.
     """
+
     is_saved: bool = Field(..., description="Whether to save this query")
-    query_name: Optional[str] = Field(None, description="Name for saved query (required if is_saved=True)")
-    
+    query_name: Optional[str] = Field(
+        None, description="Name for saved query (required if is_saved=True)"
+    )
+
     class Config:
         json_schema_extra = {
-            "example": {
-                "is_saved": True,
-                "query_name": "My weekly FX review"
-            }
+            "example": {"is_saved": True, "query_name": "My weekly FX review"}
         }
 
 
@@ -92,11 +112,13 @@ class UpdateHistoryRequest(BaseModel):
 # RESPONSE MODELS (Backend → Frontend)
 # ============================================================================
 
+
 class Trade(BaseModel):
     """
     Trade record matching frontend Trade interface.
     All field names must match frontend exactly (snake_case).
     """
+
     trade_id: str
     account: str
     asset_type: str
@@ -106,7 +128,7 @@ class Trade(BaseModel):
     create_time: str  # ISO 8601 format: "2025-01-15 09:30:00"
     update_time: str  # ISO 8601 format: "2025-01-15 10:00:00"
     status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED"]
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -118,7 +140,7 @@ class Trade(BaseModel):
                 "clearing_house": "DTCC",
                 "create_time": "2025-01-15 09:30:00",
                 "update_time": "2025-01-15 10:00:00",
-                "status": "CLEARED"
+                "status": "CLEARED",
             }
         }
 
@@ -128,13 +150,16 @@ class SearchResponse(BaseModel):
     Response from search endpoint.
     Returns query_id for history tracking and list of matching trades.
     """
+
     query_id: int = Field(..., description="ID of saved query history record")
     total_results: int = Field(..., description="Total number of results found")
     results: list[Trade] = Field(..., description="List of matching trades")
     search_type: str = Field(..., description="Type of search performed")
     cached: bool = Field(False, description="Whether result was from cache")
-    execution_time_ms: Optional[float] = Field(None, description="Query execution time in milliseconds")
-    
+    execution_time_ms: Optional[float] = Field(
+        None, description="Query execution time in milliseconds"
+    )
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -150,12 +175,12 @@ class SearchResponse(BaseModel):
                         "clearing_house": "DTCC",
                         "create_time": "2025-01-15 09:30:00",
                         "update_time": "2025-01-15 10:00:00",
-                        "status": "CLEARED"
+                        "status": "CLEARED",
                     }
                 ],
                 "search_type": "natural_language",
                 "cached": False,
-                "execution_time_ms": 234.5
+                "execution_time_ms": 234.5,
             }
         }
 
@@ -165,6 +190,7 @@ class QueryHistory(BaseModel):
     Query history record.
     Used in history list responses.
     """
+
     query_id: int
     user_id: str
     query_text: str
@@ -172,7 +198,7 @@ class QueryHistory(BaseModel):
     query_name: Optional[str] = None
     create_time: str  # ISO 8601 format
     last_use_time: str  # ISO 8601 format
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -182,7 +208,7 @@ class QueryHistory(BaseModel):
                 "is_saved": True,
                 "query_name": "Weekly FX Review",
                 "create_time": "2025-01-18 10:00:00",
-                "last_use_time": "2025-01-20 09:00:00"
+                "last_use_time": "2025-01-20 09:00:00",
             }
         }
 
@@ -192,12 +218,13 @@ class HistoryListResponse(BaseModel):
     Response from GET /history endpoint.
     Returns list of user's query history.
     """
+
     user_id: str
     total_count: int
     saved_count: int
     recent_count: int
     queries: list[QueryHistory]
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -205,20 +232,21 @@ class HistoryListResponse(BaseModel):
                 "total_count": 10,
                 "saved_count": 3,
                 "recent_count": 7,
-                "queries": []
+                "queries": [],
             }
         }
 
 
 class HealthResponse(BaseModel):
     """Response from health check endpoint"""
+
     status: Literal["healthy", "unhealthy"]
     service: str
     version: str
     database: str
     cache: str
     timestamp: str
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -227,25 +255,26 @@ class HealthResponse(BaseModel):
                 "version": "1.0.0",
                 "database": "connected",
                 "cache": "connected",
-                "timestamp": "2025-01-20T10:00:00Z"
+                "timestamp": "2025-01-20T10:00:00Z",
             }
         }
 
 
 class ErrorResponse(BaseModel):
     """Standard error response format"""
+
     error: str = Field(..., description="Error type")
     message: str = Field(..., description="Human-readable error message")
     details: Optional[dict] = Field(None, description="Additional error details")
     timestamp: str = Field(..., description="Error timestamp")
-    
+
     class Config:
         json_schema_extra = {
             "example": {
                 "error": "ValidationError",
                 "message": "Invalid search request: query_text is required for natural_language search",
                 "details": {"field": "query_text"},
-                "timestamp": "2025-01-20T10:00:00Z"
+                "timestamp": "2025-01-20T10:00:00Z",
             }
         }
 

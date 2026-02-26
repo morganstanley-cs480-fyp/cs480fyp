@@ -69,7 +69,7 @@ export function RecentSearches({
             {searches.map((search) => (
               <div
                 key={search.id}
-                className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:border-[#002B51] hover:bg-[#002B51]/5 transition-colors group"
+                className="flex items-center gap-3 p-3 rounded-lg border border-black/10 hover:border-[#002B51] hover:bg-[#002B51]/5 transition-colors group"
               >
                 <Button
                   variant="ghost"

@@ -2,12 +2,18 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "react-oidc-context";
 import { useState, useEffect } from "react";
 
+const isCognitoConfigured = !!import.meta.env.VITE_COGNITO_CLIENT_ID;
+
 function LoginComponent() {
   const auth = useAuth();
   const navigate = useNavigate();
   const [showError, setShowError] = useState(false);
 
   useEffect(() => {
+    if (!isCognitoConfigured) {
+      navigate({ to: "/trades" });
+      return;
+    }
     if (auth) {
       if (auth.isAuthenticated) {
         navigate({ to: "/trades" });
@@ -45,6 +51,7 @@ function LoginComponent() {
     </div>;
   }
 }
+
 
 export const Route = createFileRoute("/")({
   component: LoginComponent,

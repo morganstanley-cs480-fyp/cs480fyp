@@ -23,7 +23,7 @@ from app.utils.exceptions import (
     InvalidSearchRequestError,
     QueryHistoryNotFoundError,
     UnauthorizedAccessError,
-    ValidationError
+    ValidationError,
 )
 
 
@@ -38,50 +38,52 @@ async def lifespan(app: FastAPI):
         "Starting search-service",
         extra={
             "version": settings.VERSION,
-            "environment": "local" if settings.LOG_LEVEL == "DEBUG" else "production"
-        }
+            "environment": "local" if settings.LOG_LEVEL == "DEBUG" else "production",
+        },
     )
-    
+
     try:
         # Initialize database connection pool
         await db_manager.connect()
         logger.info("Database connection pool initialized successfully")
-        
+
         # Initialize Redis cache connection
         await redis_manager.connect()
         logger.info("Redis cache connection initialized successfully")
-        
+
         # Verify connections with health checks
         db_healthy = await db_manager.health_check()
         redis_healthy = await redis_manager.health_check()
-        
+
         if not db_healthy:
             logger.error("Database health check failed on startup")
             raise DatabaseConnectionError("Database is not healthy")
-        
+
         if not redis_healthy:
-            logger.warning("Redis health check failed on startup - continuing without cache")
-        
+            logger.warning(
+                "Redis health check failed on startup - continuing without cache"
+            )
+
         logger.info("Search service startup completed successfully")
-        
+
     except Exception as e:
         logger.error(f"Failed to start search service: {e}")
         raise
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down search-service")
-    
+
     try:
         await redis_manager.disconnect()
         logger.info("Redis cache connection closed")
-        
+
         await db_manager.disconnect()
         logger.info("Database connection pool closed")
-        
+
         logger.info("Search service shutdown completed successfully")
-        
+
     except Exception as e:
         logger.error(f"Error during shutdown: {e}")
 
@@ -113,12 +115,15 @@ if settings.ENABLE_CORS:
 # EXCEPTION HANDLERS
 # ============================================================================
 
+
 @app.exception_handler(InvalidSearchRequestError)
-async def invalid_search_request_handler(request: Request, exc: InvalidSearchRequestError):
+async def invalid_search_request_handler(
+    request: Request, exc: InvalidSearchRequestError
+):
     """Handle invalid search request errors (400 Bad Request)"""
     logger.warning(
         f"Invalid search request: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
@@ -126,8 +131,8 @@ async def invalid_search_request_handler(request: Request, exc: InvalidSearchReq
             "success": False,
             "error": "Invalid request",
             "message": exc.message,
-            "details": exc.details
-        }
+            "details": exc.details,
+        },
     )
 
 
@@ -136,7 +141,7 @@ async def validation_error_handler(request: Request, exc: ValidationError):
     """Handle validation errors (422 Unprocessable Entity)"""
     logger.warning(
         f"Validation error: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -144,8 +149,8 @@ async def validation_error_handler(request: Request, exc: ValidationError):
             "success": False,
             "error": "Validation failed",
             "message": exc.message,
-            "details": exc.details
-        }
+            "details": exc.details,
+        },
     )
 
 
@@ -154,7 +159,7 @@ async def query_not_found_handler(request: Request, exc: QueryHistoryNotFoundErr
     """Handle query history not found errors (404 Not Found)"""
     logger.warning(
         f"Query history not found: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -162,8 +167,8 @@ async def query_not_found_handler(request: Request, exc: QueryHistoryNotFoundErr
             "success": False,
             "error": "Not found",
             "message": exc.message,
-            "details": exc.details
-        }
+            "details": exc.details,
+        },
     )
 
 
@@ -172,7 +177,7 @@ async def unauthorized_access_handler(request: Request, exc: UnauthorizedAccessE
     """Handle unauthorized access errors (403 Forbidden)"""
     logger.warning(
         f"Unauthorized access attempt: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     return JSONResponse(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -180,8 +185,8 @@ async def unauthorized_access_handler(request: Request, exc: UnauthorizedAccessE
             "success": False,
             "error": "Forbidden",
             "message": exc.message,
-            "details": exc.details
-        }
+            "details": exc.details,
+        },
     )
 
 
@@ -190,7 +195,7 @@ async def bedrock_api_error_handler(request: Request, exc: BedrockAPIError):
     """Handle Bedrock API errors (502 Bad Gateway)"""
     logger.error(
         f"Bedrock API error: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     return JSONResponse(
         status_code=status.HTTP_502_BAD_GATEWAY,
@@ -198,8 +203,8 @@ async def bedrock_api_error_handler(request: Request, exc: BedrockAPIError):
             "success": False,
             "error": "AI service unavailable",
             "message": "The AI parameter extraction service is currently unavailable. Please try again later or use manual search.",
-            "details": exc.details if settings.LOG_LEVEL == "DEBUG" else None
-        }
+            "details": exc.details if settings.LOG_LEVEL == "DEBUG" else None,
+        },
     )
 
 
@@ -208,7 +213,7 @@ async def bedrock_response_error_handler(request: Request, exc: BedrockResponseE
     """Handle Bedrock response parsing errors (422 Unprocessable Entity)"""
     logger.error(
         f"Bedrock response error: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -216,17 +221,19 @@ async def bedrock_response_error_handler(request: Request, exc: BedrockResponseE
             "success": False,
             "error": "AI response error",
             "message": "Unable to understand the AI response. Please rephrase your query or use manual search.",
-            "details": exc.details if settings.LOG_LEVEL == "DEBUG" else None
-        }
+            "details": exc.details if settings.LOG_LEVEL == "DEBUG" else None,
+        },
     )
 
 
 @app.exception_handler(DatabaseConnectionError)
-async def database_connection_error_handler(request: Request, exc: DatabaseConnectionError):
+async def database_connection_error_handler(
+    request: Request, exc: DatabaseConnectionError
+):
     """Handle database connection errors (503 Service Unavailable)"""
     logger.error(
         f"Database connection error: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     return JSONResponse(
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -234,8 +241,8 @@ async def database_connection_error_handler(request: Request, exc: DatabaseConne
             "success": False,
             "error": "Database unavailable",
             "message": "The database service is currently unavailable. Please try again later.",
-            "details": exc.details if settings.LOG_LEVEL == "DEBUG" else None
-        }
+            "details": exc.details if settings.LOG_LEVEL == "DEBUG" else None,
+        },
     )
 
 
@@ -244,7 +251,7 @@ async def database_query_error_handler(request: Request, exc: DatabaseQueryError
     """Handle database query errors (500 Internal Server Error)"""
     logger.error(
         f"Database query error: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -252,8 +259,8 @@ async def database_query_error_handler(request: Request, exc: DatabaseQueryError
             "success": False,
             "error": "Query execution failed",
             "message": "An error occurred while executing the search query. Please try again.",
-            "details": exc.details if settings.LOG_LEVEL == "DEBUG" else None
-        }
+            "details": exc.details if settings.LOG_LEVEL == "DEBUG" else None,
+        },
     )
 
 
@@ -262,7 +269,7 @@ async def cache_connection_error_handler(request: Request, exc: CacheConnectionE
     """Handle cache connection errors (non-critical, log and continue)"""
     logger.warning(
         f"Cache connection error: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     # Cache errors should not fail the request - we can continue without cache
     # This error should be caught by services and handled gracefully
@@ -271,8 +278,8 @@ async def cache_connection_error_handler(request: Request, exc: CacheConnectionE
         content={
             "success": False,
             "error": "Cache service error",
-            "message": "Cache service is unavailable, but search should still work."
-        }
+            "message": "Cache service is unavailable, but search should still work.",
+        },
     )
 
 
@@ -281,7 +288,7 @@ async def cache_operation_error_handler(request: Request, exc: CacheOperationErr
     """Handle cache operation errors (non-critical, log and continue)"""
     logger.warning(
         f"Cache operation error: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     # Cache errors should not fail the request
     return JSONResponse(
@@ -289,17 +296,19 @@ async def cache_operation_error_handler(request: Request, exc: CacheOperationErr
         content={
             "success": False,
             "error": "Cache operation error",
-            "message": "Cache operation failed, but search should still work."
-        }
+            "message": "Cache operation failed, but search should still work.",
+        },
     )
 
 
 @app.exception_handler(SearchServiceException)
-async def generic_search_exception_handler(request: Request, exc: SearchServiceException):
+async def generic_search_exception_handler(
+    request: Request, exc: SearchServiceException
+):
     """Handle all other SearchServiceException instances (500 Internal Server Error)"""
     logger.error(
         f"Search service error: {exc.message}",
-        extra={"path": request.url.path, "details": exc.details}
+        extra={"path": request.url.path, "details": exc.details},
     )
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -307,8 +316,8 @@ async def generic_search_exception_handler(request: Request, exc: SearchServiceE
             "success": False,
             "error": "Internal server error",
             "message": exc.message,
-            "details": exc.details if settings.LOG_LEVEL == "DEBUG" else None
-        }
+            "details": exc.details if settings.LOG_LEVEL == "DEBUG" else None,
+        },
     )
 
 
@@ -317,11 +326,8 @@ async def generic_exception_handler(request: Request, exc: Exception):
     """Handle all uncaught exceptions (500 Internal Server Error)"""
     logger.error(
         f"Uncaught exception: {str(exc)}",
-        extra={
-            "path": request.url.path,
-            "exception_type": type(exc).__name__
-        },
-        exc_info=True
+        extra={"path": request.url.path, "exception_type": type(exc).__name__},
+        exc_info=True,
     )
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -329,8 +335,8 @@ async def generic_exception_handler(request: Request, exc: Exception):
             "success": False,
             "error": "Internal server error",
             "message": "An unexpected error occurred. Please try again later.",
-            "details": str(exc) if settings.LOG_LEVEL == "DEBUG" else None
-        }
+            "details": str(exc) if settings.LOG_LEVEL == "DEBUG" else None,
+        },
     )
 
 
@@ -344,11 +350,13 @@ async def generic_exception_handler(request: Request, exc: Exception):
 from app.api.routes.health import router as health_router  # noqa: E402
 from app.api.routes.search import router as search_router  # noqa: E402
 from app.api.routes.history import router as history_router  # noqa: E402
+from app.api.routes.filters import router as filters_router  # noqa: E402
 
 # Register routers
 app.include_router(health_router)
 app.include_router(search_router)
 app.include_router(history_router)
+app.include_router(filters_router)
 
 logger.info(
     "API routes registered",
@@ -356,10 +364,12 @@ logger.info(
         "routes": [
             "GET /",
             "GET /health",
-            "POST /search",
-            "GET /history",
-            "PUT /history/{query_id}",
-            "DELETE /history/{query_id}"
+            "POST /api/search",
+            "GET /api/history",
+            "GET /api/history/suggestions",
+            "PUT /api/history/{query_id}",
+            "DELETE /api/history/{query_id}",
+            "GET /api/filter-options",
         ]
-    }
+    },
 )

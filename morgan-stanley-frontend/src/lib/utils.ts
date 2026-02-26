@@ -37,8 +37,10 @@ export function formatDateShort(value?: string | number | Date | null): string {
   return `${padDatePart(parsed.getDate())}/${padDatePart(parsed.getMonth() + 1)}/${parsed.getFullYear()}`;
 }
 
+const isCognitoConfigured = !!import.meta.env.VITE_COGNITO_CLIENT_ID;
+
 export const requireAuth = ({ context }: { context: RouterContext }) => {
-  if (!context.authentication.isAuthenticated) {
+  if (isCognitoConfigured && !context.authentication.isAuthenticated) {
     throw redirect({ to: "/" });
   }
 };
@@ -52,10 +54,10 @@ export const getWebSocketUrl = () => {
   // 2. Otherwise, dynamically build the CloudFront URL
   // If the site is HTTPS, use WSS. If HTTP, use WS.
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  
+
   // Grab the current domain (e.g., d1oo9htiiea9na.cloudfront.net)
   const host = window.location.host;
-  
+
   // Attach the routing prefix so CloudFront knows to send it to the ALB
   return `${protocol}//${host}/api/ws`;
 };

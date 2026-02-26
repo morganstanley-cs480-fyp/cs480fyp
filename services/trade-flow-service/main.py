@@ -1,7 +1,9 @@
 import os
 import contextlib
-from fastapi import FastAPI, HTTPException, APIRouter
+from typing import Optional
+from fastapi import FastAPI, HTTPException, APIRouter, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from psycopg_pool import AsyncConnectionPool
 from psycopg.rows import dict_row
 
@@ -57,6 +59,99 @@ async def health_check():
 
 api_router = APIRouter(prefix="/api")
 
+class TradeFilterParams(BaseModel):
+    limit: int = 100
+    offset: int = 0
+    account: Optional[str] = None
+    asset_type: Optional[str] = None
+    booking_system: Optional[str] = None
+    affirmation_system: Optional[str] = None
+    clearing_house: Optional[str] = None
+    status: Optional[str] = None
+    create_time_from: Optional[str] = None
+    create_time_to: Optional[str] = None
+    update_time_from: Optional[str] = None
+    update_time_to: Optional[str] = None
+    sort_by: str = "update_time"
+    sort_order: str = "desc"
+
+@api_router.get("/trades")
+async def get_trades(filters: TradeFilterParams = Depends()):
+    try:
+        async with app.state.pool.connection() as conn:
+            async with conn.cursor(row_factory=dict_row) as cur:
+                
+                # 1. Start building the query
+                base_query = "FROM trades"
+                conditions = []
+                params = []
+
+                # 2. Dynamic Equality Filters
+                # Mapping (Database Column Name, Filter Value)
+                equal_filters = [
+                    ("account", filters.account),
+                    ("asset_type", filters.asset_type),
+                    ("booking_system", filters.booking_system),
+                    ("affirmation_system", filters.affirmation_system),
+                    ("clearing_house", filters.clearing_house),
+                    ("status", filters.status),
+                ]
+
+                for col, val in equal_filters:
+                    if val is not None:
+                        conditions.append(f"{col} = %s")
+                        params.append(val)
+
+                # 3. Dynamic Date Range Filters
+                date_filters = [
+                    ("create_time", ">=", filters.create_time_from),
+                    ("create_time", "<=", filters.create_time_to),
+                    ("update_time", ">=", filters.update_time_from),
+                    ("update_time", "<=", filters.update_time_to),
+                ]
+
+                for col, op, val in date_filters:
+                    if val is not None:
+                        conditions.append(f"{col} {op} %s")
+                        params.append(val)
+
+                # 4. Construct the WHERE clause
+                where_clause = ""
+                if conditions:
+                    where_clause = " WHERE " + " AND ".join(conditions)
+
+                # 5. First, get the TOTAL COUNT (for frontend pagination)
+                count_query = f"SELECT COUNT(*) {base_query} {where_clause}"
+                await cur.execute(count_query, params)
+                total_count = (await cur.fetchone())["count"]
+
+                # 6. Add Sorting (Sanitize sort_by to prevent injection)
+                allowed_cols = {"create_time", "update_time", "account", "status"}
+                safe_sort_col = filters.sort_by if filters.sort_by in allowed_cols else "update_time"
+                safe_order = "DESC" if filters.sort_order.lower() == "desc" else "ASC"
+                
+                # 7. Final Data Query
+                data_query = (
+                    f"SELECT * {base_query} {where_clause} "
+                    f"ORDER BY {safe_sort_col} {safe_order} "
+                    f"LIMIT %s OFFSET %s"
+                )
+                
+                # Add limit/offset to parameters
+                await cur.execute(data_query, params + [filters.limit, filters.offset])
+                trades = await cur.fetchall()
+
+                return {
+                    "total": total_count,
+                    "limit": filters.limit,
+                    "offset": filters.offset,
+                    "data": trades
+                }
+
+    except Exception as e:
+        print(f"Error fetching trades: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
 @api_router.get("/trades/{id}")
 async def get_trade_by_id(id: int):
     try:
@@ -66,8 +161,7 @@ async def get_trade_by_id(id: int):
                 trade = await cur.fetchone()
 
             if not trade:
-                raise HTTPException(status_code=404,
-                                    detail=f"Trade {id} not found")
+                raise HTTPException(status_code=404, detail=f"Trade {id} not found")
             return trade
 
     except HTTPException as he:
@@ -75,22 +169,6 @@ async def get_trade_by_id(id: int):
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
-
-
-@api_router.get("/trades")
-async def get_trades(limit: int = 100, offset: int = 0):
-    try:
-        async with app.state.pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(
-                    "SELECT * FROM trades LIMIT %s OFFSET %s", (limit, offset)
-                )
-                trades = await cur.fetchall()
-            return trades
-    except Exception as e:
-        print(f"Error: {e}")
-        raise HTTPException(status_code=500, detail="Server Error")
-
 
 @api_router.get("/transactions/{id}")
 async def get_transaction_by_id(id: int):

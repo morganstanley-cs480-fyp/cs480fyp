@@ -28,7 +28,7 @@ export function getStatusBadgeClassName(status: string): string {
     case "REJECTED":
       return "bg-red-600 text-white border-red-600";
     default:
-      return "bg-slate-200 text-black border-slate-200";
+      return "bg-black/10 text-black border-black/10";
   }
 }
 
@@ -69,14 +69,14 @@ export function getTransactionBackgroundColor(transaction: Transaction, exceptio
   }
 
   if (transaction.status === "PENDING") {
-    return "bg-slate-100 border-slate-300";
+    return "bg-black/4 border-black/15";
   }
 
   if (transaction.status === "FAILED") {
     return "bg-red-50 border-red-300";
   }
 
-  return "bg-slate-100 border-slate-300";
+  return "bg-black/4 border-black/15";
 }
 
 export function getRelatedExceptions(transId: number, exceptions: Exception[]): Exception[] {
