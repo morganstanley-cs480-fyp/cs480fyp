@@ -86,8 +86,11 @@ export const getWebSocketUrl = () => {
 
     // Grab the current domain (e.g., d1oo9htiiea9na.cloudfront.net)
     const host = window.location.host;
+    if (protocol == 'ws:') {
+        return `${protocol}//localhost:3002/api/ws`;
+    }
 
     // Attach the routing prefix so CloudFront knows to send it to the ALB
-    return `${protocol}://${host}/api/ws`;
+    return `${protocol}//${host}/api/ws`;
 };
 
