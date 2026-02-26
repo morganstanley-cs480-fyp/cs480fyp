@@ -31,19 +31,19 @@ class ExceptionClient {
 
 const exceptionClient = new ExceptionClient();
 
-type ExceptionApiResponse = Omit<Exception, 'exception_id'> & { id: number };
+// type ExceptionApiResponse = Omit<Exception, 'exception_id'> & { id: number };
 
-const mapException = (exception: ExceptionApiResponse): Exception => ({
-  exception_id: exception.id,
-  trade_id: exception.trade_id,
-  trans_id: exception.trans_id,
-  status: exception.status === 'PENDING' ? 'PENDING' : 'CLOSED',
-  msg: exception.msg,
-  create_time: exception.create_time,
-  comment: exception.comment ?? null,
-  priority: exception.priority as Exception['priority'],
-  update_time: exception.update_time,
-});
+// const mapException = (exception: ExceptionApiResponse): Exception => ({
+//   exception_id: exception.id,
+//   trade_id: exception.trade_id,
+//   trans_id: exception.trans_id,
+//   status: exception.status === 'PENDING' ? 'PENDING' : 'CLOSED',
+//   msg: exception.msg,
+//   create_time: exception.create_time,
+//   comment: exception.comment ?? null,
+//   priority: exception.priority as Exception['priority'],
+//   update_time: exception.update_time,
+// });
 
 /**
  * Search API service for trade search operations
@@ -151,30 +151,31 @@ export const searchService = {
    * Fetch all exceptions from the exception service
    */
   async getExceptions(): Promise<Exception[]> {
-    const exceptions = await exceptionClient.get<ExceptionApiResponse[]>(
+    const exceptions = await exceptionClient.get<Exception[]>(
       '/api/exceptions'
     );
-    return exceptions.map(mapException);
+
+    return exceptions;
   },
 
   /**
    * Fetch a single exception by ID
    */
   async getExceptionById(exceptionId: number): Promise<Exception> {
-    const exception = await exceptionClient.get<ExceptionApiResponse>(
+    const exception = await exceptionClient.get<Exception>(
       `/api/exceptions/${exceptionId}`
     );
-    return mapException(exception);
+    return exception;
   },
 
   /**
    * Fetch exceptions for a trade
    */
   async getExceptionsByTrade(tradeId: number): Promise<Exception[]> {
-    const exceptions = await exceptionClient.get<ExceptionApiResponse[]>(
+    const exceptions = await exceptionClient.get<Exception[]>(
       `/api/exceptions/trade/${tradeId}`
     );
-    return exceptions.map(mapException);
+    return exceptions;
   },
 
   /**

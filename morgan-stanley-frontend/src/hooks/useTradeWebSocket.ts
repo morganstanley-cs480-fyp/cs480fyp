@@ -34,43 +34,43 @@ export function useTradeWebSocket(
             console.log('🎯 RAW WebSocket message received:', data);
 
             // Check if the data is a transaction or exception based on properties
-            if (data.exception_id == undefined) {
+            if (data.trans_id == undefined) { // this is a transaction
                 // Handle transaction update
                 const transactionData = data as Transaction;
                 setLastUpdate(transactionData);
 
                 setMergedTransactions(prev => {
-                    const existingIndex = prev.findIndex(t => t.trans_id === transactionData.trans_id);
+                    const existingIndex = prev.findIndex(t => t.id === transactionData.id);
 
                     if (existingIndex !== -1) {
                         // Update existing transaction
                         const updated = [...prev];
                         updated[existingIndex] = { ...updated[existingIndex], ...transactionData };
-                        console.log('🔄 Updated existing transaction:', transactionData.trans_id);
+                        console.log('🔄 Updated existing transaction:', transactionData.id);
                         return updated.sort((a, b) => a.step - b.step);
                     } else {
                         // Add new transaction
-                        console.log('➕ Added new transaction:', transactionData.trans_id);
+                        console.log('➕ Added new transaction:', transactionData.id);
                         return [...prev, transactionData].sort((a, b) => a.step - b.step);
                     }
                 });
-            } else if (data.exception_id !== undefined) {
+            } else {
                 // Handle exception update
                 const exceptionData = data as Exception;
                 setLastExceptionUpdate(exceptionData);
 
                 setMergedExceptions(prev => {
-                    const existingIndex = prev.findIndex(e => e.exception_id === exceptionData.exception_id);
+                    const existingIndex = prev.findIndex(e => e.id === exceptionData.id);
 
                     if (existingIndex !== -1) {
                         // Update existing exception
                         const updated = [...prev];
                         updated[existingIndex] = { ...updated[existingIndex], ...exceptionData };
-                        console.log('🔄 Updated existing exception:', exceptionData.exception_id);
+                        console.log('🔄 Updated existing exception:', exceptionData.id);
                         return updated;
                     } else {
                         // Add new exception
-                        console.log('➕ Added new exception:', exceptionData.exception_id);
+                        console.log('➕ Added new exception:', exceptionData.id);
                         return [...prev, exceptionData];
                     }
                 });

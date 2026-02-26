@@ -21,7 +21,7 @@ export interface Trade {
 
 export interface Transaction {
   id: number;
-  trans_id: number;
+  trade_id: number;
   create_time: string;
   entity: string;
   direction: string;
