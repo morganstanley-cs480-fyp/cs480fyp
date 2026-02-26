@@ -3,7 +3,7 @@
  * Centralized API client with error handling, timeouts, and interceptors
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||  window.location.origin;
 const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000;
 const ENABLE_DEBUG_LOGGING = import.meta.env.VITE_ENABLE_DEBUG_LOGGING === 'true';
 

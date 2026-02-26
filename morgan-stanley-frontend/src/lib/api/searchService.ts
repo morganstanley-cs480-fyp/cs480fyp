@@ -14,7 +14,7 @@ import type {
 /**
  * Exception API client - separate endpoint for exception service
  */
-const EXCEPTION_API_BASE_URL = import.meta.env.VITE_EXCEPTION_API_BASE_URL || 'http://localhost:8001';
+const EXCEPTION_API_BASE_URL = import.meta.env.VITE_EXCEPTION_API_BASE_URL ||  window.location.origin;
 
 class ExceptionClient {
   async get<T>(endpoint: string): Promise<T> {

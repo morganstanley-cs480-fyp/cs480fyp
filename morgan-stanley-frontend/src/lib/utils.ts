@@ -40,9 +40,38 @@ export function formatDateShort(value?: string | number | Date | null): string {
 const isCognitoConfigured = !!import.meta.env.VITE_COGNITO_CLIENT_ID;
 
 export const requireAuth = ({ context }: { context: RouterContext }) => {
-  if (isCognitoConfigured && !context.authentication.isAuthenticated) {
-    throw redirect({ to: "/" });
+  const { authentication } = context;
+
+  // If Cognito is not even used (local dev), skip auth entirely (return truthy object)
+  if (!isCognitoConfigured) {
+
+      console.log('🔓 Cognito not configured, skipping auth');
+    return true;
+
   }
+  // 1. THE ANTI-FLICKER CHECK:
+  // If the library is still initializing, DO NOTHING.
+  // The Router will wait. Once loading is false, this function runs again.
+  if (authentication.isLoading) {
+    console.log('⏳ Auth initialization in progress... holding route.');
+    return; 
+  }
+
+  // 2. THE ACTUAL CHECK:
+  // Now that we know loading is done, if they aren't authenticated, kick them out.
+  if (!authentication.isAuthenticated) {
+    console.log('🚫 Not authenticated. Redirecting to login.');
+    throw redirect({ 
+      to: "/",
+      search: {
+        // Save where they were trying to go so we can send them back after login
+        redirect: window.location.href 
+      }
+    });
+  }
+
+  console.log('✅ Auth verified, allowing access.');
+  return true;
 };
 
 export const getWebSocketUrl = () => {
@@ -59,6 +88,6 @@ export const getWebSocketUrl = () => {
     const host = window.location.host;
 
     // Attach the routing prefix so CloudFront knows to send it to the ALB
-    return `${protocol}//${host}/api/ws`;
+    return `${protocol}://${host}/api/ws`;
 };
 

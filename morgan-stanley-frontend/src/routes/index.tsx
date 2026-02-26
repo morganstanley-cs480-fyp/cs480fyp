@@ -9,15 +9,30 @@ function LoginComponent() {
   const navigate = useNavigate();
   const [showError, setShowError] = useState(false);
 
+
   useEffect(() => {
+    // Only handle redirects when actually on the root path
+    if (location.pathname !== '/') return;
+    
     if (!isCognitoConfigured) {
-      navigate({ to: "/trades" });
+      // Only redirect to trades in true development mode
+        navigate({ to: "/trades" });
+      
       return;
     }
-    if (auth) {
-      if (auth.isAuthenticated) {
-        navigate({ to: "/trades" });
-      } else if (!auth.activeNavigator) {
+
+    // If Cognito is configured, handle authentication properly
+    if (auth.isLoading) {
+      console.log('⏳ Auth loading...');
+      return; // Wait for auth to load
+    }
+
+    if (auth.isAuthenticated) {
+      console.log('✅ User authenticated, redirecting to trades');
+      navigate({ to: "/trades" });
+    } else {
+      console.log('🔐 User not authenticated, starting signin');
+      if (!auth.activeNavigator) {
         void auth.signinRedirect();
       }
     }
@@ -46,9 +61,10 @@ function LoginComponent() {
   }
 
   if (showError && auth.error) {
-    <div className="text-red-500 font-bold">
+    return (<div className="text-red-500 font-bold">
       Oops...Error encountered: {auth.error.message}
-    </div>;
+    </div>
+    );
   }
 }
 

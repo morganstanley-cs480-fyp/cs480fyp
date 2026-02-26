@@ -1,7 +1,7 @@
 import type { Trade, Transaction } from './types';
 
 const TRADE_FLOW_API_BASE_URL =
-  import.meta.env.VITE_TRADE_FLOW_API_BASE_URL || 'http://localhost:8003';
+  import.meta.env.VITE_TRADE_FLOW_API_BASE_URL ||  window.location.origin;
 
 // type TradeApiResponse = Omit<Trade, 'trade_id'> & { id: number };
 //
@@ -49,23 +49,23 @@ async function request<T>(endpoint: string): Promise<T> {
 
 export const tradeFlowService = {
   async getTradeById(tradeId: number): Promise<Trade> {
-    return await request<Trade>(`/trades/${tradeId}`);
+    return await request<Trade>(`/api/trades/${tradeId}`);
   },
 
     // NOTE : TEMPORARILY NOT USE LIMIT AND OFFSET FOR NOW.
   async getTrades(limit: number = 1000, offset: number = 0): Promise<Trade[]> {
-    const response = await request<TradeTableResponse>(`/trades`);
+    const response = await request<TradeTableResponse>(`/api/trades`);
     return response.data;
 
   },
 
   async getRecentTrades(limit: number = 20): Promise<Trade[]> {
-    return await request<Trade[]>(`/trades/recent?limit=${limit}`);
+    return await request<Trade[]>(`/api/trades/recent?limit=${limit}`);
   },
 
   async getTransactionsByTradeId(tradeId: number): Promise<Transaction[]> {
     return await request<Transaction[]>(
-      `/trades/${tradeId}/transactions`
+      `/api/trades/${tradeId}/transactions`
     );
   },
 };
