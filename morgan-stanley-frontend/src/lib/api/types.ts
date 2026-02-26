@@ -8,7 +8,7 @@
 // ============================================================================
 
 export interface Trade {
-  trade_id: number;
+  id: number;
   account: string;
   asset_type: string;
   booking_system: string;
@@ -20,7 +20,7 @@ export interface Trade {
 }
 
 export interface Transaction {
-  trade_id: number;
+  id: number;
   trans_id: number;
   create_time: string;
   entity: string;
@@ -32,9 +32,9 @@ export interface Transaction {
 }
 
 export interface Exception {
+  id: number;
   trade_id: number;
   trans_id: number;
-  exception_id: number;
   status: 'PENDING' | 'RESOLVED' | 'IGNORED' | 'CLOSED';
   msg: string;
   create_time: string;
