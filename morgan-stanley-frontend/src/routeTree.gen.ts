@@ -57,10 +57,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/exceptions/$exceptionId': typeof ExceptionsExceptionIdRoute
   '/trades/$tradeId': typeof TradesTradeIdRoute
-  '/callback/': typeof CallbackIndexRoute
-  '/exceptions/': typeof ExceptionsIndexRoute
-  '/trades/': typeof TradesIndexRoute
-  '/visualisation/': typeof VisualisationIndexRoute
+  '/callback': typeof CallbackIndexRoute
+  '/exceptions': typeof ExceptionsIndexRoute
+  '/trades': typeof TradesIndexRoute
+  '/visualisation': typeof VisualisationIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -87,10 +87,10 @@ export interface FileRouteTypes {
     | '/'
     | '/exceptions/$exceptionId'
     | '/trades/$tradeId'
-    | '/callback/'
-    | '/exceptions/'
-    | '/trades/'
-    | '/visualisation/'
+    | '/callback'
+    | '/exceptions'
+    | '/trades'
+    | '/visualisation'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,28 +133,28 @@ declare module '@tanstack/react-router' {
     '/visualisation/': {
       id: '/visualisation/'
       path: '/visualisation'
-      fullPath: '/visualisation/'
+      fullPath: '/visualisation'
       preLoaderRoute: typeof VisualisationIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trades/': {
       id: '/trades/'
       path: '/trades'
-      fullPath: '/trades/'
+      fullPath: '/trades'
       preLoaderRoute: typeof TradesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/exceptions/': {
       id: '/exceptions/'
       path: '/exceptions'
-      fullPath: '/exceptions/'
+      fullPath: '/exceptions'
       preLoaderRoute: typeof ExceptionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/callback/': {
       id: '/callback/'
       path: '/callback'
-      fullPath: '/callback/'
+      fullPath: '/callback'
       preLoaderRoute: typeof CallbackIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
