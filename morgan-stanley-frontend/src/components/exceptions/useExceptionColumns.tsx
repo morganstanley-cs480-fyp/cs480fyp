@@ -30,11 +30,11 @@ export function useExceptionColumns({
 
   return [
     {
-      accessorKey: "exception_id",
+      accessorKey: "id",
       header: ({ column }) => <SortHeader column={column} label="Exception ID" />,
       cell: ({ row }) => (
         <span className="text-sm text-black">
-          {row.getValue("exception_id")}
+          {row.getValue("id")}
         </span>
       ),
       enableColumnFilter: true,
