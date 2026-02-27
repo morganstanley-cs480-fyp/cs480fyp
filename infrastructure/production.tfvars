@@ -34,7 +34,7 @@ db_password = "dbpassword"
 # ==========================================
 # MESSAGE QUEUES
 # ==========================================
-data_processing_queue_name = "data-processing-queue.fifo" # This is a fifo queue, so end with .fifo
+data_processing_queue_name = "data-processing-queue.fifo" # This is a fifo queue
 
 # ==========================================
 # ECS Cluster & General
@@ -71,13 +71,6 @@ ingestion_container_name = "ingestion-service-container"
 ingestion_container_image = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/ingestion-service:latest"
 ingestion_service_name = "ingestion-service"
 
-query_suggestion_target_group_name = "query-suggestion-target-group"
-query_suggestion_log_group_name = "/ecs/query-suggestion-service-logs"
-query_suggestion_family = "query-suggestion-service-task"
-query_suggestion_container_name = "query-suggestion-service-container"
-query_suggestion_container_image = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/query-suggestion-service:latest"
-query_suggestion_service_name = "query-suggestion-service"
-
 rag_target_group_name = "rag-service-target-group"
 rag_log_group_name = "/ecs/rag-service-logs"
 rag_family = "rag-service-task"
@@ -87,17 +80,17 @@ rag_service_name = "rag-service"
 
 search_target_group_name = "search-service-target-group"
 search_log_group_name = "/ecs/search-service-logs"
-search_family = "search-task"
+search_family = "search-service-task"
 search_container_name = "search-service-container"
 search_container_image = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/search-service:latest"
 search_service_name = "search-service"
 
 solution_target_group_name = "solution-service-target-group"
 solution_log_group_name = "/ecs/solution-service-logs"
-solution_family = "solution-task"
+solution_family = "solution-service-task"
 solution_container_name = "solution-service-container"
 solution_container_image = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/solution-service:latest"
-solution_service_name = "solution_service"
+solution_service_name = "solution-service"
 
 trade_flow_target_group_name = "trade-flow-service-target-group"
 trade_flow_log_group_name = "/ecs/trade-flow-service-logs"

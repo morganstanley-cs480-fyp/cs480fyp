@@ -20,7 +20,8 @@ resource "aws_ecs_task_definition" "this" {
       }
       ] : []
 
-      environment = flatten([var.rds_environment, var.sqs_environment, var.other_environment])
+      environment = var.environments
+      secrets = var.secrets
 
       logConfiguration = {
         logDriver = "awslogs"
