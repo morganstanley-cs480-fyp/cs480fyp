@@ -173,7 +173,7 @@ function computeAxisX(
  * - numbered label
  */
 function WorkflowEdge(props: EdgeProps) {
-  const { id, source, target, data, markerEnd } = props;
+  const { id, source, target, data } = props;
 
   // Get current node positions dynamically (updates when nodes are dragged)
   const nodes = useNodes();
@@ -182,25 +182,25 @@ function WorkflowEdge(props: EdgeProps) {
 
   if (!sourceNode || !targetNode) return null;
 
-  const sourceId: string = data?.sourceId;
+  const sourceId: string = (data as Record<string, unknown>)?.sourceId as string;
 
   const sourceIsHub = sourceId === HUB_ID;
 
   // Get actual node dimensions from node data (handles dynamic hub width)
-  const sourceWidth = sourceNode.data?.width ?? NODE_WIDTH;
-  const targetWidth = targetNode.data?.width ?? NODE_WIDTH;
+  const sourceWidth = (sourceNode.data as Record<string, unknown>)?.width as number ?? NODE_WIDTH;
+  const targetWidth = (targetNode.data as Record<string, unknown>)?.width as number ?? NODE_WIDTH;
   
   const sourceSize: Size = { w: sourceWidth, h: NODE_HEIGHT };
   const targetSize: Size = { w: targetWidth, h: NODE_HEIGHT };
 
-  const offsetIndex = data?.offsetIndex ?? 0;
-  const totalOffsets = data?.totalOffsets ?? 1;
+  const offsetIndex = (data as Record<string, unknown>)?.offsetIndex as number ?? 0;
+  const totalOffsets = (data as Record<string, unknown>)?.totalOffsets as number ?? 1;
   const laneOffset =
     totalOffsets > 1 ? (offsetIndex - (totalOffsets - 1) / 2) * EDGE_OFFSET : 0;
 
   // Determine arrow color based on exception status
-  const hasException = data?.hasException ?? false;
-  const isCleared = data?.isCleared ?? false;
+  const hasException = (data as Record<string, unknown>)?.hasException as boolean ?? false;
+  const isCleared = (data as Record<string, unknown>)?.isCleared as boolean ?? false;
   let arrowColor = EDGE_COLOR; // default color
   if (hasException) {
     arrowColor = '#ef4444'; // red for exception
@@ -259,7 +259,7 @@ function WorkflowEdge(props: EdgeProps) {
         id={id}
         path={path}
         style={{ stroke: EDGE_COLOR, strokeWidth: 2.25, strokeLinecap: 'round' }}
-        markerEnd={{ type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 }}
+        markerEnd={{ type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 } as any}
       />
       <EdgeLabelRenderer>
         <div
@@ -278,7 +278,7 @@ function WorkflowEdge(props: EdgeProps) {
               opacity: 0.9,
             }}
           >
-            {data?.step ?? ''}
+            {(data as Record<string, unknown>)?.step as string ?? ''}
           </div>
         </div>
       </EdgeLabelRenderer>
@@ -645,7 +645,7 @@ export default function ReactFlowWithElkAutoLayout() {
   }
 
   const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
-    const nodeData = node.data as EntityNodeData;
+    const nodeData = node.data as unknown as EntityNodeData;
     setSelection({
       kind: 'node',
       id: node.id,
