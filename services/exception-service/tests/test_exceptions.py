@@ -209,3 +209,90 @@ async def test_get_exceptions_by_trade_with_sample(client: AsyncClient, sample_e
     # Find our sample exception in the results
     found = any(exc["id"] == sample_exception.id for exc in data)
     assert found
+
+@pytest.mark.asyncio
+async def test_resolve_exception(client: AsyncClient, sample_exception):
+    """Test resolving an exception updates status to CLOSED"""
+    # Verify initial status is PENDING
+    assert sample_exception.status == "PENDING"
+    
+    response = await client.post(f"/api/exceptions/{sample_exception.id}/resolve")
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == sample_exception.id
+    assert data["status"] == "CLOSED"
+    assert data["trade_id"] == sample_exception.trade_id
+    assert data["trans_id"] == sample_exception.trans_id
+    assert data["msg"] == sample_exception.msg
+    assert data["priority"] == sample_exception.priority
+    
+    # Verify database was updated
+    await sample_exception.refresh_from_db()
+    assert sample_exception.status == "CLOSED"
+
+@pytest.mark.asyncio
+async def test_resolve_already_closed_exception(client: AsyncClient):
+    """Test resolving an exception that is already CLOSED"""
+    # Create exception with CLOSED status
+    exception = await Exception.create(
+        trade_id=7777,
+        trans_id=77777,
+        msg="Already closed exception",
+        priority="Low",
+        status="CLOSED"
+    )
+    
+    response = await client.post(f"/api/exceptions/{exception.id}/resolve")
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "CLOSED"
+    
+    # Cleanup
+    await exception.delete()
+
+@pytest.mark.asyncio
+async def test_resolve_exception_not_found(client: AsyncClient):
+    """Test resolving non-existent exception returns 404"""
+    response = await client.post("/api/exceptions/99999/resolve")
+    
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Exception not found"
+
+@pytest.mark.asyncio
+async def test_resolve_exception_preserves_other_fields(client: AsyncClient):
+    """Test that resolving only changes status, not other fields"""
+    # Create exception with specific values
+    exception = await Exception.create(
+        trade_id=8888,
+        trans_id=88888,
+        msg="Original message",
+        priority="Critical",
+        status="PENDING",
+        comment="Important comment"
+    )
+    
+    original_msg = exception.msg
+    original_priority = exception.priority
+    original_comment = exception.comment
+    original_trade_id = exception.trade_id
+    original_trans_id = exception.trans_id
+    
+    response = await client.post(f"/api/exceptions/{exception.id}/resolve")
+    
+    assert response.status_code == 200
+    data = response.json()
+    
+    # Verify status changed
+    assert data["status"] == "CLOSED"
+    
+    # Verify other fields remain unchanged
+    assert data["msg"] == original_msg
+    assert data["priority"] == original_priority
+    assert data["comment"] == original_comment
+    assert data["trade_id"] == original_trade_id
+    assert data["trans_id"] == original_trans_id
+    
+    # Cleanup
+    await exception.delete()
