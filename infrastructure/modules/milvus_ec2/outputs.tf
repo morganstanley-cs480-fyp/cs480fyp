@@ -1,39 +1,14 @@
-output "instance_id" {
-  description = "EC2 instance ID"
-  value       = aws_instance.milvus.id
+output "milvus_private_ip" {
+  description = "The private IP for ECS containers to connect to"
+  value       = aws_instance.milvus_db.private_ip
 }
 
-output "private_ip" {
-  description = "Private IP address of the Milvus instance"
-  value       = aws_instance.milvus.private_ip
-}
-
-output "public_ip" {
-  description = "Public IP address of the Milvus instance"
-  value       = aws_eip.milvus.public_ip
+output "milvus_public_ip" {
+  description = "The public IP for you to SSH into from your laptop"
+  value       = aws_instance.milvus_db.public_ip
 }
 
 output "security_group_id" {
-  description = "Security group ID for the Milvus instance"
-  value       = aws_security_group.milvus.id
-}
-
-output "milvus_endpoint" {
-  description = "Milvus endpoint for connecting from applications"
-  value       = "${aws_instance.milvus.private_ip}:19530"
-}
-
-output "milvus_admin_endpoint" {
-  description = "Milvus admin endpoint for monitoring"
-  value       = "${aws_instance.milvus.private_ip}:9091"
-}
-
-output "iam_role_arn" {
-  description = "IAM role ARN for the Milvus EC2 instance"
-  value       = aws_iam_role.milvus_ec2.arn
-}
-
-output "iam_instance_profile_name" {
-  description = "IAM instance profile name"
-  value       = aws_iam_instance_profile.milvus_ec2.name
+  description = "The ID of the Milvus security group"
+  value       = aws_security_group.milvus_sg.id
 }

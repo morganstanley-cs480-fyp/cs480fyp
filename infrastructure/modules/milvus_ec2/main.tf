@@ -1,163 +1,89 @@
-# Data source for latest Amazon Linux 2 AMI
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
-
-# IAM role for EC2 instance (CloudWatch access)
-resource "aws_iam_role" "milvus_ec2" {
-  name_prefix = "${var.project_name}-milvus-ec2-"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = {
-    Name        = "${var.project_name}-milvus-ec2-role"
-    Environment = var.environment
-    Project     = var.project_name
-  }
-}
-
-# Attach CloudWatch Agent policy
-resource "aws_iam_role_policy_attachment" "cloudwatch" {
-  role       = aws_iam_role.milvus_ec2.name
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-}
-
-# Attach SSM policy for Session Manager (optional)
-resource "aws_iam_role_policy_attachment" "ssm" {
-  role       = aws_iam_role.milvus_ec2.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-# IAM instance profile
-resource "aws_iam_instance_profile" "milvus_ec2" {
-  name_prefix = "${var.project_name}-milvus-ec2-"
-  role        = aws_iam_role.milvus_ec2.name
-
-  tags = {
-    Name        = "${var.project_name}-milvus-ec2-profile"
-    Environment = var.environment
-    Project     = var.project_name
-  }
-}
-
-# EC2 instance for Milvus standalone
-resource "aws_instance" "milvus" {
-  ami                    = var.ami_id != null ? var.ami_id : data.aws_ami.amazon_linux.id
-  instance_type          = var.instance_type
-  subnet_id              = var.subnet_id
-  vpc_security_group_ids = [aws_security_group.milvus.id]
-  key_name               = var.key_name != "" ? var.key_name : null
-  iam_instance_profile   = aws_iam_instance_profile.milvus_ec2.name
-
-  # EBS storage for data persistence
-  root_block_device {
-    volume_type = "gp3"
-    volume_size = var.volume_size
-    encrypted   = true
-  }
-
-  # Additional EBS volume for Milvus data
-  ebs_block_device {
-    device_name = "/dev/sdf"
-    volume_type = "gp3"
-    volume_size = var.data_volume_size
-    encrypted   = true
-  }
-
-  user_data = base64encode(file("${path.module}/user_data.sh"))
-
-  tags = {
-    Name        = "${var.project_name}-milvus"
-    Environment = var.environment
-    Project     = var.project_name
-    Component   = "milvus"
-  }
-}
-
-# Security group for Milvus EC2 instance
-resource "aws_security_group" "milvus" {
-  name_prefix = "${var.project_name}-milvus-"
+# 1. Security Group
+resource "aws_security_group" "milvus_sg" {
+  name        = "milvus-db-sg"
+  description = "Allow inbound traffic for Milvus Vector DB"
   vpc_id      = var.vpc_id
 
-  # Milvus default port
+  # Allow ECS containers (like your rag_service) to connect to Milvus
   ingress {
-    from_port       = 19530
-    to_port         = 19530
-    protocol        = "tcp"
-    security_groups = [var.ecs_security_group_id]
-    description     = "Milvus gRPC API"
+    from_port   = 19530
+    to_port     = 19530
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
   }
 
-  # Milvus admin port (optional)
-  ingress {
-    from_port       = 9091
-    to_port         = 9091
-    protocol        = "tcp"
-    security_groups = [var.ecs_security_group_id]
-    description     = "Milvus admin/metrics"
-  }
-
-  # SSH access (optional, for debugging)
+  # Allow SSH from your laptop for debugging
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = var.ssh_cidr_blocks
-    description = "SSH access"
+    cidr_blocks = ["0.0.0.0/0"] 
   }
 
-  # All outbound traffic
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "All outbound traffic"
   }
 
   tags = {
-    Name        = "${var.project_name}-milvus-sg"
-    Environment = var.environment
-    Project     = var.project_name
-  }
-
-  lifecycle {
-    create_before_destroy = true
+    Name = "milvus-sg"
   }
 }
 
-# Elastic IP for static IP address
-resource "aws_eip" "milvus" {
-  instance = aws_instance.milvus.id
-  domain   = "vpc"
+# 2. Key Pair (Imports your local public key)
+resource "aws_key_pair" "milvus_key" {
+  key_name   = "milvus-ec2-key"
+  public_key = file(var.public_key_path)
+}
 
-  tags = {
-    Name        = "${var.project_name}-milvus-eip"
-    Environment = var.environment
-    Project     = var.project_name
+# 3. Get the latest Ubuntu 22.04 AMI
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+}
+
+# 4. The EC2 Instance
+resource "aws_instance" "milvus_db" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t3a.large" # 8GB RAM minimum for Milvus
+  subnet_id                   = var.subnet_id
+  associate_public_ip_address = true
+  key_name                    = aws_key_pair.milvus_key.key_name
+  vpc_security_group_ids      = [aws_security_group.milvus_sg.id]
+
+  # gp3 storage for better database performance
+  root_block_device {
+    volume_size           = 30
+    volume_type           = "gp3"
+    delete_on_termination = true
   }
 
-  depends_on = [aws_instance.milvus]
+  # Auto-install script runs on first boot
+  user_data = <<-EOF
+    #!/bin/bash
+    apt-get update -y
+    apt-get install -y docker.io docker-compose
+    systemctl enable docker
+    systemctl start docker
+
+    mkdir -p /opt/milvus
+    cd /opt/milvus
+
+    # Download official Milvus Standalone Docker Compose
+    curl -sfL https://github.com/milvus-io/milvus/releases/download/v2.4.0/milvus-standalone-docker-compose.yml -o docker-compose.yml
+
+    # Start Milvus in the background
+    docker-compose up -d
+  EOF
+
+  tags = {
+    Name = "milvus-vector-db"
+  }
 }

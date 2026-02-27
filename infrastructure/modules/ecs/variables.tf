@@ -76,25 +76,23 @@ variable "region" {
   type        = string
 }
 
-variable "rds_environment" {
+variable "environments" {
+  description = "List of plaintext environment variables"
   type = list(object({
     name  = string
     value = string
   }))
+  default = []
 }
 
-variable "sqs_environment" {
+# CHANGED: Renamed from db_environment to secrets
+variable "secrets" {
+  description = "List of secret environment variables pulled from Secrets Manager"
   type = list(object({
-    name  = string
-    value = string
+    name      = string
+    valueFrom = string
   }))
-}
-
-variable "other_environment" {
-  type = list(object({
-    name  = string
-    value = string
-  }))
+  default = []
 }
 
 

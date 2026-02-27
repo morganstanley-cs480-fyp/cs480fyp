@@ -92,6 +92,14 @@ module "redis_cache" {
   ecs_sg_id  = module.ecs_security_group.ecs_service_sg_id
 }
 
+module "milvus_db" {
+  source          = "./modules/milvus_ec2"
+  vpc_id          = module.networking.vpc_id
+  subnet_id       = module.networking.public_subnet_ids[0]
+  vpc_cidr_block  = var.vpc_cidr_block 
+  public_key_path = "~/.ssh/milvus_ec2_key.pub" 
+}
+
 # ECS-SG
 module "ecs_security_group" {
   source    = "./modules/ecs_sg"
@@ -128,33 +136,30 @@ module "data_processing_log_group" {
 
 # data_processing_ecs
 module "data_processing_service" {
-source                  = "./modules/ecs"
-family                  = var.data_processing_family
-container_name          = var.data_processing_container_name
-container_image         = var.data_processing_container_image
-container_port          = 0
-log_group               = module.data_processing_log_group.log_group_name
-region                  = var.region
-execution_role_arn      = module.ecs_execution_role.role_arn
-task_role_arn           = module.data_processing_task_role.role_arn
-service_name            = var.data_processing_service_name
-cluster_id              = module.ecs_cluster.cluster_id
-desired_count           = 1
-subnets                 = module.networking.public_subnet_ids
-security_groups         = [module.ecs_security_group.ecs_service_sg_id]
-assign_public_ip        = true
-rds_environment = [
-     { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
-     { name = "DB_USER", value = var.db_username },
-     { name = "DB_PASSWORD", value = var.db_password },
-     { name = "DB_NAME", value = module.main_rds.db_name }
-   ]
-   sqs_environment = [
-     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
-   ]
-   other_environment = [
+  source                  = "./modules/ecs"
+  family                  = var.data_processing_family
+  container_name          = var.data_processing_container_name
+  container_image         = var.data_processing_container_image
+  container_port          = 0
+  log_group               = module.data_processing_log_group.log_group_name
+  region                  = var.region
+  execution_role_arn      = module.ecs_execution_role.role_arn
+  task_role_arn           = module.data_processing_task_role.role_arn
+  service_name            = var.data_processing_service_name
+  cluster_id              = module.ecs_cluster.cluster_id
+  desired_count           = 1
+  subnets                 = module.networking.public_subnet_ids
+  security_groups         = [module.ecs_security_group.ecs_service_sg_id]
+  assign_public_ip        = true
+  environments = [
+    { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
+    { name = "DB_USER", value = var.db_username },
+    { name = "DB_PASSWORD", value = var.db_password },
+    { name = "DB_NAME", value = module.main_rds.db_name },
+    { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
     { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
-   ]
+  ]
+  secrets =[]
 }
 
 # EXCEPTION SERVICE (Change Port Group)
@@ -172,7 +177,7 @@ module "exception_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 101
-  path_pattern     = ["/api/exception*"]
+  path_pattern     = ["/api/exceptions*"]
   target_group_arn = module.exception_target_group.target_group_arn
 }
 
@@ -201,11 +206,14 @@ module "exception_service" {
   security_groups    = [module.ecs_security_group.ecs_service_sg_id]
   assign_public_ip   = true
   target_group_arn   = module.exception_target_group.target_group_arn
-  rds_environment = [
+  environments = [
+    { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
+    { name = "DB_USER", value = var.db_username },
+    { name = "DB_PASSWORD", value = var.db_password },
+    { name = "DB_NAME", value = module.main_rds.db_name },
     { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" }
   ]
-  sqs_environment = []
-  other_environment = []
+  secrets = []
 }
 
 # GATEWAY SERVICE
@@ -253,11 +261,10 @@ module "gateway_service" {
   security_groups         = [module.ecs_security_group.ecs_service_sg_id]
   assign_public_ip        = true
   target_group_arn        = module.gateway_target_group.target_group_arn
-  rds_environment  = []
-  sqs_environment = []
-  other_environment = [
-    {  name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
+  environments = [
+    { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
   ]
+  secrets =[]
 }
 
 # INGESTION SERVICE
@@ -294,67 +301,15 @@ module "ingestion_service" {
   subnets            = module.networking.public_subnet_ids
   security_groups    = [module.ecs_security_group.ecs_service_sg_id]
   assign_public_ip   = true
-  rds_environment    = []
-  sqs_environment = [
-    { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
-  ]
-  other_environment = [
-    {name = "MIGRATE", value = "true"},
+  environments = [
+    { name = "MIGRATE", value = "true"},
     { name = "S3_BUCKET_NAME", value = module.s3_data.bucket_name },
     { name = "S3_FILE_KEY",    value = module.s3_data.file_key },
     { name = "SSM_PARAM_NAME", value = module.xml_pointer.parameter_name },
-    { name = "AWS_REGION", value = var.region }
+    { name = "AWS_REGION", value = var.region },
+    { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
   ]
-}
-
-
-# QUERY SUGGESTION SERVICE
-# query_suggestion_target_group
-module "query_suggestion_target_group" {
-  source                = "./modules/alb_tg"
-  target_group_name     = var.query_suggestion_target_group_name
-  target_group_port     = 3003
-  target_group_protocol = "HTTP"
-  vpc_id                = module.networking.vpc_id
-}
-
-# query_suggestion_service_rule
-module "query_suggestion_listener_rule" {
-  source           = "./modules/alb_rule"
-  listener_arn     = module.alb.http_listener_arn
-  priority         = 103
-  path_pattern     = ["/api/query_suggestion*"]
-  target_group_arn = module.query_suggestion_target_group.target_group_arn
-}
-
-# query_suggestion_cloudwatch
-module "query_suggestion_log_group" {
-  source            = "./modules/cloudwatch"
-  log_group_name    = var.query_suggestion_log_group_name
-  retention_in_days = 14
-}
-
-# query_suggestion_ecs
-module "query_suggestion_service" {
-  source             = "./modules/ecs"
-  family             = var.query_suggestion_family
-  container_name     = var.query_suggestion_container_name
-  container_image    = var.query_suggestion_container_image
-  container_port     = 3003
-  log_group          = module.query_suggestion_log_group.log_group_name
-  region             = var.region
-  execution_role_arn = module.ecs_execution_role.role_arn
-  task_role_arn      = ""
-  service_name       = var.query_suggestion_service_name
-  cluster_id         = module.ecs_cluster.cluster_id
-  desired_count      = 1
-  subnets            = module.networking.public_subnet_ids
-  security_groups    = [module.ecs_security_group.ecs_service_sg_id]
-  assign_public_ip   = true
-  target_group_arn   = module.query_suggestion_target_group.target_group_arn
-  rds_environment    = []
-  sqs_environment    = []
-  other_environment = []
+  secrets =[]
 }
 
 # RAG SERVICE
@@ -407,14 +362,22 @@ module "rag_service" {
   security_groups         = [module.ecs_security_group.ecs_service_sg_id]
   assign_public_ip        = true
   target_group_arn        = module.rag_target_group.target_group_arn 
-  rds_environment  = [
+  environments = [
     { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
     { name = "DB_USER", value = var.db_username },
     { name = "DB_PASSWORD", value = var.db_password },
-    { name = "DB_NAME", value = module.main_rds.db_name }
+    { name = "DB_NAME", value = module.main_rds.db_name },
+    { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" },
+    { name = "MILVUS_HOST", value = module.milvus_db.milvus_private_ip },
+    { name = "MILVUS_PORT", value = "19530" },
+    { name = "MILVUS_COLLECTION", value = "document" },
+    { name = "AWS_REGION", value = "ap-southeast-1" },
+    { name = "GOOGLE_API_KEY",         value = "AIzaSyCrCtVTeUr9ve3iq4ei9YbPtqKU1n_E3Nk" },
+    { name = "BEDROCK_EMBED_MODEL_ID", value = "cohere.embed-english-v3" },
+    { name = "BEDROCK_CHAT_MODEL_ID",  value = "us.amazon.nova-lite-v1:0" },
+    { name = "GOOGLE_MODEL_ID",        value = "gemini-2.5-flash-lite" }
   ]
-  sqs_environment = []
-  other_environment = []
+  secrets = []
 }
 
 # SEARCH SERVICE
@@ -432,7 +395,7 @@ module "search_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 105
-  path_pattern     = ["/api/search*"]
+  path_pattern     = ["/api/search*", "/api/history*", "/api/filter-options*"]
   target_group_arn = module.search_target_group.target_group_arn
 }
 
@@ -461,16 +424,15 @@ module "search_service" {
   security_groups    = [module.ecs_security_group.ecs_service_sg_id]
   assign_public_ip   = true
   target_group_arn   = module.search_target_group.target_group_arn
-  rds_environment = [
-    { name = "RDS_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
-    { name = "RDS_USER", value = var.db_username },
-    { name = "RDS_PASSWORD", value = var.db_password },
-    { name = "RDS_DB", value = module.main_rds.db_name }
-  ]
-  sqs_environment = []
-  other_environment = [
+  environments = [
+    { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
+    { name = "DB_USER", value = var.db_username },
+    { name = "DB_PASSWORD", value = var.db_password },
+    { name = "DB_NAME", value = module.main_rds.db_name },
+    { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" },
     { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
   ]
+  secrets = []
 }
 
 # SOLUTION SERVICE
@@ -488,7 +450,7 @@ module "solution_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 106
-  path_pattern     = ["/api/solution*"]
+  path_pattern     = ["/api/solutions*"]
   target_group_arn = module.solution_target_group.target_group_arn
 }
 
@@ -517,11 +479,14 @@ module "solution_service" {
   security_groups    = [module.ecs_security_group.ecs_service_sg_id]
   assign_public_ip   = true
   target_group_arn   = module.solution_target_group.target_group_arn
-  rds_environment = [
+  environments = [
+    { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
+    { name = "DB_USER", value = var.db_username },
+    { name = "DB_PASSWORD", value = var.db_password },
+    { name = "DB_NAME", value = module.main_rds.db_name },
     { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" }
   ]
-  sqs_environment = []
-  other_environment = []
+  secrets = []
 }
 
 # TRADE FLOW SERVICE # To change target port
@@ -568,12 +533,11 @@ module "trade_flow_service" {
   security_groups    = [module.ecs_security_group.ecs_service_sg_id]
   assign_public_ip   = true
   target_group_arn   = module.trade_flow_target_group.target_group_arn
-  rds_environment = [
+  environments = [
     { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
     { name = "DB_USER", value = var.db_username },
     { name = "DB_PASSWORD", value = var.db_password },
-    { name = "DB_NAME", value = module.main_rds.db_name }
+    { name = "DB_NAME", value = module.main_rds.db_name },
   ]
-  sqs_environment = []
-  other_environment = []
+  secrets = []
 }
