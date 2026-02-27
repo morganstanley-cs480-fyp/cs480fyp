@@ -8,10 +8,11 @@ from fastapi import APIRouter
 
 from app.config.settings import settings
 
-router = APIRouter(tags=["health"])
+# Root endpoint
+health_router = APIRouter(tags=["health"])
 
 
-@router.get("/")
+@health_router.get("/")
 async def root():
     """Root endpoint - service info and connectivity check."""
     return {
@@ -22,7 +23,11 @@ async def root():
     }
 
 
-@router.get("/health")
+# Health check endpoints under /api/rag
+rag_health_router = APIRouter(prefix="/api/rag", tags=["health"])
+
+
+@rag_health_router.get("/health")
 async def health():
     """Health check for ALB/ECS. Returns 200 when the service can accept traffic."""
     return {
@@ -33,7 +38,7 @@ async def health():
     }
 
 
-@router.get("/health/live")
+@rag_health_router.get("/health/live")
 async def liveness():
     """Liveness probe - process is running. No dependency checks."""
     return {

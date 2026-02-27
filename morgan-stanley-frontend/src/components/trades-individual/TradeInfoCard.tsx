@@ -36,9 +36,9 @@ export function TradeInfoCard({
       case "RESOLVED":
         return "bg-green-100 text-green-800 border-green-200";
       case "IGNORED":
-        return "bg-slate-200 text-slate-700 border-slate-200";
+        return "bg-black/[0.02] text-black/75 border-black/10";
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-black/[0.04] text-black/75 border-black/10";
     }
   };
 

@@ -3,7 +3,7 @@
  * Centralized API client with error handling, timeouts, and interceptors
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||  window.location.origin;
 const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000;
 const ENABLE_DEBUG_LOGGING = import.meta.env.VITE_ENABLE_DEBUG_LOGGING === 'true';
 
@@ -11,25 +11,19 @@ const ENABLE_DEBUG_LOGGING = import.meta.env.VITE_ENABLE_DEBUG_LOGGING === 'true
  * API Error class for structured error handling
  */
 export class APIError extends Error {
+  statusCode?: number;
+  details?: unknown;
+
   constructor(
     message: string,
-    public statusCode?: number,
-    public details?: unknown
+    statusCode?: number,
+    details?: unknown
   ) {
     super(message);
     this.name = 'APIError';
+    this.statusCode = statusCode;
+    this.details = details;
   }
-}
-
-/**
- * Generic API response structure
- */
-interface APIResponse<T> {
-  data?: T;
-  error?: {
-    message: string;
-    details?: unknown;
-  };
 }
 
 /**

@@ -9,5 +9,5 @@ __all__ = [
     "bedrock_service",
     "query_builder",
     "query_history_service",
-    "search_orchestrator"
+    "search_orchestrator",
 ]

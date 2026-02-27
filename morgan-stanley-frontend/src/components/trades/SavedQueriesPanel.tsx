@@ -30,10 +30,10 @@ export function SavedQueriesPanel({
 
   if (savedQueries.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-12 text-center">
-        <Star className="size-16 text-slate-300 mx-auto mb-4" />
-        <h3 className="text-slate-700 font-medium text-lg mb-2">No Saved Queries</h3>
-        <p className="text-sm text-slate-500">
+      <div className="bg-white rounded-xl border border-black/8 p-12 text-center">
+        <Star className="size-12 text-black/15 mx-auto mb-3" />
+        <h3 className="text-black/60 font-medium text-sm mb-1">No Saved Queries</h3>
+        <p className="text-xs text-black/40">
           Save frequently used searches by clicking the star icon in your recent
           searches.
         </p>
@@ -42,12 +42,13 @@ export function SavedQueriesPanel({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200">
-      <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
-        <div className="flex items-center gap-2 text-black/75 text-base font-medium">
-          <Star className="size-5 fill-amber-400 text-amber-400" />
-          Saved Queries ({savedQueries.length})
-        </div>
+    <div className="bg-white rounded-xl border border-black/8">
+      <div className="flex items-center gap-2 px-5 py-3 border-b border-black/6">
+        <Star className="size-4 fill-amber-400 text-amber-400" />
+        <span className="text-sm font-semibold text-black">Saved Queries</span>
+        <span className="text-xs font-mono bg-black/5 text-black/40 px-2 py-0.5 rounded-full ml-1">
+          {savedQueries.length}
+        </span>
       </div>
       <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
         {savedQueries.map((query) => (
@@ -57,7 +58,7 @@ export function SavedQueriesPanel({
           >
             <button
               onClick={() => onSelectQuery(query.query_text)}
-              className="w-full flex flex-col gap-2 p-4 border border-slate-200 rounded-lg hover:border-[#002B51] hover:shadow-md transition-all bg-white text-left"
+              className="w-full flex flex-col gap-2 p-4 border border-black/8 rounded-lg hover:border-[#002B51] hover:shadow-md transition-all bg-white text-left"
             >
               <div className="flex items-start gap-2">
                 <Star className="size-4 fill-amber-400 text-amber-400 shrink-0 mt-0.5" />
@@ -78,7 +79,7 @@ export function SavedQueriesPanel({
                 e.stopPropagation();
                 onDeleteQuery(query.query_id);
               }}
-              className="absolute top-2 right-2 p-1.5 bg-white hover:bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-slate-200 text-black/50 hover:text-white"
+              className="absolute top-2 right-2 p-1.5 bg-white hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-black/8 text-black/30 hover:text-red-500"
               title="Delete query"
             >
               <Trash2 className="size-4" />

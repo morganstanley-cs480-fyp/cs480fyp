@@ -1,5 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import {useAuth} from 'react-oidc-context';
 import {
   useReactTable,
   getCoreRowModel,
@@ -16,41 +17,28 @@ import type {
 } from "@tanstack/react-table";
 
 import type { Trade, TypeaheadSuggestion } from "@/lib/api/types";
-
 import type { QueryHistory } from "@/lib/api/types";
 
-// Component imports
 import { SearchHeader, type RecentSearch } from "@/components/trades/SearchHeader";
-import { SavedQueriesPanel } from "@/components/trades/SavedQueriesPanel";
 import { TradeFilters, type ManualSearchFilters } from "@/components/trades/TradeFilters";
+import { TradeStatsCards } from "@/components/trades/TradeStatsCards";
 import { TradeResultsTable } from "@/components/trades/TradeResultsTable";
 import { useTradeColumns } from "@/components/trades/useTradeColumns";
-import { useUser } from "@/contexts/UserContext";
 import { searchService } from "@/lib/api/searchService";
 import { APIError } from "@/lib/api/client";
+import { requireAuth } from "@/lib/utils";
 import { tradeFlowService } from "@/lib/api/tradeFlowService";
 
-// Define search params schema for pagination
-type TradeSearchParams = {
-  page?: number;
-  pageSize?: number;
-};
-
 export const Route = createFileRoute("/trades/")({
+  beforeLoad: requireAuth,
   component: TradeSearchPage,
-  validateSearch: (search: Record<string, unknown>): TradeSearchParams => {
-    return {
-      page: Number(search?.page) || 1,
-      pageSize: Number(search?.pageSize) || 20,
-    };
-  },
 });
 
 function TradeSearchPage() {
-  const { userId } = useUser();
-  const navigate = useNavigate();
-  const searchParams = Route.useSearch();
-  
+  const auth = useAuth();
+  const userId = (auth.user?.profile?.sub as string) ?? 'dev-user';
+
+
   const STORAGE_KEY = "tradeFilters:v1";
   const TABLE_STATE_KEY = "tradeTableState:v1";
   const SEARCH_KEY = "tradeSearchQuery:v1";
@@ -74,7 +62,9 @@ function TradeSearchPage() {
     if (typeof window === "undefined") return getDefaultFilters();
     const saved = sessionStorage.getItem(STORAGE_KEY);
     try {
-      return saved ? (JSON.parse(saved) as ManualSearchFilters) : getDefaultFilters();
+      return saved
+        ? (JSON.parse(saved) as ManualSearchFilters)
+        : getDefaultFilters();
     } catch (error) {
       console.warn("Failed to parse saved trade filters", error);
       return getDefaultFilters();
@@ -89,8 +79,8 @@ function TradeSearchPage() {
     const saved = sessionStorage.getItem(SEARCH_KEY);
     return saved ?? "";
   });
+  const [currentQueryId, setCurrentQueryId] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [showSavedQueries, setShowSavedQueries] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [results, setResults] = useState<Trade[]>([]);
@@ -131,62 +121,64 @@ function TradeSearchPage() {
     }
   };
 
-  // Fetch recent trades on component mount
-  const fetchRecentTrades = async () => {
+  // Fetch all trades and set results (filter options are loaded separately)
+    const fetchAllTrades = async () => {
+        try {
+            const allTrades = await tradeFlowService.getTrades(1000, 0);
+            setResults(allTrades);
+        } catch (error) {
+            console.error('Failed to fetch trades:', error);
+        }
+    };
+
+  // Fetch filter dropdown options from the dedicated aggregation endpoint.
+  // This is independent of trade results — one cheap DB query, not a 1000-row fetch.
+  const fetchFilterOptions = async () => {
     try {
-      const recentTrades = await tradeFlowService.getRecentTrades(20);
-      setResults(recentTrades);
+      const options = await searchService.getFilterOptions();
+      setFilterOptions({
+        accounts: options.accounts,
+        assetTypes: options.asset_types,
+        bookingSystems: options.booking_systems,
+        affirmationSystems: options.affirmation_systems,
+        clearingHouses: options.clearing_houses,
+        statuses: options.statuses,
+      });
     } catch (error) {
-      console.error('Failed to fetch recent trades:', error);
-      // Silently fail - recent trades not critical
+      console.error('Failed to fetch filter options:', error);
     }
   };
-  
-  // Fetch history, saved queries, and recent trades on mount
+
+  // Fetch history, saved queries, filter options, and initial trade data on mount.
+  // If the user had a NL search active before the page refreshed, re-execute it
+  // so the table results always match the query shown in the search bar.
   useEffect(() => {
     fetchSearchHistory();
     fetchSavedQueries();
-    fetchRecentTrades();
+    fetchFilterOptions();
+
+    const savedQuery = sessionStorage.getItem(SEARCH_KEY) ?? "";
+    if (savedQuery.trim()) {
+      setSearching(true);
+      void searchService
+        .searchTrades({
+          search_type: "natural_language",
+          user_id: userId,
+          query_text: savedQuery,
+        })
+        .then((response) => {
+          setResults(response.results);
+          setCurrentQueryId(response.query_id);
+        })
+        .catch(() => {
+          // Search failed (e.g. AI service down) — fall back to showing all trades
+          void fetchAllTrades();
+        })
+        .finally(() => setSearching(false));
+    } else {
+      void fetchAllTrades();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    let isActive = true;
-
-    const loadFilterOptions = async () => {
-      try {
-        const trades = await tradeFlowService.getTrades(1000, 0);
-        if (!isActive) return;
-
-        const uniqueValues = <T,>(items: T[]) => Array.from(new Set(items));
-
-        setFilterOptions({
-          accounts: uniqueValues(trades.map((trade) => trade.account)).sort(),
-          assetTypes: uniqueValues(trades.map((trade) => trade.asset_type)).sort(),
-          bookingSystems: uniqueValues(trades.map((trade) => trade.booking_system)).sort(),
-          affirmationSystems: uniqueValues(trades.map((trade) => trade.affirmation_system)).sort(),
-          clearingHouses: uniqueValues(trades.map((trade) => trade.clearing_house)).sort(),
-          statuses: uniqueValues(trades.map((trade) => trade.status)).sort(),
-        });
-      } catch (error) {
-        if (!isActive) return;
-        console.error('Failed to load filter options:', error);
-        setFilterOptions({
-          accounts: [],
-          assetTypes: [],
-          bookingSystems: [],
-          affirmationSystems: [],
-          clearingHouses: [],
-          statuses: [],
-        });
-      }
-    };
-
-    loadFilterOptions();
-
-    return () => {
-      isActive = false;
-    };
   }, []);
   const [sorting, setSorting] = useState<SortingState>(() => {
     if (typeof window === "undefined") return [];
@@ -199,36 +191,47 @@ function TradeSearchPage() {
       return [];
     }
   });
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
-    if (typeof window === "undefined") return {};
-    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
-    if (!saved) return {};
-    try {
-      const parsed = JSON.parse(saved) as { columnVisibility?: VisibilityState };
-      return parsed.columnVisibility ?? {};
-    } catch {
-      return {};
-    }
-  });
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    () => {
+      if (typeof window === "undefined") return {};
+      const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+      if (!saved) return {};
+      try {
+        const parsed = JSON.parse(saved) as {
+          columnVisibility?: VisibilityState;
+        };
+        return parsed.columnVisibility ?? {};
+      } catch {
+        return {};
+      }
+    },
+  );
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
     if (typeof window === "undefined") return [];
     const saved = sessionStorage.getItem(TABLE_STATE_KEY);
     if (!saved) return [];
     try {
-      const parsed = JSON.parse(saved) as { columnFilters?: ColumnFiltersState };
+      const parsed = JSON.parse(saved) as {
+        columnFilters?: ColumnFiltersState;
+      };
       return parsed.columnFilters ?? [];
     } catch {
       return [];
     }
   });
   const [pagination, setPagination] = useState<PaginationState>(() => {
-    // Initialize from URL search params
-    return {
-      pageIndex: (searchParams.page || 1) - 1, // Convert 1-based to 0-based
-      pageSize: searchParams.pageSize || 20,
-    };
+    // Restore from sessionStorage so Back navigation returns to the same page
+    if (typeof window === "undefined") return { pageIndex: 0, pageSize: 20 };
+    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+    if (!saved) return { pageIndex: 0, pageSize: 20 };
+    try {
+      const parsed = JSON.parse(saved) as { pagination?: PaginationState };
+      return parsed.pagination ?? { pageIndex: 0, pageSize: 20 };
+    } catch {
+      return { pageIndex: 0, pageSize: 20 };
+    }
   });
-  
+
   // Manual search filter state
   const [filters, setFilters] = useState<ManualSearchFilters>(loadFilters);
 
@@ -264,21 +267,17 @@ function TradeSearchPage() {
     };
   }, [searchQuery, userId]);
 
-  // Sync pagination state to URL
+  // Persist pagination to sessionStorage so Back navigation restores the right page
   useEffect(() => {
-    navigate({
-      to: "/trades",
-      search: {
-        page: pagination.pageIndex + 1, // Convert 0-based to 1-based
-        pageSize: pagination.pageSize,
-      },
-      replace: true, // Don't add to history stack
-    });
-  }, [pagination, navigate]);
+    if (typeof window === "undefined") return;
+    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+    let existing: Record<string, unknown> = {};
+    try { existing = saved ? (JSON.parse(saved) as Record<string, unknown>) : {}; } catch { /* ignore */ }
+    sessionStorage.setItem(TABLE_STATE_KEY, JSON.stringify({ ...existing, pagination }));
+  }, [pagination]);
 
   const columns = useTradeColumns();
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: results,
     columns,
@@ -290,6 +289,7 @@ function TradeSearchPage() {
     onColumnVisibilityChange: setColumnVisibility,
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
+    autoResetPageIndex: false, // Prevent page reset when data reloads (e.g. on Back navigation)
     state: {
       sorting,
       columnVisibility,
@@ -302,11 +302,11 @@ function TradeSearchPage() {
   const clearAllFilters = async () => {
     const defaultFilters = getDefaultFilters();
     setFilters(defaultFilters);
-    
+
     // Search with cleared filters
     setSearching(true);
     setSearchError(null);
-    
+
     try {
       const response = await searchService.searchTrades({
         search_type: "manual",
@@ -319,13 +319,15 @@ function TradeSearchPage() {
       });
 
       setResults(response.results);
+      setPagination(prev => ({ ...prev, pageIndex: 0 })); // Reset to first page when filters are cleared
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       if (error instanceof APIError) {
         setSearchError(`Search failed: ${error.message}`);
       } else {
-        setSearchError('An unexpected error occurred during search');
+        setSearchError("An unexpected error occurred during search");
       }
+      setPagination(prev => ({ ...prev, pageIndex: 0 })); // Reset to first page on error too
     } finally {
       setSearching(false);
     }
@@ -335,7 +337,7 @@ function TradeSearchPage() {
   const handleManualSearch = async () => {
     setSearching(true);
     setSearchError(null);
-    
+
     try {
       // Helper function to filter out empty or "all" values
       const filterValue = (value: string | undefined) => {
@@ -363,13 +365,15 @@ function TradeSearchPage() {
       });
 
       setResults(response.results);
+      setPagination(prev => ({ ...prev, pageIndex: 0 })); // Reset to first page on manual search
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       if (error instanceof APIError) {
         setSearchError(`Search failed: ${error.message}`);
       } else {
-        setSearchError('An unexpected error occurred during search');
+        setSearchError("An unexpected error occurred during search");
       }
+      setPagination(prev => ({ ...prev, pageIndex: 0 })); // Reset to first page on error too
     } finally {
       setSearching(false);
     }
@@ -382,7 +386,7 @@ function TradeSearchPage() {
 
     setSearching(true);
     setSearchError(null);
-    
+
     try {
       // Build natural language search request
       const response = await searchService.searchTrades({
@@ -392,17 +396,21 @@ function TradeSearchPage() {
       });
 
       setResults(response.results);
+      setCurrentQueryId(response.query_id); // Store query_id for saving
+      setPagination(prev => ({ ...prev, pageIndex: 0 })); // Reset to first page on new search
       
       // Refresh search history from backend after successful search
       await fetchSearchHistory();
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       if (error instanceof APIError) {
         setSearchError(`Search failed: ${error.message}`);
       } else {
-        setSearchError('An unexpected error occurred during search');
+        setSearchError("An unexpected error occurred during search");
       }
       setResults([]);
+      setCurrentQueryId(null);
+      setPagination(prev => ({ ...prev, pageIndex: 0 })); // Reset to first page on error too
       
       // Refresh history even on error (backend should save failed searches now)
       await fetchSearchHistory();
@@ -418,7 +426,7 @@ function TradeSearchPage() {
 
     setSearching(true);
     setSearchError(null);
-    
+
     try {
       const response = await searchService.searchTrades({
         search_type: "natural_language",
@@ -427,17 +435,21 @@ function TradeSearchPage() {
       });
 
       setResults(response.results);
+      setCurrentQueryId(response.query_id); // Store query_id for saving
+      setPagination(prev => ({ ...prev, pageIndex: 0 })); // Reset to first page on recent search click
       
       // Refresh history after search
       await fetchSearchHistory();
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       if (error instanceof APIError) {
         setSearchError(`Search failed: ${error.message}`);
       } else {
-        setSearchError('An unexpected error occurred during search');
+        setSearchError("An unexpected error occurred during search");
       }
       setResults([]);
+      setCurrentQueryId(null);
+      setPagination(prev => ({ ...prev, pageIndex: 0 })); // Reset to first page on error too
       
       // Refresh history even on error
       await fetchSearchHistory();
@@ -446,6 +458,7 @@ function TradeSearchPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleClearAllSearches = async () => {
     // Show confirmation dialog
     const confirmed = window.confirm(
@@ -480,63 +493,109 @@ function TradeSearchPage() {
     }
   };
 
-  const handleSelectSavedQuery = async (queryText: string) => {
-    // Just populate the search bar - user can manually trigger search
-    setSearchQuery(queryText);
+  const handleSaveCurrentQuery = async () => {
+    // If there's no search query text at all, nothing to save
+    if (!searchQuery.trim()) {
+      alert('Please enter a search query before saving.');
+      return;
+    }
+
+    const queryName = window.prompt(
+      "Enter a name for this saved query:",
+      searchQuery.substring(0, 50)
+    );
+    if (!queryName || !queryName.trim()) return;
+
+    // If we already have a query_id from a prior search, use it directly
+    if (currentQueryId) {
+      await handleSaveQuery(currentQueryId, queryName.trim());
+      return;
+    }
+
+    // Otherwise run the search now to get a query_id, then save
+    setSearching(true);
+    setSearchError(null);
+    try {
+      const response = await searchService.searchTrades({
+        search_type: "natural_language",
+        user_id: userId,
+        query_text: searchQuery,
+      });
+      setResults(response.results);
+      setCurrentQueryId(response.query_id);
+      await fetchSearchHistory();
+      await handleSaveQuery(response.query_id, queryName.trim());
+    } catch (error) {
+      console.error('Search failed before saving:', error);
+      if (error instanceof APIError) {
+        setSearchError(`Search failed: ${error.message}`);
+      } else {
+        setSearchError('An unexpected error occurred during search');
+      }
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleClearSearch = async () => {
+    setSearchQuery('');
+    sessionStorage.removeItem(SEARCH_KEY);
+    setCurrentQueryId(null);
     setSuggestions([]);
-    setShowSavedQueries(false);
-    // Note: Not auto-triggering search or updating last_use_time
-    // User needs to click Search button themselves
+    setSearchError(null);
+    // Use clearAllFilters so the reset goes through search-service consistently,
+    // rather than bypassing it with a direct trade-flow call.
+    await clearAllFilters();
   };
 
   const handleSuggestionClick = (query: string) => {
-    setSearchQuery(query);
+    handleRecentSearchClick(query);
+  };
+
+  const handleDeleteRecentSearch = async (id: string) => {
+    // Optimistically remove from UI
+    setRecentSearches((prev) => prev.filter((s) => s.id !== id));
+    try {
+      await searchService.deleteSearchHistory(parseInt(id), userId);
+    } catch (error) {
+      console.error('Failed to delete recent search:', error);
+      // Revert by re-fetching if API call fails
+      await fetchSearchHistory();
+    }
   };
 
   const handleDeleteSavedQuery = async (queryId: number) => {
-    const confirmed = window.confirm(
-      "Delete this saved query?\n\nThis action cannot be undone."
-    );
-    
-    if (!confirmed) return;
-
+    // Optimistically remove from UI
+    setSavedQueries((prev) => prev.filter((q) => q.query_id !== queryId));
     try {
       await searchService.deleteSearchHistory(queryId, userId);
-      // Refresh saved queries list
-      await fetchSavedQueries();
     } catch (error) {
       console.error('Failed to delete saved query:', error);
-      alert('Failed to delete query. Please try again.');
+      // Revert by re-fetching if API call fails
+      await fetchSavedQueries();
     }
   };
 
   return (
-    <div className="p-6 max-w-[90vw] mx-auto space-y-6">
+    <div className="p-6 mx-auto space-y-6">
       <SearchHeader
         searchQuery={searchQuery}
         searching={searching}
         showFilters={showFilters}
         recentSearches={recentSearches}
+        savedQueries={savedQueries}
+        canSaveQuery={searchQuery.trim() !== ""}
         suggestions={suggestions}
-        showSavedQueries={showSavedQueries}
         onSearchQueryChange={setSearchQuery}
         onSearch={handleSearch}
         onToggleFilters={() => setShowFilters(!showFilters)}
-        onToggleSavedQueries={() => setShowSavedQueries(!showSavedQueries)}
-        onSuggestionClick={handleSuggestionClick}
         onRecentSearchClick={handleRecentSearchClick}
-        onDeleteSearch={(id) => setRecentSearches((prev) => prev.filter((s) => s.id !== id))}
-        onClearAllSearches={handleClearAllSearches}
-        onSaveQuery={handleSaveQuery}
+        onDeleteSearch={handleDeleteRecentSearch}
+        onSaveCurrentQuery={handleSaveCurrentQuery}
+        onClearSearch={handleClearSearch}
+        onSuggestionClick={handleSuggestionClick}
+        onDeleteSavedQuery={handleDeleteSavedQuery}
       />
-
-      {showSavedQueries && (
-        <SavedQueriesPanel
-          savedQueries={savedQueries}
-          onSelectQuery={handleSelectSavedQuery}
-          onDeleteQuery={handleDeleteSavedQuery}
-        />
-      )}
 
       {searchError && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
@@ -560,7 +619,15 @@ function TradeSearchPage() {
             className="text-red-400 hover:text-red-600 flex-shrink-0"
             aria-label="Dismiss error"
           >
-            <svg className="w-5 h-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -583,10 +650,13 @@ function TradeSearchPage() {
         />
       )}
 
+      <TradeStatsCards trades={results} />
+
       <TradeResultsTable
         table={table}
         resultsCount={results.length}
         columnFiltersCount={columnFilters.length}
+        filterOptions={filterOptions}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import {AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,8 +12,10 @@ import { AIGeneratorPanel } from '@/components/exceptions-individual/AIGenerator
 
 // Hook import
 import { useExceptionResolver } from './-useExceptionResolver';
+import { requireAuth } from '@/lib/utils';
 
 export const Route = createFileRoute('/exceptions/$exceptionId')({
+    beforeLoad: requireAuth,
   component: ResolveExceptionPage,
 });
 
@@ -81,6 +83,7 @@ function ResolveExceptionPage() {
           variant="outline" 
           size="sm" 
           onClick={() => window.history.back()}
+          className="border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
         >
           Back
         </Button>
@@ -137,7 +140,7 @@ function ResolveExceptionPage() {
                   <div className="grid grid-cols-2 gap-6">
                     {/* Left - AI Suggested Solution */}
                     <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-slate-700">
+                      <h3 className="text-sm font-semibold text-black/75">
                         Generate with AI Assistant
                       </h3>
                       <Card className="border-[#002B51]">
@@ -158,7 +161,7 @@ function ResolveExceptionPage() {
 
                     {/* Right - Form */}
                     <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-slate-700">
+                      <h3 className="text-sm font-semibold text-black/75">
                         Input and Save Solution to Repository
                       </h3>
                       <Card className="border-[#002B51]">
@@ -180,7 +183,7 @@ function ResolveExceptionPage() {
 
           {/* Apply Button */}
           <Button 
-            className="w-full h-12 bg-slate-700 hover:bg-slate-800 text-base"
+            className="w-full h-12 bg-[#002B51] hover:bg-[#003a6b] text-white text-sm font-semibold"
             onClick={handleApplySolution}
             disabled={
               selectedTab === 'existing' 

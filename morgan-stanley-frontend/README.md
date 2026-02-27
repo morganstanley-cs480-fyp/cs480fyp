@@ -23,7 +23,7 @@ docker-compose up search-service
 ```
 
 The backend services will be available at:
-- Search Service API: http://localhost:8000
+- Search Service API: http://localhost:3005
 - PostgreSQL: localhost:5432
 - Redis: localhost:6379
 
@@ -65,4 +65,3 @@ docker-compose down
 **Do NOT use:**
 - Grey/slate text colors (text-slate-*, text-gray-*)
 - Other blue shades (blue-500, blue-600, #2563eb, etc.)
-  

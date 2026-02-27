@@ -37,14 +37,6 @@ Successfully implemented Week 1 Foundation and Week 2 Core Features for frontend
   - `clearSearchHistory()` - Remove all entries
   - `healthCheck()` - Backend health status
 
-### User Context
-- **`src/contexts/UserContext.tsx`** - User authentication context
-  - UserProvider component wrapping app
-  - useUser() hook for accessing user_id
-  - localStorage persistence (key: 'app_user_id')
-  - Default user: 'demo_user'
-  - isAuthenticated flag
-
 ## Files Modified
 
 ### Backend CORS Configuration
