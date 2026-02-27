@@ -10,6 +10,7 @@ on:
     paths:
       - "morgan-stanley-frontend/**"
       - ".github/workflows/frontend.yml"
+  workflow_dispatch:
 
 env:
   BUILD_TAG: ${{ github.sha }}
