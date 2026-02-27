@@ -28,15 +28,6 @@ data "aws_s3_bucket" "existing_frontend" {
   bucket = "morgan-stanley-frontend"
 }
 
-# Frontend CloudFront distribution
-module "frontend_cdn" {
-  source                      = "./modules/cloudfront"
-  bucket_name                 = data.aws_s3_bucket.existing_frontend.id
-  bucket_regional_domain_name = data.aws_s3_bucket.existing_frontend.bucket_regional_domain_name
-  alb_dns_name                = module.alb.alb_dns_name
-}
-
-
 # S3 for XML File
 module "s3_data" {
   source           = "./modules/s3_data"
@@ -425,10 +416,10 @@ module "search_service" {
   assign_public_ip   = true
   target_group_arn   = module.search_target_group.target_group_arn
   environments = [
-    { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
-    { name = "DB_USER", value = var.db_username },
-    { name = "DB_PASSWORD", value = var.db_password },
-    { name = "DB_NAME", value = module.main_rds.db_name },
+    { name = "RDS_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
+    { name = "RDS_USER", value = var.db_username },
+    { name = "RDS_PASSWORD", value = var.db_password },
+    { name = "RDS_DB", value = module.main_rds.db_name },
     { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" },
     { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
   ]
