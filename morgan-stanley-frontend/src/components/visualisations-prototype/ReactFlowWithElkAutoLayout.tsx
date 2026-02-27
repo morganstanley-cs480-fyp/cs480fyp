@@ -19,8 +19,6 @@ import '@xyflow/react/dist/style.css';
 import { Landmark, ShieldCheck } from 'lucide-react';
 import ELK, { type ElkNode } from 'elkjs/lib/elk.bundled.js';
 
-const elk = new ELK();
-
 const HUB_ID = 'CCP';
 
 const NODE_WIDTH = 140;
@@ -200,6 +198,16 @@ function WorkflowEdge(props: EdgeProps) {
   const laneOffset =
     totalOffsets > 1 ? (offsetIndex - (totalOffsets - 1) / 2) * EDGE_OFFSET : 0;
 
+  // Determine arrow color based on exception status
+  const hasException = data?.hasException ?? false;
+  const isCleared = data?.isCleared ?? false;
+  let arrowColor = EDGE_COLOR; // default color
+  if (hasException) {
+    arrowColor = '#ef4444'; // red for exception
+  } else if (isCleared) {
+    arrowColor = '#22c55e'; // green for cleared
+  }
+
   // Calculate true node centers from positions (updates dynamically when dragged)
   const sourceCenter: Point = { 
     x: sourceNode.position.x + sourceWidth / 2, 
@@ -251,7 +259,7 @@ function WorkflowEdge(props: EdgeProps) {
         id={id}
         path={path}
         style={{ stroke: EDGE_COLOR, strokeWidth: 2.25, strokeLinecap: 'round' }}
-        markerEnd={markerEnd}
+        markerEnd={{ type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 }}
       />
       <EdgeLabelRenderer>
         <div
@@ -261,7 +269,15 @@ function WorkflowEdge(props: EdgeProps) {
             pointerEvents: 'none',
           }}
         >
-          <div className="w-6 h-6 rounded-full bg-white border border-slate-300 text-[11px] font-semibold text-black/75 flex items-center justify-center shadow-sm">
+          <div
+            className="w-6 h-6 rounded-full border text-[11px] font-semibold flex items-center justify-center shadow-sm"
+            style={{
+              backgroundColor: hasException ? '#fecaca' : isCleared ? '#bbf7d0' : 'white',
+              borderColor: hasException ? '#ef4444' : isCleared ? '#22c55e' : '#cbd5e1',
+              color: hasException ? '#7f1d1d' : isCleared ? '#15803d' : '#000000',
+              opacity: 0.9,
+            }}
+          >
             {data?.step ?? ''}
           </div>
         </div>
@@ -308,6 +324,8 @@ const edgeTypes = { workflow: WorkflowEdge };
 interface Transaction {
   from: string;
   to: string;
+  hasException?: boolean;
+  isCleared?: boolean;
 }
 
 /**
@@ -317,132 +335,233 @@ interface Transaction {
  * layer 2: bottom participants
  */
 async function generateElkLayout(participants: string[], transactions: Transaction[]) {
-  const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
-  const bottomCount = participants.length - topCount;
+  try {
+    const elk = new ELK();
+    
+    const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
+    const bottomCount = participants.length - topCount;
 
-  // Estimate hub width from widest row
-  const rowWidth = (count: number) => (count > 0 ? count * NODE_WIDTH + (count - 1) * 40 : 0);
-  const hubWidth = Math.max(HUB_MIN_WIDTH, rowWidth(topCount), rowWidth(bottomCount));
+    // Estimate hub width from widest row
+    const rowWidth = (count: number) => (count > 0 ? count * NODE_WIDTH + (count - 1) * 40 : 0);
+    const hubWidth = Math.max(HUB_MIN_WIDTH, rowWidth(topCount), rowWidth(bottomCount));
 
-  const elkNodes: { id: string; width: number; height: number; layoutOptions?: Record<string, string> }[] = [
-    {
-      id: HUB_ID,
-      width: hubWidth,
-      height: NODE_HEIGHT,
-      layoutOptions: { 'layered.layering.layer': '1' },
-    },
-  ];
+    const elkNodes: { id: string; width: number; height: number; layoutOptions?: Record<string, string> }[] = [
+      {
+        id: HUB_ID,
+        width: hubWidth,
+        height: NODE_HEIGHT,
+        layoutOptions: { 'layered.layering.layer': '1' },
+      },
+    ];
 
-  for (let i = 0; i < topCount; i++) {
-    elkNodes.push({
-      id: participants[i],
-      width: NODE_WIDTH,
-      height: NODE_HEIGHT,
-      layoutOptions: { 'layered.layering.layer': '0' },
+    for (let i = 0; i < topCount; i++) {
+      elkNodes.push({
+        id: participants[i],
+        width: NODE_WIDTH,
+        height: NODE_HEIGHT,
+        layoutOptions: { 'layered.layering.layer': '0' },
+      });
+    }
+    for (let i = 0; i < bottomCount; i++) {
+      elkNodes.push({
+        id: participants[topCount + i],
+        width: NODE_WIDTH,
+        height: NODE_HEIGHT,
+        layoutOptions: { 'layered.layering.layer': '2' },
+      });
+    }
+
+    const elkEdges = transactions.map((tx, i) => ({
+      id: `e-${i}`,
+      sources: [tx.from],
+      targets: [tx.to],
+    }));
+
+    const graph: ElkNode = {
+      id: 'root',
+      layoutOptions: {
+        'elk.algorithm': 'layered',
+        'elk.direction': 'DOWN',
+        'elk.layered.spacing.nodeNodeBetweenLayers': '180',
+        'elk.spacing.nodeNode': '80',
+        'elk.layered.layering.strategy': 'LONGEST_PATH',
+      },
+      children: elkNodes,
+      edges: elkEdges,
+    };
+
+    console.log('ELK graph config:', { nodeCount: elkNodes.length, edgeCount: elkEdges.length });
+    
+    // Add timeout to prevent hanging
+    const layoutPromise = elk.layout(graph);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('ELK layout timed out after 5 seconds')), 5000)
+    );
+    
+    const layout = await Promise.race([layoutPromise, timeoutPromise]) as typeof graph;
+    console.log('ELK layout result:', layout);
+
+    // center layout horizontally around x=0
+    const xs: number[] = [];
+    layout.children?.forEach((n) => xs.push(n.x ?? 0));
+    const xCenter = xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
+
+    const nodes: Node[] = [];
+    const edges: Edge[] = [];
+
+    interface NodeLookupEntry {
+      x: number;
+      y: number;
+      width: number;
+    }
+    const nodeLookup: Record<string, NodeLookupEntry> = {};
+    layout.children?.forEach((n) => {
+      const isHub = n.id === HUB_ID;
+      const x = (n.x ?? 0) - xCenter;
+      const y = n.y ?? 0;
+      const width = isHub ? hubWidth : NODE_WIDTH;
+
+      nodeLookup[n.id!] = { x, y, width };
+
+      nodes.push({
+        id: n.id!,
+        type: 'entity',
+        position: { x, y },
+        data: { label: isHub ? 'Central Clearing House' : n.id, isHub, width },
+        draggable: true,
+        selectable: true,
+      });
     });
-  }
-  for (let i = 0; i < bottomCount; i++) {
-    elkNodes.push({
-      id: participants[topCount + i],
-      width: NODE_WIDTH,
-      height: NODE_HEIGHT,
-      layoutOptions: { 'layered.layering.layer': '2' },
+
+    // Count edges per unordered pair for parallel offsets
+    const pairCounts: Record<string, number> = {};
+    layout.edges?.forEach((e) => {
+      const s = e.sources[0];
+      const t = e.targets[0];
+      const key = [s, t].sort().join('::');
+      pairCounts[key] = (pairCounts[key] || 0) + 1;
     });
+
+    const pairSeen: Record<string, number> = {};
+    layout.edges?.forEach((e, idx) => {
+      const sourceId = e.sources[0];
+      const targetId = e.targets[0];
+      const key = [sourceId, targetId].sort().join('::');
+
+      const offsetIndex = pairSeen[key] || 0;
+      const totalOffsets = pairCounts[key] || 1;
+      pairSeen[key] = offsetIndex + 1;
+
+      const sourceNode = nodeLookup[sourceId];
+      const targetNode = nodeLookup[targetId];
+
+      // Find the original transaction to get exception status
+      const originalTransaction = transactions.find(
+        tx => (tx.from === sourceId && tx.to === targetId) || 
+              transactions.indexOf(tx) === idx
+      );
+
+      edges.push({
+        id: e.id!,
+        source: sourceId,
+        target: targetId,
+        type: 'workflow',
+        data: {
+          sourceId,
+          targetId,
+          step: idx + 1,
+          offsetIndex,
+          totalOffsets,
+          sourceSize: { w: sourceNode.width ?? NODE_WIDTH, h: NODE_HEIGHT },
+          targetSize: { w: targetNode.width ?? NODE_WIDTH, h: NODE_HEIGHT },
+          hasException: originalTransaction?.hasException ?? false,
+          isCleared: originalTransaction?.isCleared ?? false,
+        },
+        markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 },
+      });
+    });
+
+    console.log('✅ Generated visualization:', { nodeCount: nodes.length, edgeCount: edges.length });
+    return { nodes, edges };
+  } catch (error) {
+    console.error('❌ Error in generateElkLayout:', error);
+    
+    // Fallback: Create simple manual layout
+    console.log('⚠️  Falling back to manual layout');
+    return createSimpleLayout(participants, transactions);
   }
+}
 
-  const elkEdges = transactions.map((tx, i) => ({
-    id: `e-${i}`,
-    sources: [tx.from],
-    targets: [tx.to],
-  }));
-
-  const graph: ElkNode = {
-    id: 'root',
-    layoutOptions: {
-      'elk.algorithm': 'layered',
-      'elk.direction': 'DOWN',
-      'elk.layered.spacing.nodeNodeBetweenLayers': '180',
-      'elk.spacing.nodeNode': '80',
-      'elk.layered.layering.strategy': 'LONGEST_PATH',
-    },
-    children: elkNodes,
-    edges: elkEdges,
-  };
-
-  const layout = await elk.layout(graph);
-
-  // center layout horizontally around x=0
-  const xs: number[] = [];
-  layout.children?.forEach((n) => xs.push(n.x ?? 0));
-  const xCenter = xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
-
+/**
+ * Create a simple layout when ELK fails
+ */
+function createSimpleLayout(participants: string[], transactions: Transaction[]) {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
-
-  interface NodeLookupEntry {
-    x: number;
-    y: number;
-    width: number;
-  }
-  const nodeLookup: Record<string, NodeLookupEntry> = {};
-  layout.children?.forEach((n) => {
-    const isHub = n.id === HUB_ID;
-    const x = (n.x ?? 0) - xCenter;
-    const y = n.y ?? 0;
-    const width = isHub ? hubWidth : NODE_WIDTH;
-
-    nodeLookup[n.id!] = { x, y, width };
-
+  
+  // Top row
+  const topCount = Math.ceil(participants.length / 2);
+  const bottomCount = participants.length - topCount;
+  const spacing = 200;
+  const hubY = 300;
+  
+  // Create top participants
+  for (let i = 0; i < topCount; i++) {
     nodes.push({
-      id: n.id!,
+      id: participants[i],
       type: 'entity',
-      position: { x, y },
-      data: { label: isHub ? 'Central Clearing House' : n.id, isHub, width },
+      position: {
+        x: (i - topCount / 2) * spacing,
+        y: 0
+      },
+      data: { label: participants[i], isHub: false, width: NODE_WIDTH },
       draggable: true,
       selectable: true,
     });
+  }
+  
+  // Add hub
+  nodes.push({
+    id: HUB_ID,
+    type: 'entity',
+    position: { x: 0, y: hubY },
+    data: { label: 'Central Clearing House', isHub: true, width: NODE_WIDTH * 4 },
+    draggable: true,
+    selectable: true,
   });
-
-  // Count edges per unordered pair for parallel offsets
-  const pairCounts: Record<string, number> = {};
-  layout.edges?.forEach((e) => {
-    const s = e.sources[0];
-    const t = e.targets[0];
-    const key = [s, t].sort().join('::');
-    pairCounts[key] = (pairCounts[key] || 0) + 1;
-  });
-
-  const pairSeen: Record<string, number> = {};
-  layout.edges?.forEach((e, idx) => {
-    const sourceId = e.sources[0];
-    const targetId = e.targets[0];
-    const key = [sourceId, targetId].sort().join('::');
-
-    const offsetIndex = pairSeen[key] || 0;
-    const totalOffsets = pairCounts[key] || 1;
-    pairSeen[key] = offsetIndex + 1;
-
-    const sourceNode = nodeLookup[sourceId];
-    const targetNode = nodeLookup[targetId];
-
+  
+  // Create bottom participants
+  for (let i = 0; i < bottomCount; i++) {
+    nodes.push({
+      id: participants[topCount + i],
+      type: 'entity',
+      position: {
+        x: (i - bottomCount / 2) * spacing,
+        y: hubY * 2
+      },
+      data: { label: participants[topCount + i], isHub: false, width: NODE_WIDTH },
+      draggable: true,
+      selectable: true,
+    });
+  }
+  
+  // Create edges
+  transactions.forEach((tx, idx) => {
     edges.push({
-      id: e.id!,
-      source: sourceId,
-      target: targetId,
+      id: `e-${idx}`,
+      source: tx.from,
+      target: tx.to,
       type: 'workflow',
       data: {
-        sourceId,
-        targetId,
+        sourceId: tx.from,
+        targetId: tx.to,
         step: idx + 1,
-        offsetIndex,
-        totalOffsets,
-        sourceSize: { w: sourceNode.width ?? NODE_WIDTH, h: NODE_HEIGHT },
-        targetSize: { w: targetNode.width ?? NODE_WIDTH, h: NODE_HEIGHT },
       },
       markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 },
     });
   });
-
+  
+  console.log('📍 Fallback layout created:', { nodeCount: nodes.length, edgeCount: edges.length });
   return { nodes, edges };
 }
 
@@ -456,38 +575,40 @@ const entities = [
 ];
 
 const transactions: Transaction[] = [
-  { from: 'Investment Bank A', to: 'CCP' },
-  { from: 'CCP', to: 'Investment Bank A' },
+  { from: 'Investment Bank A', to: 'CCP', hasException: true },
+  { from: 'CCP', to: 'Investment Bank A', isCleared: true },
   { from: 'Investment Bank A', to: 'CCP' },
   { from: 'CCP', to: 'Investment Bank A' },
 
-  { from: 'Hedge Fund X', to: 'CCP' },
+  { from: 'Hedge Fund X', to: 'CCP', isCleared: true },
   { from: 'CCP', to: 'Hedge Fund X' },
   { from: 'Hedge Fund X', to: 'CCP' },
-  { from: 'CCP', to: 'Hedge Fund X' },
+  { from: 'CCP', to: 'Hedge Fund X', hasException: true },
 
   { from: 'Broker Dealer C', to: 'CCP' },
   { from: 'CCP', to: 'Broker Dealer C' },
-  { from: 'Broker Dealer C', to: 'CCP' },
-  { from: 'CCP', to: 'Broker Dealer C' },
+  { from: 'Broker Dealer C', to: 'CCP', hasException: true },
+  { from: 'CCP', to: 'Broker Dealer C', isCleared: true },
 
   { from: 'Pension Fund Y', to: 'CCP' },
-  { from: 'CCP', to: 'Pension Fund Y' },
-  { from: 'Pension Fund Y', to: 'CCP' },
+  { from: 'CCP', to: 'Pension Fund Y', isCleared: true },
+  { from: 'Pension Fund Y', to: 'CCP', hasException: true },
   { from: 'CCP', to: 'Pension Fund Y' },
 
   { from: 'Asset Manager Z', to: 'CCP' },
   { from: 'CCP', to: 'Asset Manager Z' },
   { from: 'Asset Manager Z', to: 'CCP' },
-  { from: 'CCP', to: 'Asset Manager Z' },
+  { from: 'CCP', to: 'Asset Manager Z', hasException: true },
 
-  { from: 'Insurance Corp', to: 'CCP' },
+  { from: 'Insurance Corp', to: 'CCP', isCleared: true },
   { from: 'CCP', to: 'Insurance Corp' },
   { from: 'Insurance Corp', to: 'CCP' },
   { from: 'CCP', to: 'Insurance Corp' },
 ];
 
 export default function ReactFlowWithElkAutoLayout() {
+  console.log('🚀 ReactFlowWithElkAutoLayout component mounted!');
+  
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [selection, setSelection] = useState<
@@ -497,13 +618,16 @@ export default function ReactFlowWithElkAutoLayout() {
   >(null);
 
   useEffect(() => {
+    console.log('Starting ELK layout generation with', entities.length, 'entities and', transactions.length, 'transactions');
     generateElkLayout(entities, transactions)
       .then((result) => {
+        console.log('ELK layout generated successfully:', result.nodes.length, 'nodes,', result.edges.length, 'edges');
         setLayoutData(result);
         setIsLoading(false);
       })
       .catch((error) => {
         console.error('ELK layout failed:', error);
+        console.error('Full error stack:', error.stack);
         setIsLoading(false);
       });
   }, []);
@@ -555,6 +679,20 @@ export default function ReactFlowWithElkAutoLayout() {
     return (
       <div className="h-screen w-screen bg-slate-50 flex items-center justify-center">
         <div className="text-black/75 font-bold">Computing ELK Layout...</div>
+      </div>
+    );
+  }
+
+  if (!layoutData.nodes || layoutData.nodes.length === 0) {
+    return (
+      <div className="h-screen w-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
+        <div className="text-black/75 font-bold">No visualization data available</div>
+        <div className="text-sm text-black/50">Check browser console for errors</div>
+        <pre className="bg-white p-4 rounded border border-slate-200 max-w-md text-xs overflow-auto">
+          Nodes: {layoutData.nodes.length}
+          {'\n'}
+          Edges: {layoutData.edges.length}
+        </pre>
       </div>
     );
   }

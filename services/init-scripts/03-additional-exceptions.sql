@@ -23,7 +23,7 @@ VALUES
 'IRS trade cleared at LCH (trans 10001004) but automated regulatory reporting failed at step 5 due to ARM system connectivity timeout. MiFID II requires transaction reporting within T+0 (same day), creating regulatory breach risk.',
 'Similar ARM timeout occurred on 2025-08-15 for 5 trades and was resolved using manual reporting portal within 90 minutes.',
 '1. Immediately access FCA regulatory reporting portal (TREM system) for manual submission. 2. Extract trade details from KINGSLANDING booking system including: UTI, counterparty LEI, notional amount, effective date, maturity date. 3. Submit manual transaction report with explanatory flag for late submission. 4. File ARM system incident ticket with vendor support team. 5. Coordinate with Compliance to draft regulatory notification letter to FCA if breach confirmed. 6. Once manual report confirmed, update trade status to CLEARED in internal systems.',
-28, '2025-08-27 09:20:00');
+27, '2025-08-27 09:20:00');
 
 -- ============================================================================
 -- Exception Set 2: Trade 60724962 - IRS, REJECTED  
