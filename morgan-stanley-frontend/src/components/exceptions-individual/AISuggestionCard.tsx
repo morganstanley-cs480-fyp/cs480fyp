@@ -26,7 +26,7 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false }: AI
       className={`border-2 transition-colors cursor-pointer py-0 ${
         isSelected 
           ? 'border-[#002B51] bg-[#002B51]/5' 
-          : 'border-slate-200 hover:border-[#002B51]/30'
+          : 'border-black/10 hover:border-[#002B51]/30'
       }`}
       onClick={onClick}
     >
@@ -43,7 +43,7 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false }: AI
                 ? 'bg-green-600 hover:bg-green-700' 
                 : suggestion.confidence >= 80 
                 ? 'bg-orange-500 hover:bg-orange-600' 
-                : 'bg-slate-600 hover:bg-slate-700'
+                : 'bg-black/75 hover:bg-black/85'
             }
           >
             {suggestion.confidence}% Confidence
@@ -54,7 +54,7 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false }: AI
           {suggestion.description}
         </p>
 
-        <div className="bg-slate-50 border border-slate-200 rounded p-3 mb-3">
+        <div className="bg-black/[0.02] border border-black/10 rounded p-3 mb-3">
           <p className="text-xs font-semibold text-black/75 mb-1">
             AI Reasoning:
           </p>

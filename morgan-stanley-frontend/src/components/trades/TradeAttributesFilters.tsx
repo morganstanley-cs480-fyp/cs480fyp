@@ -1,4 +1,4 @@
-import { Building2, DollarSign, Tag, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,14 +58,13 @@ export function TradeAttributesFilters({
 }: TradeAttributesFiltersProps) {
   return (
     <div className="space-y-4">
-      <Label className="font-semibold text-base">Trade Attributes</Label>
+      <Label className="font-semibold text-sm text-black">Trade Attributes</Label>
       
       {/* Filter Fields - Four Columns Grid */}
       <div className="grid grid-cols-4 gap-4">
         {/* Row 1 */}
         <div className="space-y-2">
-          <Label className="flex items-center gap-2 text-sm">
-            <Tag className="size-4" />
+          <Label className="flex items-center gap-2 text-xs text-black/50 font-medium">
             Trade ID
           </Label>
           <div className="relative">
@@ -73,12 +72,12 @@ export function TradeAttributesFilters({
               placeholder="Enter trade ID..."
               value={tradeId}
               onChange={(e) => onTradeIdChange(e.target.value)}
-              className="h-9 pr-8"
+              className="h-9 pr-8 border-black/10 text-sm"
             />
             {tradeId && (
               <button
                 type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-black/50 hover:text-red-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-black/30 hover:text-red-500 transition-colors"
                 onClick={() => onTradeIdChange("")}
                 title="Clear filter"
               >
@@ -89,8 +88,7 @@ export function TradeAttributesFilters({
         </div>
         
         <div className="space-y-2">
-          <Label className="flex items-center gap-2 text-sm">
-            <Building2 className="size-4" />
+          <Label className="flex items-center gap-2 text-xs text-black/50 font-medium">
             Account
           </Label>
           <div className="flex gap-2 items-center">
@@ -98,7 +96,7 @@ export function TradeAttributesFilters({
               value={account}
               onValueChange={onAccountChange}
             >
-              <SelectTrigger className="h-9 flex-1">
+              <SelectTrigger className="h-9 flex-1 border-black/10 text-sm">
                 <SelectValue placeholder="Select account..." />
               </SelectTrigger>
               <SelectContent>
@@ -115,7 +113,7 @@ export function TradeAttributesFilters({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 text-black/50 hover:text-red-600"
+                className="h-9 w-9 p-0 text-black/30 hover:text-red-500"
                 onClick={() => onAccountChange("all")}
                 title="Clear filter"
               >
@@ -126,13 +124,13 @@ export function TradeAttributesFilters({
         </div>
         
         <div className="space-y-2">
-          <Label className="text-sm">Booking System</Label>
+          <Label className="text-xs text-black/50 font-medium">Booking System</Label>
           <div className="flex gap-2 items-center">
             <Select
               value={bookingSystem}
               onValueChange={onBookingSystemChange}
             >
-              <SelectTrigger className="h-9 flex-1">
+              <SelectTrigger className="h-9 flex-1 border-black/10 text-sm">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent>
@@ -149,7 +147,7 @@ export function TradeAttributesFilters({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 text-black/50 hover:text-red-600"
+                className="h-9 w-9 p-0 text-black/30 hover:text-red-500"
                 onClick={() => onBookingSystemChange("all")}
                 title="Clear filter"
               >
@@ -160,13 +158,13 @@ export function TradeAttributesFilters({
         </div>
         
         <div className="space-y-2">
-          <Label className="text-sm">Affirmation System</Label>
+          <Label className="text-xs text-black/50 font-medium">Affirmation System</Label>
           <div className="flex gap-2 items-center">
             <Select
               value={affirmationSystem}
               onValueChange={onAffirmationSystemChange}
             >
-              <SelectTrigger className="h-9 flex-1">
+              <SelectTrigger className="h-9 flex-1 border-black/10 text-sm">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent>
@@ -183,7 +181,7 @@ export function TradeAttributesFilters({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 text-black/50 hover:text-red-600"
+                className="h-9 w-9 p-0 text-black/30 hover:text-red-500"
                 onClick={() => onAffirmationSystemChange("all")}
                 title="Clear filter"
               >
@@ -195,8 +193,7 @@ export function TradeAttributesFilters({
 
         {/* Row 2 */}
         <div className="space-y-2">
-          <Label className="flex items-center gap-2 text-sm">
-            <DollarSign className="size-4" />
+          <Label className="flex items-center gap-2 text-xs text-black/50 font-medium">
             Asset Type
           </Label>
           <div className="flex gap-2 items-center">
@@ -204,7 +201,7 @@ export function TradeAttributesFilters({
               value={assetType}
               onValueChange={onAssetTypeChange}
             >
-              <SelectTrigger className="h-9 flex-1">
+              <SelectTrigger className="h-9 flex-1 border-black/10 text-sm">
                 <SelectValue placeholder="Select asset type..." />
               </SelectTrigger>
               <SelectContent>
@@ -221,7 +218,7 @@ export function TradeAttributesFilters({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 text-black/50 hover:text-red-600"
+                className="h-9 w-9 p-0 text-black/30 hover:text-red-500"
                 onClick={() => onAssetTypeChange("all")}
                 title="Clear filter"
               >
@@ -232,13 +229,13 @@ export function TradeAttributesFilters({
         </div>
         
         <div className="space-y-2">
-          <Label className="text-sm">Clearing House</Label>
+          <Label className="text-xs text-black/50 font-medium">Clearing House</Label>
           <div className="flex gap-2 items-center">
             <Select
               value={clearingHouse}
               onValueChange={onClearingHouseChange}
             >
-              <SelectTrigger className="h-9 flex-1">
+              <SelectTrigger className="h-9 flex-1 border-black/10 text-sm">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent>
@@ -255,7 +252,7 @@ export function TradeAttributesFilters({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 text-black/50 hover:text-red-600"
+                className="h-9 w-9 p-0 text-black/30 hover:text-red-500"
                 onClick={() => onClearingHouseChange("all")}
                 title="Clear filter"
               >
@@ -267,8 +264,8 @@ export function TradeAttributesFilters({
 
         {/* Row 3 - Status spanning 2 columns */}
         <div className="col-span-2 space-y-2">
-          <Label className="text-sm">Trade Status (Multi-select)</Label>
-          <div className="border rounded-md p-3 bg-white">
+          <Label className="text-xs text-black/50 font-medium">Trade Status (Multi-select)</Label>
+          <div className="border border-black/10 rounded-md p-3 bg-white">
             <div className="grid grid-cols-2 gap-2">
               {getUniqueStatuses().map(st => (
                 <label key={st} className="flex items-center gap-2 cursor-pointer">
@@ -280,8 +277,9 @@ export function TradeAttributesFilters({
                         : status.filter(s => s !== st);
                       onStatusChange(newStatus);
                     }}
+                    className="border-black/20 data-[state=checked]:bg-[#002B51] data-[state=checked]:border-[#002B51]"
                   />
-                  <span className="text-sm">{st}</span>
+                  <span className="text-sm text-black/75">{st}</span>
                 </label>
               ))}
             </div>

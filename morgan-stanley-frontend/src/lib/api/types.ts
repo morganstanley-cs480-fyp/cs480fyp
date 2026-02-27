@@ -8,7 +8,7 @@
 // ============================================================================
 
 export interface Trade {
-  trade_id: number;
+  id: number;
   account: string;
   asset_type: string;
   booking_system: string;
@@ -16,12 +16,12 @@ export interface Trade {
   clearing_house: string;
   create_time: string;
   update_time: string;
-  status: 'CANCELLED' | 'ALLEGED' | 'REJECTED' | 'CLEARED' | 'PENDING';
+  status: 'CANCELLED' | 'ALLEGED' | 'REJECTED' | 'CLEARED';
 }
 
 export interface Transaction {
+  id: number;
   trade_id: number;
-  trans_id: number;
   create_time: string;
   entity: string;
   direction: string;
@@ -32,9 +32,9 @@ export interface Transaction {
 }
 
 export interface Exception {
+  id: number;
   trade_id: number;
   trans_id: number;
-  exception_id: number;
   status: 'PENDING' | 'RESOLVED' | 'IGNORED' | 'CLOSED';
   msg: string;
   create_time: string;
@@ -87,6 +87,15 @@ export interface TypeaheadSuggestion {
   last_use_time?: string | null;
   score: number;
   category?: string | null;
+}
+
+export interface FilterOptions {
+  accounts: string[];
+  asset_types: string[];
+  booking_systems: string[];
+  affirmation_systems: string[];
+  clearing_houses: string[];
+  statuses: string[];
 }
 
 export interface ExtractedParams {
