@@ -47,6 +47,26 @@ async def lifespan(app: FastAPI):
         await db_manager.connect()
         logger.info("Database connection pool initialized successfully")
 
+        # Ensure required tables exist (idempotent - safe to run on every startup)
+        await db_manager.pool.execute("""
+            CREATE TABLE IF NOT EXISTS query_history (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(255) NOT NULL,
+                query_text TEXT NOT NULL,
+                is_saved BOOLEAN DEFAULT FALSE,
+                query_name VARCHAR(255),
+                create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_use_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT chk_query_name_when_saved
+                    CHECK ((is_saved = FALSE AND query_name IS NULL) OR is_saved = TRUE)
+            );
+            CREATE INDEX IF NOT EXISTS idx_query_history_user_id ON query_history(user_id);
+            CREATE INDEX IF NOT EXISTS idx_query_history_last_use_time ON query_history(last_use_time DESC);
+            CREATE INDEX IF NOT EXISTS idx_query_history_is_saved ON query_history(is_saved);
+            CREATE INDEX IF NOT EXISTS idx_query_history_user_saved ON query_history(user_id, is_saved);
+        """)
+        logger.info("Database tables verified/created successfully")
+
         # Initialize Redis cache connection
         await redis_manager.connect()
         logger.info("Redis cache connection initialized successfully")

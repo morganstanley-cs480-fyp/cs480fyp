@@ -43,6 +43,11 @@ module "xml_pointer" {
   initial_value  = "0"
 }
 
+# Pre-existing SSM SecureString — managed manually in AWS Console, not by Terraform
+data "aws_ssm_parameter" "google_api_key" {
+  name = "/ecs/secrets/google_api_key"
+}
+
 # Data Processing SQS (Ingestion service TO Data Processing Service)
 module "data_processing_queue" {
   source                     = "./modules/sqs"
@@ -363,12 +368,13 @@ module "rag_service" {
     { name = "MILVUS_PORT", value = "19530" },
     { name = "MILVUS_COLLECTION", value = "document" },
     { name = "AWS_REGION", value = "ap-southeast-1" },
-    { name = "GOOGLE_API_KEY",         value = "AIzaSyCrCtVTeUr9ve3iq4ei9YbPtqKU1n_E3Nk" },
     { name = "BEDROCK_EMBED_MODEL_ID", value = "cohere.embed-english-v3" },
     { name = "BEDROCK_CHAT_MODEL_ID",  value = "us.amazon.nova-lite-v1:0" },
     { name = "GOOGLE_MODEL_ID",        value = "gemini-2.5-flash-lite" }
   ]
-  secrets = []
+  secrets = [
+    { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn }
+  ]
 }
 
 # SEARCH SERVICE
@@ -421,9 +427,12 @@ module "search_service" {
     { name = "RDS_PASSWORD", value = var.db_password },
     { name = "RDS_DB", value = module.main_rds.db_name },
     { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" },
-    { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
+    { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
+    { name = "GOOGLE_MODEL_ID", value = "gemini-2.5-flash-lite" }
   ]
-  secrets = []
+  secrets = [
+    { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn }
+  ]
 }
 
 # SOLUTION SERVICE
@@ -531,4 +540,12 @@ module "trade_flow_service" {
     { name = "DB_NAME", value = module.main_rds.db_name },
   ]
   secrets = []
+}
+
+# CloudFront Distribution (SPA routing + custom error pages for S3)
+module "cloudfront" {
+  source                      = "./modules/cloudfront"
+  bucket_name                 = data.aws_s3_bucket.existing_frontend.id
+  bucket_regional_domain_name = data.aws_s3_bucket.existing_frontend.bucket_regional_domain_name
+  alb_dns_name                = module.alb.alb_dns_name
 }

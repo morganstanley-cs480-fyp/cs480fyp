@@ -1,7 +1,7 @@
 resource "aws_ssm_parameter" "this" {
   name        = var.parameter_name
   description = var.description
-  type        = "String"
+  type        = var.type
   value       = var.initial_value
 
   # Critical: Prevent Terraform from resetting the value back to "0" 
