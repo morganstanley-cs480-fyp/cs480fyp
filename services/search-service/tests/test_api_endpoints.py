@@ -62,7 +62,7 @@ class TestHealthEndpoints:
         # Mock the internal pool/client attributes that readiness check inspects
         with (
             patch("app.api.routes.health.db_manager._pool") as mock_db_pool,
-            patch("app.api.routes.health.redis_manager._client") as mock_redis,
+            patch("app.api.routes.health.redis_manager._client") as _,
             patch(
                 "app.api.routes.health.db_manager.health_check",
                 new_callable=AsyncMock,

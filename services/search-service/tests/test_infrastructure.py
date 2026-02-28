@@ -33,7 +33,7 @@ async def test_configuration():
         print("\n✅ Configuration loaded successfully!")
         return True
     except Exception as e:
-        print("\n❌ Configuration test failed: {e}")
+        print(f"\n❌ Configuration test failed: {e}")
         return False
 
 
@@ -66,26 +66,26 @@ async def test_database_connection():
         # Check query_history table
         if "query_history" in table_names:
             count = await db_manager.fetchval("SELECT COUNT(*) FROM query_history")
-            print("✓ query_history table has {count} records")
+            print(f"✓ query_history table has {count} records")
         else:
             print("⚠ query_history table not found (run init scripts)")
 
         # Check trades table
         if "trades" in table_names:
             count = await db_manager.fetchval("SELECT COUNT(*) FROM trades")
-            print("✓ trades table has {count} records")
+            print(f"✓ trades table has {count} records")
         else:
             print("⚠ trades table not found (run init scripts)")
 
         # Test health check
         is_healthy = await db_manager.health_check()
-        print("✓ Health check: {'PASSED' if is_healthy else 'FAILED'}")
+        print(f"✓ Health check: {'PASSED' if is_healthy else 'FAILED'}")
 
         print("\n✅ Database connection test passed!")
         return True
 
     except Exception as e:
-        print("\n❌ Database test failed: {e}")
+        print(f"\n❌ Database test failed: {e}")
         return False
 
 
@@ -118,17 +118,17 @@ async def test_redis_connection():
 
         # Test delete
         deleted = await redis_manager.delete(test_key)
-        print("✓ Deleted test key: {deleted}")
+        print(f"✓ Deleted test key: {deleted}")
 
         # Test health check
         is_healthy = await redis_manager.health_check()
-        print("✓ Health check: {'PASSED' if is_healthy else 'FAILED'}")
+        print(f"✓ Health check: {'PASSED' if is_healthy else 'FAILED'}")
 
         print("\n✅ Redis connection test passed!")
         return True
 
     except Exception as e:
-        print("\n❌ Redis test failed: {e}")
+        print(f"\n❌ Redis test failed: {e}")
         return False
 
 
@@ -145,22 +145,22 @@ async def test_cache_keys():
         user_id = "user123"
 
         ai_key = CacheKeys.ai_extraction(query_text)
-        print("✓ AI extraction key: {ai_key}")
+        print(f"✓ AI extraction key: {ai_key}")
 
         search_key = CacheKeys.search_results(user_id, "abc123")
-        print("✓ Search results key: {search_key}")
+        print(f"✓ Search results key: {search_key}")
 
         history_key = CacheKeys.query_history(user_id)
-        print("✓ Query history key: {history_key}")
+        print(f"✓ Query history key: {history_key}")
 
         common_key = CacheKeys.common_queries()
-        print("✓ Common queries key: {common_key}")
+        print(f"✓ Common queries key: {common_key}")
 
         print("\n✅ Cache key builders test passed!")
         return True
 
     except Exception as e:
-        print("\n❌ Cache keys test failed: {e}")
+        print(f"\n❌ Cache keys test failed: {e}")
         return False
 
 
@@ -188,7 +188,7 @@ async def test_logging():
         return True
 
     except Exception as e:
-        print("\n❌ Logging test failed: {e}")
+        print(f"\n❌ Logging test failed: {e}")
         return False
 
 
@@ -208,7 +208,7 @@ async def cleanup():
         print("\n✅ Cleanup completed!")
 
     except Exception as e:
-        print("\n⚠ Cleanup warning: {e}")
+        print(f"\n⚠ Cleanup warning: {e}")
 
 
 async def run_all_tests():
@@ -236,7 +236,7 @@ async def run_all_tests():
 
     for test_name, passed in results:
         status = "✅ PASSED" if passed else "❌ FAILED"
-        print("{test_name}: {status}")
+        print(f"{test_name}: {status}")
 
     all_passed = all(result[1] for result in results)
 
@@ -258,7 +258,7 @@ if __name__ == "__main__":
         print("\n\n⚠️  Tests interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print("\n\n❌ Fatal error: {e}")
+        print(f"\n\n❌ Fatal error: {e}")
         import traceback
 
         traceback.print_exc()
