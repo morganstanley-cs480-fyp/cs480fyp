@@ -102,7 +102,7 @@ class TestEndToEnd:
         # This is a placeholder - will be implemented as services are built
 
         # Step 1: Mock user query
-        user_query = "Show me all equity trades"
+        _user_query = "Show me all equity trades"
 
         # Step 2: Mock Bedrock extraction
         bedrock_result = mock_bedrock_response(

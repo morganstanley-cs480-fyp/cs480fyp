@@ -4,7 +4,6 @@ Simulates AWS Bedrock API responses without making actual API calls.
 Useful for local development and testing.
 """
 
-import json
 import sys
 from pathlib import Path
 from typing import Dict, Any

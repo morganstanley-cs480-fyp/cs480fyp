@@ -42,11 +42,11 @@ def test_trade_model():
         print("✓ JSON serialization works")
 
         # Test JSON deserialization
-        trade_from_json = Trade.model_validate_json(trade_json)
+        Trade.model_validate_json(trade_json)
         print("✓ JSON deserialization works")
 
     except Exception as e:
-        print("❌ Trade model test failed: {e}")
+        print(f"❌ Trade model test failed: {e}")
         raise
 
 
@@ -67,12 +67,12 @@ def test_query_history_model():
             create_time="2025-01-18 10:00:00",
             last_use_time="2025-01-20 09:00:00",
         )
-        print("✓ Valid query history created: {query.query_id}")
-        print("  User: {query.user_id}, Saved: {query.is_saved}")
-        print("  Name: {query.query_name}")
+        print(f"✓ Valid query history created: {query.query_id}")
+        print(f"  User: {query.user_id}, Saved: {query.is_saved}")
+        print(f"  Name: {query.query_name}")
 
     except Exception as e:
-        print("❌ QueryHistory model test failed: {e}")
+        print(f"❌ QueryHistory model test failed: {e}")
         raise
 
 
@@ -92,30 +92,30 @@ def test_manual_search_filters():
             date_to="2025-01-20",
         )
         print("✓ Valid filters created")
-        print("  Asset: {filters.asset_type}")
-        print("  Status: {filters.status}")
-        print("  Date range: {filters.date_from} to {filters.date_to}")
+        print(f"  Asset: {filters.asset_type}")
+        print(f"  Status: {filters.status}")
+        print(f"  Date range: {filters.date_from} to {filters.date_to}")
 
         # Test with invalid status
         try:
-            bad_filters = ManualSearchFilters(status=["INVALID_STATUS"])
+            ManualSearchFilters(status=["INVALID_STATUS"])
             print("❌ Should have failed with invalid status")
             raise AssertionError("Should have rejected invalid status")
-        except ValidationError as e:
+        except ValidationError:
             print("✓ Correctly rejected invalid status")
 
         # Test with invalid date format
         try:
-            bad_filters = ManualSearchFilters(
+            ManualSearchFilters(
                 date_from="2025/01/13"  # Wrong format
             )
             print("❌ Should have failed with invalid date format")
             raise AssertionError("Should have rejected invalid date format")
-        except ValidationError as e:
+        except ValidationError:
             print("✓ Correctly rejected invalid date format")
 
     except Exception as e:
-        print("❌ ManualSearchFilters test failed: {e}")
+        print(f"❌ ManualSearchFilters test failed: {e}")
         raise
 
 
@@ -133,35 +133,35 @@ def test_search_request_natural_language():
             query_text="show me pending FX trades from last week",
         )
         print("✓ Valid NL search request created")
-        print("  User: {request.user_id}")
-        print("  Query: {request.query_text}")
+        print(f"  User: {request.user_id}")
+        print(f"  Query: {request.query_text}")
 
         # Test missing query_text
         try:
-            bad_request = SearchRequest(
+            SearchRequest(
                 user_id="user123",
                 search_type="natural_language",
                 # Missing query_text
             )
             print("❌ Should have failed without query_text")
             raise AssertionError("Should have rejected NL search without query_text")
-        except ValidationError as e:
+        except ValidationError:
             print("✓ Correctly rejected NL search without query_text")
 
         # Test too short query_text
         try:
-            bad_request = SearchRequest(
+            SearchRequest(
                 user_id="user123",
                 search_type="natural_language",
                 query_text="fx",  # Too short
             )
             print("❌ Should have failed with too short query_text")
             raise AssertionError("Should have rejected query_text < 3 chars")
-        except ValidationError as e:
+        except ValidationError:
             print("✓ Correctly rejected query_text < 3 chars")
 
     except Exception as e:
-        print("❌ SearchRequest (NL) test failed: {e}")
+        print(f"❌ SearchRequest (NL) test failed: {e}")
         raise
 
 
@@ -179,23 +179,23 @@ def test_search_request_manual():
             filters=ManualSearchFilters(asset_type="FX", status=["ALLEGED"]),
         )
         print("✓ Valid manual search request created")
-        print("  User: {request.user_id}")
-        print("  Filters: {request.filters.asset_type}, {request.filters.status}")
+        print(f"  User: {request.user_id}")
+        print(f"  Filters: {request.filters.asset_type}, {request.filters.status}")
 
         # Test missing filters
         try:
-            bad_request = SearchRequest(
+            SearchRequest(
                 user_id="user123",
                 search_type="manual",
                 # Missing filters
             )
             print("❌ Should have failed without filters")
             raise AssertionError("Should have rejected manual search without filters")
-        except ValidationError as e:
+        except ValidationError:
             print("✓ Correctly rejected manual search without filters")
 
     except Exception as e:
-        print("❌ SearchRequest (Manual) test failed: {e}")
+        print(f"❌ SearchRequest (Manual) test failed: {e}")
         raise
 
 
@@ -209,25 +209,25 @@ def test_update_history_request():
         # Valid save request
         request = UpdateHistoryRequest(is_saved=True, query_name="My weekly review")
         print("✓ Valid save request created")
-        print("  Saved: {request.is_saved}, Name: {request.query_name}")
+        print(f"  Saved: {request.is_saved}, Name: {request.query_name}")
 
         # Valid unsave request
-        request2 = UpdateHistoryRequest(is_saved=False, query_name=None)
+        UpdateHistoryRequest(is_saved=False, query_name=None)
         print("✓ Valid unsave request created")
 
         # Test save without name
         try:
-            bad_request = UpdateHistoryRequest(
+            UpdateHistoryRequest(
                 is_saved=True
                 # Missing query_name
             )
             print("❌ Should have failed: save without name")
             raise AssertionError("Should have rejected save without query_name")
-        except ValidationError as e:
+        except ValidationError:
             print("✓ Correctly rejected save without query_name")
 
     except Exception as e:
-        print("❌ UpdateHistoryRequest test failed: {e}")
+        print(f"❌ UpdateHistoryRequest test failed: {e}")
         raise
 
 
@@ -269,10 +269,10 @@ def test_search_response():
 
         # Test JSON serialization
         response_json = response.model_dump_json()
-        print("✓ JSON serialization works ({len(response_json)} bytes)")
+        print(f"✓ JSON serialization works ({len(response_json)} bytes)")
 
     except Exception as e:
-        print("❌ SearchResponse test failed: {e}")
+        print(f"❌ SearchResponse test failed: {e}")
         raise
 
 
@@ -291,13 +291,13 @@ def test_error_response():
             path="/search",
         )
         print("✓ Error response created via factory")
-        print("  Error: {error.error}")
-        print("  Message: {error.message}")
-        print("  Timestamp: {error.timestamp}")
-        print("  Path: {error.path}")
+        print(f"  Error: {error.error}")
+        print(f"  Message: {error.message}")
+        print(f"  Timestamp: {error.timestamp}")
+        print(f"  Path: {error.path}")
 
     except Exception as e:
-        print("❌ ErrorResponse test failed: {e}")
+        print(f"❌ ErrorResponse test failed: {e}")
         raise
 
 
@@ -325,7 +325,7 @@ def run_all_tests():
 
     for test_name, passed in results:
         status = "✅ PASSED" if passed else "❌ FAILED"
-        print("{test_name}: {status}")
+        print(f"{test_name}: {status}")
 
     all_passed = all(result[1] for result in results)
 
@@ -349,7 +349,7 @@ if __name__ == "__main__":
         print("\n\n⚠️  Tests interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print("\n\n❌ Fatal error: {e}")
+        print(f"\n\n❌ Fatal error: {e}")
         import traceback
 
         traceback.print_exc()
