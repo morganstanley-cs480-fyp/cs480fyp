@@ -35,7 +35,7 @@ resource "aws_security_group" "milvus_sg" {
 # 2. Key Pair (Imports your local public key)
 resource "aws_key_pair" "milvus_key" {
   key_name   = "milvus-ec2-key"
-  public_key = file(var.public_key_path)
+  public_key = file(pathexpand(var.public_key_path))
 }
 
 # 3. Get the latest Ubuntu 22.04 AMI
