@@ -6,7 +6,7 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import type { Exception, Trade, Transaction } from "@/lib/api/types";
 import { tradeFlowService } from "@/lib/api/tradeFlowService";
-import { searchService } from "@/lib/api/searchService";
+import { exceptionService } from "@/lib/api/exceptionService";
 import {TradeInfoCard} from "@/components/trades-individual/TradeInfoCard";
 import {FlowVisualization} from "@/components/trades-individual/FlowVisualization";
 
@@ -79,7 +79,7 @@ function TradeDetailPage() {
                 const [tradeData, transactionsData, exceptionsData] = await Promise.all([
                     tradeFlowService.getTradeById(tradeIdNumber),
                     tradeFlowService.getTransactionsByTradeId(tradeIdNumber),
-                    searchService.getExceptionsByTrade(tradeIdNumber),
+                    exceptionService.getExceptionsByTrade(tradeIdNumber),
                 ]);
 
                 if (!isActive) return;

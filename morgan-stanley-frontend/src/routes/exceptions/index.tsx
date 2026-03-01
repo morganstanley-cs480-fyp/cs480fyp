@@ -14,7 +14,7 @@ import type {
   ColumnFiltersState,
 } from "@tanstack/react-table";
 import type { Exception } from "@/lib/api/types";
-import { searchService } from "@/lib/api/searchService";
+import { exceptionService } from "@/lib/api/exceptionService";
 
 // Component imports
 import { StatsOverview } from "@/components/exceptions/StatsOverview";
@@ -56,7 +56,7 @@ function ExceptionsPage() {
       try {
         setLoading(true);
         setSearchError(null);
-        const exceptionData = await searchService.getExceptions();
+        const exceptionData = await exceptionService.getExceptions();
         setExceptions(exceptionData);
         setResults(exceptionData);
       } catch (error) {
