@@ -22,6 +22,8 @@ class Trade:
         et.SubElement(root, "update_time").text = self.update_time
         et.SubElement(root, "status").text = self.status
         return root
+    def __str__(self) -> str:
+        return f'Trade("{self.trade_id}","{self.acc}","{self.asset_type}","{self.booking_system}", "{self.affirmation_system}","{self.clearing_house}", "{self.create_time}", "{self.update_time}", "{self.status}")'
 
 class Transaction:
     def __init__(self,trans_id, trade_id, create_time, entity, direction, _type, status, update_time, step):
@@ -46,12 +48,14 @@ class Transaction:
         et.SubElement(root, "update_time").text = self.update_time
         et.SubElement(root, "step").text = str(self.step)
         return root
+    def __str__(self) -> str:
+        return f'Transaction("{self.trans_id}", "{self.trade_id}", "{self.create_time}", "{self.entity}", "{self.direction}", "{self._type}", "{self.status}", "{self.update_time}", {self.step})'
 
 class TransException:
-    def __init__(self, trade_id, trans_id, exception_id, status, msg, create_time, comment, priority, update_time):
+    def __init__(self, exception_id,trade_id, trans_id,  msg, priority, status, comment, create_time, update_time):
+        self.exception_id = exception_id
         self.trade_id = trade_id
         self.trans_id = trans_id
-        self.exception_id = exception_id
         self.status = status
         self.msg= msg
         self.create_time = create_time

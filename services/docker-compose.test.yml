@@ -122,7 +122,7 @@ services:
       context: ./trade-flow-service
       dockerfile: dockerfile
     ports:
-      - "8000:8000"
+      - "3007:3007"
     depends_on:
       localstack:
         condition: service_healthy
