@@ -302,6 +302,18 @@ def countTradeStatuses(messages):
             status_counts[status] = status_counts.get(status, 0) + 1
 
     return status_counts
+def clone_trade(trade):
+    return Trade(
+        trade.trade_id,
+        trade.acc,
+        trade.asset_type,
+        trade.booking_system,
+        trade.affirmation_system,
+        trade.clearing_house,
+        trade.create_time,
+        trade.update_time,
+        trade.status
+    )
 def main():
     cursor = connectToDb(DBNAME)
     cursor.execute("DROP TABLE IF EXISTS TRADE")
@@ -313,21 +325,29 @@ def main():
     
     # Create random data
     # create_randomised_messages(cursor)
+    global MESSAGE_QUEUE
 
     for trade in TRADES_INIT:
+        prev_status = trade.status
+        trade.status = "ALLEGED"
         insertTrade(cursor,trade)
+        
+        MESSAGE_QUEUE.append(trade)
         if trade.status == "CLEARED":
             simulate_cleared_trade(cursor, trade.trade_id, length=20)
         elif trade.status == "ALLEGED":
             simulate_cleared_trade(cursor, trade.trade_id, length=17, otherStatus="ALLEGED")
         else:
             simulate_cleared_trade(cursor, trade.trade_id, length=13, otherStatus=trade.status)
-        
+        update_trade = clone_trade(trade)
+        update_trade.status = prev_status
+        MESSAGE_QUEUE.append(update_trade)
+
     for trs in TRANSACTION_INIT:
+        MESSAGE_QUEUE.append(trs)
         insertTransaction(cursor, trs)
-    for expt in EXCEPTION_INIT:
-        insertException(cursor, expt)
     for trade in RESERVED_TRADES_INIT:
+        MESSAGE_QUEUE.append(trade)
         insertTrade(cursor,trade)
         # simulate_cleared_trade(cursor, trade.trade_id, length=5, otherStatus="REJECTED")
    
@@ -363,21 +383,31 @@ def main():
     add_transaction_for_additional_exception_cases(cursor, 27625806, 10029001, 5, "REJECTED", "NETTING_ELIGIBILITY")
     add_transaction_for_additional_exception_cases(cursor, 36106022, 10030001, 4, "REJECTED", "NOTIONAL_SCHEDULE_CHECK")
 
+    add_transaction_for_additional_exception_cases(cursor, 33154292, 10031001, 7, "REJECTED", "TRADE_CAPTURE_MISMATCH")
+    add_transaction_for_additional_exception_cases(cursor, 36349602, 10032001, 5, "REJECTED", "CCP_MARGIN_MODEL_UPDATE")
+    add_transaction_for_additional_exception_cases(cursor, 85373053, 10033001, 5, "REJECTED", "EMIR_REPORTING_FAILURE")
+    add_transaction_for_additional_exception_cases(cursor, 76689540, 10034001, 3, "REJECTED", "PORTFOLIO_LIMIT_BREACH")
+    add_transaction_for_additional_exception_cases(cursor, 76369566, 10035001, 5, "REJECTED", "CROSS_MARGIN_INELIGIBLE")
+    add_transaction_for_additional_exception_cases(cursor, 73847580, 10036001, 8, "REJECTED", "COLLATERAL_INELIGIBLE_SECURITY")
+    add_transaction_for_additional_exception_cases(cursor, 17194044, 10037001, 4, "REJECTED", "TRADE_COMPRESSION_CONFLICT")
+    add_transaction_for_additional_exception_cases(cursor, 58392014, 10038001, 5, "REJECTED", "DEFAULT_FUND_CONTRIBUTION_SHORTFALL")
+    add_transaction_for_additional_exception_cases(cursor, 50899479, 10039001, 3, "REJECTED", "TRADE_CONFIRMATION_DISPUTE")
+    add_transaction_for_additional_exception_cases(cursor, 87339954, 10040001, 4, "REJECTED", "BACKLOADING_VALIDATION_FAILURE")
 
-    ls = getAllMessages(cursor)
-
-    # !!! enable for production data
-    ls.sort(key=lambda x: x.create_time)
+    for expt in EXCEPTION_INIT:
+        MESSAGE_QUEUE.append(expt)
+        insertException(cursor, expt)
+    MESSAGE_QUEUE.sort(key=lambda x: x.create_time)
 
     
-    print(f"length: {len(ls)}")
-    writeAll("2Test.xml",ls)
+    print(f"length: {len(MESSAGE_QUEUE)}")
+    writeAll("data.xml",MESSAGE_QUEUE)
 
-    counts = countMessageTypes(ls)
+    counts = countMessageTypes(MESSAGE_QUEUE)
     print("Trades:", counts["trades"])
     print("Transactions:", counts["transactions"])
     print("Exceptions:", counts["exceptions"])
-    counts = countTradeStatuses(ls)
+    counts = countTradeStatuses(MESSAGE_QUEUE)
 
     for status, count in counts.items():
         print(f"{status}: {count}")

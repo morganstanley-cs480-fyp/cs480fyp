@@ -9,7 +9,7 @@ import sqlite3
 
 def insertTrade(cursor, trade):
     cursor.execute("""
-        INSERT INTO TRADE (
+        INSERT INTO trade (
             trade_id,
             account,
             asset_type,
@@ -20,7 +20,16 @@ def insertTrade(cursor, trade):
             update_time,
             status
         ) 
-        VALUES (?,?,?,?,?,?,?,?,?);
+        VALUES (?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(trade_id) DO UPDATE SET
+            account = excluded.account,
+            asset_type = excluded.asset_type,
+            booking_system = excluded.booking_system,
+            affirmation_system = excluded.affirmation_system,
+            clearing_house = excluded.clearing_house,
+            create_time = excluded.create_time,
+            update_time = excluded.update_time,
+            status = excluded.status;
     """, (
         trade.trade_id,
         trade.acc,
