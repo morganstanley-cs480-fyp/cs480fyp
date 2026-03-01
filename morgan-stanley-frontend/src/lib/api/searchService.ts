@@ -152,7 +152,7 @@ export const searchService = {
    */
   async getExceptions(): Promise<Exception[]> {
     const exceptions = await exceptionClient.get<Exception[]>(
-      '/api/exceptions'
+      '/api/exceptions/'
     );
 
     return exceptions;
@@ -163,7 +163,7 @@ export const searchService = {
    */
   async getExceptionById(exceptionId: number): Promise<Exception> {
     const exception = await exceptionClient.get<Exception>(
-      `/api/exceptions/${exceptionId}`
+      `/api/exceptions/${exceptionId}/`
     );
     return exception;
   },
@@ -173,7 +173,7 @@ export const searchService = {
    */
   async getExceptionsByTrade(tradeId: number): Promise<Exception[]> {
     const exceptions = await exceptionClient.get<Exception[]>(
-      `/api/exceptions/trade/${tradeId}`
+      `/api/exceptions/trade/${tradeId}/`
     );
     return exceptions;
   },
