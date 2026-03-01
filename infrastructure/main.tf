@@ -429,7 +429,7 @@ module "search_service" {
     { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" },
     { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
     { name = "GOOGLE_MODEL_ID", value = "gemini-2.5-flash-lite" },
-    { name = "CORS_ORIGINS", value = "[\"https://${module.cloudfront.distribution_domain_name}\",\"http://localhost:5173\",\"http://localhost:4173\",\"http://localhost:3000\"]" }
+    { name = "CORS_ORIGINS", value = "[\"*\"]" }
   ]
   secrets = [
     { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn }
