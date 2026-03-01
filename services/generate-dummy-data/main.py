@@ -128,7 +128,7 @@ def createException(cursor,create_time ,trade_id, trans_id):
     # update_time = random_date(create_time, OCT2025)
     create_time = add_seconds(create_time, 60)
     update_time = create_time  # initial update time of the exception is same as create time 
-    expt = TransException(expt_id, trade_id,trans_id , "PENDING",msg, create_time, comment, random.choice(EXCEPTION_PRIORITY_LS), update_time)
+    expt = TransException(expt_id, trade_id,trans_id ,msg, random.choice(EXCEPTION_PRIORITY_LS), "PENDING", comment, create_time ,update_time)
     MESSAGE_QUEUE.append(expt)
 
     print(f"Exception created for trade id:{trade_id}, transaction_id:{trans_id}")
@@ -329,17 +329,21 @@ def main():
 
     for trade in TRADES_INIT:
         prev_status = trade.status
+        trade.update_time = trade.create_time
         trade.status = "ALLEGED"
         insertTrade(cursor,trade)
         
         MESSAGE_QUEUE.append(trade)
         if trade.status == "CLEARED":
             simulate_cleared_trade(cursor, trade.trade_id, length=20)
+        
         elif trade.status == "ALLEGED":
             simulate_cleared_trade(cursor, trade.trade_id, length=17, otherStatus="ALLEGED")
         else:
             simulate_cleared_trade(cursor, trade.trade_id, length=13, otherStatus=trade.status)
         update_trade = clone_trade(trade)
+        update_time = getLatestTransactionCreateTime(cursor, trade.trade_id)
+        update_trade.update_time = update_time
         update_trade.status = prev_status
         MESSAGE_QUEUE.append(update_trade)
 
@@ -397,8 +401,10 @@ def main():
     for expt in EXCEPTION_INIT:
         MESSAGE_QUEUE.append(expt)
         insertException(cursor, expt)
-    MESSAGE_QUEUE.sort(key=lambda x: x.create_time)
 
+    MESSAGE_QUEUE.sort(
+        key=lambda x: x.update_time or x.create_time
+    )
     
     print(f"length: {len(MESSAGE_QUEUE)}")
     writeAll("data.xml",MESSAGE_QUEUE)

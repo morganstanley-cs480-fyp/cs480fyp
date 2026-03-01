@@ -52,7 +52,7 @@ class Transaction:
         return f'Transaction("{self.trans_id}", "{self.trade_id}", "{self.create_time}", "{self.entity}", "{self.direction}", "{self._type}", "{self.status}", "{self.update_time}", {self.step})'
 
 class TransException:
-    def __init__(self, exception_id,trade_id, trans_id, status, msg, create_time, comment, priority, update_time):
+    def __init__(self, exception_id,trade_id, trans_id,  msg, priority, status, comment, create_time, update_time):
         self.exception_id = exception_id
         self.trade_id = trade_id
         self.trans_id = trans_id

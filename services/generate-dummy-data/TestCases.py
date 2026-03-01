@@ -95,7 +95,7 @@ def Case3():
         trans_ls.append(trans)
         insertTransaction(cursor, trans)
     start_date = add_seconds(start_date, 60)
-    expt = TransException(RandNum(8),trade.trade_id, trans_ls[-1].trans_id,  "PENDING","INSUFFICIENT MARGIN" , start_date, "NO BIC", random.choice(EXCEPTION_PRIORITY_LS), start_date)
+    expt = TransException(RandNum(8),trade.trade_id, trans_ls[-1].trans_id,  "INSUFFICIENT MARGIN" , random.choice(EXCEPTION_PRIORITY_LS), "PENDING", "NO BIC", start_date,start_date)
     trans_ls.append(expt)
 
     insertException(cursor, expt)
@@ -127,7 +127,7 @@ def Case4():
         insertTransaction(cursor, trans)
 
     start_date = add_seconds(start_date, 60)
-    expt = TransException(RandNum(8),trade.trade_id, trans_ls[-1].trans_id,  "PENDING","MISSING BIC" , start_date, "NO BIC", random.choice(EXCEPTION_PRIORITY_LS), start_date)
+    expt = TransException(RandNum(8),trade.trade_id, trans_ls[-1].trans_id,  "MISSING BIC" , random.choice(EXCEPTION_PRIORITY_LS), "PENDING","NO BIC",start_date, start_date)
     trans_ls.append(expt)
 
     insertException(cursor,expt)
@@ -159,7 +159,7 @@ def Case5():
         insertTransaction(cursor, trans)
 
     start_date = add_seconds(start_date, 60)
-    expt = TransException(RandNum(8),trade.trade_id, trans_ls[-1].trans_id,"PENDING","MAPPING ISSUE" , start_date, "NO MAPPING FOR KINGSLANDING", random.choice(EXCEPTION_PRIORITY_LS), start_date)
+    expt = TransException(RandNum(8),trade.trade_id, trans_ls[-1].trans_id,"MAPPING ISSUE" , random.choice(EXCEPTION_PRIORITY_LS),"NO MAPPING FOR KINGSLANDING", "PENDING",start_date, start_date)
     trans_ls.append(expt)
 
     insertException(cursor, expt)
