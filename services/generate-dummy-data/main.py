@@ -152,7 +152,6 @@ def simulate_cleared_trade(cursor, trade_id, length=10, otherStatus=None):
         "clearing_house":trade.clearing_house,
         "TAS": "TAS"
     }
-    # print(step)
     while(length > step):
         for direction, trans_type, entity in CLEARED_FLOW_SEQUENCE:
             if(step > length):
@@ -183,14 +182,60 @@ def simulate_cleared_trade(cursor, trade_id, length=10, otherStatus=None):
             insertTransaction(cursor, transaction)
             MESSAGE_QUEUE.append(transaction)
             created_transactions.append(transaction)
-            print("transaction created")
+            # print("transaction created")
 
         curr_entities["booking_system"] = random.choice(BOOKING_SYSTEM_LS)
         curr_entities["clearing_house"] = random.choice(CLEARING_HOUSE_LS)
     # print(len(MESSAGE_QUEUE))
-    writeAll("TESTTEST.xml")
+    # writeAll("TESTTEST.xml")
 
+def add_transaction_for_additional_exception_cases(cursor, trade_id, start_trans_id, length, status, last_type):
+    global MESSAGE_QUEUE
+    trade = getTradeById(cursor,trade_id)
+    if not trade:
+        print("Trade not found")
+        return
+    created_transactions = []
 
+    last_time = getLatestTransactionCreateTime(cursor, trade_id)
+    if not last_time:
+        last_time = getTradeUpdateTime(cursor, trade_id)
+    step = getNextStep(cursor, trade_id)
+    curr_entities = {
+        "booking_system": trade.booking_system,
+        "clearing_house":trade.clearing_house,
+        "TAS": "TAS"
+    }
+    while(length > step):
+        for direction, trans_type, entity in CLEARED_FLOW_SEQUENCE:
+            if(step > length):
+                break
+            last_time = add_seconds(last_time, random.randint(20, 180))
+            entity = curr_entities[entity]
+
+            transaction = Transaction(
+                start_trans_id,
+                trade_id,
+                last_time,
+                entity,
+                direction,
+                trans_type,
+                "CLEARED",
+                last_time,
+                step
+            )
+            if step == length:
+                transaction.status = status
+                transaction._type = last_type
+
+            step += 1
+            start_trans_id +=1
+            insertTransaction(cursor, transaction)
+            MESSAGE_QUEUE.append(transaction)
+            created_transactions.append(transaction)
+
+        curr_entities["booking_system"] = random.choice(BOOKING_SYSTEM_LS)
+        curr_entities["clearing_house"] = random.choice(CLEARING_HOUSE_LS)
 
 
 
@@ -199,6 +244,7 @@ def writeToXML(root, fname):
     tree = et.ElementTree(root)
     et.indent(tree, space="\t", level=0)
     tree.write(fname, encoding="utf-8")
+    print(f"writing to: {fname}")
 
 def appendRoot(root, ls):
     for child in ls:
@@ -236,6 +282,26 @@ def create_randomised_messages(cursor):
     global MESSAGE_QUEUE
     MESSAGE_QUEUE.sort(key=lambda x: x.create_time)
     writeAll("data.xml")
+
+from collections import Counter
+
+def countMessageTypes(messages):
+    counter = Counter(type(msg).__name__ for msg in messages)
+
+    return {
+        "trades": counter.get("Trade", 0),
+        "transactions": counter.get("Transaction", 0),
+        "exceptions": counter.get("TransException", 0)
+    }
+def countTradeStatuses(messages):
+    status_counts = {}
+
+    for msg in messages:
+        if isinstance(msg, Trade):
+            status = msg.status
+            status_counts[status] = status_counts.get(status, 0) + 1
+
+    return status_counts
 def main():
     cursor = connectToDb(DBNAME)
     cursor.execute("DROP TABLE IF EXISTS TRADE")
@@ -247,16 +313,74 @@ def main():
     
     # Create random data
     # create_randomised_messages(cursor)
+
     for trade in TRADES_INIT:
         insertTrade(cursor,trade)
+        if trade.status == "CLEARED":
+            simulate_cleared_trade(cursor, trade.trade_id, length=20)
+        elif trade.status == "ALLEGED":
+            simulate_cleared_trade(cursor, trade.trade_id, length=17, otherStatus="ALLEGED")
+        else:
+            simulate_cleared_trade(cursor, trade.trade_id, length=13, otherStatus=trade.status)
+        
     for trs in TRANSACTION_INIT:
         insertTransaction(cursor, trs)
     for expt in EXCEPTION_INIT:
         insertException(cursor, expt)
+    for trade in RESERVED_TRADES_INIT:
+        insertTrade(cursor,trade)
+        # simulate_cleared_trade(cursor, trade.trade_id, length=5, otherStatus="REJECTED")
+   
+    #Additional Exceptions
+    add_transaction_for_additional_exception_cases(cursor, 77194044, 10001001, 5, "REJECTED", "REGULATORY_REPORT")
+    add_transaction_for_additional_exception_cases(cursor, 60724962, 10002001, 5, "REJECTED","COLLATERAL_CALL")
+    add_transaction_for_additional_exception_cases(cursor, 86836834, 10003001, 4, "REJECTED", "LEGAL_DOC_CHECK")
+    add_transaction_for_additional_exception_cases(cursor, 77186642, 10004001, 5, "REJECTED", "SSI_VALIDATION")
+    add_transaction_for_additional_exception_cases(cursor, 61270683, 10005001, 4, "REJECTED", "SETTLEMENT_DATE_CHECK")
+    add_transaction_for_additional_exception_cases(cursor, 98962729, 10006001, 5, "REJECTED", "REFERENCE_ENTITY_CHECK")
+    add_transaction_for_additional_exception_cases(cursor, 25399440, 10007001, 4, "REJECTED", "RATE_VALIDATION")
+    add_transaction_for_additional_exception_cases(cursor, 53850480, 10008001, 5, "REJECTED", "NOTIONAL_LIMIT_CHECK")
+    add_transaction_for_additional_exception_cases(cursor, 89369810, 10009001, 5, "REJECTED", "WWR_CHECK")
+    add_transaction_for_additional_exception_cases(cursor, 99202386, 10010001, 5, "REJECTED", "IM_REQUIREMENT")
+    add_transaction_for_additional_exception_cases(cursor, 69269882, 10011001, 5, "REJECTED", "PAYMENT_INSTRUCTION")
+    add_transaction_for_additional_exception_cases(cursor, 42511774, 10012001, 3, "REJECTED", "CREDIT_DOWNGRADE_ALERT")
+    add_transaction_for_additional_exception_cases(cursor, 48712564, 10013001, 5, "REJECTED", "SUCCESSION_EVENT_CHECK")
+    add_transaction_for_additional_exception_cases(cursor, 14355627, 10014001, 4, "REJECTED", "CAPITAL_FLOW_CHECK")
+    add_transaction_for_additional_exception_cases(cursor, 88531321, 10015001, 5, "REJECTED", "RATE_VALIDATION")
+    add_transaction_for_additional_exception_cases(cursor, 54146216, 10016001, 5, "REJECTED", "LEI_VALIDATION")
+    add_transaction_for_additional_exception_cases(cursor, 72427554, 10017001, 5, "REJECTED", "AML_SCREENING")
+    add_transaction_for_additional_exception_cases(cursor, 56535550, 10018001, 5, "REJECTED", "BOOKING_CONFIRMATION")
+    add_transaction_for_additional_exception_cases(cursor, 67515456, 10019001, 5, "REJECTED", "INDEX_VERSION_CHECK")
+    add_transaction_for_additional_exception_cases(cursor, 81930671, 10020001, 5, "REJECTED", "SSI_COMPLETENESS")
+    add_transaction_for_additional_exception_cases(cursor, 64737734, 10021001, 3, "REJECTED", "CLEARING_ELIGIBILITY")
+    add_transaction_for_additional_exception_cases(cursor, 69755320, 10022001, 4, "REJECTED", "MATURITY_VALIDATION")
+    add_transaction_for_additional_exception_cases(cursor, 66663488, 10023001, 5, "REJECTED", "DUAL_CURRENCY_CHECK")
+    add_transaction_for_additional_exception_cases(cursor, 15706882, 10024001, 5, "REJECTED", "PORTFOLIO_RECON")
+    add_transaction_for_additional_exception_cases(cursor, 96904486, 10025001, 4, "REJECTED", "DELIVERABLE_OBLIGATION_CHECK")
+    add_transaction_for_additional_exception_cases(cursor, 49964172, 10026001, 4, "REJECTED", "VALUE_DATE_VALIDATION")
+    add_transaction_for_additional_exception_cases(cursor, 42668494, 10027001, 3, "REJECTED", "CREDIT_LINE_EXCEEDED")
+    add_transaction_for_additional_exception_cases(cursor, 98159040, 10028001, 5, "REJECTED", "AFFIRMATION_TIMEOUT")
+    add_transaction_for_additional_exception_cases(cursor, 27625806, 10029001, 5, "REJECTED", "NETTING_ELIGIBILITY")
+    add_transaction_for_additional_exception_cases(cursor, 36106022, 10030001, 4, "REJECTED", "NOTIONAL_SCHEDULE_CHECK")
+
+
     ls = getAllMessages(cursor)
+
     # !!! enable for production data
-    # ls.sort(key=lambda x: x.create_time)
+    ls.sort(key=lambda x: x.create_time)
+
+    
+    print(f"length: {len(ls)}")
     writeAll("2Test.xml",ls)
+
+    counts = countMessageTypes(ls)
+    print("Trades:", counts["trades"])
+    print("Transactions:", counts["transactions"])
+    print("Exceptions:", counts["exceptions"])
+    counts = countTradeStatuses(ls)
+
+    for status, count in counts.items():
+        print(f"{status}: {count}")
 
 
 
