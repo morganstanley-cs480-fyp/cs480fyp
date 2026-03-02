@@ -4,9 +4,11 @@ from enum import Enum
 # Defines the Exception model class
 # Tortoise ORM uses this to generate SQL and perform database operations
 
+
 class ExceptionStatus(str, Enum):
     PENDING = "PENDING"
-    CLOSED = "CLOSED"
+    CLOSED = "CLOSED"  # Maps to 'CLOSED' in DB VARCHAR column; 'PENDING' is the default
+
 
 # Note: Tentative model. Might change
 class Exception(models.Model):
@@ -14,7 +16,9 @@ class Exception(models.Model):
     # Foreign keys from trade-flow-service (different microservice)
     trade_id = fields.IntField(index=True)
     trans_id = fields.IntField(index=True)
-    status = fields.CharEnumField(ExceptionStatus, max_length=10, default=ExceptionStatus.PENDING)
+    status = fields.CharEnumField(
+        ExceptionStatus, max_length=10, default=ExceptionStatus.PENDING
+    )
     msg = fields.TextField()
     comment = fields.TextField(null=True)
     priority = fields.CharField(max_length=50)
