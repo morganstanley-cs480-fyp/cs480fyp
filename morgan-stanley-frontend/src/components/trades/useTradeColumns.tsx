@@ -42,12 +42,12 @@ export function useTradeColumns(): ColumnDef<Trade>[] {
 
   return [
     {
-      accessorKey: "id",
+      accessorKey: "trade_id",
       size: 110,
       header: ({ column }) => <SortHeader column={column} label="Trade ID" />,
       cell: ({ row }) => (
         <span className="text-sm text-black">
-          {row.getValue("id")}
+          {row.getValue("trade_id")}
         </span>
       ),
       filterFn: (row, columnId, filterValue: string) =>

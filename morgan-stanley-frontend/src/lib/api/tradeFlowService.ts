@@ -1,38 +1,37 @@
 import type { Trade, Transaction } from './types';
 
-const TRADE_FLOW_API_BASE_URL =
-  import.meta.env.VITE_TRADE_FLOW_API_BASE_URL ||  window.location.origin;
+/**
+ * Ensure the base URL uses HTTPS when the page is served over HTTPS.
+ * Prevents Mixed Content errors if VITE_TRADE_FLOW_API_BASE_URL is baked
+ * into the production bundle with an http:// value.
+ */
+function resolveTradeFlowApiBaseUrl(): string {
+  const raw: string =
+    import.meta.env.VITE_TRADE_FLOW_API_BASE_URL || window.location.origin;
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    return raw.replace(/^http:\/\//, 'https://');
+  }
+  return raw;
+}
 
-// type TradeApiResponse = Omit<Trade, 'trade_id'> & { id: number };
-//
-// type TransactionApiResponse = Omit<Transaction, 'trans_id'> & { id: number };
+const TRADE_FLOW_API_BASE_URL = resolveTradeFlowApiBaseUrl();
 
-// const mapTrade = (trade: TradeApiResponse): Trade => ({
-//   trade_id: trade.id,
-//   account: trade.account,
-//   asset_type: trade.asset_type,
-//   booking_system: trade.booking_system,
-//   affirmation_system: trade.affirmation_system,
-//   clearing_house: trade.clearing_house,
-//   create_time: trade.create_time,
-//   update_time: trade.update_time,
-//   status: trade.status,
-// });
-//
-// const mapTransaction = (transaction: TransactionApiResponse): Transaction => ({
-//   trade_id: transaction.trade_id,
-//   trans_id: transaction.id,
-//   create_time: transaction.create_time,
-//   entity: transaction.entity,
-//   direction: transaction.direction,
-//   type: transaction.type,
-//   status: transaction.status,
-//   update_time: transaction.update_time,
-//   step: transaction.step,
-// });
+type TradeApiResponse = Omit<Trade, 'trade_id'> & { id: number };
+
+const mapTrade = (trade: TradeApiResponse): Trade => ({
+  trade_id: trade.id,
+  account: trade.account,
+  asset_type: trade.asset_type,
+  booking_system: trade.booking_system,
+  affirmation_system: trade.affirmation_system,
+  clearing_house: trade.clearing_house,
+  create_time: trade.create_time,
+  update_time: trade.update_time,
+  status: trade.status,
+});
 
 interface TradeTableResponse {
-    data: Trade[],
+    data: TradeApiResponse[],
     limit: number,
     offset: number,
 }
@@ -41,22 +40,32 @@ async function request<T>(endpoint: string): Promise<T> {
   const response = await fetch(`${TRADE_FLOW_API_BASE_URL}${endpoint}`);
 
   if (!response.ok) {
-    throw new Error(`Trade flow request failed: ${response.statusText}`);
+    const text = await response.text().catch(() => response.statusText);
+    throw new Error(`Trade flow request failed (${response.status}): ${text.substring(0, 200)}`);
   }
 
-  return await response.json() as Promise<T>;
+  const contentType = response.headers.get('content-type');
+  if (!contentType?.includes('application/json')) {
+    const text = await response.text().catch(() => '');
+    throw new Error(
+      `Trade flow service returned non-JSON response (${contentType ?? 'unknown'}): ${text.substring(0, 200)}`
+    );
+  }
+
+  return response.json() as Promise<T>;
 }
 
 export const tradeFlowService = {
   async getTradeById(tradeId: number): Promise<Trade> {
-    return await request<Trade>(`/api/trades/${tradeId}`);
+    const raw = await request<TradeApiResponse>(`/api/trades/${tradeId}`);
+    return mapTrade(raw);
   },
 
     // NOTE : TEMPORARILY NOT USE LIMIT AND OFFSET FOR NOW.
-  async getTrades(limit: number = 1000, offset: number = 0): Promise<Trade[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getTrades(_limit: number = 1000, _offset: number = 0): Promise<Trade[]> {
     const response = await request<TradeTableResponse>(`/api/trades`);
-    return response.data;
-
+    return response.data.map(mapTrade);
   },
 
   async getRecentTrades(limit: number = 20): Promise<Trade[]> {

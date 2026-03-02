@@ -67,6 +67,18 @@ async def lifespan(app: FastAPI):
         """)
         logger.info("Database tables verified/created successfully")
 
+        # Resync the query_history sequence to avoid duplicate key errors.
+        # This is a self-healing guard: if the sequence ever falls behind the
+        # actual max id (e.g. after a partial restore or -v wipe + repopulate),
+        # every INSERT would fail with a unique-constraint violation.
+        await db_manager.pool.execute("""
+            SELECT setval(
+                'query_history_id_seq',
+                GREATEST(100000, COALESCE((SELECT MAX(id) FROM query_history), 99999))
+            );
+        """)
+        logger.info("query_history sequence resynced on startup")
+
         # Initialize Redis cache connection
         await redis_manager.connect()
         logger.info("Redis cache connection initialized successfully")
@@ -124,7 +136,7 @@ if settings.ENABLE_CORS:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,
-        allow_credentials=True,
+        allow_credentials=False,  # Must be False when allow_origins=["*"]
         allow_methods=["*"],
         allow_headers=["*"],
     )
