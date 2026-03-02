@@ -77,7 +77,12 @@ export const requireAuth = ({ context }: { context: RouterContext }) => {
 export const getWebSocketUrl = () => {
     // 1. If explicitly set a VITE var (like for local testing), use it.
     if (import.meta.env.VITE_WEBSOCKET_URL) {
-        return import.meta.env.VITE_WEBSOCKET_URL;
+        const raw: string = import.meta.env.VITE_WEBSOCKET_URL;
+        // Upgrade ws:// → wss:// when running on HTTPS to avoid Mixed Content blocks
+        if (window.location.protocol === 'https:') {
+            return raw.replace(/^ws:\/\//, 'wss://');
+        }
+        return raw;
     }
 
     // 2. Otherwise, dynamically build the CloudFront URL

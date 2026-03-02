@@ -430,14 +430,13 @@ class QueryHistoryService:
             try:
                 records = await db_manager.fetch(sql_query, pattern, per_field_limit)
             except Exception as e:
-                logger.error(
-                    f"Failed to fetch suggestions for {column}: {e}",
-                    extra={"user_id": user_id},
+                # Log and skip this field rather than aborting the whole request.
+                # A single failing column should not suppress all suggestions.
+                logger.warning(
+                    f"Skipping suggestions for field '{column}': {e}",
+                    extra={"user_id": user_id, "field": column},
                 )
-                raise DatabaseQueryError(
-                    "Failed to fetch suggestions",
-                    details={"error": str(e), "user_id": user_id, "field": column},
-                )
+                continue
 
             for record in records:
                 raw_value = (record.get("value") or "").strip()

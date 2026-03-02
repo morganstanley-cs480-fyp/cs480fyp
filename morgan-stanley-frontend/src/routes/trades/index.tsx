@@ -27,7 +27,6 @@ import { useTradeColumns } from "@/components/trades/useTradeColumns";
 import { searchService } from "@/lib/api/searchService";
 import { APIError } from "@/lib/api/client";
 import { requireAuth } from "@/lib/utils";
-import { tradeFlowService } from "@/lib/api/tradeFlowService";
 
 export const Route = createFileRoute("/trades/")({
   beforeLoad: requireAuth,
@@ -121,16 +120,6 @@ function TradeSearchPage() {
     }
   };
 
-  // Fetch all trades and set results (filter options are loaded separately)
-    const fetchAllTrades = async () => {
-        try {
-            const allTrades = await tradeFlowService.getTrades(1000, 0);
-            setResults(allTrades);
-        } catch (error) {
-            console.error('Failed to fetch trades:', error);
-        }
-    };
-
   // Fetch filter dropdown options from the dedicated aggregation endpoint.
   // This is independent of trade results — one cheap DB query, not a 1000-row fetch.
   const fetchFilterOptions = async () => {
@@ -171,12 +160,21 @@ function TradeSearchPage() {
           setCurrentQueryId(response.query_id);
         })
         .catch(() => {
-          // Search failed (e.g. AI service down) — fall back to showing all trades
-          void fetchAllTrades();
+          // NL search failed (e.g. AI service down) — fall back to unfiltered manual search
+          void searchService
+            .searchTrades({ search_type: "manual", user_id: userId, filters: { date_type: "update_time" } })
+            .then((r) => setResults(r.results))
+            .catch((err) => console.error('Failed to fetch trades:', err));
         })
         .finally(() => setSearching(false));
     } else {
-      void fetchAllTrades();
+      // No saved query — load all trades via search service (manual, no filters)
+      setSearching(true);
+      void searchService
+        .searchTrades({ search_type: "manual", user_id: userId, filters: { date_type: "update_time" } })
+        .then((r) => setResults(r.results))
+        .catch((err) => console.error('Failed to fetch trades:', err))
+        .finally(() => setSearching(false));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -257,7 +255,11 @@ function TradeSearchPage() {
         const results = await searchService.getTypeaheadSuggestions(userId, query, 8);
         setSuggestions(results);
       } catch (error) {
-        console.error('Failed to fetch suggestions:', error);
+        console.warn(
+          '[Autocomplete] Failed to fetch typeahead suggestions — check network tab for',
+          `/api/history/suggestions?user_id=…&q=${encodeURIComponent(query)}`,
+          error,
+        );
         setSuggestions([]);
       }
     }, 200);
@@ -482,6 +484,10 @@ function TradeSearchPage() {
   };
 
   const handleSaveQuery = async (queryId: number, queryName: string) => {
+    if (!queryId || queryId <= 0) {
+      alert('Unable to save: no valid query ID. Please perform a search first.');
+      return;
+    }
     try {
       await searchService.saveQuery(queryId, userId, queryName);
       // Refresh both lists

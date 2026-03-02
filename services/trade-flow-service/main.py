@@ -1,7 +1,7 @@
 import os
 import contextlib
 from typing import Optional
-from fastapi import FastAPI, HTTPException, APIRouter, Query, Depends
+from fastapi import FastAPI, HTTPException, APIRouter, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from psycopg_pool import AsyncConnectionPool
@@ -201,14 +201,7 @@ async def get_transactions_by_trade_id(trade_id: int):
                 )
                 transactions = await cur.fetchall()
 
-                if not transactions:
-                    raise HTTPException(
-                        status_code=404,
-                        detail=(
-                            f"Transctions with trade_id {trade_id} not found"
-                            ),
-                    )
-                return transactions
+                return transactions if transactions else []
     except HTTPException as he:
         raise he
     except Exception as e:

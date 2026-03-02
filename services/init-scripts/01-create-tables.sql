@@ -24,9 +24,6 @@ CREATE TABLE IF NOT EXISTS query_history (
 -- Set the sequence to start from 100000 for 6-digit IDs
 ALTER SEQUENCE query_history_id_seq RESTART WITH 100000;
 
--- Set the sequence to start from 100000 for 6-digit IDs
-ALTER SEQUENCE query_history_id_seq RESTART WITH 100000;
-
 -- Create indexes for efficient querying
 CREATE INDEX IF NOT EXISTS idx_query_history_user_id ON query_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_query_history_last_use_time ON query_history(last_use_time DESC);

@@ -96,7 +96,8 @@ export const searchService = {
     queryName: string
   ): Promise<QueryHistory> {
     return apiClient.put<QueryHistory>(
-      `/api/history/${queryId}/save?user_id=${userId}&query_name=${encodeURIComponent(queryName)}`
+      `/api/history/${queryId}?user_id=${userId}`,
+      { is_saved: true, query_name: queryName }
     );
   },
 
