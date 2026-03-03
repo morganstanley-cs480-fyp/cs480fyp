@@ -4,12 +4,12 @@ on:
   push:
     paths:
       - "morgan-stanley-frontend/**"
-      - ".github/workflows/frontend.yml"
+      - ".github/workflows/build-frontend.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "morgan-stanley-frontend/**"
-      - ".github/workflows/frontend.yml"
+      - ".github/workflows/build-frontend.yml"
   workflow_dispatch:
 
 env:
