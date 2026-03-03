@@ -15,16 +15,16 @@ from typing import Optional
 
 import google.generativeai as genai
 
-from app.config.settings import settings
 from app.cache.redis_client import redis_manager
+from app.config.settings import settings
 from app.models.domain import ExtractedParams
 from app.prompts.extraction_prompt import (
     SYSTEM_PROMPT,
     build_user_prompt,
     build_validation_rules,
 )
-from app.utils.logger import logger
 from app.utils.exceptions import BedrockAPIError, BedrockResponseError
+from app.utils.logger import logger
 
 
 class GeminiService:

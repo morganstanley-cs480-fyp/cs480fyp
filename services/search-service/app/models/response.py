@@ -3,10 +3,12 @@ Response models for API endpoints.
 These define the structure of responses sent back to the frontend.
 """
 
-from typing import Optional, Literal
 from datetime import datetime
+from typing import Literal, Optional
+
 from pydantic import BaseModel, Field
-from app.models.domain import Trade, QueryHistory, ExtractedParams
+
+from app.models.domain import ExtractedParams, QueryHistory, Trade
 
 
 class SearchResponse(BaseModel):

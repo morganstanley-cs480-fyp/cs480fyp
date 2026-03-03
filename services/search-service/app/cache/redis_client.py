@@ -3,15 +3,15 @@ Redis cache client for caching search results and AI extractions.
 Provides connection management and common cache operations.
 """
 
-from typing import Optional, Any
-import json
 import hashlib
+import json
+from typing import Any, Optional
 
 import redis.asyncio as redis
 
 from app.config.settings import settings
-from app.utils.logger import logger
 from app.utils.exceptions import CacheConnectionError, CacheOperationError
+from app.utils.logger import logger
 
 
 class RedisManager:

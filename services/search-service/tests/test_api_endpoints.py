@@ -3,9 +3,10 @@ Integration tests for API endpoints.
 Tests the complete request-response cycle.
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from httpx import AsyncClient
-from unittest.mock import AsyncMock, patch
 
 from app.main import app
 

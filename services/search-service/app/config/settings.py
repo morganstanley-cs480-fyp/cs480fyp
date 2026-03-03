@@ -4,6 +4,7 @@ Follows 12-factor app principles for production deployment.
 """
 
 from typing import Optional
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

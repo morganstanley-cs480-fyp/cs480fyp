@@ -4,27 +4,28 @@ AI-powered trade search service with natural language and manual filter support.
 """
 
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.cache.redis_client import redis_manager
 from app.config.settings import settings
 from app.database.connection import db_manager
-from app.cache.redis_client import redis_manager
-from app.utils.logger import logger
 from app.utils.exceptions import (
-    SearchServiceException,
-    DatabaseConnectionError,
-    DatabaseQueryError,
-    CacheConnectionError,
-    CacheOperationError,
     BedrockAPIError,
     BedrockResponseError,
+    CacheConnectionError,
+    CacheOperationError,
+    DatabaseConnectionError,
+    DatabaseQueryError,
     InvalidSearchRequestError,
     QueryHistoryNotFoundError,
+    SearchServiceException,
     UnauthorizedAccessError,
     ValidationError,
 )
+from app.utils.logger import logger
 
 
 @asynccontextmanager
@@ -381,10 +382,10 @@ async def generic_exception_handler(request: Request, exc: Exception):
 # Import routers (will be created in subsequent tasks)
 # These imports are at the bottom to avoid circular dependencies
 # pylint: disable=wrong-import-position
-from app.api.routes.health import router as health_router  # noqa: E402
-from app.api.routes.search import router as search_router  # noqa: E402
-from app.api.routes.history import router as history_router  # noqa: E402
 from app.api.routes.filters import router as filters_router  # noqa: E402
+from app.api.routes.health import router as health_router  # noqa: E402
+from app.api.routes.history import router as history_router  # noqa: E402
+from app.api.routes.search import router as search_router  # noqa: E402
 
 # Register routers
 app.include_router(health_router)
