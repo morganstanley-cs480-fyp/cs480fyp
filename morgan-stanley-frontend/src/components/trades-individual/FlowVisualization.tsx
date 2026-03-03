@@ -747,6 +747,7 @@ export function FlowVisualization({
         console.error('Error details:', error.stack || error.message);
         setIsLoading(false);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactions, clearingHouse, exceptions]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {

@@ -33,7 +33,8 @@ async def lifespan(app: FastAPI):
     print("Database connection closed")
 
 
-app = FastAPI(lifespan=lifespan)
+# redirect_slashes=False prevents http:// redirects through CloudFront/ALB.
+app = FastAPI(lifespan=lifespan, redirect_slashes=False)
 
 app.add_middleware(
     CORSMiddleware,
