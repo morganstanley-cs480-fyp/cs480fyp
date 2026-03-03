@@ -8,9 +8,9 @@ import sys
 from pathlib import Path
 from typing import AsyncGenerator
 
+import asyncpg
 import pytest
 from redis import Redis
-import asyncpg
 
 # Load test environment variables BEFORE importing app modules
 test_env_file = Path(__file__).parent.parent / ".env.test"
@@ -25,8 +25,8 @@ if test_env_file.exists():
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.database.connection import db_manager  # noqa: E402
 from app.cache.redis_client import redis_manager  # noqa: E402
+from app.database.connection import db_manager  # noqa: E402
 
 
 def pytest_configure(config):

@@ -6,7 +6,6 @@ Defines the system and user prompts for AWS Bedrock Claude 3.5 Sonnet.
 from datetime import datetime, timedelta
 from typing import Optional
 
-
 # System prompt defines the AI's role and capabilities
 SYSTEM_PROMPT = """You are a trade search parameter extraction assistant. Your role is to extract structured search parameters from natural language queries about financial trades.
 

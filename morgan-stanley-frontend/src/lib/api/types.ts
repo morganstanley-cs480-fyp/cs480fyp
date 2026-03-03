@@ -35,7 +35,7 @@ export interface Exception {
   id: number;
   trade_id: number;
   trans_id: number;
-  status: 'PENDING' | 'RESOLVED' | 'IGNORED' | 'CLOSED';
+  status: 'PENDING' | 'CLOSED';
   msg: string;
   create_time: string;
   comment: string | null;

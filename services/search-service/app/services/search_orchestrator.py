@@ -4,13 +4,12 @@ Orchestrates the complete search flow: parameter extraction, query building, exe
 """
 
 import time
-from typing import Tuple, Any, Optional
-
+from typing import Any, Optional, Tuple
 
 from app.database.connection import db_manager
+from app.models.domain import ExtractedParams, Trade
 from app.models.request import SearchRequest
 from app.models.response import SearchResponse
-from app.models.domain import Trade, ExtractedParams
 
 # NOTE: Using Gemini temporarily while Bedrock access is being resolved.
 #       Switch back to: from app.services.bedrock_service import bedrock_service
@@ -18,8 +17,8 @@ from app.services.gemini_service import gemini_service as bedrock_service
 from app.services.query_builder import query_builder
 from app.services.query_history_service import query_history_service
 from app.services.ranking_service import trade_ranker
+from app.utils.exceptions import DatabaseQueryError, InvalidSearchRequestError
 from app.utils.logger import logger
-from app.utils.exceptions import InvalidSearchRequestError, DatabaseQueryError
 
 
 class SearchOrchestrator:

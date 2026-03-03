@@ -33,10 +33,7 @@ export function TradeInfoCard({
       case "PENDING":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "CLOSED":
-      case "RESOLVED":
         return "bg-green-100 text-green-800 border-green-200";
-      case "IGNORED":
-        return "bg-black/[0.02] text-black/75 border-black/10";
       default:
         return "bg-black/[0.04] text-black/75 border-black/10";
     }

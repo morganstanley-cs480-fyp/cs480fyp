@@ -34,16 +34,14 @@ test-watch:
 	pytest-watch -v
 
 lint:
-	@echo "Running flake8..."
-	flake8 app/ tests/
-	@echo "Running pylint..."
-	pylint app/ tests/ || true
+	@echo "Running ruff linter..."
+	ruff check app/ tests/
 
 format:
-	@echo "Formatting with black..."
-	black app/ tests/
-	@echo "Sorting imports with isort..."
-	isort app/ tests/
+	@echo "Formatting with ruff..."
+	ruff format app/ tests/
+	@echo "Fixing auto-fixable lint issues..."
+	ruff check --fix app/ tests/
 
 clean:
 	@echo "Cleaning cache and build files..."

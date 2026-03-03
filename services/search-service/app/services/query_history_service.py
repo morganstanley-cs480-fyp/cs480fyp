@@ -6,14 +6,15 @@ Manages user query history: saving, retrieving, updating, and deleting queries.
 from datetime import datetime
 from difflib import SequenceMatcher
 from typing import Optional
+
 from app.database.connection import db_manager
 from app.models.domain import QueryHistory
-from app.utils.logger import logger
 from app.utils.exceptions import (
     DatabaseQueryError,
     QueryHistoryNotFoundError,
     UnauthorizedAccessError,
 )
+from app.utils.logger import logger
 
 
 class QueryHistoryService:
