@@ -76,11 +76,20 @@ function TradeDetailPage() {
 
             try {
                 const tradeIdNumber = Number(tradeId);
-                const [tradeData, transactionsData, exceptionsData] = await Promise.all([
+                const [tradeData, transactionsData] = await Promise.all([
                     tradeFlowService.getTradeById(tradeIdNumber),
                     tradeFlowService.getTransactionsByTradeId(tradeIdNumber),
-                    exceptionService.getExceptionsByTrade(tradeIdNumber),
                 ]);
+                // TODO: Un-do this implementation
+                let exceptionsData: Exception[] = [];
+                try {
+                    exceptionsData = await exceptionService.getExceptionsByTrade(tradeIdNumber);
+                } catch (error) {
+                    // If the exception service returns a 404 (or any other error),
+                    // treat it as "no exceptions" so the trade page still loads.
+                    console.warn('Failed to load exceptions for trade, treating as none:', error);
+                    exceptionsData = [];
+                }
 
                 if (!isActive) return;
                 setTrade(tradeData);
