@@ -128,6 +128,8 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
+    # Prevents http:// redirect responses through CloudFront/ALB (Mixed Content).
+    redirect_slashes=False,
 )
 
 
