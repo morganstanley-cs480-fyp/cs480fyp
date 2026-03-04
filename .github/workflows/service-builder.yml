@@ -17,7 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       example-service: ${{ steps.filter.outputs.example-service }}
-      query-suggestion-service: ${{ steps.filter.outputs.query-suggestion-service }}
       search-service: ${{ steps.filter.outputs.search-service }}
       exception-service: ${{ steps.filter.outputs.exception-service }}
       solution-service: ${{ steps.filter.outputs.solution-service }}
@@ -35,8 +34,6 @@ jobs:
           filters: |
             example-service:
               - 'services/example-service/**'
-            query-suggestion-service:
-              - 'services/query-suggestion-service/**'
             search-service:
               - 'services/search-service/**'
             exception-service:
@@ -64,20 +61,6 @@ jobs:
     uses: ./.github/workflows/build-python-service.yml
     with:
       service_name: example-service
-    secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-  query-suggestion-service:
-    needs: filter
-    if: ${{ needs.filter.outputs.query-suggestion-service == 'true' }}
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-    uses: ./.github/workflows/build-python-service.yml
-    with:
-      service_name: query-suggestion-service
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
