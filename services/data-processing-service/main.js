@@ -215,7 +215,7 @@ export async function handleTransaction(trans) {
         status = EXCLUDED.status, 
         update_time = EXCLUDED.update_time,
         step = EXCLUDED.step
-      RETURNING (xmax = 0) AS is_insert; -- 👈 Returns true if inserted, false if updated
+      RETURNING (xmax = 0) AS is_insert;
     `;
     
     const transValues = [

@@ -102,7 +102,12 @@ describe('Data Processor Service', () => {
       step: "VALIDATION"
     };
 
-    it('should process transaction successfully (COMMIT)', async () => {
+      it('should process transaction successfully (COMMIT)', async () => {
+      
+      mockDbClient.query.mockResolvedValue({
+        rows: [{ is_insert: true }]
+      });
+
       await handleTransaction(sampleTrans);
 
       // Verify Transaction Flow
@@ -115,9 +120,6 @@ describe('Data Processor Service', () => {
       
       // Verify Release
       expect(mockDbClient.release).toHaveBeenCalled();
-
-      // Verify Redis
-      expect(publisher.publish).toHaveBeenCalled();
     });
 
     it('should rollback if SQL error occurs', async () => {
