@@ -2,10 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from app.config import settings
-from app.views import solution_router, health_router, solution_health_router
+from app.views import solution_router, health_router
 
 # Creates the FastAPI app instance
-app = FastAPI(title="solution Service")
+# redirect_slashes=False prevents FastAPI from issuing 307 redirects (e.g.
+# /api/solutions -> /api/solutions/) which would use http:// when behind an
+# HTTP-only ALB origin, causing Mixed Content errors in the browser.
+app = FastAPI(title="Solution Service", redirect_slashes=False)
 
 # Configure CORS
 app.add_middleware(
@@ -16,9 +19,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers (order matters: specific routes before parameterized ones)
+# Include routers
 app.include_router(health_router)
-app.include_router(solution_health_router)  # Must be before solution_router
 app.include_router(solution_router)
 
 # Register Tortoise ORM to PostgreSQL

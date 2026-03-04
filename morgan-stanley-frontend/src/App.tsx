@@ -2,6 +2,7 @@
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { useAuth } from "react-oidc-context";
+import { useEffect } from "react";
 
 // import ReactFlowScreen from './components/prototype/ReactFlowScreenBasic';
 // import ReactFlowScreenWithEg from "@/components/prototype/ReactFlowScreenSimpleEg";
@@ -20,6 +21,13 @@ declare module "@tanstack/react-router" {
 
 export default function App() {
   const authentication = useAuth();
+
+  useEffect(() => {
+    if (!authentication.isLoading) {
+      console.log('🔄 Auth finished loading. Re-validating route guards...');
+      router.invalidate();
+    }
+  }, [authentication.isLoading]);  
 
   return (
       <RouterProvider router={router} context = {{authentication}}/>

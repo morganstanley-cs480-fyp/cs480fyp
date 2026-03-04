@@ -6,25 +6,19 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import type { Exception, Trade, Transaction } from "@/lib/api/types";
 import { tradeFlowService } from "@/lib/api/tradeFlowService";
-import { searchService } from "@/lib/api/searchService";
-
-// Component imports
+import { exceptionService } from "@/lib/api/exceptionService";
 import {TradeInfoCard} from "@/components/trades-individual/TradeInfoCard";
 import {FlowVisualization} from "@/components/trades-individual/FlowVisualization";
-// import {TransactionDetailPanel} from "@/components/trades-individual/TransactionDetailPanel";
-// import {EntityDetailPanel} from "@/components/trades-individual/EntityDetailPanel";
 
-// Utility imports
 import {
     getStatusBadgeClassName,
     getTransactionStatusColor,
-    // getPriorityColor,
-    // getPriorityIcon,
     getTransactionBackgroundColor,
     getRelatedExceptions,
 } from "./-tradeDetailUtils";
 import { requireAuth } from "@/lib/utils";
-  import {EntityAndTransactionDetailPanel} from "@/components/trades-individual/EntityAndTransactionDetailPanel";
+import {EntityAndTransactionDetailPanel} from "@/components/trades-individual/EntityAndTransactionDetailPanel";
+import { useTradeWebSocket } from "@/hooks/useTradeWebSocket";
 
 export const Route = createFileRoute("/trades/$tradeId")({
   beforeLoad: requireAuth,
@@ -47,6 +41,13 @@ function TradeDetailPage() {
 
     const [showTradeInfo, setShowTradeInfo] = useState(true);
     const [activeTab, setActiveTab] = useState<"timeline" | "system">("system");
+
+    const {
+        mergedTransactions,
+        mergedExceptions,
+        // isConnected,
+        // connectionStatus // kept for now, can include in UI to let user know that it is listening for live updates.
+    } = useTradeWebSocket(Number(tradeId), transactions, exceptions);
 
     // Params are strings.
     const handleResolveException = (exceptionId: string) => {
@@ -75,11 +76,20 @@ function TradeDetailPage() {
 
             try {
                 const tradeIdNumber = Number(tradeId);
-                const [tradeData, transactionsData, exceptionsData] = await Promise.all([
+                const [tradeData, transactionsData] = await Promise.all([
                     tradeFlowService.getTradeById(tradeIdNumber),
                     tradeFlowService.getTransactionsByTradeId(tradeIdNumber),
-                    searchService.getExceptionsByTrade(tradeIdNumber),
                 ]);
+                // TODO: Un-do this implementation
+                let exceptionsData: Exception[] = [];
+                try {
+                    exceptionsData = await exceptionService.getExceptionsByTrade(tradeIdNumber);
+                } catch (error) {
+                    // If the exception service returns a 404 (or any other error),
+                    // treat it as "no exceptions" so the trade page still loads.
+                    console.warn('Failed to load exceptions for trade, treating as none:', error);
+                    exceptionsData = [];
+                }
 
                 if (!isActive) return;
                 setTrade(tradeData);
@@ -179,8 +189,8 @@ function TradeDetailPage() {
                 <CardContent className="pt-0">
                     <TradeInfoCard
                         trade={trade}
-                        transactions={transactions}
-                        exceptions={exceptions}
+                        transactions={mergedTransactions}
+                        exceptions={mergedExceptions}
                         showTradeInfo={showTradeInfo}
                         onToggle={() => setShowTradeInfo(!showTradeInfo)}
                         getStatusBadgeClassName={getStatusBadgeClassName}
@@ -195,15 +205,16 @@ function TradeDetailPage() {
                     <FlowVisualization
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
-                        transactions={transactions}
+                        transactions={mergedTransactions}
                         clearingHouse={trade.clearing_house}
                         selectedTransaction={selectedTransaction}
                         onTransactionSelect={handleTransactionSelect}
                         onEntitySelect={handleEntitySelect}
-                        exceptions={exceptions}
-                        getRelatedExceptions={(transId) => getRelatedExceptions(transId, exceptions)}
-                        getTransactionBackgroundColor={(transaction) => getTransactionBackgroundColor(transaction, exceptions)}
+                        exceptions={mergedExceptions}
+                        getRelatedExceptions={(transId) => getRelatedExceptions(transId, mergedExceptions)}
+                        getTransactionBackgroundColor={(transaction) => getTransactionBackgroundColor(transaction, mergedExceptions)}
                         getTransactionStatusColor={getTransactionStatusColor}
+                        // tradeId={Number(tradeId)}
                     />
                 </div>
 
@@ -215,8 +226,8 @@ function TradeDetailPage() {
                         selectedEntity={selectedEntity}
                         selectedTransaction={selectedTransaction}
                         lastSelectedType={lastSelectedType}
-                        transactions={transactions}
-                        relatedExceptions={selectedTransaction ? getRelatedExceptions(selectedTransaction.trans_id, exceptions) : []}
+                        transactions={mergedTransactions}
+                        relatedExceptions={selectedTransaction ? getRelatedExceptions(selectedTransaction.trans_id, mergedExceptions) : []}
                         onResolveException={handleResolveException}
                     />
 

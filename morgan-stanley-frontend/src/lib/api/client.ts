@@ -3,7 +3,20 @@
  * Centralized API client with error handling, timeouts, and interceptors
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
+/**
+ * Ensure the base URL uses HTTPS when the page is served over HTTPS.
+ * Prevents Mixed Content errors if VITE_API_BASE_URL is baked into the
+ * production bundle with an http:// value.
+ */
+function resolveApiBaseUrl(): string {
+  const raw: string = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    return raw.replace(/^http:\/\//, 'https://');
+  }
+  return raw;
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000;
 const ENABLE_DEBUG_LOGGING = import.meta.env.VITE_ENABLE_DEBUG_LOGGING === 'true';
 
@@ -75,8 +88,20 @@ async function request<T>(
 
     // Handle error responses
     if (!response.ok) {
-      const errorData = data as { detail?: string; message?: string };
-      const errorMessage = errorData?.detail || errorData?.message || 'An error occurred';
+      const errorData = data as { detail?: unknown; message?: string };
+      let errorMessage: string;
+      if (Array.isArray(errorData?.detail)) {
+        // FastAPI validation error: detail is an array of {loc, msg, type} objects
+        errorMessage = (errorData.detail as Array<{ msg?: string }>)
+          .map((e) => e?.msg ?? JSON.stringify(e))
+          .join('; ');
+      } else if (typeof errorData?.detail === 'string') {
+        errorMessage = errorData.detail;
+      } else if (typeof errorData?.message === 'string') {
+        errorMessage = errorData.message;
+      } else {
+        errorMessage = 'An error occurred';
+      }
       
       throw new APIError(errorMessage, response.status, data);
     }

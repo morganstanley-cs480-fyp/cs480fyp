@@ -1,10 +1,14 @@
-# NEW: Output the public IP to your terminal when Terraform finishes
-output "milvus_public_ip" {
-  value       = aws_instance.milvus_db.public_ip
-  description = "Use this IP to SSH into the Milvus server"
+output "milvus_private_ip" {
+  description = "The private IP for ECS containers to connect to"
+  value       = aws_instance.milvus_db.private_ip
 }
 
-# Keep the private IP output as well (your ECS containers still need this!)
-output "milvus_private_ip" {
-  value = aws_instance.milvus_db.private_ip
+output "milvus_public_ip" {
+  description = "The public IP for you to SSH into from your laptop"
+  value       = aws_instance.milvus_db.public_ip
+}
+
+output "security_group_id" {
+  description = "The ID of the Milvus security group"
+  value       = aws_security_group.milvus_sg.id
 }

@@ -42,3 +42,57 @@ output "milvus_admin_endpoint" {
   description = "Milvus admin endpoint for monitoring"
   value       = module.milvus_ec2.milvus_admin_endpoint
 }
+
+# QUERY SUGGESTION SERVICE
+# query_suggestion_target_group
+module "query_suggestion_target_group" {
+  source                = "./modules/alb_tg"
+  target_group_name     = var.query_suggestion_target_group_name
+  target_group_port     = 3003
+  target_group_protocol = "HTTP"
+  vpc_id                = module.networking.vpc_id
+}
+
+# query_suggestion_service_rule
+module "query_suggestion_listener_rule" {
+  source           = "./modules/alb_rule"
+  listener_arn     = module.alb.http_listener_arn
+  priority         = 103
+  path_pattern     = ["/api/query_suggestion*"]
+  target_group_arn = module.query_suggestion_target_group.target_group_arn
+}
+
+# query_suggestion_cloudwatch
+module "query_suggestion_log_group" {
+  source            = "./modules/cloudwatch"
+  log_group_name    = var.query_suggestion_log_group_name
+  retention_in_days = 14
+}
+
+# query_suggestion_ecs
+module "query_suggestion_service" {
+  source             = "./modules/ecs"
+  family             = var.query_suggestion_family
+  container_name     = var.query_suggestion_container_name
+  container_image    = var.query_suggestion_container_image
+  container_port     = 3003
+  log_group          = module.query_suggestion_log_group.log_group_name
+  region             = var.region
+  execution_role_arn = module.ecs_execution_role.role_arn
+  task_role_arn      = ""
+  service_name       = var.query_suggestion_service_name
+  cluster_id         = module.ecs_cluster.cluster_id
+  desired_count      = 1
+  subnets            = module.networking.public_subnet_ids
+  security_groups    = [module.ecs_security_group.ecs_service_sg_id]
+  assign_public_ip   = true
+  target_group_arn   = module.query_suggestion_target_group.target_group_arn
+  environments = [
+    { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
+    { name = "DB_USER", value = var.db_username },
+    { name = "DB_PASSWORD", value = var.db_password },
+    { name = "DB_NAME", value = module.main_rds.db_name },
+    { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" }
+  ]
+  secrets = []
+}

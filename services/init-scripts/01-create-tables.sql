@@ -24,9 +24,6 @@ CREATE TABLE IF NOT EXISTS query_history (
 -- Set the sequence to start from 100000 for 6-digit IDs
 ALTER SEQUENCE query_history_id_seq RESTART WITH 100000;
 
--- Set the sequence to start from 100000 for 6-digit IDs
-ALTER SEQUENCE query_history_id_seq RESTART WITH 100000;
-
 -- Create indexes for efficient querying
 CREATE INDEX IF NOT EXISTS idx_query_history_user_id ON query_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_query_history_last_use_time ON query_history(last_use_time DESC);
@@ -79,18 +76,16 @@ CREATE INDEX IF NOT EXISTS idx_transactions_create_time ON transactions(create_t
 CREATE INDEX IF NOT EXISTS idx_transactions_step ON transactions(step);
 CREATE INDEX IF NOT EXISTS idx_transactions_entity ON transactions(entity);
 
--- Create exception status enum type
-CREATE TYPE exception_status AS ENUM ('PENDING', 'RESOLVED', 'IGNORED');
-
 -- Create exceptions table
 -- Schema matches exception-service requirements
+-- Note: status uses VARCHAR(10) to align with Tortoise ORM CharEnumField (not a custom PG enum)
 CREATE TABLE IF NOT EXISTS exceptions (
     id SERIAL PRIMARY KEY,
     trade_id INTEGER NOT NULL,
     trans_id INTEGER NOT NULL,
     msg TEXT NOT NULL,
     priority VARCHAR(20) NOT NULL,
-    status exception_status DEFAULT 'PENDING',
+    status VARCHAR(10) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'CLOSED')),
     comment TEXT,
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

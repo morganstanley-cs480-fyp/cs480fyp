@@ -93,6 +93,15 @@ Content-Type: {{contentType}}
   "priority": "High"
 }
 
+### Resolve Exception (Update Status to CLOSED)
+POST {{baseUrl}}/api/exceptions/1/resolve
+
+### Resolve Exception (Test with ID 2)
+POST {{baseUrl}}/api/exceptions/2/resolve
+
+### Resolve Non-existent Exception (should return 404)
+POST {{baseUrl}}/api/exceptions/99999/resolve
+
 ### Delete Exception
 DELETE {{baseUrl}}/exceptions/1
 

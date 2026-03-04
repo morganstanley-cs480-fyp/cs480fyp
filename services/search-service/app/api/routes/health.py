@@ -4,13 +4,13 @@ Provides health and readiness endpoints for ECS monitoring and load balancers.
 """
 
 from datetime import datetime
+
 from fastapi import APIRouter, HTTPException, status
 
+from app.cache.redis_client import redis_manager
 from app.config.settings import settings
 from app.database.connection import db_manager
-from app.cache.redis_client import redis_manager
 from app.utils.logger import logger
-
 
 router = APIRouter(tags=["health"])
 

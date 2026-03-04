@@ -1,44 +1,50 @@
 from datetime import datetime
+from classes import *
 
-
-DBNAME="database123.db"
-CREATE_TRADE_TABLE="""
-    CREATE TABLE IF NOT EXISTS TRADE(
-        trade_id INT PRIMARY KEY,
-        create_time DATETIME NOT NULL,
-        update_time DATETIME NOT NULL,
-        status VARCHAR(255) NOT NULL
-    );
+# DBNAME="database123.db"
+DBNAME="test123.db"
+CREATE_TRADE_TABLE = """
+CREATE TABLE IF NOT EXISTS TRADE(
+    trade_id INT PRIMARY KEY,
+    account VARCHAR(255) NOT NULL,
+    asset_type VARCHAR(100) NOT NULL,
+    booking_system VARCHAR(255) NOT NULL,
+    affirmation_system VARCHAR(255) NOT NULL,
+    clearing_house VARCHAR(255) NOT NULL,
+    create_time DATETIME NOT NULL,
+    update_time DATETIME NOT NULL,
+    status VARCHAR(100) NOT NULL
+);
 """
-CREATE_TRANSACTIONS_TABLE= """
-    CREATE TABLE IF NOT EXISTS TRANSACTIONS(
-        trans_id INT PRIMARY KEY,
-        trade_id INT,
-        create_time DATETIME NOT NULL,
-        update_time DATETIME NOT NULL,
-        step INT NOT NULL,
-        FOREIGN KEY (trade_id) REFERENCES TRADE(trade_id)
-        UNIQUE(trade_id, step)
-    );
+CREATE_TRANSACTIONS_TABLE = """
+CREATE TABLE IF NOT EXISTS TRANSACTIONS(
+    trans_id INT PRIMARY KEY,
+    trade_id INT NOT NULL,
+    create_time DATETIME NOT NULL,
+    entity VARCHAR(255) NOT NULL,
+    direction VARCHAR(20) NOT NULL,
+    type VARCHAR(255) NOT NULL,
+    status VARCHAR(100) NOT NULL,
+    update_time DATETIME NOT NULL,
+    step INT NOT NULL,
+    FOREIGN KEY (trade_id) REFERENCES TRADE(trade_id),
+    UNIQUE(trade_id, step)
+);
 """
-CREATE_EXCEPTION_TABLE= """
-    CREATE TABLE IF NOT EXISTS EXCEPTION(
-        exception_id INT PRIMARY KEY,
-        trade_id INT,
-        trans_id INT,
-        create_time DATETIME NOT NULL,
-        update_time DATETIME NOT NULL,
-        status VARCHAR(255) NOT NULL,
-        FOREIGN KEY (trade_id) REFERENCES TRADE(trade_id),
-        FOREIGN KEY (trans_id) REFERENCES TRANSACTIONS(trans_id)
-    );
-"""
-CREATE_SOLUTION_TABLE = """
-    CREATE TABLE SOLUTION(
-        sol_id INT NOT NULL,
-        trans_id INT, 
-        FOREIGN KEY (trans_id) REFERENCES TRANSACTIONS(trans_id)
-    );
+CREATE_EXCEPTION_TABLE = """
+CREATE TABLE IF NOT EXISTS EXCEPTION(
+    exception_id INT PRIMARY KEY,
+    trade_id INT NOT NULL,
+    trans_id INT NOT NULL,
+    status VARCHAR(100) NOT NULL,
+    msg TEXT,
+    comment TEXT,
+    priority VARCHAR(50),
+    create_time DATETIME NOT NULL,
+    update_time DATETIME NOT NULL,
+    FOREIGN KEY (trade_id) REFERENCES TRADE(trade_id),
+    FOREIGN KEY (trans_id) REFERENCES TRANSACTIONS(trans_id)
+);
 """
 
 # Trade 
@@ -63,3 +69,23 @@ JUL2025=datetime.fromisoformat("2025-07-01").isoformat()
 AUG2025=datetime.fromisoformat("2025-08-01").isoformat()
 SEP2025=datetime.fromisoformat("2025-09-01").isoformat()
 OCT2025=datetime.fromisoformat("2025-10-01").isoformat()
+
+# Transaction chain
+RECEIVE="receive"
+SEND="send"
+BOOKING_SYSTEM="booking_system"
+CLEARING_HOUSE="clearing_house"
+CLEARED_FLOW_SEQUENCE=[
+    (RECEIVE,"REQUEST_CONSENT", CLEARING_HOUSE),
+    (SEND,"CREDIT_CHECK", "TAS"),
+    (RECEIVE,"CREDIT_APPROVE", "TAS"),
+    (SEND,"CONSENT_GRANTED",CLEARING_HOUSE),
+    (RECEIVE,"STATUS_UPDATE",CLEARING_HOUSE),
+    (RECEIVE, "CLEARING_CONFIRMED",CLEARING_HOUSE),
+    (SEND, "CLEARED_TRADE", BOOKING_SYSTEM),
+    (RECEIVE, "CLEARED_TRADE", BOOKING_SYSTEM),
+    (SEND,"SEND_TRADE_ID", "TAS"),
+    (SEND, "SEND_TRADE_ID", CLEARING_HOUSE)
+]
+
+

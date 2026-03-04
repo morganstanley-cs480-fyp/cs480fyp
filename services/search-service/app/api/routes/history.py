@@ -4,24 +4,24 @@ GET /api/history, PUT /api/history/{query_id}, DELETE /api/history/{query_id}
 """
 
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Query, Path, status
 
-from app.models.request import UpdateHistoryRequest
+from fastapi import APIRouter, HTTPException, Path, Query, status
+
 from app.models.domain import QueryHistory
+from app.models.request import UpdateHistoryRequest
 from app.models.response import TypeaheadSuggestion
 from app.services.query_history_service import query_history_service
-from app.utils.logger import logger
 from app.utils.exceptions import (
+    DatabaseQueryError,
     QueryHistoryNotFoundError,
     UnauthorizedAccessError,
-    DatabaseQueryError,
 )
-
+from app.utils.logger import logger
 
 router = APIRouter(prefix="/api/history", tags=["history"])
 
 
-@router.get("/", response_model=list[QueryHistory])
+@router.get("", response_model=list[QueryHistory])
 async def get_history(
     user_id: str = Query(..., description="User ID to fetch history for", min_length=1),
     limit: int = Query(
@@ -374,7 +374,7 @@ async def delete_history(
         )
 
 
-@router.delete("/", status_code=status.HTTP_200_OK)
+@router.delete("", status_code=status.HTTP_200_OK)
 async def clear_all_history(
     user_id: str = Query(..., description="User ID to clear history for", min_length=1),
 ):

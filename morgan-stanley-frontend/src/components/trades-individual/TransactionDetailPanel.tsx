@@ -49,7 +49,7 @@ export function TransactionDetailPanel({
       <CardHeader>
         <CardTitle>Transaction Details</CardTitle>
         <CardDescription>
-          Showing details for transaction {selectedTransaction.trans_id}
+          Showing details for transaction {selectedTransaction.id}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -57,7 +57,7 @@ export function TransactionDetailPanel({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-black/75 mb-1">Transaction ID</p>
-              <p className="font-medium text-black">{selectedTransaction.trans_id}</p>
+              <p className="font-medium text-black">{selectedTransaction.id}</p>
             </div>
             <div>
               <p className="text-sm text-black/75 mb-1">Trade ID</p>
@@ -127,12 +127,12 @@ export function TransactionDetailPanel({
 
                 {relatedExceptions.map((exception) => (
                   <div
-                    key={exception.exception_id}
+                    key={exception.id}
                     className="p-4 bg-red-50 border border-red-200 rounded-lg space-y-3"
                   >
                     <div>
                       <p className="text-sm text-black/75 mb-1">Exception ID</p>
-                      <p className="font-medium text-black">{exception.exception_id}</p>
+                      <p className="font-medium text-black">{exception.id}</p>
                     </div>
 
                     <div>
@@ -175,7 +175,7 @@ export function TransactionDetailPanel({
                         <Separator />
                         <Button
                           className="w-full"
-                          onClick={() => onResolveException(String(exception.exception_id))}
+                          onClick={() => onResolveException(String(exception.id))}
                         >
                           View Exception
                         </Button>

@@ -26,8 +26,6 @@ import "@xyflow/react/dist/style.css";
 import { Landmark, ShieldCheck } from 'lucide-react';
 import ELK, { type ElkNode } from 'elkjs/lib/elk.bundled.js';
 
-const elk = new ELK();
-
 const HUB_ID = 'CCP';
 const NODE_WIDTH = 140;
 const NODE_HEIGHT = 96;
@@ -327,6 +325,34 @@ function WorkflowEdge(props: EdgeProps) {
     }
   };
 
+  // Determine color based on transaction status and exceptions
+  const hasExceptions = data?.hasExceptions ?? false;
+  const transaction = data?.transaction;
+  const status = transaction?.status || 'PENDING';
+  
+  // Determine badge colors based on status and exceptions
+  let badgeBackgroundColor = 'white';
+  let badgeBorderColor = '#cbd5e1';
+  let badgeTextColor = '#000000';
+  
+  if (hasExceptions) {
+    badgeBackgroundColor = '#fef3c7'; // light yellow
+    badgeBorderColor = '#eab308'; // yellow
+    badgeTextColor = '#854d0e'; // dark yellow
+  } else if (status === 'REJECTED') {
+    badgeBackgroundColor = '#fecaca'; // light red
+    badgeBorderColor = '#ef4444'; // red
+    badgeTextColor = '#7f1d1d'; // dark red
+  } else if (status === 'CLEARED') {
+    badgeBackgroundColor = '#bbf7d0'; // light green
+    badgeBorderColor = '#22c55e'; // green
+    badgeTextColor = '#15803d'; // dark green
+  } else if (status === 'PENDING') {
+    badgeBackgroundColor = '#e5e7eb'; // light gray
+    badgeBorderColor = '#9ca3af'; // gray
+    badgeTextColor = '#374151'; // dark gray
+  }
+
   return (
     <>
       <BaseEdge
@@ -345,7 +371,30 @@ function WorkflowEdge(props: EdgeProps) {
           }}
           onClick={handleEdgeClick}
         >
-      <div className="w-6 h-6 rounded-full bg-white border border-black/10 text-[11px] font-semibold text-black/75 flex items-center justify-center shadow-sm cursor-pointer hover:border-[#002B51] hover:shadow-md transition-all">
+          <div
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              border: `2px solid ${badgeBorderColor}`,
+              backgroundColor: badgeBackgroundColor,
+              color: badgeTextColor,
+              fontSize: '11px',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+            }}
+          >
             {data?.step ?? ''}
           </div>
         </div>
@@ -435,10 +484,15 @@ async function generateElkLayout(
   allTransactions: Transaction[],
   sortedTransactions: Transaction[],
   exceptions: Exception[],
-  onTransactionSelect: (transaction: Transaction) => void // Add this parameter
-
+  onTransactionSelect: (transaction: Transaction) => void,
+  getRelatedExceptions: (trans_id: number) => Exception[]
 ) {
-  const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
+  try {
+    console.log('📐 generateElkLayout function called');
+    const elk = new ELK();
+    console.log('✓ ELK instance created successfully');
+    
+    const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
   const bottomCount = participants.length - topCount;
 
   const rowWidth = (count: number) => (count > 0 ? count * NODE_WIDTH + (count - 1) * 40 : 0);
@@ -558,6 +612,11 @@ async function generateElkLayout(
 
     // Find the corresponding transaction for this edge
     const correspondingTransaction = sortedTransactions[idx] || null;
+    
+    // Check if this transaction has exceptions
+    const hasExceptions = correspondingTransaction 
+      ? getRelatedExceptions(correspondingTransaction.trans_id).length > 0 
+      : false;
 
     edges.push({
       id: e.id!,
@@ -573,13 +632,20 @@ async function generateElkLayout(
         sourceWidth: sourceNode.width ?? NODE_WIDTH,
         targetWidth: targetNode.width ?? NODE_WIDTH,
         transaction: correspondingTransaction,
+        hasExceptions,
         onEdgeClick: onTransactionSelect,
       },
       markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 },
     });
   });
 
+  console.log('📊 Layout generated - returning nodes and edges', { nodeCount: nodes.length, edgeCount: edges.length });
   return { nodes, edges };
+  } catch (error) {
+    console.error('💥 Error in generateElkLayout:', error);
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'Unknown error');
+    throw error;
+  }
 }
 
 interface FlowVisualizationProps {
@@ -609,12 +675,20 @@ export function FlowVisualization({
   getTransactionBackgroundColor,
   getTransactionStatusColor,
 }: FlowVisualizationProps) {
+  console.log('🎨 FlowVisualization component mounted!', { transactionCount: transactions?.length, clearingHouse });
+  
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(!transactions || transactions.length === 0 ? false : true);
 
-  // Generate dynamic flow visualization based on actual transaction data
+  // Use mergedTransactions for all rendering (combines API + WebSocket data)
+  const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
+
+    // Generate dynamic flow visualization based on actual transaction data
   useEffect(() => {
+    console.log('🔄 FlowVisualization useEffect triggered', { transactionCount: transactions?.length });
+    
     if (!transactions || transactions.length === 0) {
+      console.log('⚠️ No transactions provided');
       return;
     }
 
@@ -624,9 +698,6 @@ export function FlowVisualization({
         .map(t => t.entity)
         .filter(e => e && e !== 'CCP' && e !== 'Central Clearing House')
     )];
-
-    // Sort transactions by step to maintain order
-    const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
 
     // Build flows based on transaction direction
     const flows: TransactionFlow[] = sortedTransactions.map(tx => {
@@ -653,6 +724,7 @@ export function FlowVisualization({
 
     if (entities.length === 0 && validFlows.length === 0) {
       // No valid data to display
+      console.log('ℹ️ No entities or flows to display');
       // Initialize empty state outside of effect to avoid cascading renders
       const initializeEmptyState = () => {
         setLayoutData({ nodes: [], edges: [] });
@@ -662,16 +734,21 @@ export function FlowVisualization({
       return;
     }
 
-    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect)
+    console.log('🚀 Calling generateElkLayout with:', { entityCount: entities.length, flowCount: validFlows.length });
+    
+    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect, getRelatedExceptions)
       .then((result) => {
+        console.log('✅ ELK layout generated:', { nodeCount: result.nodes.length, edgeCount: result.edges.length });
         setLayoutData(result);
         setIsLoading(false);
       })
       .catch((error) => {
-        console.error('ELK layout failed:', error);
+        console.error('❌ ELK layout failed:', error);
+        console.error('Error details:', error.stack || error.message);
         setIsLoading(false);
       });
-  }, [transactions, clearingHouse, onEntitySelect, exceptions, onTransactionSelect]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transactions, clearingHouse, exceptions]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setLayoutData((prev) => ({
@@ -712,32 +789,38 @@ export function FlowVisualization({
 
       <CardContent>
         {activeTab === "timeline" ? (
-          <>
-            <CardDescription className="mb-4">
-              Click on a transaction to view details
-            </CardDescription>
-            <div className="max-h-[800px] overflow-y-auto">
-              <div className="space-y-4 px-4 py-2">
-                {transactions.map((transaction, index) => {
-                  const relatedExceptions = getRelatedExceptions(transaction.trans_id);
+            <>
+                <CardDescription className="mb-4">
+                    Click on a transaction to view details
+                </CardDescription>
+                <div className="max-h-[800px] overflow-y-auto">
+                    <div className="space-y-4 px-4 py-2">
+                        {sortedTransactions.length === 0 ? (
+                            <div className="text-center text-gray-500 py-8">
+                                No transactions found for this trade.
+                            </div>
+                        ) : (
+                            sortedTransactions.map((transaction, index) => {
+                                const relatedExceptions = getRelatedExceptions(transaction.trans_id);
 
-                  return (
-                    <TimelineTransactionCard
-                      key={transaction.trans_id}
-                      transaction={transaction}
-                      index={index}
-                      isSelected={selectedTransaction?.trans_id === transaction.trans_id}
-                      isLast={index === transactions.length - 1}
-                      relatedExceptions={relatedExceptions}
-                      getTransactionBackgroundColor={getTransactionBackgroundColor}
-                      getTransactionStatusColor={getTransactionStatusColor}
-                      onClick={() => onTransactionSelect(transaction)}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </>
+                                return (
+                                    <TimelineTransactionCard
+                                        key={transaction.trans_id}
+                                        transaction={transaction}
+                                        index={index}
+                                        isSelected={selectedTransaction?.trans_id === transaction.trans_id}
+                                        isLast={index === sortedTransactions.length - 1}
+                                        relatedExceptions={relatedExceptions}
+                                        getTransactionBackgroundColor={getTransactionBackgroundColor}
+                                        getTransactionStatusColor={getTransactionStatusColor}
+                                        onClick={() => onTransactionSelect(transaction)}
+                                    />
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
+            </>
         ) : (
           <>
             <CardDescription className="mb-4">

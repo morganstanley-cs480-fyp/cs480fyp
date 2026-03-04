@@ -220,3 +220,10 @@ VALUES
 'Reference data mismatches have occurred 3 times in past month for HIGHGARDEN trades. Root cause identified as manual account updates not syncing across all systems.',
 '1. Extract settlement account details from CME clearing confirmation message. 2. Compare against KINGSLANDING account master file for HIGHGARDEN accounts. 3. Update KINGSLANDING reference data tables with correct CME settlement account mapping. 4. Execute data validation script to ensure sync between all booking and clearing systems. 5. Resubmit cleared trade message from CME to KINGSLANDING. 6. Implement automated daily reconciliation job to prevent future occurrences.',
 20, '2025-08-28 05:16:00');
+
+-- Resync all sequences so they sit above the highest inserted ID.
+-- This prevents duplicate-key errors if the sequence ever falls behind
+-- (e.g. after a restore or when running init scripts against existing data).
+SELECT setval('query_history_id_seq', GREATEST(100000, COALESCE((SELECT MAX(id) FROM query_history), 99999)));
+SELECT setval('exceptions_id_seq',    GREATEST(10000000, COALESCE((SELECT MAX(id) FROM exceptions),    9999999)));
+SELECT setval('solutions_id_seq',     GREATEST(100000, COALESCE((SELECT MAX(id) FROM solutions),       99999)));

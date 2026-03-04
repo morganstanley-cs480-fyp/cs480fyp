@@ -4,6 +4,7 @@ Follows 12-factor app principles for production deployment.
 """
 
 from typing import Optional
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -58,11 +59,7 @@ class Settings(BaseSettings):
     MAX_SEARCH_RESULTS: int = 50
     LOG_LEVEL: str = "INFO"
     ENABLE_CORS: bool = True
-    CORS_ORIGINS: list[str] = [
-        "http://localhost:5173",  # Vite dev server
-        "http://localhost:4173",  # Vite preview server
-        "http://localhost:3000",  # Alternative dev port
-    ]  # Override in production
+    CORS_ORIGINS: list[str] = ["*"]  # Allow all origins
 
     # Retry Configuration
     BEDROCK_RETRY_ATTEMPTS: int = 3

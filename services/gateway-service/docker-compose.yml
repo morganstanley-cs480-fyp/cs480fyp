@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   # 1. Redis Cache & Pub/Sub
   redis:
     image: redis:7-alpine
     container_name: my-redis
     ports:
-      - "6379:6379"  # Exposed for manual testing
+      - "6380:6379"  # Exposed for manual testing (using 6380 to avoid conflict)
     
   # 2. Gateway Service (WebSocket Server)
   gateway:

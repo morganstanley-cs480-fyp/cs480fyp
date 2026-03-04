@@ -163,23 +163,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Check if task definition exists
-        id: check-task-def
-        continue-on-error: true
+      - name: Get current task definition
         run: |
-          if aws ecs describe-task-definition \
+          aws ecs describe-task-definition \
             --task-definition ${{ inputs.deployment_name || inputs.service_name }}-task \
-            --region ap-southeast-1 \
-            --query taskDefinition \
-            --output json > task-def.json 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "Task definition does not exist yet. Skipping deployment - please provision infrastructure with Terraform first."
-          fi
+            --query 'taskDefinition' \
+            --region ap-southeast-1 > task-def.json
 
       - name: Update task definition with new image
-        if: steps.check-task-def.outputs.exists == 'true'
         id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
@@ -188,17 +179,9 @@ jobs:
           image: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.service_name }}:${{ github.sha }}
 
       - name: Deploy to ECS
-        if: steps.check-task-def.outputs.exists == 'true'
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           cluster: ecs-cluster
           service: ${{ inputs.service_name }}
           task-definition: ${{ steps.render.outputs.task-definition }}
           wait-for-service-stability: true
-
-      - name: Deployment skipped notice
-        if: steps.check-task-def.outputs.exists == 'false'
-        run: |
-          echo "⚠️ Deployment skipped - Task definition not found"
-          echo "Please provision infrastructure with Terraform first:"
-          echo "  cd infrastructure && terraform apply"

@@ -4,7 +4,8 @@ These models map to database tables and represent the core data structures.
 """
 
 from datetime import datetime
-from typing import Optional, Literal
+from typing import Literal, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -32,7 +33,7 @@ class Trade(BaseModel):
     )
     create_time: str = Field(..., description="Trade creation timestamp")
     update_time: str = Field(..., description="Trade last update timestamp")
-    status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED", "PENDING"] = Field(
+    status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED"] = Field(
         ..., description="Trade status"
     )
 

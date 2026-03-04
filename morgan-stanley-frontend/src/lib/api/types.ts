@@ -20,8 +20,8 @@ export interface Trade {
 }
 
 export interface Transaction {
+  id: number;
   trade_id: number;
-  trans_id: number;
   create_time: string;
   entity: string;
   direction: string;
@@ -32,10 +32,10 @@ export interface Transaction {
 }
 
 export interface Exception {
+  id: number;
   trade_id: number;
   trans_id: number;
-  exception_id: number;
-  status: 'PENDING' | 'RESOLVED' | 'IGNORED' | 'CLOSED';
+  status: 'PENDING' | 'CLOSED';
   msg: string;
   create_time: string;
   comment: string | null;

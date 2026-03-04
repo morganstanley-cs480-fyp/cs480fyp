@@ -60,7 +60,7 @@ async def test_get_trade_by_id_success(client, mock_cursor):
         "clearing_house": "ClearHouseY",
         "create_time": "2025-01-15T10:00:00",
         "update_time": "2025-08-20T14:30:00",
-        "status": "Cleared"
+        "status": "CLEARED"
     }
     mock_cursor.fetchone.return_value = fake_trade
     
@@ -88,7 +88,7 @@ async def test_get_trades_list(client, mock_cursor):
         "clearing_house": "ClearHouseY",
         "create_time": "2025-01-15T10:00:00",
         "update_time": "2025-08-20T14:30:00",
-        "status": "Cleared"},
+        "status": "CLEARED"},
         { "id": 10000002,
         "account": "ACC12346",
         "asset_type": "Equity",
@@ -97,7 +97,7 @@ async def test_get_trades_list(client, mock_cursor):
         "clearing_house": "ClearHouseX",
         "create_time": "2025-01-15T13:00:00",
         "update_time": "2025-08-20T16:30:00",
-        "status": "Failed"}
+        "status": "REJECTED"}
     ]
     
     # NEW: Mock the total count query (fetchone)
@@ -123,7 +123,7 @@ async def test_get_transaction_by_id(client, mock_cursor):
         "entity": "Bank_A",
         "direction": "BUY",
         "type": "New",
-        "status": "Pending",
+        "status": "ALLEGED",
         "update_time": "2025-08-20T14:35:00",
         "step": 1
     }
@@ -144,7 +144,7 @@ async def test_get_transactions_by_trade_id(client, mock_cursor):
         "entity": "Bank_A",
         "direction": "BUY",
         "type": "New",
-        "status": "Pending",
+        "status": "ALLEGED",
         "update_time": "2025-08-20T14:35:00",
         "step": 1
       },
@@ -155,7 +155,7 @@ async def test_get_transactions_by_trade_id(client, mock_cursor):
           "entity": "Client_X",
           "direction": "SELL",
           "type": "Allocation",
-          "status": "Cleared",
+          "status": "CLEARED",
           "update_time": "2025-09-05T16:00:00",
           "step": 2
       }

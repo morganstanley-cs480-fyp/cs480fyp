@@ -8,14 +8,13 @@ from fastapi import APIRouter, HTTPException, status
 from app.models.request import SearchRequest
 from app.models.response import SearchResponse
 from app.services.search_orchestrator import search_orchestrator
-from app.utils.logger import logger
 from app.utils.exceptions import (
-    SearchServiceException,
-    InvalidSearchRequestError,
     BedrockAPIError,
     DatabaseQueryError,
+    InvalidSearchRequestError,
+    SearchServiceException,
 )
-
+from app.utils.logger import logger
 
 router = APIRouter(prefix="/api", tags=["search"])
 
