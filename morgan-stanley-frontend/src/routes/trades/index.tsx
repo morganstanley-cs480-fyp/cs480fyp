@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "react-oidc-context";
+// ✅ TANSTACK QUERY - Added imports
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useReactTable,
   getCoreRowModel,
@@ -16,8 +18,9 @@ import type {
   PaginationState,
 } from "@tanstack/react-table";
 
-import type { Trade, TypeaheadSuggestion } from "@/lib/api/types";
-import type { QueryHistory } from "@/lib/api/types";
+import type { TypeaheadSuggestion } from "@/lib/api/types";
+// ✅ TANSTACK QUERY - Added SearchRequest type import for query params
+import type { QueryHistory, SearchRequest } from "@/lib/api/types";
 
 import {
   SearchHeader,
@@ -33,15 +36,19 @@ import { useTradeColumns } from "@/components/trades/useTradeColumns";
 import { searchService } from "@/lib/api/searchService";
 import { APIError } from "@/lib/api/client";
 import { requireAuth } from "@/lib/utils";
+import { useTradeSearch } from "@/hooks/useTradeSearch";
 
 export const Route = createFileRoute("/trades/")({
   beforeLoad: requireAuth,
   component: TradeSearchPage,
 });
 
+
 function TradeSearchPage() {
   const auth = useAuth();
   const userId = (auth.user?.profile?.sub as string) ?? "dev-user";
+  // ✅ TANSTACK QUERY - Added query client for cache management
+  const queryClient = useQueryClient();
 
   const STORAGE_KEY = "tradeFilters:v1";
   const TABLE_STATE_KEY = "tradeTableState:v1";
@@ -85,15 +92,11 @@ function TradeSearchPage() {
   });
   const [currentQueryId, setCurrentQueryId] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const [results, setResults] = useState<Trade[]>([]);
+  // ❌ TANSTACK QUERY - Removed manual loading/error states (replaced by query)
+  // const [searching, setSearching] = useState(false);
+  // const [searchError, setSearchError] = useState<string | null>(null);
+  // const [results, setResults] = useState<Trade[]>([]);
 
-  // Add this useEffect to log results
-  useEffect(() => {
-    console.log("📊 Trade results:", results);
-    console.log("📊 Results count:", results.length);
-  }, [results]);
   const [filterOptions, setFilterOptions] = useState({
     accounts: [] as string[],
     assetTypes: [] as string[],
@@ -102,6 +105,78 @@ function TradeSearchPage() {
     clearingHouses: [] as string[],
     statuses: [] as string[],
   });
+
+  // Manual search filter state
+  const [filters, setFilters] = useState<ManualSearchFilters>(loadFilters);
+
+  // ✅ TANSTACK QUERY - Build search parameters from current state
+  const searchParams = useMemo((): SearchRequest | null => {
+    const savedQuery = sessionStorage.getItem(SEARCH_KEY) ?? "";
+    
+    if (savedQuery.trim()) {
+      // Natural language search from saved query
+      return {
+        search_type: "natural_language",
+        user_id: userId,
+        query_text: savedQuery,
+      };
+    } else if (searchQuery.trim()) {
+      // Current search query
+      return {
+        search_type: "natural_language",
+        user_id: userId,
+        query_text: searchQuery,
+      };
+    } else {
+      // Manual search with filters
+      const filterValue = (value: string | undefined) => {
+        return value && value !== "" && value !== "all" ? value : undefined;
+      };
+
+      return {
+        search_type: "manual",
+        user_id: userId,
+        filters: {
+          trade_id: filterValue(filters.trade_id),
+          account: filterValue(filters.account),
+          asset_type: filterValue(filters.asset_type),
+          booking_system: filterValue(filters.booking_system),
+          affirmation_system: filterValue(filters.affirmation_system),
+          clearing_house: filterValue(filters.clearing_house),
+          status: filters.status.length > 0 ? filters.status : undefined,
+          date_type: filters.date_type,
+          date_from: filters.date_from || undefined,
+          date_to: filters.date_to || undefined,
+          with_exceptions_only: filters.with_exceptions_only || undefined,
+          cleared_trades_only: filters.cleared_trades_only || undefined,
+        },
+      };
+    }
+  }, [userId, searchQuery, filters]);
+
+  // ✅ TANSTACK QUERY - Use the search hook instead of manual state management
+  const {
+    data: searchResponse,
+    isLoading: searching,
+    error: searchError,
+    refetch: refetchSearch,
+  } = useTradeSearch(searchParams);
+
+  // ✅ TANSTACK QUERY - Extract results from query response
+  const results = searchResponse?.results ?? [];
+
+  // ✅ TANSTACK QUERY - Log results when they change (works the same as before)
+  useEffect(() => {
+    console.log("📊 Trade results:", results);
+    console.log("📊 Results count:", results.length);
+  }, [results]);
+
+  // ✅ TANSTACK QUERY - Update current query ID when search response changes
+  useEffect(() => {
+    if (searchResponse?.query_id) {
+      setCurrentQueryId(searchResponse.query_id);
+    }
+  }, [searchResponse]);
 
   // Fetch search history from backend
   const fetchSearchHistory = async () => {
@@ -149,54 +224,14 @@ function TradeSearchPage() {
     }
   };
 
-  // Fetch history, saved queries, filter options, and initial trade data on mount.
-  // If the user had a NL search active before the page refreshed, re-execute it
-  // so the table results always match the query shown in the search bar.
+  // ❌ TANSTACK QUERY - Removed manual search logic on mount (replaced by automatic query)
+  // Fetch history, saved queries, filter options on mount
   useEffect(() => {
     fetchSearchHistory();
     fetchSavedQueries();
     fetchFilterOptions();
-
-    const savedQuery = sessionStorage.getItem(SEARCH_KEY) ?? "";
-    if (savedQuery.trim()) {
-      setSearching(true);
-      void searchService
-        .searchTrades({
-          search_type: "natural_language",
-          user_id: userId,
-          query_text: savedQuery,
-        })
-        .then((response) => {
-          setResults(response.results);
-          setCurrentQueryId(response.query_id);
-        })
-        .catch(() => {
-          // NL search failed (e.g. AI service down) — fall back to unfiltered manual search
-          void searchService
-            .searchTrades({
-              search_type: "manual",
-              user_id: userId,
-              filters: { date_type: "update_time" },
-            })
-            .then((r) => setResults(r.results))
-            .catch((err) => console.error("Failed to fetch trades:", err));
-        })
-        .finally(() => setSearching(false));
-    } else {
-      // No saved query — load all trades via search service (manual, no filters)
-      setSearching(true);
-      void searchService
-        .searchTrades({
-          search_type: "manual",
-          user_id: userId,
-          filters: { date_type: "update_time" },
-        })
-        .then((r) => setResults(r.results))
-        .catch((err) => console.error("Failed to fetch trades:", err))
-        .finally(() => setSearching(false));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   const [sorting, setSorting] = useState<SortingState>(() => {
     if (typeof window === "undefined") return [];
     const saved = sessionStorage.getItem(TABLE_STATE_KEY);
@@ -248,9 +283,6 @@ function TradeSearchPage() {
       return { pageIndex: 0, pageSize: 20 };
     }
   });
-
-  // Manual search filter state
-  const [filters, setFilters] = useState<ManualSearchFilters>(loadFilters);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -330,163 +362,55 @@ function TradeSearchPage() {
     },
   });
 
-  // Clear all filters
+  // ✅ TANSTACK QUERY - Simplified clear filters using query invalidation
   const clearAllFilters = async () => {
     const defaultFilters = getDefaultFilters();
     setFilters(defaultFilters);
-
-    // Search with cleared filters
-    setSearching(true);
-    setSearchError(null);
-
-    try {
-      const response = await searchService.searchTrades({
-        search_type: "manual",
-        user_id: userId,
-        filters: {
-          date_type: defaultFilters.date_type,
-          date_from: defaultFilters.date_from || undefined,
-          date_to: defaultFilters.date_to || undefined,
-        },
-      });
-
-      setResults(response.results);
-      setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page when filters are cleared
-    } catch (error) {
-      console.error("Search failed:", error);
-      if (error instanceof APIError) {
-        setSearchError(`Search failed: ${error.message}`);
-      } else {
-        setSearchError("An unexpected error occurred during search");
-      }
-      setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page on error too
-    } finally {
-      setSearching(false);
-    }
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    
+    // ✅ TANSTACK QUERY - Invalidate and refetch with new filters
+    queryClient.invalidateQueries({ queryKey: ['trades', 'search'] });
   };
 
-  // Handle manual search with filters
+  // ✅ TANSTACK QUERY - Simplified manual search using state updates (query will auto-refetch)
   const handleManualSearch = async () => {
-    setSearching(true);
-    setSearchError(null);
-
-    try {
-      // Helper function to filter out empty or "all" values
-      const filterValue = (value: string | undefined) => {
-        return value && value !== "" && value !== "all" ? value : undefined;
-      };
-
-      // Build manual search request
-      const response = await searchService.searchTrades({
-        search_type: "manual",
-        user_id: userId,
-        filters: {
-          trade_id: filterValue(filters.trade_id),
-          account: filterValue(filters.account),
-          asset_type: filterValue(filters.asset_type),
-          booking_system: filterValue(filters.booking_system),
-          affirmation_system: filterValue(filters.affirmation_system),
-          clearing_house: filterValue(filters.clearing_house),
-          status: filters.status.length > 0 ? filters.status : undefined,
-          date_type: filters.date_type,
-          date_from: filters.date_from || undefined,
-          date_to: filters.date_to || undefined,
-          with_exceptions_only: filters.with_exceptions_only || undefined,
-          cleared_trades_only: filters.cleared_trades_only || undefined,
-        },
-      });
-
-      setResults(response.results);
-      setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page on manual search
-    } catch (error) {
-      console.error("Search failed:", error);
-      if (error instanceof APIError) {
-        setSearchError(`Search failed: ${error.message}`);
-      } else {
-        setSearchError("An unexpected error occurred during search");
-      }
-      setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page on error too
-    } finally {
-      setSearching(false);
-    }
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    // ✅ TANSTACK QUERY - Query will automatically refetch when searchParams memo changes
+    // No manual API call needed
   };
 
+  // ✅ TANSTACK QUERY - Simplified natural language search
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
     setSuggestions([]);
-
-    setSearching(true);
-    setSearchError(null);
+    sessionStorage.setItem(SEARCH_KEY, searchQuery);
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
 
     try {
-      // Build natural language search request
-      const response = await searchService.searchTrades({
-        search_type: "natural_language",
-        user_id: userId,
-        query_text: searchQuery,
-      });
-
-      setResults(response.results);
-      setCurrentQueryId(response.query_id); // Store query_id for saving
-      setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page on new search
-
-      // Refresh search history from backend after successful search
+      // ✅ TANSTACK QUERY - Manual refetch to ensure fresh data
+      await refetchSearch();
       await fetchSearchHistory();
     } catch (error) {
       console.error("Search failed:", error);
-      if (error instanceof APIError) {
-        setSearchError(`Search failed: ${error.message}`);
-      } else {
-        setSearchError("An unexpected error occurred during search");
-      }
-      setResults([]);
-      setCurrentQueryId(null);
-      setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page on error too
-
-      // Refresh history even on error (backend should save failed searches now)
       await fetchSearchHistory();
-    } finally {
-      setSearching(false);
     }
   };
 
+  // ✅ TANSTACK QUERY - Simplified recent search click
   const handleRecentSearchClick = async (query: string) => {
     setSearchQuery(query);
+    sessionStorage.setItem(SEARCH_KEY, query);
     setSuggestions([]);
-    if (!query.trim()) return;
-
-    setSearching(true);
-    setSearchError(null);
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
 
     try {
-      const response = await searchService.searchTrades({
-        search_type: "natural_language",
-        user_id: userId,
-        query_text: query,
-      });
-
-      setResults(response.results);
-      setCurrentQueryId(response.query_id); // Store query_id for saving
-      setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page on recent search click
-
-      // Refresh history after search
+      // ✅ TANSTACK QUERY - Manual refetch to ensure fresh data
+      await refetchSearch();
       await fetchSearchHistory();
     } catch (error) {
       console.error("Search failed:", error);
-      if (error instanceof APIError) {
-        setSearchError(`Search failed: ${error.message}`);
-      } else {
-        setSearchError("An unexpected error occurred during search");
-      }
-      setResults([]);
-      setCurrentQueryId(null);
-      setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page on error too
-
-      // Refresh history even on error
       await fetchSearchHistory();
-    } finally {
-      setSearching(false);
     }
   };
 
@@ -550,28 +474,15 @@ function TradeSearchPage() {
       return;
     }
 
-    // Otherwise run the search now to get a query_id, then save
-    setSearching(true);
-    setSearchError(null);
+    // ✅ TANSTACK QUERY - Use refetch instead of manual API call
     try {
-      const response = await searchService.searchTrades({
-        search_type: "natural_language",
-        user_id: userId,
-        query_text: searchQuery,
-      });
-      setResults(response.results);
-      setCurrentQueryId(response.query_id);
-      await fetchSearchHistory();
-      await handleSaveQuery(response.query_id, queryName.trim());
+      const response = await refetchSearch();
+      if (response.data?.query_id) {
+        await fetchSearchHistory();
+        await handleSaveQuery(response.data.query_id, queryName.trim());
+      }
     } catch (error) {
       console.error("Search failed before saving:", error);
-      if (error instanceof APIError) {
-        setSearchError(`Search failed: ${error.message}`);
-      } else {
-        setSearchError("An unexpected error occurred during search");
-      }
-    } finally {
-      setSearching(false);
     }
   };
 
@@ -580,9 +491,8 @@ function TradeSearchPage() {
     sessionStorage.removeItem(SEARCH_KEY);
     setCurrentQueryId(null);
     setSuggestions([]);
-    setSearchError(null);
-    // Use clearAllFilters so the reset goes through search-service consistently,
-    // rather than bypassing it with a direct trade-flow call.
+    // ✅ TANSTACK QUERY - Clear search error by invalidating queries
+    queryClient.removeQueries({ queryKey: ['trades', 'search'] });
     await clearAllFilters();
   };
 
@@ -614,6 +524,13 @@ function TradeSearchPage() {
     }
   };
 
+  // ✅ TANSTACK QUERY - Convert error to string for display
+  const errorMessage = searchError 
+    ? searchError instanceof APIError 
+      ? `Search failed: ${searchError.message}`
+      : "An unexpected error occurred during search"
+    : null;
+
   return (
     <div className="p-6 mx-auto space-y-6">
       <SearchHeader
@@ -635,7 +552,8 @@ function TradeSearchPage() {
         onDeleteSavedQuery={handleDeleteSavedQuery}
       />
 
-      {searchError && (
+      {/* ✅ TANSTACK QUERY - Use converted error message */}
+      {errorMessage && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
           <svg
             className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0"
@@ -650,10 +568,10 @@ function TradeSearchPage() {
           </svg>
           <div className="flex-1">
             <h3 className="text-sm font-medium text-red-800">Search Error</h3>
-            <p className="mt-1 text-sm text-red-700">{searchError}</p>
+            <p className="mt-1 text-sm text-red-700">{errorMessage}</p>
           </div>
           <button
-            onClick={() => setSearchError(null)}
+            onClick={() => queryClient.removeQueries({ queryKey: ['trades', 'search'] })}
             className="text-red-400 hover:text-red-600 flex-shrink-0"
             aria-label="Dismiss error"
           >
