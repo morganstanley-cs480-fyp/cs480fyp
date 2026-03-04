@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS trades (
     clearing_house VARCHAR(50) NOT NULL,
     create_time TIMESTAMP NOT NULL,
     update_time TIMESTAMP NOT NULL,
-    status VARCHAR(20) NOT NULL
+    status VARCHAR(20) NOT NULL CHECK (status IN ('ALLEGED', 'CLEARED', 'REJECTED', 'CANCELLED'))
 );
 
 -- Create indexes for trades table
