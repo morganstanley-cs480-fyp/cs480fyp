@@ -56,7 +56,7 @@ class Settings(BaseSettings):
     CACHE_TTL_QUERY_HISTORY: int = 900  # 15 minutes
 
     # Application Settings
-    MAX_SEARCH_RESULTS: int = 50
+    MAX_SEARCH_RESULTS: int = 1000
     LOG_LEVEL: str = "INFO"
     ENABLE_CORS: bool = True
     CORS_ORIGINS: list[str] = ["*"]  # Allow all origins
