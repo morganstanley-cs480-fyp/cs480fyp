@@ -36,12 +36,13 @@ export async function start() {
       const { trade_id, data } = JSON.parse(message);
       console.log(JSON.stringify(message))
       if (tradeRooms.has(trade_id)) {
-        // console.log(`Broadcasting update to Trade ${trade_id}`);
+        console.log(`Broadcasting update to Trade ${trade_id}`);
         const clients = tradeRooms.get(trade_id);
         
         clients.forEach((client) => {
           if (client.readyState === 1) { // 1 = OPEN
-            client.send(JSON.stringify(data)); // FIX: Send to client, not clients
+            client.send(JSON.stringify(data));
+            console.log(`Broadcasted to ${client} message ${JSON.stringify(data)}`)
           }
         });
       }
