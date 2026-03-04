@@ -73,11 +73,6 @@ describe('Data Processor Service', () => {
         expect.arrayContaining([10001, "ACC-999", "OPEN"])
       );
 
-      // Verify Redis Publish
-      expect(publisher.publish).toHaveBeenCalledWith(
-        'trade-updates',
-        expect.stringContaining('"trade_id":"10001"')
-      );
     });
 
     it('should throw error if DB fails', async () => {
@@ -117,6 +112,12 @@ describe('Data Processor Service', () => {
       expect(mockDbClient.query).toHaveBeenNthCalledWith(3, 
         expect.stringContaining('UPDATE trades'), expect.anything());
       expect(mockDbClient.query).toHaveBeenNthCalledWith(4, 'COMMIT');
+
+      // Verify Redis Publish
+      expect(publisher.publish).toHaveBeenCalledWith(
+        'trade-updates',
+        expect.stringContaining('"trade_id":"10001"')
+      );
       
       // Verify Release
       expect(mockDbClient.release).toHaveBeenCalled();
