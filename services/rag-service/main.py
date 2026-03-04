@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.config.settings import settings
-from app.api.routes import health_router, rag_health_router, chat_router
+from app.api.routes import health_router, chat_router
 from app.api.routes.documents import router as documents_router
 from app.api.routes.generate import router as generate_router
 from app.services.vector_store import MilvusVectorStore
@@ -54,7 +54,6 @@ if settings.ENABLE_CORS:
 
 # Include routers (order matters: specific routes before parameterized ones)
 app.include_router(health_router)
-app.include_router(rag_health_router)  # Must be before other /api/rag routes
 app.include_router(documents_router)
 app.include_router(generate_router)
 app.include_router(chat_router)

@@ -201,13 +201,13 @@ async def find_similar_exceptions(
                 
                 # Fetch trade details
                 async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
-                    resp = await client.get(f"/trades/{trade_id}")
+                    resp = await client.get(f"/api/trades/{trade_id}")
                     resp.raise_for_status()
                     trade_data = resp.json()
 
                 # Fetch transaction history
                 async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
-                    resp = await client.get(f"/trades/{trade_id}/transactions")
+                    resp = await client.get(f"/api/trades/{trade_id}/transactions")
                     resp.raise_for_status()
                     history_data = resp.json()
 
@@ -381,16 +381,19 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
             resp = await client.get(f"/api/exceptions/{payload.exception_id}")
             resp.raise_for_status()
             exception_data = resp.json()
+        
+        print("HI1")
 
         # Fetch trade details (clearing house, asset type, etc.)
         async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
-            resp = await client.get(f"/trades/{payload.trade_id}")
+            resp = await client.get(f"/api/trades/{payload.trade_id}")
             resp.raise_for_status()
             trade_data = resp.json()
+        print("HI2")
 
         # Fetch transaction history
         async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
-            resp = await client.get(f"/trades/{payload.trade_id}/transactions")
+            resp = await client.get(f"/api/trades/{payload.trade_id}/transactions")
             resp.raise_for_status()
             history_data = resp.json()
 
@@ -412,6 +415,9 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
             payload.trade_id, 
             payload.exception_id
         )
+
+        print(settings.AWS_REGION)
+        print(settings.BEDROCK_EMBED_MODEL_ID)
 
         # Generate embedding
         bedrock = BedrockService(
