@@ -3,6 +3,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { useAuth } from "react-oidc-context";
 import { useEffect } from "react";
+import { Toaster } from "sonner";
 
 // import ReactFlowScreen from './components/prototype/ReactFlowScreenBasic';
 // import ReactFlowScreenWithEg from "@/components/prototype/ReactFlowScreenSimpleEg";
@@ -30,6 +31,9 @@ export default function App() {
   }, [authentication.isLoading]);  
 
   return (
+    <div>
       <RouterProvider router={router} context = {{authentication}}/>
+      <Toaster />
+    </div>
   );
 }

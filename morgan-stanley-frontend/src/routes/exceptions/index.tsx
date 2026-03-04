@@ -136,10 +136,10 @@ function ExceptionsPage() {
         const query = searchQuery.toLowerCase();
         filtered = filtered.filter(
           (exc) =>
-            exc.exception_id.toString().includes(query) ||
+            exc.id.toString().includes(query) ||
             exc.trade_id.toString().includes(query) ||
             exc.msg.toLowerCase().includes(query) ||
-            exc.comment.toLowerCase().includes(query),
+            exc.comment?.toLowerCase().includes(query),
         );
       }
 
@@ -208,7 +208,7 @@ function ExceptionsPage() {
                 <ExceptionResultsTable
                   table={table}
                   resultsCount={results.length}
-                  selectedExceptionId={selectedException?.exception_id || null}
+                  selectedExceptionId={selectedException?.id || null}
                   statusFilter={statusFilter}
                   priorityFilter={priorityFilter}
                   onStatusFilterChange={setStatusFilter}

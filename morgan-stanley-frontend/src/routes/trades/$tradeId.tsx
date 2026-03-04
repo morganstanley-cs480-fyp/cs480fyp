@@ -45,8 +45,8 @@ function TradeDetailPage() {
     const {
         mergedTransactions,
         mergedExceptions,
-        // isConnected,
-        // connectionStatus // kept for now, can include in UI to let user know that it is listening for live updates.
+        isConnected,
+        connectionStatus // kept for now, can include in UI to let user know that it is listening for live updates.
     } = useTradeWebSocket(Number(tradeId), transactions, exceptions);
 
     // Params are strings.
@@ -194,6 +194,8 @@ function TradeDetailPage() {
                         showTradeInfo={showTradeInfo}
                         onToggle={() => setShowTradeInfo(!showTradeInfo)}
                         getStatusBadgeClassName={getStatusBadgeClassName}
+                        isConnected={isConnected}
+                        connectionStatus={connectionStatus}                        
                     />
                 </CardContent>
             </Card>
@@ -227,7 +229,7 @@ function TradeDetailPage() {
                         selectedTransaction={selectedTransaction}
                         lastSelectedType={lastSelectedType}
                         transactions={mergedTransactions}
-                        relatedExceptions={selectedTransaction ? getRelatedExceptions(selectedTransaction.trans_id, mergedExceptions) : []}
+                        relatedExceptions={selectedTransaction ? getRelatedExceptions(selectedTransaction.id, mergedExceptions) : []}
                         onResolveException={handleResolveException}
                     />
 

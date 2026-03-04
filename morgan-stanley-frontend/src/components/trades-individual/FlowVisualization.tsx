@@ -615,7 +615,7 @@ async function generateElkLayout(
     
     // Check if this transaction has exceptions
     const hasExceptions = correspondingTransaction 
-      ? getRelatedExceptions(correspondingTransaction.trans_id).length > 0 
+      ? getRelatedExceptions(correspondingTransaction.id).length > 0 
       : false;
 
     edges.push({
@@ -801,14 +801,14 @@ export function FlowVisualization({
                             </div>
                         ) : (
                             sortedTransactions.map((transaction, index) => {
-                                const relatedExceptions = getRelatedExceptions(transaction.trans_id);
+                                const relatedExceptions = getRelatedExceptions(transaction.id);
 
                                 return (
                                     <TimelineTransactionCard
-                                        key={transaction.trans_id}
+                                        key={transaction.id}
                                         transaction={transaction}
                                         index={index}
-                                        isSelected={selectedTransaction?.trans_id === transaction.trans_id}
+                                        isSelected={selectedTransaction?.id === transaction.id}
                                         isLast={index === sortedTransactions.length - 1}
                                         relatedExceptions={relatedExceptions}
                                         getTransactionBackgroundColor={getTransactionBackgroundColor}

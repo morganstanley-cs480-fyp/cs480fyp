@@ -50,7 +50,7 @@ export function ExceptionDetailPanel({
               Exception ID
             </p>
             <p className="text-black">
-              {exception.exception_id}
+              {exception.id}
             </p>
           </div>
 
@@ -134,7 +134,7 @@ export function ExceptionDetailPanel({
                 onClick={() =>
                   navigate({
                     to: "/exceptions/$exceptionId",
-                    params: { exceptionId: exception.exception_id.toString() },
+                    params: { exceptionId: exception.id.toString() },
                   })
                 }
               >
