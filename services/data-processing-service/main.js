@@ -194,7 +194,6 @@ export async function handleTrade(trade) {
   ];
   
   await pool.query(query, values);
-  await publishUpdate(trade.id, trade);
   console.log(`Processed Trade ID: ${trade.id}`);
 }
 
@@ -203,7 +202,7 @@ export async function handleTransaction(trans) {
   try {
     await client.query('BEGIN');
 
-    // This query overwrites every field with the incoming data
+    // 1. Upsert Transaction (and check if it was an insert or update)
     const insertTransQuery = `
       INSERT INTO transactions (id, trade_id, create_time, entity, direction, type, status, update_time, step)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -215,17 +214,33 @@ export async function handleTransaction(trans) {
         type = EXCLUDED.type,
         status = EXCLUDED.status, 
         update_time = EXCLUDED.update_time,
-        step = EXCLUDED.step;
+        step = EXCLUDED.step
+      RETURNING (xmax = 0) AS is_insert; -- 👈 Returns true if inserted, false if updated
     `;
+    
     const transValues = [
       parseInt(trans.id), 
       parseInt(trans.trade_id), 
       trans.create_time, trans.entity,
       trans.direction, trans.type, trans.status, trans.update_time, trans.step
     ];
-    await client.query(insertTransQuery, transValues);
+    
+    const transResult = await client.query(insertTransQuery, transValues);
+    const isInsert = transResult.rows[0].is_insert;
 
-    // Update parent Trade status to match the latest transaction state
+    // 2. If the row already existed (it was an update), close the exception
+    if (!isInsert) {
+      const closeExceptionQuery = `
+        UPDATE exceptions 
+        SET status = 'closed' 
+        WHERE transaction_id = $1;
+      `;
+      // Note: Ensure your table is named 'exceptions' or adjust the query above
+      await client.query(closeExceptionQuery, [parseInt(trans.id)]);
+      console.log(`Exception closed for Transaction ID: ${trans.id}`);
+    }
+
+    // 3. Update parent Trade status to match the latest transaction state
     const updateTradeQuery = `
       UPDATE trades SET status = $1, update_time = $2 WHERE id = $3;
     `;
