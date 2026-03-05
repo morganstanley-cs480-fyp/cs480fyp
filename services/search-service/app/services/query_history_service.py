@@ -379,7 +379,9 @@ class QueryHistoryService:
         min_score: float = 0.3,
     ) -> list[dict]:
         """
-        Get fuzzy typeahead suggestions from trade database values.
+        Get typeahead suggestions combining two sources:
+          1. The user's own query history (ranked first via score boost)
+          2. Fuzzy matches against actual trade field values
 
         Args:
             user_id: User ID to fetch suggestions for
@@ -398,6 +400,65 @@ class QueryHistoryService:
         pattern = f"%{query.strip()}%"
         per_field_limit = max(5, min(25, max_candidates // 6))
 
+        scored: dict[str, tuple[float, dict]] = {}
+
+        # ── 1. History-based suggestions (user's own past queries) ──────────
+        # These rank above field-value matches because natural language queries
+        # typed by the user are far more contextually relevant than raw DB values.
+        history_sql = """
+            SELECT id, query_text, is_saved, query_name, create_time, last_use_time
+            FROM query_history
+            WHERE user_id = $1
+              AND query_text ILIKE $2
+            ORDER BY last_use_time DESC
+            LIMIT $3
+        """
+        try:
+            history_records = await db_manager.fetch(
+                history_sql, user_id, pattern, max_candidates
+            )
+            for record in history_records:
+                raw_text = (record.get("query_text") or "").strip()
+                # Skip JSON blobs saved from manual filter searches
+                if not raw_text or self._looks_like_manual_filters(raw_text):
+                    continue
+
+                normalized_candidate = self._normalize_text(raw_text)
+                score = self._similarity_score(normalized_query, normalized_candidate)
+
+                # Boost history matches so they consistently outrank field-value hints
+                score = min(score + 0.5, 1.5)
+
+                if score < min_score:
+                    continue
+
+                suggestion = {
+                    "query_id": record.get("id", 0),
+                    "user_id": user_id,
+                    "query_text": raw_text,
+                    "is_saved": record.get("is_saved", False),
+                    "query_name": record.get("query_name"),
+                    "create_time": record.get("create_time"),
+                    "last_use_time": record.get("last_use_time"),
+                    "score": score,
+                    "category": "History",
+                }
+
+                existing = scored.get(raw_text)
+                if existing is None or score > existing[0]:
+                    scored[raw_text] = (score, suggestion)
+
+        except Exception as e:
+            # History is non-critical — fall through to field-value suggestions
+            logger.warning(
+                f"Skipping history suggestions: {e}",
+                extra={"user_id": user_id},
+            )
+
+        # ── 2. Field-value suggestions (trade DB values) ────────────────────
+        # Surfaces concrete values like "status CANCELLED", "asset type FX".
+        # Lower base scores than history matches; useful when the input looks
+        # like a field value rather than a natural language sentence.
         field_specs = [
             ("Account", "account", "account", "text"),
             ("Asset type", "asset_type", "asset type", "text"),
@@ -407,8 +468,6 @@ class QueryHistoryService:
             ("Status", "status", "status", "text"),
             ("Trade id", "id", "trade id", "id"),
         ]
-
-        scored: dict[str, tuple[float, dict]] = {}
 
         for category, column, label, value_type in field_specs:
             if value_type == "id":

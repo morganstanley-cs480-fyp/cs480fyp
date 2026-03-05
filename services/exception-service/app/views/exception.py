@@ -9,7 +9,7 @@ from app.models.exception import ExceptionStatus
 router = APIRouter(prefix="/api/exceptions", tags=["exceptions"])
 
 
-@router.get("/", response_model=List[ExceptionResponse])
+@router.get("", response_model=List[ExceptionResponse])
 async def list_exceptions():
     exceptions = await Exception.all()
     return exceptions
@@ -30,7 +30,7 @@ async def get_exception(exception_id: int):
     return exception
 
 
-@router.post("/", response_model=ExceptionResponse, status_code=201)
+@router.post("", response_model=ExceptionResponse, status_code=201)
 async def create_exception(exception_data: ExceptionCreate):
     exception = await Exception.create(**exception_data.model_dump())
     return exception

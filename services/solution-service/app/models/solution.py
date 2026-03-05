@@ -1,6 +1,5 @@
 from tortoise import fields, models
 from tortoise.validators import MinValueValidator, MaxValueValidator
-from enum import Enum
 
 # Defines the Solution model class
 # Tortoise ORM uses this to generate SQL and perform database operations
