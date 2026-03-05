@@ -48,6 +48,14 @@ data "aws_ssm_parameter" "google_api_key" {
   name = "/ecs/secrets/google_api_key"
 }
 
+data "aws_ssm_parameter" "bedrock_aws_access_key_id" {
+  name = "/ecs/secrets/bedrock_aws_access_key_id"
+}
+
+data "aws_ssm_parameter" "bedrock_aws_secret_access_key" {
+  name = "/ecs/secrets/bedrock_aws_secret_access_key"
+}
+
 # Data Processing SQS (Ingestion service TO Data Processing Service)
 module "data_processing_queue" {
   source                     = "./modules/sqs"
@@ -370,10 +378,15 @@ module "rag_service" {
     { name = "AWS_REGION", value = "ap-southeast-1" },
     { name = "BEDROCK_EMBED_MODEL_ID", value = "cohere.embed-english-v3" },
     { name = "BEDROCK_CHAT_MODEL_ID",  value = "us.amazon.nova-lite-v1:0" },
-    { name = "GOOGLE_MODEL_ID",        value = "gemini-2.5-flash-lite" }
+    { name = "GOOGLE_MODEL_ID",        value = "gemini-2.5-flash-lite" },
+    { name = "EXCEPTION_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net" },
+    { name = "TRADE_FLOW_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net"},
+    { name = "SOLUTION_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net"}
   ]
   secrets = [
-    { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn }
+    { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn },
+    { name = "AWS_ACCESS_KEY_ID", valueFrom = data.aws_ssm_parameter.bedrock_aws_access_key_id.arn },
+    { name = "AWS_SECRET_ACCESS_KEY", valueFrom = data.aws_ssm_parameter.bedrock_aws_secret_access_key.arn }
   ]
 }
 
