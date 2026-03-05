@@ -3,10 +3,9 @@ API Contract Definition - Frontend-Backend Integration
 This file defines the exact request/response format between frontend and backend.
 """
 
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
-
 
 # ============================================================================
 # REQUEST MODELS (Frontend → Backend)
@@ -81,7 +80,7 @@ class SearchRequest(BaseModel):
                     "search_type": "manual",
                     "filters": {
                         "asset_type": "FX",
-                        "status": ["PENDING", "ALLEGED"],
+                        "status": ["ALLEGED"],
                         "date_type": "update_time",
                         "date_from": "2025-01-13",
                         "date_to": "2025-01-20",

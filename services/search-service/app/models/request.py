@@ -3,7 +3,8 @@ Request models for API endpoints.
 These define the structure of incoming requests from the frontend.
 """
 
-from typing import Optional, Literal
+from typing import Literal, Optional
+
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 

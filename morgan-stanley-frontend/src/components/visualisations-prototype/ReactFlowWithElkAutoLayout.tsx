@@ -13,6 +13,7 @@ import {
   type Node,
   type Edge,
   type EdgeProps,
+  type EdgeMarker,
   type NodeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -258,8 +259,8 @@ function WorkflowEdge(props: EdgeProps) {
       <BaseEdge
         id={id}
         path={path}
-        style={{ stroke: EDGE_COLOR, strokeWidth: 2.25, strokeLinecap: 'round' }}
-        markerEnd={{ type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 } as any}
+        style={{ stroke: arrowColor, strokeWidth: 2.25, strokeLinecap: 'round' }}
+        markerEnd={{ type: MarkerType.ArrowClosed, color: arrowColor, width: 18, height: 18 } as EdgeMarker}
       />
       <EdgeLabelRenderer>
         <div

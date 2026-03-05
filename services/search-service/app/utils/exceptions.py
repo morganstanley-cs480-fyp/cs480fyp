@@ -3,7 +3,7 @@ Custom exception classes for the search service.
 Provides specific error types for better error handling and debugging.
 """
 
-from typing import Optional, Any
+from typing import Any, Optional
 
 
 class SearchServiceException(Exception):

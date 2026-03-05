@@ -4,6 +4,7 @@ This demonstrates testing with database, Redis, and mock AWS services.
 """
 
 import pytest
+
 from app.models.domain import Trade
 
 

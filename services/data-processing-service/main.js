@@ -82,7 +82,7 @@ async function initDB() {
     CREATE TABLE IF NOT EXISTS exceptions (
       id INTEGER PRIMARY KEY, 
       trade_id INTEGER REFERENCES trades(id), 
-      transaction_id INTEGER REFERENCES transactions(id), 
+      trans_id INTEGER REFERENCES transactions(id), 
       event TEXT, 
       status TEXT, 
       msg TEXT, 
@@ -90,6 +90,26 @@ async function initDB() {
       comment TEXT, 
       priority TEXT, 
       update_time TIMESTAMP
+    );
+
+    -- Solutions Table
+    CREATE TABLE IF NOT EXISTS solutions (
+    id SERIAL PRIMARY KEY,
+    exception_id INTEGER NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    exception_description TEXT,
+    reference_event TEXT,
+    solution_description TEXT,
+    scores INTEGER NOT NULL,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Foreign key constraint
+    CONSTRAINT fk_solutions_exception_id 
+        FOREIGN KEY (exception_id) REFERENCES exceptions(id) ON DELETE CASCADE,
+    
+    -- Score constraint
+    CONSTRAINT chk_solutions_scores 
+        CHECK (scores >= 0 AND scores <= 27)
     );
   `;
   try {
@@ -194,7 +214,6 @@ export async function handleTrade(trade) {
   ];
   
   await pool.query(query, values);
-  await publishUpdate(trade.id, trade);
   console.log(`Processed Trade ID: ${trade.id}`);
 }
 
@@ -203,7 +222,7 @@ export async function handleTransaction(trans) {
   try {
     await client.query('BEGIN');
 
-    // This query overwrites every field with the incoming data
+    // 1. Upsert Transaction (and check if it was an insert or update)
     const insertTransQuery = `
       INSERT INTO transactions (id, trade_id, create_time, entity, direction, type, status, update_time, step)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -215,17 +234,33 @@ export async function handleTransaction(trans) {
         type = EXCLUDED.type,
         status = EXCLUDED.status, 
         update_time = EXCLUDED.update_time,
-        step = EXCLUDED.step;
+        step = EXCLUDED.step
+      RETURNING (xmax = 0) AS is_insert;
     `;
+    
     const transValues = [
       parseInt(trans.id), 
       parseInt(trans.trade_id), 
       trans.create_time, trans.entity,
       trans.direction, trans.type, trans.status, trans.update_time, trans.step
     ];
-    await client.query(insertTransQuery, transValues);
+    
+    const transResult = await client.query(insertTransQuery, transValues);
+    const isInsert = transResult.rows[0].is_insert;
 
-    // Update parent Trade status to match the latest transaction state
+    // 2. If the row already existed (it was an update), close the exception
+    if (!isInsert) {
+      const closeExceptionQuery = `
+        UPDATE exceptions 
+        SET status = 'closed' 
+        WHERE trans_id = $1;
+      `;
+      // Note: Ensure your table is named 'exceptions' or adjust the query above
+      await client.query(closeExceptionQuery, [parseInt(trans.id)]);
+      console.log(`Exception closed for Transaction ID: ${trans.id}`);
+    }
+
+    // 3. Update parent Trade status to match the latest transaction state
     const updateTradeQuery = `
       UPDATE trades SET status = $1, update_time = $2 WHERE id = $3;
     `;
@@ -251,14 +286,14 @@ export async function handleException(excep) {
     await client.query('BEGIN');
 
     const insertExcepQuery = `
-      INSERT INTO exceptions (id, trade_id, transaction_id, status, msg, create_time, comment, priority, update_time)
+      INSERT INTO exceptions (id, trade_id, trans_id, status, msg, create_time, comment, priority, update_time)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       ON CONFLICT (id) DO NOTHING;
     `;
     const excepValues = [
       parseInt(excep.id), 
       parseInt(excep.trade_id), 
-      parseInt(excep.transaction_id), 
+      parseInt(excep.trans_id), 
       excep.status, excep.msg, excep.create_time, 
       excep.comment, excep.priority, excep.update_time
     ];
@@ -267,7 +302,7 @@ export async function handleException(excep) {
     // Update Transaction and Trade to REJECTED
     await client.query(
       `UPDATE transactions SET status = 'REJECTED', update_time = $1 WHERE id = $2`, 
-      [excep.update_time, parseInt(excep.transaction_id)]
+      [excep.update_time, parseInt(excep.trans_id)]
     );
     
     await client.query(

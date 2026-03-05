@@ -6,7 +6,7 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import type { Exception, Trade, Transaction } from "@/lib/api/types";
 import { tradeFlowService } from "@/lib/api/tradeFlowService";
-import { searchService } from "@/lib/api/searchService";
+import { exceptionService } from "@/lib/api/exceptionService";
 import {TradeInfoCard} from "@/components/trades-individual/TradeInfoCard";
 import {FlowVisualization} from "@/components/trades-individual/FlowVisualization";
 
@@ -45,8 +45,8 @@ function TradeDetailPage() {
     const {
         mergedTransactions,
         mergedExceptions,
-        // isConnected,
-        // connectionStatus // kept for now, can include in UI to let user know that it is listening for live updates.
+        isConnected,
+        connectionStatus // kept for now, can include in UI to let user know that it is listening for live updates.
     } = useTradeWebSocket(Number(tradeId), transactions, exceptions);
 
     // Params are strings.
@@ -76,11 +76,20 @@ function TradeDetailPage() {
 
             try {
                 const tradeIdNumber = Number(tradeId);
-                const [tradeData, transactionsData, exceptionsData] = await Promise.all([
+                const [tradeData, transactionsData] = await Promise.all([
                     tradeFlowService.getTradeById(tradeIdNumber),
                     tradeFlowService.getTransactionsByTradeId(tradeIdNumber),
-                    searchService.getExceptionsByTrade(tradeIdNumber),
                 ]);
+                // TODO: Un-do this implementation
+                let exceptionsData: Exception[] = [];
+                try {
+                    exceptionsData = await exceptionService.getExceptionsByTrade(tradeIdNumber);
+                } catch (error) {
+                    // If the exception service returns a 404 (or any other error),
+                    // treat it as "no exceptions" so the trade page still loads.
+                    console.warn('Failed to load exceptions for trade, treating as none:', error);
+                    exceptionsData = [];
+                }
 
                 if (!isActive) return;
                 setTrade(tradeData);
@@ -163,7 +172,7 @@ function TradeDetailPage() {
                                 <CardTitle>Trade Clearing Flow Visualization</CardTitle>
                                 <CardDescription className="mt-2">
                                     Interactive flow diagram and transaction timeline for{" "}
-                                    <span className="font-extrabold">Trade {trade.id}</span>
+                                    <span className="font-extrabold">Trade {trade.trade_id}</span>
                                 </CardDescription>
                             </div>
                         </div>
@@ -185,6 +194,8 @@ function TradeDetailPage() {
                         showTradeInfo={showTradeInfo}
                         onToggle={() => setShowTradeInfo(!showTradeInfo)}
                         getStatusBadgeClassName={getStatusBadgeClassName}
+                        isConnected={isConnected}
+                        connectionStatus={connectionStatus}                        
                     />
                 </CardContent>
             </Card>
@@ -218,7 +229,7 @@ function TradeDetailPage() {
                         selectedTransaction={selectedTransaction}
                         lastSelectedType={lastSelectedType}
                         transactions={mergedTransactions}
-                        relatedExceptions={selectedTransaction ? getRelatedExceptions(selectedTransaction.trans_id, mergedExceptions) : []}
+                        relatedExceptions={selectedTransaction ? getRelatedExceptions(selectedTransaction.id, mergedExceptions) : []}
                         onResolveException={handleResolveException}
                     />
 

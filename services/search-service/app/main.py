@@ -4,27 +4,28 @@ AI-powered trade search service with natural language and manual filter support.
 """
 
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.cache.redis_client import redis_manager
 from app.config.settings import settings
 from app.database.connection import db_manager
-from app.cache.redis_client import redis_manager
-from app.utils.logger import logger
 from app.utils.exceptions import (
-    SearchServiceException,
-    DatabaseConnectionError,
-    DatabaseQueryError,
-    CacheConnectionError,
-    CacheOperationError,
     BedrockAPIError,
     BedrockResponseError,
+    CacheConnectionError,
+    CacheOperationError,
+    DatabaseConnectionError,
+    DatabaseQueryError,
     InvalidSearchRequestError,
     QueryHistoryNotFoundError,
+    SearchServiceException,
     UnauthorizedAccessError,
     ValidationError,
 )
+from app.utils.logger import logger
 
 
 @asynccontextmanager
@@ -66,6 +67,18 @@ async def lifespan(app: FastAPI):
             CREATE INDEX IF NOT EXISTS idx_query_history_user_saved ON query_history(user_id, is_saved);
         """)
         logger.info("Database tables verified/created successfully")
+
+        # Resync the query_history sequence to avoid duplicate key errors.
+        # This is a self-healing guard: if the sequence ever falls behind the
+        # actual max id (e.g. after a partial restore or -v wipe + repopulate),
+        # every INSERT would fail with a unique-constraint violation.
+        await db_manager.pool.execute("""
+            SELECT setval(
+                'query_history_id_seq',
+                GREATEST(100000, COALESCE((SELECT MAX(id) FROM query_history), 99999))
+            );
+        """)
+        logger.info("query_history sequence resynced on startup")
 
         # Initialize Redis cache connection
         await redis_manager.connect()
@@ -116,6 +129,8 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
+    # Prevents http:// redirect responses through CloudFront/ALB (Mixed Content).
+    redirect_slashes=False,
 )
 
 
@@ -124,7 +139,7 @@ if settings.ENABLE_CORS:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,
-        allow_credentials=True,
+        allow_credentials=False,  # Must be False when allow_origins=["*"]
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -367,10 +382,10 @@ async def generic_exception_handler(request: Request, exc: Exception):
 # Import routers (will be created in subsequent tasks)
 # These imports are at the bottom to avoid circular dependencies
 # pylint: disable=wrong-import-position
-from app.api.routes.health import router as health_router  # noqa: E402
-from app.api.routes.search import router as search_router  # noqa: E402
-from app.api.routes.history import router as history_router  # noqa: E402
 from app.api.routes.filters import router as filters_router  # noqa: E402
+from app.api.routes.health import router as health_router  # noqa: E402
+from app.api.routes.history import router as history_router  # noqa: E402
+from app.api.routes.search import router as search_router  # noqa: E402
 
 # Register routers
 app.include_router(health_router)

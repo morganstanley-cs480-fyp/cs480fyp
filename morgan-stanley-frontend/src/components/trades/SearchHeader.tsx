@@ -101,6 +101,7 @@ export function SearchHeader({
             placeholder="Search by trade ID, counterparty, product type..."
             className="pl-10 pr-32 bg-white h-12 text-black"
             value={searchQuery}
+            autoComplete="off"
             onChange={(e) => {
               onSearchQueryChange(e.target.value);
               setShowSuggestions(true);

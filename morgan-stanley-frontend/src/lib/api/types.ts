@@ -8,7 +8,7 @@
 // ============================================================================
 
 export interface Trade {
-  id: number;
+  trade_id: number;
   account: string;
   asset_type: string;
   booking_system: string;
@@ -35,7 +35,7 @@ export interface Exception {
   id: number;
   trade_id: number;
   trans_id: number;
-  status: 'PENDING' | 'RESOLVED' | 'IGNORED' | 'CLOSED';
+  status: 'PENDING' | 'CLOSED';
   msg: string;
   create_time: string;
   comment: string | null;

@@ -10,7 +10,8 @@ import json
 import math
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import Any, Dict, List, Tuple
+
 from app.models.domain import Trade
 from app.utils.logger import logger
 

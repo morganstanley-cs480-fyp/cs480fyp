@@ -25,7 +25,7 @@ def Case1():
         return 
     start_date = random_date(AUG2025, SEP2025)
     cursor = connectToDb(DBNAME)
-    trade = Trade(RandNum(8), RandAccNum(), random.choice(ASSET_TYPE_LS), random.choice(BOOKING_SYSTEM_LS), \
+    trade = Trade(10000001, RandAccNum(), random.choice(ASSET_TYPE_LS), random.choice(BOOKING_SYSTEM_LS), \
                   random.choice(AFFIRMATION_SYSTEM_LS), random.choice(CLEARING_HOUSE_LS), start_date,start_date, "CLEARED")
     trade_ls = []
     trade_ls.append(trade)
@@ -53,7 +53,7 @@ def Case2():
         return 
     start_date = random_date(AUG2025, SEP2025)
     cursor = connectToDb(DBNAME)
-    trade = Trade(RandNum(8), RandAccNum(), random.choice(ASSET_TYPE_LS), random.choice(BOOKING_SYSTEM_LS), \
+    trade = Trade(10000002, RandAccNum(), random.choice(ASSET_TYPE_LS), random.choice(BOOKING_SYSTEM_LS), \
                   random.choice(AFFIRMATION_SYSTEM_LS), random.choice(CLEARING_HOUSE_LS), start_date,start_date, "CLEARED")
     trade_ls = []
     trade_ls.append(trade)
@@ -81,8 +81,8 @@ def Case3():
         return 
     start_date = random_date(AUG2025, SEP2025)
     cursor = connectToDb(DBNAME)
-    trade = Trade(RandNum(8), RandAccNum(), random.choice(ASSET_TYPE_LS), random.choice(BOOKING_SYSTEM_LS), \
-                  random.choice(AFFIRMATION_SYSTEM_LS), random.choice(CLEARING_HOUSE_LS), start_date,start_date, "PENDING")
+    trade = Trade(10000003, RandAccNum(), random.choice(ASSET_TYPE_LS), random.choice(BOOKING_SYSTEM_LS), \
+                  random.choice(AFFIRMATION_SYSTEM_LS), random.choice(CLEARING_HOUSE_LS), start_date,start_date, "ALLEGED")
     trade_ls = []
     trade_ls.append(trade)
     trans_ls = []
@@ -95,7 +95,7 @@ def Case3():
         trans_ls.append(trans)
         insertTransaction(cursor, trans)
     start_date = add_seconds(start_date, 60)
-    expt = TransException(trade.trade_id, trans_ls[-1].trans_id, RandNum(8), "PENDING","INSUFFICIENT MARGIN" , start_date, "NO BIC", random.choice(EXCEPTION_PRIORITY_LS), start_date)
+    expt = TransException(RandNum(8),trade.trade_id, trans_ls[-1].trans_id,  "INSUFFICIENT MARGIN" , random.choice(EXCEPTION_PRIORITY_LS), "PENDING", "NO BIC", start_date,start_date)
     trans_ls.append(expt)
 
     insertException(cursor, expt)
@@ -112,8 +112,8 @@ def Case4():
         return 
     start_date = random_date(AUG2025, SEP2025)
     cursor = connectToDb(DBNAME)
-    trade = Trade(RandNum(8), RandAccNum(), random.choice(ASSET_TYPE_LS), random.choice(BOOKING_SYSTEM_LS), \
-                  random.choice(AFFIRMATION_SYSTEM_LS), random.choice(CLEARING_HOUSE_LS), start_date,start_date, "PENDING")
+    trade = Trade(10000004, RandAccNum(), random.choice(ASSET_TYPE_LS), random.choice(BOOKING_SYSTEM_LS), \
+                  random.choice(AFFIRMATION_SYSTEM_LS), random.choice(CLEARING_HOUSE_LS), start_date,start_date, "ALLEGED")
     trade_ls = []
     trade_ls.append(trade)
     trans_ls = []
@@ -127,7 +127,7 @@ def Case4():
         insertTransaction(cursor, trans)
 
     start_date = add_seconds(start_date, 60)
-    expt = TransException(trade.trade_id, trans_ls[-1].trans_id, RandNum(8), "PENDING","MISSING BIC" , start_date, "NO BIC", random.choice(EXCEPTION_PRIORITY_LS), start_date)
+    expt = TransException(RandNum(8),trade.trade_id, trans_ls[-1].trans_id,  "MISSING BIC" , random.choice(EXCEPTION_PRIORITY_LS), "PENDING","NO BIC",start_date, start_date)
     trans_ls.append(expt)
 
     insertException(cursor,expt)
@@ -144,8 +144,8 @@ def Case5():
         return 
     start_date = random_date(AUG2025, SEP2025)
     cursor = connectToDb(DBNAME)
-    trade = Trade(RandNum(8), RandAccNum(), random.choice(ASSET_TYPE_LS), random.choice(BOOKING_SYSTEM_LS), \
-                  random.choice(AFFIRMATION_SYSTEM_LS), random.choice(CLEARING_HOUSE_LS), start_date,start_date, "PENDING")
+    trade = Trade(10000005, RandAccNum(), random.choice(ASSET_TYPE_LS), random.choice(BOOKING_SYSTEM_LS), \
+                  random.choice(AFFIRMATION_SYSTEM_LS), random.choice(CLEARING_HOUSE_LS), start_date,start_date, "ALLEGED")
     trade_ls = []
     trade_ls.append(trade)
     trans_ls = []
@@ -159,7 +159,7 @@ def Case5():
         insertTransaction(cursor, trans)
 
     start_date = add_seconds(start_date, 60)
-    expt = TransException(trade.trade_id, trans_ls[-1].trans_id, RandNum(8), "PENDING","MAPPING ISSUE" , start_date, "NO MAPPING FOR KINGSLANDING", random.choice(EXCEPTION_PRIORITY_LS), start_date)
+    expt = TransException(RandNum(8),trade.trade_id, trans_ls[-1].trans_id,"MAPPING ISSUE" , random.choice(EXCEPTION_PRIORITY_LS),"NO MAPPING FOR KINGSLANDING", "PENDING",start_date, start_date)
     trans_ls.append(expt)
 
     insertException(cursor, expt)
@@ -167,9 +167,11 @@ def Case5():
     global COMMON_ROOT
     appendRoot(COMMON_ROOT, trade_ls)
     appendRoot(COMMON_ROOT, trans_ls)
-Case1()
-Case2()
-Case3()
-Case4()
-Case5()
-writeToXML(COMMON_ROOT, "data.xml")
+
+if __name__ == "__main__":
+    Case1()
+    Case2()
+    Case3()
+    Case4()
+    Case5()
+    writeToXML(COMMON_ROOT, "aefaga.xml")
