@@ -375,21 +375,18 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Exception {payload.exception_id} already exists in the vector store"
             )
-        
+
         # Fetch exception data
         async with httpx.AsyncClient(base_url=settings.EXCEPTION_SERVICE_URL) as client:
             resp = await client.get(f"/api/exceptions/{payload.exception_id}")
             resp.raise_for_status()
             exception_data = resp.json()
-        
-        print("HI1")
 
         # Fetch trade details (clearing house, asset type, etc.)
         async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
             resp = await client.get(f"/api/trades/{payload.trade_id}")
             resp.raise_for_status()
             trade_data = resp.json()
-        print("HI2")
 
         # Fetch transaction history
         async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
@@ -415,9 +412,6 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
             payload.trade_id, 
             payload.exception_id
         )
-
-        print(settings.AWS_REGION)
-        print(settings.BEDROCK_EMBED_MODEL_ID)
 
         # Generate embedding
         bedrock = BedrockService(

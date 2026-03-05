@@ -59,7 +59,7 @@ def parse_xml_to_sql(xml_path, output_path):
             exception = {
                 'id': clean_value(child.find('id').text if child.find('id') is not None else None),
                 'trade_id': clean_value(child.find('trade_id').text if child.find('trade_id') is not None else None),
-                'transaction_id': clean_value(child.find('transaction_id').text if child.find('transaction_id') is not None else None),
+                'trans_id': clean_value(child.find('trans_id').text if child.find('trans_id') is not None else None),
                 'status': clean_value(child.find('status').text if child.find('status') is not None else None),
                 'msg': clean_value(child.find('msg').text if child.find('msg') is not None else None),
                 'create_time': clean_value(child.find('create_time').text if child.find('create_time') is not None else None),
@@ -143,7 +143,7 @@ def parse_xml_to_sql(xml_path, output_path):
                 values = (
                     exc['id'],
                     exc['trade_id'],
-                    exc['transaction_id'] if exc['transaction_id'] else 'NULL',
+                    exc['trans_id'] if exc['trans_id'] else 'NULL',
                     f"'{msg}'" if msg else 'NULL',
                     f"'{exc['priority']}'" if exc['priority'] else 'NULL',
                     f"'{exc['status']}'" if exc['status'] else 'NULL',

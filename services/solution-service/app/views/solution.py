@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
+from tortoise import Tortoise
 from app.schemas.solution import SolutionCreate, SolutionUpdate, SolutionResponse
 from app.models import Solution
 
@@ -52,3 +53,62 @@ async def delete_solution(solution_id: int):
         raise HTTPException(status_code=404, detail="Solution not found")
     
     await solution.delete()
+
+@router.post("/table", status_code=201)
+async def create_solutions_table():
+    """
+    Creates the solutions table with 6-digit ID constraint if it doesn't exist.
+    This endpoint is idempotent - safe to call multiple times.
+    """
+    sql = """
+    -- Create solutions table
+    CREATE TABLE IF NOT EXISTS solutions (
+        id SERIAL PRIMARY KEY,
+        exception_id INTEGER NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        exception_description TEXT,
+        reference_event TEXT,
+        solution_description TEXT,
+        scores INTEGER NOT NULL,
+        create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        
+        -- Foreign key constraint
+        CONSTRAINT fk_solutions_exception_id 
+            FOREIGN KEY (exception_id) REFERENCES exceptions(id) ON DELETE CASCADE,
+        
+        -- Score constraint
+        CONSTRAINT chk_solutions_scores 
+            CHECK (scores >= 0 AND scores <= 27)
+    );
+
+    -- Create indexes for solutions table
+    CREATE INDEX IF NOT EXISTS idx_solutions_exception_id ON solutions(exception_id);
+    CREATE INDEX IF NOT EXISTS idx_solutions_scores ON solutions(scores DESC);
+    CREATE INDEX IF NOT EXISTS idx_solutions_create_time ON solutions(create_time DESC);
+    """
+    
+    # SQL to set sequence (only runs if sequence exists)
+    sequence_sql = """
+    DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'solutions_id_seq') THEN
+            ALTER SEQUENCE solutions_id_seq RESTART WITH 100000;
+        END IF;
+    END $$;
+    """
+    
+    try:
+        conn = Tortoise.get_connection("default")
+        
+        # Execute table creation SQL
+        await conn.execute_script(sql)
+        
+        # Execute sequence restart SQL
+        await conn.execute_script(sequence_sql)
+        
+        return {
+            "message": "Solutions table created successfully",
+            "details": "Table created with 6-digit ID constraint (starting from 100000)"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create table: {str(e)}")

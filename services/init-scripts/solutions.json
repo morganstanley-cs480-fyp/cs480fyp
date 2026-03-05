@@ -1,0 +1,322 @@
+[
+  {
+    "exception_id": "19757932",
+    "title": "INSUFFICIENT MARGIN",
+    "exception_description": "IRS trade through JSCC failed during credit reject phase due to insufficient margin. TAS system rejected the trade after exceeding retry limits during credit approval process.",
+    "reference_event": "",
+    "solution_description": "Contact counterparty to post additional collateral to meet Initial Margin requirements. Review margin calculation methodology with JSCC to ensure accuracy. If margin is borderline, consider reducing notional amount or restructuring trade to lower margin requirements.",
+    "scores": 18
+  },
+  {
+    "exception_id": "86572959",
+    "title": "LEI MAPPING",
+    "exception_description": "FX trade through CME failed during consent phase due to missing LEI mapping. LCH system could not validate legal entity identifier for counterparty.",
+    "reference_event": "",
+    "solution_description": "Update LEI mapping table in LCH system for the counterparty entity. Verify LEI is valid and not expired through GLEIF database. Once mapping is added, resubmit trade for consent workflow.",
+    "scores": 15
+  },
+  {
+    "exception_id": "36485937",
+    "title": "ACCOUNT MAPPING",
+    "exception_description": "FX trade through JSCC failed at final clearing stage due to missing account mapping in KINGSLANDING booking system. Trade passed all validation but could not be booked.",
+    "reference_event": "",
+    "solution_description": "Create account mapping entry in KINGSLANDING system for ACC7734. Verify account ownership and permissions with JSCC. Re-initiate clearing process from clearing confirmed step to avoid full resubmission.",
+    "scores": 12
+  },
+  {
+    "exception_id": "20001001",
+    "title": "REGULATORY REPORTING",
+    "exception_description": "IRS trade through LCH failed during regulatory reporting phase due to timing issues. System exceeded retry limits attempting to submit required regulatory reports.",
+    "reference_event": "",
+    "solution_description": "Investigate connectivity issues with regulatory reporting gateway. Increase timeout threshold for LCH regulatory report submissions. Verify EMIR/CFTC reporting credentials are valid and system has sufficient capacity during peak hours.",
+    "scores": 22
+  },
+  {
+    "exception_id": "20002001",
+    "title": "COLLATERAL CALL",
+    "exception_description": "IRS trade through OTCCHK failed during collateral call phase due to insufficient margin. Clearing house issued margin call that could not be satisfied after multiple retry attempts.",
+    "reference_event": "",
+    "solution_description": "Review available collateral inventory and transfer eligible securities to OTCCHK collateral account. If insufficient eligible collateral exists, consider cash posting or negotiate alternative collateral terms. May need to unwind or reduce position size if margin cannot be met.",
+    "scores": 19
+  },
+  {
+    "exception_id": "20003001",
+    "title": "CSA MAPPING",
+    "exception_description": "CDS trade through JSCC failed during legal documentation validation due to missing CSA (Credit Support Annex) mapping. System could not locate applicable margin agreement terms.",
+    "reference_event": "",
+    "solution_description": "Upload CSA documentation to JSCC system and create mapping for the counterparty relationship. Verify CSA terms (threshold, MTA, eligible collateral) match trade requirements. Coordinate with legal team to ensure CSA is properly executed and registered.",
+    "scores": 16
+  },
+  {
+    "exception_id": "20004001",
+    "title": "MISSING BIC",
+    "exception_description": "CDS trade through LCH failed during settlement instruction validation due to missing Bank Identifier Code. Payment routing could not be completed without valid BIC.",
+    "reference_event": "", 
+    "solution_description": "Add BIC code to settlement standing instructions (SSI) in LCH system for the relevant currency and entity. Verify BIC with counterparty and confirm correspondent banking relationships are active. Update SSI database with complete routing information including intermediary banks if needed.",
+    "scores": 11
+  },
+  {
+    "exception_id": "20005001",
+    "title": "SETTLEMENT DATE",
+    "exception_description": "FX trade through LCH failed during settlement date validation due to timing constraints. Selected settlement date may fall on non-business day or violate calendar rules.",
+    "reference_event": "",
+    "solution_description": "Review and adjust settlement date to align with both currency calendar requirements (TARGET2, FED holidays). Apply business day convention (Following, Modified Following) to select valid date. Resubmit trade with corrected settlement date.",
+    "scores": 9
+  },
+  {
+    "exception_id": "20006001",
+    "title": "REFERENCE ENTITY",
+    "exception_description": "CDS trade through JSCC failed during reference entity validation due to timeout issues. System could not complete credit event checks within required timeframe.",
+    "reference_event": "",
+    "solution_description": "Verify reference entity identifier (RED code) is correct and actively maintained in JSCC database. Check for recent corporate actions or succession events that may require updated reference entity mapping. Increase timeout threshold for credit event determination queries.",
+    "scores": 24
+  },
+  {
+    "exception_id": "20007001",
+    "title": "INDEX MAPPING",
+    "exception_description": "IRS trade through LCH failed during rate validation due to missing index mapping. System could not resolve reference rate index for floating leg.",
+    "reference_event": "",
+    "solution_description": "Add index mapping for the specific tenor and currency to LCH rate validation database (e.g., USD-SOFR-3M). Verify index source and calculation methodology align with ISDA definitions. Confirm rate fixing source is configured correctly for automated rate retrieval.",
+    "scores": 17
+  },
+  {
+    "exception_id": "20008001",
+    "title": "NOTIONAL LIMIT",
+    "exception_description": "CDS trade through LCH failed during notional limit validation due to insufficient margin for requested trade size. Trade notional exceeds available credit capacity.",
+    "reference_event": "",
+    "solution_description": "Reduce trade notional to fit within available credit limits or post additional collateral. Review portfolio compression opportunities to free up notional capacity. Consider splitting trade across multiple tranches or negotiating increased credit line with LCH.",
+    "scores": 13
+  },
+  {
+    "exception_id": "20009001",
+    "title": "WRONG-WAY RISK",
+    "exception_description": "CDS trade through LCH failed during Wrong-Way Risk assessment due to insufficient margin. Trade structure creates concentration risk that requires additional capital.",
+    "reference_event": "",
+    "solution_description": "Post additional margin to cover Wrong-Way Risk capital charge. Consider restructuring trade to reduce correlation between counterparty credit and reference entity. Implement risk mitigation through portfolio diversification or hedging strategies.",
+    "scores": 21
+  },
+  {
+    "exception_id": "20010001",
+    "title": "INITIAL MARGIN",
+    "exception_description": "IRS trade through CME failed during Initial Margin requirement calculation due to insufficient posted collateral. Trade exceeds available margin buffer.",
+    "reference_event": "",
+    "solution_description": "Post additional Initial Margin to CME collateral account to meet SIMM calculation requirements. Review margin optimization strategies including cross-margining with other asset classes. Consider portfolio compression to reduce gross notional and lower IM requirements.",
+    "scores": 20
+  },
+  {
+    "exception_id": "20011001",
+    "title": "MISSING BIC",
+    "exception_description": "FX trade through LCH failed during payment instruction generation due to missing BIC code. Cannot route payment without complete banking details.",
+    "reference_event": "",
+    "solution_description": "Update payment instruction template with valid BIC code for settlement currency. Verify BIC with correspondent bank and confirm account is active. Add complete routing chain including intermediary banks and account numbers to SSI database.",
+    "scores": 10
+  },
+  {
+    "exception_id": "20012001",
+    "title": "CREDIT RATING",
+    "exception_description": "IRS trade through CME failed during credit check due to missing credit rating mapping. TAS system detected potential downgrade but could not validate rating source.",
+    "reference_event": "",
+    "solution_description": "Update credit rating mapping table with current ratings from approved rating agencies (S&P, Moody's, Fitch). Configure automated rating feeds to prevent stale data. If downgrade is confirmed, may need to post additional collateral or reduce exposure.",
+    "scores": 23
+  },
+  {
+    "exception_id": "20013001",
+    "title": "SUCCESSION EVENT",
+    "exception_description": "CDS trade through CME failed during succession event validation due to missing mapping. Corporate action on reference entity requires updated documentation.",
+    "reference_event": "",
+    "solution_description": "Update reference entity mapping to reflect succession event (merger, spin-off, or restructuring). Consult ISDA Determinations Committee rulings for proper treatment. Coordinate with legal team to ensure new reference obligations are correctly identified and mapped.",
+    "scores": 14
+  },
+  {
+    "exception_id": "20014001",
+    "title": "CAPITAL FLOW",
+    "exception_description": "FX trade through JSCC failed during capital flow validation due to timing issues. Cross-border payment validation exceeded retry limits.",
+    "reference_event": "",
+    "solution_description": "Verify trade complies with local capital control regulations (SAFE quotas for CNY, PBOC restrictions). Increase timeout threshold for capital flow validation queries. Ensure required regulatory approvals and documentation are in place before resubmission.",
+    "scores": 8
+  },
+  {
+    "exception_id": "20015001",
+    "title": "RATE MAPPING",
+    "exception_description": "IRS trade through LCH failed during rate validation due to missing rate mapping. System could not resolve benchmark rate for the specified tenor and currency.",
+    "reference_event": "",
+    "solution_description": "Add rate mapping entry in LCH validation system for the specific benchmark (e.g., EURIBOR-6M, SONIA-1M). Configure rate source feeds from approved vendors (Bloomberg, Refinitiv). Verify rate calculation methodology matches ISDA definitions for the asset class.",
+    "scores": 16
+  },
+  {
+    "exception_id": "20016001",
+    "title": "LEI VALIDATION",
+    "exception_description": "CDS trade through OTCCHK failed during LEI validation phase due to missing entity mapping. Legal Entity Identifier could not be validated against GLEIF database.",
+    "reference_event": "",
+    "solution_description": "Update LEI mapping in OTCCHK system and verify LEI is active and not expired through GLEIF portal. Ensure LEI registration is current for both counterparty and reference entity. Resubmit trade after mapping is corrected.",
+    "scores": 15
+  },
+  {
+    "exception_id": "20017001",
+    "title": "AML SCREENING",
+    "exception_description": "FX trade through OTCCHK failed during AML/KYC screening due to timeout issues. Sanctions screening could not complete within required timeframe.",
+    "reference_event": "",
+    "solution_description": "Investigate connectivity to AML screening provider (OFAC, Dow Jones, World-Check). Increase timeout threshold for sanctions screening queries. Verify counterparty details are complete and accurate to avoid false positive matches. May need to escalate to compliance for manual review.",
+    "scores": 25
+  },
+  {
+    "exception_id": "20018001",
+    "title": "BOOKING CONFIRMATION",
+    "exception_description": "IRS trade through OTCCHK failed during booking confirmation due to system timeout. Trade could not be recorded in booking platform within retry limit.",
+    "reference_event": "",
+    "solution_description": "Investigate booking system performance and capacity issues. Verify connectivity between OTCCHK and KINGSLANDING booking platform. Increase timeout threshold and implement retry logic with exponential backoff. Consider manual booking if automated process continues to fail.",
+    "scores": 7
+  },
+  {
+    "exception_id": "20019001",
+    "title": "INDEX VERSION",
+    "exception_description": "CDS trade through CME failed during index version validation due to missing mapping. CDS index series or version could not be resolved.",
+    "reference_event": "",
+    "solution_description": "Update CDS index mapping table with correct series and version (e.g., CDX.NA.IG.41, iTraxx Europe S38). Verify index composition and constituent entities match Markit reference data. Ensure index roll dates and succession rules are properly configured.",
+    "scores": 12
+  },
+  {
+    "exception_id": "20020001",
+    "title": "SSI COMPLETENESS",
+    "exception_description": "FX trade through OTCCHK failed during settlement instruction completeness check due to missing BIC. SSI database lacks required banking details.",
+    "reference_event": "",
+    "solution_description": "Complete SSI setup by adding all required fields including BIC, IBAN, correspondent banks, and account numbers. Validate information with counterparty's operations team. Perform SSI matching with counterparty before trade submission to prevent settlement failures.",
+    "scores": 11
+  },
+  {
+    "exception_id": "20021001",
+    "title": "CLEARING MEMBER",
+    "exception_description": "IRS trade through CME failed during clearing eligibility check due to missing clearing member mapping. TAS system could not validate clearing membership status.",
+    "reference_event": "",
+    "solution_description": "Add clearing member mapping in TAS system for the trading entity. Verify clearing membership is active with CME and all required documentation is current. Ensure clearing agreement and give-up arrangements are properly executed and registered.",
+    "scores": 14
+  },
+  {
+    "exception_id": "20022001",
+    "title": "MATURITY VALIDATION",
+    "exception_description": "CDS trade through LCH failed during maturity validation due to non-standard maturity date. Trade structure does not conform to standard IMM date conventions.",
+    "reference_event": "",
+    "solution_description": "Adjust maturity date to conform to standard IMM dates (20th of Mar/Jun/Sep/Dec) or obtain approval for bespoke maturity. Add maturity date exception to LCH validation rules if this is an approved non-standard structure. Document business justification for non-standard maturity.",
+    "scores": 6
+  },
+  {
+    "exception_id": "20023001",
+    "title": "DUAL CURRENCY",
+    "exception_description": "FX trade through JSCC failed during dual currency validation due to insufficient margin. Cross-currency exposure requires additional collateral.",
+    "reference_event": "",
+    "solution_description": "Post additional margin in both trade currencies to meet cross-currency risk requirements. Review FX conversion rates and haircuts applied by JSCC. Consider using single-currency collateral with lower haircut or negotiate bilateral collateral terms.",
+    "scores": 18
+  },
+  {
+    "exception_id": "20024001",
+    "title": "NOTIONAL MAPPING",
+    "exception_description": "IRS trade through CME failed during portfolio reconciliation due to missing notional mapping. System could not match trade notional schedule with existing positions.",
+    "reference_event": "",
+    "solution_description": "Create notional schedule mapping in CME system for amortizing or accreting notional profiles. Verify notional amounts match confirmation and align with portfolio positions. Run portfolio reconciliation break analysis to identify discrepancies.",
+    "scores": 13
+  },
+  {
+    "exception_id": "20025001",
+    "title": "REFERENCE OBLIGATION",
+    "exception_description": "CDS trade through OTCCHK failed during deliverable obligation validation due to missing reference obligation mapping. System could not validate valid deliverable securities.",
+    "reference_event": "",
+    "solution_description": "Update reference obligation mapping with valid deliverable bonds or loans per ISDA definitions. Verify deliverable obligations meet seniority and ranking requirements. Consult Markit RED database for approved reference obligations for the reference entity.",
+    "scores": 9
+  },
+  {
+    "exception_id": "20026001",
+    "title": "VALUE DATE",
+    "exception_description": "FX trade through OTCCHK failed during value date validation due to timeout issues. Settlement date validation exceeded retry limits.",
+    "reference_event": "",
+    "solution_description": "Review and adjust value date to ensure it falls on valid business day for both currencies. Apply appropriate business day convention and verify against joint calendar. Increase timeout threshold for calendar validation queries.",
+    "scores": 8
+  },
+  {
+    "exception_id": "20027001",
+    "title": "CREDIT LINE",
+    "exception_description": "IRS trade through JSCC failed during credit line validation due to exceeded limits. Trade would push total exposure beyond approved credit capacity.",
+    "reference_event": "",
+    "solution_description": "Request credit line increase from credit risk management team with supporting business justification. Post additional collateral to increase available credit capacity. Consider portfolio compression or novation to reduce existing exposure and free up credit line.",
+    "scores": 22
+  },
+  {
+    "exception_id": "20028001",
+    "title": "AFFIRMATION TIMEOUT",
+    "exception_description": "CDS trade through JSCC failed during trade affirmation due to timeout. Counterparty did not affirm trade within required timeframe.",
+    "reference_event": "",
+    "solution_description": "Contact counterparty operations team to resolve affirmation delay. Extend affirmation deadline if mutually agreed. Verify trade details match between both parties before reaffirmation. Implement automated affirmation for future trades to prevent timeouts.",
+    "scores": 10
+  },
+  {
+    "exception_id": "20029001",
+    "title": "NETTING ELIGIBILITY",
+    "exception_description": "FX trade through CME failed during netting eligibility validation due to missing mapping. System could not determine if trade qualifies for payment netting.",
+    "reference_event": "",
+    "solution_description": "Add netting agreement mapping in CME system for the counterparty relationship. Verify ISDA Master Agreement includes netting provisions (Section 2(c)). Update netting group configuration to enable payment netting for eligible trades.",
+    "scores": 5
+  },
+  {
+    "exception_id": "20030001",
+    "title": "SCHEDULE MAPPING",
+    "exception_description": "IRS trade through OTCCHK failed during notional schedule validation due to missing mapping. System could not parse non-standard notional schedule.",
+    "reference_event": "",
+    "solution_description": "Create notional schedule mapping template in OTCCHK system for step-up/step-down structures. Provide detailed schedule with dates and amounts in standardized format. Verify schedule calculation methodology matches confirmation terms.",
+    "scores": 12
+  },
+  {
+    "exception_id": "20031001",
+    "title": "RATE MAPPING",
+    "exception_description": "FX trade through OTCCHK failed during trade capture due to missing rate mapping in RED KEEP booking system. Forward points or spot rate could not be validated.",
+    "reference_event": "",
+    "solution_description": "Update rate mapping in RED KEEP system for the currency pair and tenor. Verify rate source configuration matches market data feed (Bloomberg, Refinitiv). Ensure trade capture template includes all required rate fields and calculation methodology.",
+    "scores": 17
+  },
+  {
+    "exception_id": "20032001",
+    "title": "CCP MARGIN MODEL",
+    "exception_description": "FX trade through OTCCHK failed during margin model update due to insufficient collateral. CCP changed margin methodology resulting in increased requirements.",
+    "reference_event": "",
+    "solution_description": "Post additional collateral immediately to meet updated margin requirements under new CCP model. Review margin model change notifications from OTCCHK. Adjust portfolio risk management strategy to account for increased capital requirements. Consider reducing gross notional through portfolio compression.",
+    "scores": 26
+  },
+  {
+    "exception_id": "20033001",
+    "title": "UTI MAPPING",
+    "exception_description": "IRS trade through JSCC failed during EMIR regulatory reporting due to missing UTI (Unique Trade Identifier) mapping. Trade cannot be reported without valid UTI.",
+    "reference_event": "",
+    "solution_description": "Generate and register UTI in JSCC system following ISO 23897 format (LEI + unique identifier). Ensure UTI generation process follows ESMA regulatory technical standards. Update trade repository reporting system with UTI mapping for regulatory reporting.",
+    "scores": 19
+  },
+  {
+    "exception_id": "20034001",
+    "title": "PORTFOLIO LIMIT",
+    "exception_description": "IRS trade through JSCC failed during portfolio limit validation due to insufficient margin. Trade would exceed maximum portfolio concentration limits.",
+    "reference_event": "",
+    "solution_description": "Review and reduce existing portfolio positions to free up concentration limits. Request temporary limit increase with supporting risk analysis. Post additional collateral to support higher concentration. Consider diversifying portfolio across multiple counterparties or asset classes.",
+    "scores": 21
+  },
+  {
+    "exception_id": "20035001",
+    "title": "CROSS MARGIN",
+    "exception_description": "FX trade through LCH failed during cross-margining eligibility check due to insufficient margin. Trade does not qualify for cross-margin offset benefits.",
+    "reference_event": "",
+    "solution_description": "Verify both portfolios are eligible for cross-margining under LCH rules. Post additional margin to cover un-offset risk. Review portfolio composition to maximize cross-margin benefits through strategic hedging. Consider restructuring positions to improve margin efficiency.",
+    "scores": 14
+  },
+  {
+    "exception_id": "20036001",
+    "title": "INELIGIBLE SECURITY",
+    "exception_description": "CDS trade through LCH failed during collateral posting due to ineligible security in WINTERFELL booking system. Posted collateral does not meet clearing house eligibility criteria.",
+    "reference_event": "",
+    "solution_description": "Replace ineligible collateral with LCH-approved securities from eligible collateral schedule. Review collateral haircut schedule to optimize posted collateral value. Consider cash posting as alternative or substitute with government bonds meeting credit rating requirements.",
+    "scores": 20
+  },
+  {
+    "exception_id": "20037001",
+    "title": "COMPRESSION",
+    "exception_description": "IRS trade through LCH failed during portfolio compression due to missing mapping. Trade cannot participate in multilateral compression cycle.",
+    "reference_event": "",
+    "solution_description": "Update compression eligibility mapping in LCH system for the trade. Verify trade meets compression criteria (standard terms, same currency, overlapping maturity). Register for next compression cycle with TriOptima or similar vendor. Review compression rules and ensure trade documentation is standardized.",
+    "scores": 4
+  }
+]
