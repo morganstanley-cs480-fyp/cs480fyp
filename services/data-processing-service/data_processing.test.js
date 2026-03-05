@@ -145,7 +145,7 @@ describe('Data Processor Service', () => {
     const sampleExcep = {
       id: 90001,
       trade_id: 10001,       // References sampleTrade.id
-      transaction_id: 50001, // References sampleTrans.id
+      trans_id: 50001, // References sampleTrans.id
       event: "Validation Failure",
       status: "ERROR",
       msg: "Invalid Account Number",
