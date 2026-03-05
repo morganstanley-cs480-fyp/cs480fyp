@@ -64,7 +64,7 @@ jobs:
         working-directory: ./morgan-stanley-frontend
         run: |
           if grep -q '"test"' package.json; then
-            npm test
+            npm run test:run
           else
             echo "No tests configured, skipping..."
           fi

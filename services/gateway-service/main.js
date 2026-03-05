@@ -33,18 +33,20 @@ export async function start() {
   // Redis Subscriber Logic
   await redisSub.subscribe('trade-updates', (message) => {
     try {
-      const { trade_id, data } = JSON.parse(message);
-      console.log(JSON.stringify(message))
+      const parsed = JSON.parse(message);
+      const trade_id = String(parsed.trade_id); // Force to String
+      const data = parsed.data;
+
       if (tradeRooms.has(trade_id)) {
-        console.log(`Broadcasting update to Trade ${trade_id}`);
         const clients = tradeRooms.get(trade_id);
-        
+        console.log(`Trade Room ${trade_id} found with clients ${clients}`)
         clients.forEach((client) => {
-          if (client.readyState === 1) { // 1 = OPEN
+          if (client.readyState === 1) {
             client.send(JSON.stringify(data));
-            console.log(`Broadcasted to ${client} message ${JSON.stringify(data)}`)
           }
         });
+      } else {
+        console.log(`No active room for trade_id: ${trade_id}. Available:`, Array.from(tradeRooms.keys()));
       }
     } catch (e) {
       console.error("Bad Message Format from Redis", e);
@@ -61,7 +63,7 @@ export async function start() {
         const parsed = JSON.parse(msg);
 
         if (parsed.action === 'SUBSCRIBE' && parsed.trade_id) {
-          const { trade_id } = parsed;
+          const trade_id = String(parsed.trade_id); // Force to String
 
           if (!tradeRooms.has(trade_id)) {
             tradeRooms.set(trade_id, new Set());
@@ -69,7 +71,7 @@ export async function start() {
           
           tradeRooms.get(trade_id).add(ws);
           ws.current_trade_id = trade_id;
-          console.log(`Client joined room ${trade_id}`);
+          console.log(`Client joined room ${trade_id} (Total rooms: ${tradeRooms.size})`);
         }
       } catch (e) {
         console.error("Invalid JSON from Client", e);
