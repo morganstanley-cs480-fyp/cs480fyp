@@ -12,6 +12,15 @@ async def initialize_db():
         modules={"models": ["app.models"]}
     )
     await Tortoise.generate_schemas()
+    
+    # Set SQLite autoincrement to start at 100000 for 6-digit IDs
+    # Insert and delete a dummy row to initialize the sequence, then set it to 99999
+    conn = Tortoise.get_connection("default")
+    await conn.execute_query(
+        "INSERT INTO solutions (id, exception_id, title, scores) VALUES (99999, 0, 'dummy', 0)"
+    )
+    await conn.execute_query("DELETE FROM solutions WHERE id = 99999")
+    
     yield
     await Tortoise.close_connections()
 
