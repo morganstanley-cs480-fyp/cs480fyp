@@ -7,7 +7,7 @@ from enum import Enum
 
 # Note: Tentative model. Might change
 class Solution(models.Model):
-    id = fields.IntField(pk=True, validators=[MinValueValidator(100000), MaxValueValidator(999999)])
+    id = fields.IntField(pk=True)
     # Foreign key from exception-service (different microservice)
     exception_id = fields.IntField(index=True)
     title = fields.TextField()
