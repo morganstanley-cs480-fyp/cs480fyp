@@ -1,6 +1,7 @@
 name: Service Builder
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "services/**"
