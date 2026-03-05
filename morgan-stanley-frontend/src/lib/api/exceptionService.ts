@@ -53,20 +53,20 @@ export const exceptionService = {
    * Fetch all exceptions from the exception service
    */
   async getExceptions(): Promise<Exception[]> {
-    return exceptionClient.get<Exception[]>('/api/exceptions/');
+    return exceptionClient.get<Exception[]>('/api/exceptions');
   },
 
   /**
    * Fetch a single exception by ID
    */
   async getExceptionById(exceptionId: number): Promise<Exception> {
-    return exceptionClient.get<Exception>(`/api/exceptions/${exceptionId}/`);
+    return exceptionClient.get<Exception>(`/api/exceptions/${exceptionId}`);
   },
 
   /**
    * Fetch exceptions for a trade
    */
   async getExceptionsByTrade(tradeId: number): Promise<Exception[]> {
-    return exceptionClient.get<Exception[]>(`/api/exceptions/trade/${tradeId}/`);
+    return exceptionClient.get<Exception[]>(`/api/exceptions/trade/${tradeId}`);
   },
 };
