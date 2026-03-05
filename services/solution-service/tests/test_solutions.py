@@ -13,7 +13,7 @@ async def test_create_solution(client: AsyncClient):
         "solution_description": "Solution description",
         "scores": 15
     }
-    response = await client.post("/api/solutions/", json=payload)
+    response = await client.post("/api/solutions", json=payload)
     
     assert response.status_code == 201
     data = response.json()
@@ -34,7 +34,7 @@ async def test_create_solution_minimal_fields(client: AsyncClient):
         "title": "Minimal solution",
         "scores": 10
     }
-    response = await client.post("/api/solutions/", json=payload)
+    response = await client.post("/api/solutions", json=payload)
     
     assert response.status_code == 201
     data = response.json()
@@ -53,7 +53,7 @@ async def test_create_solution_with_minimum_score(client: AsyncClient):
         "title": "Minimum score solution",
         "scores": 0
     }
-    response = await client.post("/api/solutions/", json=payload)
+    response = await client.post("/api/solutions", json=payload)
     
     assert response.status_code == 201
     data = response.json()
@@ -70,7 +70,7 @@ async def test_create_solution_with_maximum_score(client: AsyncClient):
         "title": "Maximum score solution",
         "scores": 27
     }
-    response = await client.post("/api/solutions/", json=payload)
+    response = await client.post("/api/solutions", json=payload)
     
     assert response.status_code == 201
     data = response.json()
@@ -87,7 +87,7 @@ async def test_create_solution_invalid_score_too_high(client: AsyncClient):
         "title": "Invalid high score",
         "scores": 30
     }
-    response = await client.post("/api/solutions/", json=payload)
+    response = await client.post("/api/solutions", json=payload)
     
     assert response.status_code == 422  # Validation error
 
@@ -99,7 +99,7 @@ async def test_create_solution_invalid_score_negative(client: AsyncClient):
         "title": "Invalid negative score",
         "scores": -5
     }
-    response = await client.post("/api/solutions/", json=payload)
+    response = await client.post("/api/solutions", json=payload)
     
     assert response.status_code == 422  # Validation error
 
@@ -126,7 +126,7 @@ async def test_get_solution_not_found(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_list_solutions(client: AsyncClient, multiple_solutions):
     """Test listing all solutions"""
-    response = await client.get("/api/solutions/")
+    response = await client.get("/api/solutions")
     
     assert response.status_code == 200
     data = response.json()

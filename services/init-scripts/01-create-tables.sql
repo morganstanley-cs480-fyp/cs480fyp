@@ -87,8 +87,8 @@ CREATE TABLE IF NOT EXISTS exceptions (
     priority VARCHAR(20) NOT NULL,
     status VARCHAR(10) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'CLOSED')),
     comment TEXT,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     
     -- Foreign key constraints
     CONSTRAINT fk_exceptions_trade_id 
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS solutions (
     reference_event TEXT,
     solution_description TEXT,
     scores INTEGER NOT NULL,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     
     -- Foreign key constraint
     CONSTRAINT fk_solutions_exception_id 

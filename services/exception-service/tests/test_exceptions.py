@@ -14,7 +14,7 @@ async def test_create_exception(client: AsyncClient):
         "status": "PENDING",
         "comment": "Test comment",
     }
-    response = await client.post("/api/exceptions/", json=payload)
+    response = await client.post("/api/exceptions", json=payload)
 
     assert response.status_code == 201
     data = response.json()
@@ -40,7 +40,7 @@ async def test_create_exception_without_comment(client: AsyncClient):
         "priority": "Low",
         "status": "PENDING",
     }
-    response = await client.post("/api/exceptions/", json=payload)
+    response = await client.post("/api/exceptions", json=payload)
 
     assert response.status_code == 201
     data = response.json()
@@ -74,7 +74,7 @@ async def test_get_exception_not_found(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_list_exceptions(client: AsyncClient, multiple_exceptions):
     """Test listing all exceptions"""
-    response = await client.get("/api/exceptions/")
+    response = await client.get("/api/exceptions")
 
     assert response.status_code == 200
     data = response.json()

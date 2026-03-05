@@ -8,7 +8,7 @@ from app.models import Solution
 
 router = APIRouter(prefix="/api/solutions", tags=["solutions"])
 
-@router.get("/", response_model=List[SolutionResponse])
+@router.get("", response_model=List[SolutionResponse])
 async def list_solutions():
     solutions = await Solution.all()
     return solutions
@@ -20,7 +20,7 @@ async def get_solution(solution_id: int):
         raise HTTPException(status_code=404, detail="Solution not found")
     return solution
 
-@router.post("/", response_model=SolutionResponse, status_code=201)
+@router.post("", response_model=SolutionResponse, status_code=201)
 async def create_solution(solution_data: SolutionCreate):
     solution = await Solution.create(**solution_data.model_dump())
     return solution
