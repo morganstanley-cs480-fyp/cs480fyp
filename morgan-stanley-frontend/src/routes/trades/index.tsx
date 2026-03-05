@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 // ✅ TANSTACK QUERY - Added imports
 import { useQueryClient } from "@tanstack/react-query";
@@ -109,50 +109,46 @@ function TradeSearchPage() {
   // Manual search filter state
   const [filters, setFilters] = useState<ManualSearchFilters>(loadFilters);
 
-  // ✅ TANSTACK QUERY - Build search parameters from current state
-  const searchParams = useMemo((): SearchRequest | null => {
-    const savedQuery = sessionStorage.getItem(SEARCH_KEY) ?? "";
-    
-    if (savedQuery.trim()) {
-      // Natural language search from saved query
-      return {
+  // Explicitly submitted search params — only set when the user intentionally submits a search.
+  // Keeping this separate from the live searchQuery input prevents auto-firing on every keystroke.
+  const [submittedParams, setSubmittedParams] = useState<SearchRequest | null>(null);
+
+  // Restore the last submitted NLQ from sessionStorage on mount (preserves results on Back navigation)
+  useEffect(() => {
+    const savedQuery = sessionStorage.getItem(SEARCH_KEY);
+    if (savedQuery?.trim()) {
+      setSubmittedParams({
         search_type: "natural_language",
         user_id: userId,
         query_text: savedQuery,
-      };
-    } else if (searchQuery.trim()) {
-      // Current search query
-      return {
-        search_type: "natural_language",
-        user_id: userId,
-        query_text: searchQuery,
-      };
-    } else {
-      // Manual search with filters
-      const filterValue = (value: string | undefined) => {
-        return value && value !== "" && value !== "all" ? value : undefined;
-      };
-
-      return {
-        search_type: "manual",
-        user_id: userId,
-        filters: {
-          trade_id: filterValue(filters.trade_id),
-          account: filterValue(filters.account),
-          asset_type: filterValue(filters.asset_type),
-          booking_system: filterValue(filters.booking_system),
-          affirmation_system: filterValue(filters.affirmation_system),
-          clearing_house: filterValue(filters.clearing_house),
-          status: filters.status.length > 0 ? filters.status : undefined,
-          date_type: filters.date_type,
-          date_from: filters.date_from || undefined,
-          date_to: filters.date_to || undefined,
-          with_exceptions_only: filters.with_exceptions_only || undefined,
-          cleared_trades_only: filters.cleared_trades_only || undefined,
-        },
-      };
+      });
     }
-  }, [userId, searchQuery, filters]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Helper to build manual filter params from current filter state
+  const buildManualParams = (): SearchRequest => {
+    const filterValue = (value: string | undefined) =>
+      value && value !== "" && value !== "all" ? value : undefined;
+    return {
+      search_type: "manual",
+      user_id: userId,
+      filters: {
+        trade_id: filterValue(filters.trade_id),
+        account: filterValue(filters.account),
+        asset_type: filterValue(filters.asset_type),
+        booking_system: filterValue(filters.booking_system),
+        affirmation_system: filterValue(filters.affirmation_system),
+        clearing_house: filterValue(filters.clearing_house),
+        status: filters.status.length > 0 ? filters.status : undefined,
+        date_type: filters.date_type,
+        date_from: filters.date_from || undefined,
+        date_to: filters.date_to || undefined,
+        with_exceptions_only: filters.with_exceptions_only || undefined,
+        cleared_trades_only: filters.cleared_trades_only || undefined,
+      },
+    };
+  };
 
   // ✅ TANSTACK QUERY - Use the search hook instead of manual state management
   const {
@@ -160,7 +156,7 @@ function TradeSearchPage() {
     isLoading: searching,
     error: searchError,
     refetch: refetchSearch,
-  } = useTradeSearch(searchParams);
+  } = useTradeSearch(submittedParams);
 
   // ✅ TANSTACK QUERY - Extract results from query response
   const results = searchResponse?.results ?? [];
@@ -172,11 +168,16 @@ function TradeSearchPage() {
   }, [results]);
 
   // ✅ TANSTACK QUERY - Update current query ID when search response changes
+  // Also refresh history here — the backend saves the query during /api/search,
+  // so this is the earliest point we can reliably fetch the updated list.
   useEffect(() => {
     if (searchResponse?.query_id) {
       setCurrentQueryId(searchResponse.query_id);
+      fetchSearchHistory();
     }
-  }, [searchResponse]);
+  // fetchSearchHistory is a stable async fn; adding it would require useCallback and cause re-renders
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchResponse?.query_id]);
 
   // Fetch search history from backend
   const fetchSearchHistory = async () => {
@@ -224,12 +225,12 @@ function TradeSearchPage() {
     }
   };
 
-  // ❌ TANSTACK QUERY - Removed manual search logic on mount (replaced by automatic query)
-  // Fetch history, saved queries, filter options on mount
+  // Fetch history, saved queries, and filter options on mount.
   useEffect(() => {
     fetchSearchHistory();
     fetchSavedQueries();
     fetchFilterOptions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [sorting, setSorting] = useState<SortingState>(() => {
@@ -362,56 +363,48 @@ function TradeSearchPage() {
     },
   });
 
-  // ✅ TANSTACK QUERY - Simplified clear filters using query invalidation
-  const clearAllFilters = async () => {
-    const defaultFilters = getDefaultFilters();
-    setFilters(defaultFilters);
+  // Reset filters and clear results — requires a new explicit search to show results again
+  const clearAllFilters = () => {
+    setFilters(getDefaultFilters());
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-    
-    // ✅ TANSTACK QUERY - Invalidate and refetch with new filters
-    queryClient.invalidateQueries({ queryKey: ['trades', 'search'] });
+    setSubmittedParams(null);
+    queryClient.removeQueries({ queryKey: ['trades', 'search'] });
   };
 
-  // ✅ TANSTACK QUERY - Simplified manual search using state updates (query will auto-refetch)
-  const handleManualSearch = async () => {
+  // Submit the current filter state as a manual search
+  const handleManualSearch = () => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-    // ✅ TANSTACK QUERY - Query will automatically refetch when searchParams memo changes
-    // No manual API call needed
+    setSubmittedParams(buildManualParams());
+    // History refresh is handled by the searchResponse useEffect
   };
 
-  // ✅ TANSTACK QUERY - Simplified natural language search
-  const handleSearch = async () => {
+  // Submit the current search query as a natural language search
+  const handleSearch = () => {
     if (!searchQuery.trim()) return;
 
     setSuggestions([]);
     sessionStorage.setItem(SEARCH_KEY, searchQuery);
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-
-    try {
-      // ✅ TANSTACK QUERY - Manual refetch to ensure fresh data
-      await refetchSearch();
-      await fetchSearchHistory();
-    } catch (error) {
-      console.error("Search failed:", error);
-      await fetchSearchHistory();
-    }
+    setSubmittedParams({
+      search_type: "natural_language",
+      user_id: userId,
+      query_text: searchQuery,
+    });
+    // History refresh is handled by the searchResponse useEffect
   };
 
-  // ✅ TANSTACK QUERY - Simplified recent search click
-  const handleRecentSearchClick = async (query: string) => {
+  // Re-run a query from history
+  const handleRecentSearchClick = (query: string) => {
     setSearchQuery(query);
     sessionStorage.setItem(SEARCH_KEY, query);
     setSuggestions([]);
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-
-    try {
-      // ✅ TANSTACK QUERY - Manual refetch to ensure fresh data
-      await refetchSearch();
-      await fetchSearchHistory();
-    } catch (error) {
-      console.error("Search failed:", error);
-      await fetchSearchHistory();
-    }
+    setSubmittedParams({
+      search_type: "natural_language",
+      user_id: userId,
+      query_text: query,
+    });
+    // History refresh is handled by the searchResponse useEffect
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -486,14 +479,15 @@ function TradeSearchPage() {
     }
   };
 
-  const handleClearSearch = async () => {
+  const handleClearSearch = () => {
     setSearchQuery("");
+    setSubmittedParams(null);
     sessionStorage.removeItem(SEARCH_KEY);
     setCurrentQueryId(null);
     setSuggestions([]);
-    // ✅ TANSTACK QUERY - Clear search error by invalidating queries
+    setFilters(getDefaultFilters());
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     queryClient.removeQueries({ queryKey: ['trades', 'search'] });
-    await clearAllFilters();
   };
 
   const handleSuggestionClick = (query: string) => {
