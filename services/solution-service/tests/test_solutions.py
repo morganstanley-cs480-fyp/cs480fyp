@@ -118,7 +118,7 @@ async def test_get_solution(client: AsyncClient, sample_solution):
 @pytest.mark.asyncio
 async def test_get_solution_not_found(client: AsyncClient):
     """Test retrieving non-existent solution returns 404"""
-    response = await client.get("/api/solutions/99999")
+    response = await client.get("/api/solutions/999999")
     
     assert response.status_code == 404
     assert response.json()["detail"] == "Solution not found"
@@ -174,7 +174,7 @@ async def test_update_solution_invalid_score(client: AsyncClient, sample_solutio
 async def test_update_solution_not_found(client: AsyncClient):
     """Test updating non-existent solution returns 404"""
     payload = {"scores": 15}
-    response = await client.put("/api/solutions/99999", json=payload)
+    response = await client.put("/api/solutions/999999", json=payload)
     
     assert response.status_code == 404
     assert response.json()["detail"] == "Solution not found"
@@ -199,7 +199,7 @@ async def test_delete_solution(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_delete_solution_not_found(client: AsyncClient):
     """Test deleting non-existent solution returns 404"""
-    response = await client.delete("/api/solutions/99999")
+    response = await client.delete("/api/solutions/999999")
     
     assert response.status_code == 404
     assert response.json()["detail"] == "Solution not found"
