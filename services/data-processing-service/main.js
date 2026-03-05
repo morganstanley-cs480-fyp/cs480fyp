@@ -82,7 +82,7 @@ async function initDB() {
     CREATE TABLE IF NOT EXISTS exceptions (
       id INTEGER PRIMARY KEY, 
       trade_id INTEGER REFERENCES trades(id), 
-      transaction_id INTEGER REFERENCES transactions(id), 
+      trans_id INTEGER REFERENCES transactions(id), 
       event TEXT, 
       status TEXT, 
       msg TEXT, 
@@ -233,7 +233,7 @@ export async function handleTransaction(trans) {
       const closeExceptionQuery = `
         UPDATE exceptions 
         SET status = 'closed' 
-        WHERE transaction_id = $1;
+        WHERE trans_id = $1;
       `;
       // Note: Ensure your table is named 'exceptions' or adjust the query above
       await client.query(closeExceptionQuery, [parseInt(trans.id)]);
@@ -266,14 +266,14 @@ export async function handleException(excep) {
     await client.query('BEGIN');
 
     const insertExcepQuery = `
-      INSERT INTO exceptions (id, trade_id, transaction_id, status, msg, create_time, comment, priority, update_time)
+      INSERT INTO exceptions (id, trade_id, trans_id, status, msg, create_time, comment, priority, update_time)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       ON CONFLICT (id) DO NOTHING;
     `;
     const excepValues = [
       parseInt(excep.id), 
       parseInt(excep.trade_id), 
-      parseInt(excep.transaction_id), 
+      parseInt(excep.trans_id), 
       excep.status, excep.msg, excep.create_time, 
       excep.comment, excep.priority, excep.update_time
     ];
@@ -282,7 +282,7 @@ export async function handleException(excep) {
     // Update Transaction and Trade to REJECTED
     await client.query(
       `UPDATE transactions SET status = 'REJECTED', update_time = $1 WHERE id = $2`, 
-      [excep.update_time, parseInt(excep.transaction_id)]
+      [excep.update_time, parseInt(excep.trans_id)]
     );
     
     await client.query(
