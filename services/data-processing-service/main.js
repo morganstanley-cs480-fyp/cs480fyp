@@ -111,6 +111,14 @@ async function initDB() {
     CONSTRAINT chk_solutions_scores 
         CHECK (scores >= 0 AND scores <= 27)
     );
+
+    -- Set the sequence to start from 100000 for 6-digit IDs
+    ALTER SEQUENCE solutions_id_seq RESTART WITH 100000;
+
+    -- Create indexes for solutions table
+    CREATE INDEX IF NOT EXISTS idx_solutions_exception_id ON solutions(exception_id);
+    CREATE INDEX IF NOT EXISTS idx_solutions_scores ON solutions(scores DESC);
+    CREATE INDEX IF NOT EXISTS idx_solutions_create_time ON solutions(create_time DESC);
   `;
   try {
     await pool.query(createTablesQuery);
