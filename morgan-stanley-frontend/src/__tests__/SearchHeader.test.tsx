@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SearchHeader, type TypeaheadSuggestion } from '../components/trades/SearchHeader'
-import type { RecentSearch, QueryHistory } from '../lib/api/types'
+import type { QueryHistory } from '../lib/api/types'
+import type { RecentSearch } from '../components/trades/SearchHeader'
 
 const defaultProps = {
   searchQuery: '',
@@ -241,11 +242,12 @@ describe('SearchHeader', () => {
     const savedQueries: QueryHistory[] = [
       {
         query_id: 101,
+        user_id: "user",
         query_text: 'End of day trades',
         query_name: 'EOD Report',
-        saved_time: '2024-01-10T09:00:00Z',
+        create_time: '2024-01-10T09:00:00Z',
         last_use_time: '2024-01-15T10:00:00Z',
-        use_count: 5
+        is_saved: true
       }
     ]
 
