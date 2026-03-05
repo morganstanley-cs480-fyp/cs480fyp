@@ -1,46 +1,6 @@
 // // Mock Data - Central data source for the application
 
 // // ============================================================================
-// // TYPE DEFINITIONS
-// // ============================================================================
-
-// export interface Trade {
-//   trade_id: number;  // Changed from string to number to match backend
-//   account: string;
-//   asset_type: string;
-//   booking_system: string;
-//   affirmation_system: string;
-//   clearing_house: string;
-//   create_time: string;
-//   update_time: string;
-//   status: 'CANCELLED' | 'ALLEGED' | 'REJECTED' | 'CLEARED';
-// }
-
-// export interface Transaction {
-//   trade_id: number;  // Changed from string to number to match backend
-//   trans_id: number;  // Changed from string to number to match backend
-//   create_time: string;
-//   entity: string;
-//   direction: string;
-//   type: string;
-//   status: string;
-//   update_time: string;
-//   step: number;
-// }
-
-// export interface Exception {
-//   trade_id: number;  // Changed from string to number to match backend
-//   trans_id: number;  // Changed from string to number to match backend
-//   exception_id: number;  // Changed from string to number to match backend
-//   status: 'PENDING' | 'CLOSED';
-//   msg: string;
-//   create_time: string;
-//   comment: string;
-//   priority: 'HIGH' | 'MEDIUM' | 'LOW';
-//   update_time: string;
-// }
-
-// // ============================================================================
 // // MOCK DATA
 // // ============================================================================
 
