@@ -27,7 +27,7 @@ class SolutionUpdate(BaseModel):
     scores: Optional[int] = Field(None, ge=0, le=27, description="Score must be between 0 and 27")
 
 class SolutionResponse(SolutionBase):
-    id: int
+    id: int = Field(..., ge=100000, le=999999, description="6-digit solution ID")
     create_time: datetime
 
     class Config:

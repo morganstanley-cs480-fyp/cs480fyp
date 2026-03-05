@@ -201,13 +201,13 @@ async def find_similar_exceptions(
                 
                 # Fetch trade details
                 async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
-                    resp = await client.get(f"/trades/{trade_id}")
+                    resp = await client.get(f"/api/trades/{trade_id}")
                     resp.raise_for_status()
                     trade_data = resp.json()
 
                 # Fetch transaction history
                 async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
-                    resp = await client.get(f"/trades/{trade_id}/transactions")
+                    resp = await client.get(f"/api/trades/{trade_id}/transactions")
                     resp.raise_for_status()
                     history_data = resp.json()
 
@@ -375,7 +375,7 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Exception {payload.exception_id} already exists in the vector store"
             )
-        
+
         # Fetch exception data
         async with httpx.AsyncClient(base_url=settings.EXCEPTION_SERVICE_URL) as client:
             resp = await client.get(f"/api/exceptions/{payload.exception_id}")
@@ -384,13 +384,13 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
 
         # Fetch trade details (clearing house, asset type, etc.)
         async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
-            resp = await client.get(f"/trades/{payload.trade_id}")
+            resp = await client.get(f"/api/trades/{payload.trade_id}")
             resp.raise_for_status()
             trade_data = resp.json()
 
         # Fetch transaction history
         async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
-            resp = await client.get(f"/trades/{payload.trade_id}/transactions")
+            resp = await client.get(f"/api/trades/{payload.trade_id}/transactions")
             resp.raise_for_status()
             history_data = resp.json()
 
