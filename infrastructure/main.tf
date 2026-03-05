@@ -380,9 +380,12 @@ module "rag_service" {
     { name = "BEDROCK_EMBED_MODEL_ID", value = "cohere.embed-english-v3" },
     { name = "BEDROCK_CHAT_MODEL_ID",  value = "us.amazon.nova-lite-v1:0" },
     { name = "GOOGLE_MODEL_ID",        value = "gemini-2.5-flash-lite" },
-    { name = "LLM_PROVIDER",            value = "bedrock" }
+    { name = "EXCEPTION_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net" },
+    { name = "TRADE_FLOW_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net"},
+    { name = "SOLUTION_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net"}
   ]
   secrets = [
+    { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn },
     { name = "AWS_ACCESS_KEY_ID",     valueFrom = data.aws_ssm_parameter.bedrock_aws_access_key_id.arn },
     { name = "AWS_SECRET_ACCESS_KEY", valueFrom = data.aws_ssm_parameter.bedrock_aws_secret_access_key.arn }
   ]
@@ -552,12 +555,4 @@ module "trade_flow_service" {
     { name = "DB_NAME", value = module.main_rds.db_name },
   ]
   secrets = []
-}
-
-# CloudFront Distribution (SPA routing + custom error pages for S3)
-module "cloudfront" {
-  source                      = "./modules/cloudfront"
-  bucket_name                 = data.aws_s3_bucket.existing_frontend.id
-  bucket_regional_domain_name = data.aws_s3_bucket.existing_frontend.bucket_regional_domain_name
-  alb_dns_name                = module.alb.alb_dns_name
 }
