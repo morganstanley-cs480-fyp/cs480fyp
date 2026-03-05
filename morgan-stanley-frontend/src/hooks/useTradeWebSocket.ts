@@ -174,6 +174,24 @@ export function useTradeWebSocket(
     };
   }, [tradeId, onMessage]);
 
+  const disconnect = useCallback(() => {
+    if (ws.current) {
+      console.log("🔌 Manually closing WebSocket connection");
+      ws.current.close();
+      ws.current = null;
+      setIsConnected(false);
+      setConnectionStatus("Disconnected");
+    }
+  }, []);
+
+  const forceRefresh = useCallback(() => {
+    console.log("🔄 Force refreshing WebSocket connection");
+    if (ws.current) {
+      ws.current.close();
+    }
+    // Will trigger reconnection due to tradeId effect
+  }, []);
+
   return {
     isConnected,
     lastUpdate,
@@ -181,5 +199,7 @@ export function useTradeWebSocket(
     connectionStatus,
     mergedTransactions,
     mergedExceptions,
+    disconnect,
+    forceRefresh,
   };
 }
