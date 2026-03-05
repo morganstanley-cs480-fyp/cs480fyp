@@ -91,6 +91,26 @@ async function initDB() {
       priority TEXT, 
       update_time TIMESTAMP
     );
+
+    -- Solutions Table
+    CREATE TABLE IF NOT EXISTS solutions (
+    id SERIAL PRIMARY KEY,
+    exception_id INTEGER NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    exception_description TEXT,
+    reference_event TEXT,
+    solution_description TEXT,
+    scores INTEGER NOT NULL,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Foreign key constraint
+    CONSTRAINT fk_solutions_exception_id 
+        FOREIGN KEY (exception_id) REFERENCES exceptions(id) ON DELETE CASCADE,
+    
+    -- Score constraint
+    CONSTRAINT chk_solutions_scores 
+        CHECK (scores >= 0 AND scores <= 27)
+    );
   `;
   try {
     await pool.query(createTablesQuery);
