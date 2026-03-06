@@ -139,7 +139,7 @@ function TradeSearchPage() {
   const fetchInitialTrades = async () => {
     setLoadingInitialTrades(true);
     try {
-      const trades = await tradeFlowService.getTrades(20, 0);
+      const trades = await tradeFlowService.getTrades();
       setInitialTrades(trades);
     } catch (error) {
       console.error("Failed to fetch initial trades:", error);
