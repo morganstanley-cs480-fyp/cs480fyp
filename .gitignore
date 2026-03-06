@@ -94,6 +94,7 @@ terraform.tfvars
 .terraform/modules/
 .terraform/providers/
 *.tfplan
+production.tfplan
 
 # Environment variables and secrets
 .env
