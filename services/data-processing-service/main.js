@@ -101,7 +101,7 @@ async function initDB() {
     reference_event TEXT,
     solution_description TEXT,
     scores INTEGER NOT NULL,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     
     -- Foreign key constraint
     CONSTRAINT fk_solutions_exception_id 
