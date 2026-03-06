@@ -1,5 +1,6 @@
 import pytest
 from app.models import Solution
+from tests.conftest import _set_create_time_if_missing
 
 @pytest.mark.asyncio
 async def test_create_solution_model():
@@ -11,6 +12,7 @@ async def test_create_solution_model():
         solution_description="Test solution description",
         scores=10
     )
+    await _set_create_time_if_missing(solution)
     
     assert solution.id is not None
     assert solution.exception_id == 1
@@ -29,6 +31,7 @@ async def test_solution_score_validation():
         title="Minimum score test",
         scores=0
     )
+    await _set_create_time_if_missing(solution_min)
     assert solution_min.scores == 0
     await solution_min.delete()
     
@@ -38,6 +41,7 @@ async def test_solution_score_validation():
         title="Maximum score test",
         scores=27
     )
+    await _set_create_time_if_missing(solution_max)
     assert solution_max.scores == 27
     await solution_max.delete()
 
@@ -49,6 +53,7 @@ async def test_solution_update():
         title="Original title",
         scores=10
     )
+    await _set_create_time_if_missing(solution)
     
     solution.title = "Updated title"
     solution.scores = 20
@@ -71,6 +76,7 @@ async def test_solution_optional_fields():
         title="Minimal solution",
         scores=5
     )
+    await _set_create_time_if_missing(solution)
     
     assert solution.exception_description is None
     assert solution.reference_event is None
