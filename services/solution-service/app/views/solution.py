@@ -114,3 +114,22 @@ async def create_solutions_table():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create table: {str(e)}")
+
+@router.delete("/table/drop", status_code=200)
+async def drop_solutions_table():
+    """
+    Drops the solutions table if it exists.
+    WARNING: This will delete all solution data permanently.
+    """
+    sql = "DROP TABLE IF EXISTS solutions CASCADE;"
+    
+    try:
+        conn = Tortoise.get_connection("default")
+        await conn.execute_script(sql)
+        
+        return {
+            "message": "Solutions table dropped successfully",
+            "details": "All solution data has been deleted"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to drop table: {str(e)}")
