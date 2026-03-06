@@ -21,6 +21,7 @@ import {
   type Edge,
   type EdgeProps,
   type NodeChange,
+  type ReactFlowInstance,
 } from '@xyflow/react';
 import "@xyflow/react/dist/style.css";
 import { Landmark, ShieldCheck } from 'lucide-react';
@@ -679,6 +680,7 @@ export function FlowVisualization({
   
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(!transactions || transactions.length === 0 ? false : true);
+  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<Node, Edge> | null>(null);
 
   // Use mergedTransactions for all rendering (combines API + WebSocket data)
   const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
@@ -760,15 +762,66 @@ export function FlowVisualization({
   const nodeTypes = useMemo(() => ({ entity: EntityNode }), []);
   const edgeTypes = useMemo(() => ({ workflow: WorkflowEdge }), []);
 
-  // Dynamically calculate padding based on number of nodes to fit all entities
-  const calculateFitViewPadding = () => {
-    const nodeCount = layoutData.nodes.length;
-    if (nodeCount <= 1) return 0.8;
-    if (nodeCount <= 3) return 0.6;
-    if (nodeCount <= 5) return 0.4;
-    if (nodeCount <= 10) return 0.25;
-    return 0.15;
-  };
+  const fitToTopBottomNodes = useCallback(() => {
+    if (!reactFlowInstance || layoutData.nodes.length === 0) return;
+
+    const getNodeWidth = (node: Node): number => {
+      const data = node.data as { width?: number } | undefined;
+      return typeof data?.width === 'number' ? data.width : NODE_WIDTH;
+    };
+
+    const topNode = layoutData.nodes.reduce((currentTop, node) =>
+      node.position.y < currentTop.position.y ? node : currentTop
+    );
+
+    const bottomNode = layoutData.nodes.reduce((currentBottom, node) =>
+      node.position.y > currentBottom.position.y ? node : currentBottom
+    );
+
+    let minX = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+
+    layoutData.nodes.forEach((node) => {
+      const nodeWidth = getNodeWidth(node);
+      minX = Math.min(minX, node.position.x);
+      maxX = Math.max(maxX, node.position.x + nodeWidth);
+    });
+
+    const topY = topNode.position.y;
+    const bottomY = bottomNode.position.y + NODE_HEIGHT;
+
+    const verticalSpan = Math.max(1, bottomY - topY);
+    const horizontalSpan = Math.max(1, maxX - minX);
+
+    const verticalPadding = Math.max(80, verticalSpan * 0.12);
+    const horizontalPadding = Math.max(120, horizontalSpan * 0.08);
+
+    reactFlowInstance.fitBounds(
+      {
+        x: minX - horizontalPadding,
+        y: topY - verticalPadding,
+        width: horizontalSpan + horizontalPadding * 2,
+        height: verticalSpan + verticalPadding * 2,
+      },
+      {
+        duration: 320,
+        minZoom: 0.35,
+        maxZoom: 1.8,
+      }
+    );
+  }, [layoutData.nodes, reactFlowInstance]);
+
+  useEffect(() => {
+    if (activeTab !== 'system' || isLoading || layoutData.nodes.length === 0 || !reactFlowInstance) {
+      return;
+    }
+
+    const frameId = requestAnimationFrame(() => {
+      fitToTopBottomNodes();
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [activeTab, isLoading, layoutData.nodes, reactFlowInstance, fitToTopBottomNodes]);
 
   return (
     <Card>
@@ -837,6 +890,7 @@ export function FlowVisualization({
                   edges={layoutData.edges}
                   nodeTypes={nodeTypes}
                   edgeTypes={edgeTypes}
+                  onInit={setReactFlowInstance}
                   onNodesChange={onNodesChange}
                   nodesDraggable
                   nodesConnectable={false}
@@ -844,8 +898,6 @@ export function FlowVisualization({
                   panOnDrag={true}
                   selectionOnDrag={false}
                   zoomOnScroll
-                  fitView
-                  fitViewOptions={{ padding: calculateFitViewPadding() }}
                   minZoom={0.1}
                   maxZoom={2}
                 >
