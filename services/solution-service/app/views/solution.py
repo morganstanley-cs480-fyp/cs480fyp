@@ -23,6 +23,7 @@ async def get_solution(solution_id: int):
 @router.post("", response_model=SolutionResponse, status_code=201)
 async def create_solution(solution_data: SolutionCreate):
     solution = await Solution.create(**solution_data.model_dump(exclude_unset=True))
+    await solution.refresh_from_db()
     return solution
 
 @router.post("/batch", response_model=List[SolutionResponse], status_code=201)
@@ -33,6 +34,7 @@ async def batch_create_solutions(solutions_data: List[SolutionCreate]):
     created_solutions = []
     for solution_data in solutions_data:
         solution = await Solution.create(**solution_data.model_dump(exclude_unset=True))
+        await solution.refresh_from_db()
         created_solutions.append(solution)  
     return created_solutions
 
