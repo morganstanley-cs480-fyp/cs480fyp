@@ -30,11 +30,11 @@ const mapTrade = (trade: TradeApiResponse): Trade => ({
   status: trade.status,
 });
 
-// interface TradeTableResponse {
-//     data: TradeApiResponse[],
-//     limit: number,
-//     offset: number,
-// }
+interface TradeTableResponse {
+  data: TradeApiResponse[];
+  limit: number;
+  offset: number;
+}
 
 async function request<T>(endpoint: string): Promise<T> {
   const response = await fetch(`${TRADE_FLOW_API_BASE_URL}${endpoint}`);
@@ -61,12 +61,10 @@ export const tradeFlowService = {
     return mapTrade(raw);
   },
 
-    // NOTE : TEMPORARILY NOT USE LIMIT AND OFFSET FOR NOW.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // async getTrades(_limit: number = 1000, _offset: number = 0): Promise<Trade[]> {
-  //   const response = await request<TradeTableResponse>(`/api/trades`);
-  //   return response.data.map(mapTrade);
-  // },
+  async getTrades(limit: number = 20, offset: number = 0): Promise<Trade[]> {
+    const response = await request<TradeTableResponse>(`/api/trades?limit=${limit}&offset=${offset}`);
+    return response.data.map(mapTrade);
+  },
 
   // async getRecentTrades(limit: number = 20): Promise<Trade[]> {
   //   return await request<Trade[]>(`/api/trades/recent?limit=${limit}`);
