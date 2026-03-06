@@ -13,8 +13,8 @@ class Solution(models.Model):
     exception_description = fields.TextField(null=True)
     reference_event = fields.TextField(null=True)
     solution_description = fields.TextField(null=True)
-    # Database generates this value with DEFAULT CURRENT_TIMESTAMP
-    create_time = fields.DatetimeField(null=True, generated=True)
+    # Tortoise auto-generates this timestamp on creation
+    create_time = fields.DatetimeField(auto_now_add=True)
     scores = fields.IntField(validators=[MinValueValidator(0), MaxValueValidator(27)])
 
     # This class specifies the table name and other ORM options
