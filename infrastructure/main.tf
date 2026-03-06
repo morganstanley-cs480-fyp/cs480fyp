@@ -28,13 +28,6 @@ data "aws_s3_bucket" "existing_frontend" {
   bucket = "morgan-stanley-frontend"
 }
 
-module "cloudfront" {
-  source                      = "./modules/cloudfront"
-  bucket_name                 = data.aws_s3_bucket.existing_frontend.id
-  bucket_regional_domain_name = data.aws_s3_bucket.existing_frontend.bucket_regional_domain_name
-  alb_dns_name                = module.alb.alb_dns_name
-}
-
 # S3 for XML File
 module "s3_data" {
   source           = "./modules/s3_data"
