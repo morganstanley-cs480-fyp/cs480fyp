@@ -34,9 +34,11 @@ import { TradeStatsCards } from "@/components/trades/TradeStatsCards";
 import { TradeResultsTable } from "@/components/trades/TradeResultsTable";
 import { useTradeColumns } from "@/components/trades/useTradeColumns";
 import { searchService } from "@/lib/api/searchService";
+import { tradeFlowService } from "@/lib/api/tradeFlowService";
 import { APIError } from "@/lib/api/client";
 import { requireAuth } from "@/lib/utils";
 import { useTradeSearch } from "@/hooks/useTradeSearch";
+import type { Trade } from "@/lib/api/types";
 
 export const Route = createFileRoute("/trades/")({
   beforeLoad: requireAuth,
@@ -97,6 +99,10 @@ function TradeSearchPage() {
   // const [searchError, setSearchError] = useState<string | null>(null);
   // const [results, setResults] = useState<Trade[]>([]);
 
+  // Initial trades state (for when no search is submitted)
+  const [initialTrades, setInitialTrades] = useState<Trade[]>([]);
+  const [loadingInitialTrades, setLoadingInitialTrades] = useState(false);
+
   const [filterOptions, setFilterOptions] = useState({
     accounts: [] as string[],
     assetTypes: [] as string[],
@@ -122,9 +128,26 @@ function TradeSearchPage() {
         user_id: userId,
         query_text: savedQuery,
       });
+    } else {
+      // No saved search - fetch initial trades
+      fetchInitialTrades();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fetch initial trades when page loads without a saved search
+  const fetchInitialTrades = async () => {
+    setLoadingInitialTrades(true);
+    try {
+      const trades = await tradeFlowService.getTrades(20, 0);
+      setInitialTrades(trades);
+    } catch (error) {
+      console.error("Failed to fetch initial trades:", error);
+      setInitialTrades([]);
+    } finally {
+      setLoadingInitialTrades(false);
+    }
+  };
 
   // Helper to build manual filter params from current filter state
   const buildManualParams = (): SearchRequest => {
@@ -158,8 +181,9 @@ function TradeSearchPage() {
     refetch: refetchSearch,
   } = useTradeSearch(submittedParams);
 
-  // ✅ TANSTACK QUERY - Extract results from query response
-  const results = searchResponse?.results ?? [];
+  // ✅ TANSTACK QUERY - Extract results from query response, or use initial trades
+  const results = submittedParams ? (searchResponse?.results ?? []) : initialTrades;
+  const isLoading = submittedParams ? searching : loadingInitialTrades;
 
   // ✅ TANSTACK QUERY - Log results when they change (works the same as before)
   useEffect(() => {
@@ -488,6 +512,8 @@ function TradeSearchPage() {
     setFilters(getDefaultFilters());
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     queryClient.removeQueries({ queryKey: ['trades', 'search'] });
+    // Refetch initial trades when clearing search
+    fetchInitialTrades();
   };
 
   const handleSuggestionClick = (query: string) => {
@@ -529,7 +555,7 @@ function TradeSearchPage() {
     <div className="p-6 mx-auto space-y-6">
       <SearchHeader
         searchQuery={searchQuery}
-        searching={searching}
+        searching={isLoading}
         showFilters={showFilters}
         recentSearches={recentSearches}
         savedQueries={savedQueries}
@@ -587,7 +613,7 @@ function TradeSearchPage() {
       {showFilters && (
         <TradeFilters
           filters={filters}
-          searching={searching}
+          searching={isLoading}
           onFiltersChange={setFilters}
           onSearch={handleManualSearch}
           onClearFilters={clearAllFilters}
