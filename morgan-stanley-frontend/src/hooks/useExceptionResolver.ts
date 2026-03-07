@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import type { Exception } from "@/lib/api/types";
 import { exceptionService, type SimilarException } from "@/lib/api/exceptionService";
 
-// Update AISuggestion interface to match API response
 export interface AISuggestion {
   id: string;
   title: string;
@@ -37,6 +36,7 @@ export function useExceptionResolver(exceptionId: string) {
   const [selectedSuggestion, setSelectedSuggestion] = useState<AISuggestion | null>(null);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasTriedAISearch, setHasTriedAISearch] = useState(false);
 
   // Clear selected suggestion when switching tabs
   useEffect(() => {
@@ -51,11 +51,11 @@ export function useExceptionResolver(exceptionId: string) {
       description: similar.explanation || similar.exception_msg,
       confidence: Math.round(similar.similarity_score),
       reasoning: similar.explanation || `Similar ${similar.asset_type} trade with ${similar.clearing_house}`,
-      similarCases: 1, // Each is one similar case
+      similarCases: 1,
       estimatedTime: "5-10 minutes",
       // Include original API fields
       exception_id: similar.exception_id,
-      trade_id: similar.trade_id,
+      trade_id: similar.trade_id.toString(),
       similarity_score: similar.similarity_score,
       priority: similar.priority,
       status: similar.status,
@@ -66,35 +66,56 @@ export function useExceptionResolver(exceptionId: string) {
     }));
   };
 
-  const handleAISearch = useCallback(async (exc?: Exception) => {
+  // ✅ Remove hasTriedAISearch from dependencies and handle it inside the function
+  const handleAISearch = useCallback(async (exc?: Exception, forceRetry: boolean = false) => {
     const targetException = exc || exception;
     if (!targetException) return;
+    
+    // ✅ Check hasTriedAISearch inside the function, not in dependencies
+    if (hasTriedAISearch && !forceRetry) return;
 
     setAiSearching(true);
     setError(null);
+    setHasTriedAISearch(true);
 
     try {
       console.log('🔍 Fetching similar exceptions for:', targetException.id);
       
-      // Use real API to get similar exceptions
       const response = await exceptionService.getSimilarExceptions(
         targetException.id.toString(),
-        5, // Get top 5 similar cases
-        true // Include explanations
+        5,
+        true
       );
 
       const suggestions = convertSimilarExceptionsToSuggestions(response.similar_exceptions);
       setAiSuggestions(suggestions);
       
       console.log('✅ Found', suggestions.length, 'similar exceptions');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Failed to fetch similar exceptions:', error);
-      setError('Failed to load similar exceptions. Please try again.');
+      
+      let errorMessage = 'Failed to load similar exceptions. Please try again.';
+      if (error?.message?.includes('validation error')) {
+        errorMessage = 'API validation error. The similar exceptions service may be experiencing issues.';
+      } else if (error?.message?.includes('trade_id')) {
+        errorMessage = 'Data format error in similar exceptions response. Please contact support.';
+      }
+      
+      setError(errorMessage);
       setAiSuggestions([]);
     } finally {
       setAiSearching(false);
     }
-  }, [exception]);
+  }, [exception]); // ✅ Remove hasTriedAISearch from dependencies
+
+  // ✅ Fix retry function to force a new search
+  const retryAISearch = useCallback(() => {
+    console.log('🔄 Retrying AI search...');
+    setHasTriedAISearch(false);
+    setError(null);
+    // ✅ Pass forceRetry: true to override the hasTriedAISearch check
+    handleAISearch(undefined, true);
+  }, [handleAISearch]);
 
   useEffect(() => {
     let isActive = true;
@@ -103,15 +124,14 @@ export function useExceptionResolver(exceptionId: string) {
       try {
         console.log('📥 Loading exception:', exceptionId);
         
-        // Use real API to get exception details
         const exc = await exceptionService.getExceptionById(Number(exceptionId));
         
         if (!isActive) return;
         
         setException(exc);
+        setHasTriedAISearch(false);
         console.log('✅ Exception loaded:', exc);
         
-        // Automatically search for similar exceptions
         handleAISearch(exc);
       } catch (error) {
         if (!isActive) return;
@@ -126,7 +146,7 @@ export function useExceptionResolver(exceptionId: string) {
     return () => {
       isActive = false;
     };
-  }, [exceptionId, handleAISearch]);
+  }, [exceptionId]); // ✅ Keep only exceptionId in dependencies
 
   const handleGenerateAISolution = useCallback(async () => {
     if (!exception) return;
@@ -137,10 +157,8 @@ export function useExceptionResolver(exceptionId: string) {
     try {
       console.log('🤖 Generating AI solution for exception:', exception.id);
       
-      // Use real API to generate solution
       const response = await exceptionService.generateSolution(exception.id.toString());
       
-      // Format the generated solution for display
       const formattedSolution = response.generated_solution.raw_response || 
         `${response.generated_solution.root_cause_analysis}\n\nRESOLUTION STEPS:\n${response.generated_solution.recommended_resolution_steps}\n\nRISK CONSIDERATIONS:\n${response.generated_solution.risk_considerations}`;
       
@@ -205,5 +223,6 @@ export function useExceptionResolver(exceptionId: string) {
     handleCopyToDescription,
     handleCopyToClipboard,
     handleSuggestionClick,
+    retryAISearch,
   };
 }

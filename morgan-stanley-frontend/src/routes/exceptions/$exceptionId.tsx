@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { AlertCircle, AlertTriangle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,6 +49,7 @@ function ResolveExceptionPage() {
     handleCopyToDescription,
     handleCopyToClipboard,
     handleSuggestionClick,
+    retryAISearch, // ✅ Get retry function
   } = useExceptionResolver(exceptionId);
 
   const handleApplySolution = async () => {
@@ -159,9 +160,33 @@ function ResolveExceptionPage() {
       {(error || applyError) && (
         <Card className="border-red-200 bg-red-50">
           <CardContent className="py-4">
-            <div className="flex items-center gap-2 text-red-700">
-              <AlertTriangle className="size-4" />
-              <p className="text-sm">{error || applyError}</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-red-700">
+                <AlertTriangle className="size-4" />
+                <p className="text-sm">{error || applyError}</p>
+              </div>
+              {/* ✅ Add retry button for similar exceptions errors */}
+              {error && error.includes('similar exceptions') && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={retryAISearch}
+                  disabled={aiSearching}
+                  className="text-red-700 border-red-300 hover:bg-red-100"
+                >
+                  {aiSearching ? (
+                    <>
+                      <div className="inline-block animate-spin rounded-full h-3 w-3 border-b border-red-700 mr-2"></div>
+                      Retrying...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="size-3 mr-2" />
+                      Retry
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
