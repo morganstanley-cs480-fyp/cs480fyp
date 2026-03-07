@@ -37,7 +37,7 @@ export function ExceptionFilters({
           onClick={onClearFilters}
           className="h-8 text-xs border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
         >
-          Clear All
+          Clear All Filters
         </Button>
 
         <DropdownMenu>

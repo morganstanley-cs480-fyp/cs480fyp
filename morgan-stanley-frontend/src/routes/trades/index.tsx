@@ -522,6 +522,14 @@ function TradeSearchPage() {
     setFilters(getDefaultFilters());
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     queryClient.removeQueries({ queryKey: ['trades', 'search'] });
+
+    setSubmittedParams({
+      search_type: "manual",
+      user_id: userId,
+      filters: {
+        date_type: "update_time",
+      },
+    });    
   };
 
   const handleSuggestionClick = (query: string) => {
@@ -642,6 +650,7 @@ function TradeSearchPage() {
         columnFiltersCount={columnFilters.length}
         filterOptions={filterOptions}
         onRefresh={handleRefresh}
+        isLoading={searching}
       />
     </div>
   );

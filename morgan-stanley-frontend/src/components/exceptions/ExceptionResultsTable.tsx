@@ -1,5 +1,5 @@
 // ...existing code...
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, RefreshCw, ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
 import {
   flexRender,
@@ -27,6 +27,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Exception } from "@/lib/api/types";
 
 interface ExceptionResultsTableProps {
@@ -38,6 +46,7 @@ interface ExceptionResultsTableProps {
   onStatusFilterChange: (value: "ALL" | "PENDING" | "CLOSED") => void;
   onPriorityFilterChange: (value: "ALL" | "HIGH" | "MEDIUM" | "LOW") => void;
   onRowClick: (exception: Exception) => void;
+  onRefresh?: () => void; // Add this prop
 }
 
 export function ExceptionResultsTable({
@@ -49,8 +58,70 @@ export function ExceptionResultsTable({
   onStatusFilterChange,
   onPriorityFilterChange,
   onRowClick,
+  onRefresh,
 }: ExceptionResultsTableProps) {
   const [openFilter, setOpenFilter] = useState<string | null>(null);
+
+  // Handle refresh functionality
+  const handleRefresh = () => {
+    // Clear all filters first
+    table.resetColumnFilters();
+    table.resetSorting();
+    table.resetPageIndex();
+    
+    // Then trigger data refresh if callback provided
+    onRefresh?.();
+  };
+
+  // Handle clear filters functionality
+  const handleClearFilters = () => {
+    // Clear all TanStack table filters and state
+    table.resetColumnFilters();
+    table.resetSorting();
+    table.resetPageIndex();
+    table.resetColumnVisibility();
+    
+    // Close any open dropdown filters
+    setOpenFilter(null);
+  };
+
+  const handleDownloadCSV = () => {
+    const rows = table.getFilteredRowModel().rows;
+    if (rows.length === 0) return;
+
+    // Get visible columns
+    const visibleColumns = table.getVisibleLeafColumns();
+    
+    // Create CSV header
+    const headers = visibleColumns.map(col => col.id).join(',');
+    
+    // Create CSV rows
+    const csvRows = rows.map(row => {
+      return visibleColumns.map(col => {
+        const value = row.getValue(col.id);
+        // Escape commas and quotes in values
+        const stringValue = String(value ?? '');
+        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+          return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+        return stringValue;
+      }).join(',');
+    });
+    
+    // Combine header and rows
+    const csvContent = [headers, ...csvRows].join('\n');
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `exceptions_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };  
 
   // Generate dropdown options from table data
   const optionMap = useMemo(() => {
@@ -77,6 +148,67 @@ export function ExceptionResultsTable({
             {resultsCount} {resultsCount !== 1 ? "exceptions" : "exception"}
           </span>
         </div>
+       <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 w-8 p-0"
+            onClick={handleDownloadCSV}
+            title="Download as CSV"
+          >
+            <Download className="size-3.5 text-black/60" />
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 w-8 p-0"
+            onClick={handleRefresh}
+            title="Refresh data and clear filters"
+          >
+            <RefreshCw className="size-3.5 text-black/60" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearFilters}
+            className="h-8 text-xs border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
+          >
+            Clear All Filters
+          </Button> 
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 text-xs border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
+          >
+                <ChevronDown className="size-4" />
+                Columns Visibility
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[200px]">
+              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                      onSelect={(event) => {
+                        event.preventDefault();
+                      }}
+                    >
+                      {column.id === 'id' ? 'Exception_id' : column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>                 
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
@@ -211,7 +343,7 @@ export function ExceptionResultsTable({
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     className={`cursor-pointer border-b border-black/4 transition-colors ${
-                      selectedExceptionId === row.original.exception_id
+                      selectedExceptionId === row.original.id
                         ? "bg-[#002B51]/5"
                         : "hover:bg-[#002B51]/[0.03]"
                     }`}

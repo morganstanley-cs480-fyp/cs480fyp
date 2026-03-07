@@ -44,6 +44,7 @@ interface TradeResultsTableProps {
   columnFiltersCount: number;
   filterOptions?: FilterOptions;
   onRefresh? : () => void;
+  isLoading? : boolean, // Add this with default value
 }
 
 export function TradeResultsTable({
@@ -52,6 +53,7 @@ export function TradeResultsTable({
   columnFiltersCount,
   filterOptions,
   onRefresh,
+  isLoading = false
 }: TradeResultsTableProps) {
   const navigate = useNavigate();
   const [openFilter, setOpenFilter] = useState<string | null>(null);
@@ -68,6 +70,16 @@ export function TradeResultsTable({
     onRefresh?.();
   };
 
+  const handleClearFilters = () => {
+    // Clear all TanStack table filters and state
+    table.resetColumnFilters();
+    table.resetSorting();
+    table.resetPageIndex();
+    table.resetColumnVisibility();
+    
+    // Close any open dropdown filters
+    setOpenFilter(null);
+  };  
   const handleDownloadCSV = () => {
     const rows = table.getFilteredRowModel().rows;
     if (rows.length === 0) return;
@@ -167,12 +179,21 @@ export function TradeResultsTable({
           >
             <RefreshCw className="size-3.5 text-black/60" />
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearFilters}
+            className="h-8 text-xs border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
+          >
+            Clear All Filters
+          </Button>
+
           {/* Column Visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <ChevronDown className="size-4 mr-2" />
-                Columns
+              <Button variant="outline" size="sm" className="h-8 text-xs border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]">
+                <ChevronDown className="size-4" />
+                Columns Visibility
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[200px]">
@@ -413,7 +434,14 @@ export function TradeResultsTable({
                     colSpan={table.getAllColumns().length}
                     className="h-32 text-center text-black/40 text-sm"
                   >
-                    No results found.
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                        Loading...
+                      </div>
+                    ) : (
+                      "No results found."
+                    )}
                   </TableCell>
                 </TableRow>
               )}
