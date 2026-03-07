@@ -80,6 +80,10 @@ variable "s3_data_file_key" {
   default = "data.xml"
 }
 
+variable "s3_data_file_source" {
+  type = string
+}
+
 variable "data_processing_queue_name" {
   type    = string
   default = "data-processing-queue.fifo"
