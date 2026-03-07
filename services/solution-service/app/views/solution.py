@@ -13,9 +13,9 @@ async def list_solutions():
     solutions = await Solution.all()
     return solutions
 
-@router.get("/{solution_id}", response_model=SolutionResponse)
-async def get_solution(solution_id: int):
-    solution = await Solution.get_or_none(id=solution_id)
+@router.get("/{exception_id}", response_model=SolutionResponse)
+async def get_solution(exception_id: int):
+    solution = await Solution.get_or_none(exception_id=exception_id)
     if not solution:
         raise HTTPException(status_code=404, detail="Solution not found")
     return solution
