@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     AWS_REGION: str = "ap-southeast-1"
     AWS_ACCESS_KEY_ID: Optional[str] = None
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
-    BEDROCK_EMBED_MODEL_ID: str = "amazon.nova-2-embedding-v1"
+    BEDROCK_EMBED_MODEL_ID: str = "cohere.embed-english-v3"
     BEDROCK_CHAT_MODEL_ID: str = "us.amazon.nova-lite-v1:0"
 
     # Google AI (for chat/LLM)

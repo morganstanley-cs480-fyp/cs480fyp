@@ -155,7 +155,7 @@ services:
       - "8004:3004"
     environment:
       LOG_LEVEL: DEBUG
-      AWS_REGION: us-west-1
+      AWS_REGION: ap-southeast-1
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       BEDROCK_EMBED_MODEL_ID: cohere.embed-english-v3
@@ -171,7 +171,8 @@ services:
       ENABLE_CORS: "true"
       CORS_ORIGINS: '["http://localhost:3000","http://localhost:5173"]'
       EXCEPTION_SERVICE_URL: http://exception-service:3001
-      TRADE_FLOW_SERVICE_URL: http://trade-flow-service:8000
+      SOLUTION_SERVICE: http://exception-service:3006
+      TRADE_FLOW_SERVICE_URL: http://trade-flow-service:3007
     depends_on:
       milvus-standalone:
         condition: service_healthy

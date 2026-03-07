@@ -6,7 +6,9 @@ Outputs JSON-formatted logs for easy parsing and monitoring.
 import logging
 import sys
 from typing import Any
+
 from pythonjsonlogger import jsonlogger
+
 from app.config.settings import settings
 
 

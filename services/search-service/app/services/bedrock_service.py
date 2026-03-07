@@ -3,33 +3,33 @@ AWS Bedrock Service - AI Parameter Extraction
 Integrates with AWS Bedrock to extract structured parameters from natural language queries.
 """
 
-import json
 import hashlib
+import json
 import logging
 from datetime import datetime
 from typing import Optional
 
 import aioboto3
 import tiktoken
-from botocore.exceptions import ClientError, BotoCoreError
+from botocore.exceptions import BotoCoreError, ClientError
 from tenacity import (
+    before_sleep_log,
     retry,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
-    retry_if_exception_type,
-    before_sleep_log,
 )
 
-from app.config.settings import settings
 from app.cache.redis_client import redis_manager
+from app.config.settings import settings
 from app.models.domain import ExtractedParams
 from app.prompts.extraction_prompt import (
     SYSTEM_PROMPT,
     build_user_prompt,
     build_validation_rules,
 )
-from app.utils.logger import logger
 from app.utils.exceptions import BedrockAPIError, BedrockResponseError
+from app.utils.logger import logger
 
 
 class BedrockService:

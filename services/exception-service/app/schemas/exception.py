@@ -8,7 +8,8 @@ from app.models.exception import ExceptionStatus
 # Also automatically convert database models to JSON responses
 # from_attributes converts Tortoise models to Pydantic models
 
-class ExceptionBase(BaseModel):    
+
+class ExceptionBase(BaseModel):
     trade_id: int
     trans_id: int
     msg: str
@@ -16,8 +17,10 @@ class ExceptionBase(BaseModel):
     status: ExceptionStatus = ExceptionStatus.PENDING
     comment: Optional[str] = None
 
+
 class ExceptionCreate(ExceptionBase):
     pass
+
 
 class ExceptionUpdate(BaseModel):
     trade_id: Optional[int] = None
@@ -26,6 +29,7 @@ class ExceptionUpdate(BaseModel):
     priority: Optional[str] = None
     status: Optional[ExceptionStatus] = None
     comment: Optional[str] = None
+
 
 class ExceptionResponse(ExceptionBase):
     id: int

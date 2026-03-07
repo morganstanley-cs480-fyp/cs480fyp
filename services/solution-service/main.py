@@ -5,7 +5,10 @@ from app.config import settings
 from app.views import solution_router, health_router
 
 # Creates the FastAPI app instance
-app = FastAPI(title="solution Service")
+# redirect_slashes=False prevents FastAPI from issuing 307 redirects (e.g.
+# /api/solutions -> /api/solutions/) which would use http:// when behind an
+# HTTP-only ALB origin, causing Mixed Content errors in the browser.
+app = FastAPI(title="Solution Service", redirect_slashes=False)
 
 # Configure CORS
 app.add_middleware(

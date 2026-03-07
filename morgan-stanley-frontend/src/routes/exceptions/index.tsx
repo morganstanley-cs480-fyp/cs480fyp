@@ -14,7 +14,7 @@ import type {
   ColumnFiltersState,
 } from "@tanstack/react-table";
 import type { Exception } from "@/lib/api/types";
-import { searchService } from "@/lib/api/searchService";
+import { exceptionService } from "@/lib/api/exceptionService";
 
 // Component imports
 import { StatsOverview } from "@/components/exceptions/StatsOverview";
@@ -56,7 +56,7 @@ function ExceptionsPage() {
       try {
         setLoading(true);
         setSearchError(null);
-        const exceptionData = await searchService.getExceptions();
+        const exceptionData = await exceptionService.getExceptions();
         setExceptions(exceptionData);
         setResults(exceptionData);
       } catch (error) {
@@ -136,10 +136,10 @@ function ExceptionsPage() {
         const query = searchQuery.toLowerCase();
         filtered = filtered.filter(
           (exc) =>
-            exc.exception_id.toString().includes(query) ||
+            exc.id.toString().includes(query) ||
             exc.trade_id.toString().includes(query) ||
             exc.msg.toLowerCase().includes(query) ||
-            exc.comment.toLowerCase().includes(query),
+            exc.comment?.toLowerCase().includes(query),
         );
       }
 
@@ -208,7 +208,7 @@ function ExceptionsPage() {
                 <ExceptionResultsTable
                   table={table}
                   resultsCount={results.length}
-                  selectedExceptionId={selectedException?.exception_id || null}
+                  selectedExceptionId={selectedException?.id || null}
                   statusFilter={statusFilter}
                   priorityFilter={priorityFilter}
                   onStatusFilterChange={setStatusFilter}

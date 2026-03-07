@@ -5,9 +5,9 @@ Useful for local development and testing.
 """
 
 import sys
-from pathlib import Path
-from typing import Dict, Any
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -78,7 +78,6 @@ class MockBedrockService:
 
         # Extract status
         if "pending" in query_lower or "alleged" in query_lower:
-            params["status"].append("PENDING")
             params["status"].append("ALLEGED")
         if "cleared" in query_lower:
             params["status"].append("CLEARED")
@@ -174,7 +173,7 @@ MOCK_TEST_CASES = [
         "query": "show me pending FX trades from last week",
         "expected": {
             "asset_type": "FX",
-            "status": ["PENDING", "ALLEGED"],
+            "status": ["ALLEGED"],
             "date_from": "(7 days ago)",
             "date_to": "(today)",
         },

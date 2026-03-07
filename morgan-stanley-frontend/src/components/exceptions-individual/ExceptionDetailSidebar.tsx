@@ -20,7 +20,7 @@ export function ExceptionDetailSidebar({ exception, getPriorityColor }: Exceptio
         <CardContent className="space-y-4">
           <div>
             <p className="text-sm text-black/75 mb-1">Exception ID</p>
-            <p className="font-medium text-black">{exception.exception_id}</p>
+            <p className="font-medium text-black">{exception.id}</p>
           </div>
 
           <Separator />

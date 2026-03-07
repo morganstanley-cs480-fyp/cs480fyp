@@ -4,12 +4,12 @@ on:
   push:
     paths:
       - "morgan-stanley-frontend/**"
-      - ".github/workflows/frontend.yml"
+      - ".github/workflows/build-frontend.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "morgan-stanley-frontend/**"
-      - ".github/workflows/frontend.yml"
+      - ".github/workflows/build-frontend.yml"
   workflow_dispatch:
 
 env:
@@ -64,7 +64,7 @@ jobs:
         working-directory: ./morgan-stanley-frontend
         run: |
           if grep -q '"test"' package.json; then
-            npm test
+            npm run test:run
           else
             echo "No tests configured, skipping..."
           fi

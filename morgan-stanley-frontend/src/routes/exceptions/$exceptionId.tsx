@@ -89,7 +89,7 @@ function ResolveExceptionPage() {
         </Button>
         <div>
           <h1 className="text-2xl font-semibold text-black">
-            View Exception {exception.exception_id}
+            View Exception {exception.id}
           </h1>
           <p className="text-sm text-black/75 mt-1">
             Choose a solution method to resolve this exception

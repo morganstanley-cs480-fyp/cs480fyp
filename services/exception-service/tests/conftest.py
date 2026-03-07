@@ -4,16 +4,15 @@ from tortoise import Tortoise
 from main import app
 from app.models import Exception
 
+
 @pytest.fixture(scope="session", autouse=True)
 async def initialize_db():
     """Initialize test database"""
-    await Tortoise.init(
-        db_url="sqlite://:memory:",
-        modules={"models": ["app.models"]}
-    )
+    await Tortoise.init(db_url="sqlite://:memory:", modules={"models": ["app.models"]})
     await Tortoise.generate_schemas()
     yield
     await Tortoise.close_connections()
+
 
 @pytest.fixture
 async def client():
@@ -21,6 +20,7 @@ async def client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+
 
 @pytest.fixture
 async def sample_exception():
@@ -31,11 +31,12 @@ async def sample_exception():
         msg="Test exception message",
         priority="High",
         status="PENDING",
-        comment="Test comment"
+        comment="Test comment",
     )
     yield exception
     # Cleanup
     await exception.delete()
+
 
 @pytest.fixture
 async def multiple_exceptions():
@@ -48,7 +49,7 @@ async def multiple_exceptions():
             msg=f"Test message {i}",
             priority=["Low", "Medium", "High", "Critical"][i % 4],
             status="PENDING" if i % 2 == 0 else "CLOSED",
-            comment=f"Comment {i}" if i % 2 == 0 else None
+            comment=f"Comment {i}" if i % 2 == 0 else None,
         )
         exceptions.append(exception)
     yield exceptions

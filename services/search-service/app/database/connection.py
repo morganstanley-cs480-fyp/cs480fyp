@@ -3,14 +3,14 @@ PostgreSQL database connection management using asyncpg.
 Provides connection pooling for efficient resource usage.
 """
 
-from typing import Optional
 from contextlib import asynccontextmanager
+from typing import Optional
 
 import asyncpg
 
 from app.config.settings import settings
-from app.utils.logger import logger
 from app.utils.exceptions import DatabaseConnectionError, DatabaseQueryError
+from app.utils.logger import logger
 
 
 class DatabaseManager:

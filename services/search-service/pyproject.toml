@@ -1,0 +1,39 @@
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "env",
+    ".pytest_cache",
+    "htmlcov",
+    "dist",
+    "build",
+]
+
+[tool.ruff.lint]
+# Enable: E/W (pycodestyle), F (pyflakes), B (flake8-bugbear), I (isort), C90 (mccabe complexity)
+select = ["E", "W", "F", "B", "I", "C90"]
+
+# Mirror the flake8 ignore list from .flake8
+ignore = [
+    "E203",  # whitespace before ':' (conflicts with formatter)
+    "E266",  # too many leading '#' for block comment
+    "E501",  # line too long (handled by line-length)
+    "B008",  # do not perform function calls in argument defaults (Pydantic Field)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+"tests/*" = ["F841", "B007", "C901"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 16
+
+[tool.ruff.format]
+# Use double quotes to match black style
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

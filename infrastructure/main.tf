@@ -49,6 +49,7 @@ data "aws_ssm_parameter" "google_api_key" {
   name = "/ecs/secrets/google_api_key"
 }
 
+# Pre-existing SSM SecureStrings for Bedrock AWS credentials — managed manually in AWS Console
 data "aws_ssm_parameter" "bedrock_aws_access_key_id" {
   name = "/ecs/secrets/bedrock_aws_access_key_id"
 }
@@ -405,7 +406,7 @@ module "rag_service" {
   ]
   secrets = [
     { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn },
-    { name = "AWS_ACCESS_KEY_ID", valueFrom = data.aws_ssm_parameter.bedrock_aws_access_key_id.arn },
+    { name = "AWS_ACCESS_KEY_ID",     valueFrom = data.aws_ssm_parameter.bedrock_aws_access_key_id.arn },
     { name = "AWS_SECRET_ACCESS_KEY", valueFrom = data.aws_ssm_parameter.bedrock_aws_secret_access_key.arn }
   ]
 }
@@ -462,7 +463,7 @@ module "search_service" {
     { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" },
     { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
     { name = "GOOGLE_MODEL_ID", value = "gemini-2.5-flash-lite" },
-    
+    { name = "CORS_ORIGINS", value = "[\"*\"]" }
   ]
   secrets = [
     { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn }

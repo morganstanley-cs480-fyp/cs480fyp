@@ -3,12 +3,13 @@ Unit tests for bedrock_service.
 Tests AI parameter extraction with mocked Bedrock client.
 """
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 import json
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.services.bedrock_service import bedrock_service
+import pytest
+
 from app.models.domain import ExtractedParams
+from app.services.bedrock_service import bedrock_service
 from app.utils.exceptions import BedrockAPIError, BedrockResponseError
 
 

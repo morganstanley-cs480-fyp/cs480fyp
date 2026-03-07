@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronDown, ChevronUp, Info, Calendar, Clock, Activity, AlertTriangle } from "lucide-react";
+import { ChevronDown, ChevronUp, Info, Calendar, Clock, Activity, AlertTriangle, Wifi, WifiOff } from "lucide-react";
 import type { Trade, Transaction, Exception } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
 import { getPriorityColor } from "@/routes/trades/-tradeDetailUtils";
@@ -17,6 +17,8 @@ interface TradeInfoCardProps {
   showTradeInfo: boolean;
   onToggle: () => void;
   getStatusBadgeClassName: (status: string) => string;
+  isConnected?: boolean;
+  connectionStatus?: string;
 }
 
 export function TradeInfoCard({
@@ -26,6 +28,8 @@ export function TradeInfoCard({
   showTradeInfo,
   onToggle,
   getStatusBadgeClassName,
+  isConnected = false,
+  connectionStatus = "Disconnected",  
 }: TradeInfoCardProps) {
   const navigate = useNavigate();
   const getExceptionStatusClassName = (status: string) => {
@@ -33,10 +37,7 @@ export function TradeInfoCard({
       case "PENDING":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "CLOSED":
-      case "RESOLVED":
         return "bg-green-100 text-green-800 border-green-200";
-      case "IGNORED":
-        return "bg-black/[0.02] text-black/75 border-black/10";
       default:
         return "bg-black/[0.04] text-black/75 border-black/10";
     }
@@ -49,6 +50,21 @@ export function TradeInfoCard({
         <div className="flex items-center gap-2">
           <Info className="size-5 text-[#002B51]" />
           <h3 className="text-lg font-semibold">Trade Information</h3>
+
+          {/* Live Update Status Indicator */}
+          <div className="flex items-center gap-1 ml-2">
+            {isConnected ? (
+              <>
+                <Wifi className="size-4 text-green-600" />
+                <span className="text-xs text-green-600 font-medium">Connection status for live updates: {connectionStatus}</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="size-4 text-gray-400" />
+                <span className="text-xs text-gray-400">Connection status for live updates: {connectionStatus}</span>
+              </>
+            )}
+          </div>          
         </div>
         <Button
           variant="ghost"
@@ -135,9 +151,6 @@ export function TradeInfoCard({
                 <div className="flex items-center gap-1">
                   <Activity className="size-4 text-[#002B51]" />
                   <p className="text-lg font-semibold">{transactions.length}</p>
-                  <p className="text-xs text-black/50">
-                    ({transactions.filter((t) => t.status === "COMPLETED").length} done)
-                  </p>
                 </div>
               </div>
               <div>
@@ -161,21 +174,21 @@ export function TradeInfoCard({
               <div className="space-y-3">
                 {exceptions.map((exception) => (
                   <div
-                    key={exception.exception_id}
+                    key={exception.id}
                     className="rounded-lg border border-red-200 bg-red-50/50 p-3 cursor-pointer"
-                    onClick={() => navigate({ to: "/exceptions/$exceptionId", params: { exceptionId: `${exception.exception_id}` } })}
+                    onClick={() => navigate({ to: "/exceptions/$exceptionId", params: { exceptionId: `${exception.id}` } })}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        navigate({ to: "/exceptions/$exceptionId", params: { exceptionId: `${exception.exception_id}` } });
+                        navigate({ to: "/exceptions/$exceptionId", params: { exceptionId: `${exception.id}` } });
                       }
                     }}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="text-sm font-semibold text-black">
-                        Exception {exception.exception_id}
+                        Exception {exception.id}
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="secondary" className={getExceptionStatusClassName(exception.status)}>
@@ -210,7 +223,7 @@ export function TradeInfoCard({
                           event.stopPropagation();
                           navigate({
                             to: "/exceptions/$exceptionId",
-                            params: { exceptionId: `${exception.exception_id}` },
+                            params: { exceptionId: `${exception.id}` },
                           });
                         }}
                       >

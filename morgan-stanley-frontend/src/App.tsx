@@ -3,13 +3,18 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { useAuth } from "react-oidc-context";
 import { useEffect } from "react";
+import { Toaster } from "sonner";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// import ReactFlowScreen from './components/prototype/ReactFlowScreenBasic';
-// import ReactFlowScreenWithEg from "@/components/prototype/ReactFlowScreenSimpleEg";
-// import ReactFlowScreenWithDagre from "./components/prototype/ReactFlowScreenWithDagre";
-// import ReactFlowManual from "./components/prototype/ReactFlowManual";
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: true,
+    },
+  },
+});
 
-// const router = createRouter({ routeTree });
 const router = createRouter({routeTree, context: {authentication: undefined!}})
 
 declare module "@tanstack/react-router" {
@@ -30,6 +35,9 @@ export default function App() {
   }, [authentication.isLoading]);  
 
   return (
+    <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} context = {{authentication}}/>
+      <Toaster />
+    </QueryClientProvider>
   );
 }

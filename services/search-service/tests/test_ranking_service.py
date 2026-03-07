@@ -4,12 +4,12 @@ Tests the intelligent relevance scoring algorithm and configuration management.
 """
 
 import json
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from app.services.ranking_service import RankingConfig, TradeRanker
 from app.models.domain import Trade
+from app.services.ranking_service import RankingConfig, TradeRanker
 
 
 class TestRankingConfig:

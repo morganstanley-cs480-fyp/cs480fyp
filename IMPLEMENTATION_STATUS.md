@@ -27,7 +27,7 @@ Successfully implemented Week 1 Foundation and Week 2 Core Features for frontend
   - All interfaces use snake_case (matching backend)
   - Trade, QueryHistory, SearchRequest, SearchResponse
   - Manual and Natural Language search types
-  - All IDs are numbers (trade_id, trans_id, exception_id)
+  - All IDs are numbers (trade_id, trans_id, id)
 
 - **`src/lib/api/searchService.ts`** - Search API service
   - `searchTrades()` - Perform searches

@@ -9,7 +9,6 @@ from pydantic import BaseModel
 from app.database.connection import db_manager
 from app.utils.logger import logger
 
-
 router = APIRouter(prefix="/api", tags=["filters"])
 
 

@@ -8,8 +8,9 @@ CRITICAL SECURITY:
 - asyncpg handles escaping automatically - we just provide values in order
 """
 
-from typing import Tuple, Any
 from datetime import datetime
+from typing import Any, Tuple
+
 from app.config.settings import settings
 from app.models.domain import ExtractedParams
 from app.models.request import ManualSearchFilters
