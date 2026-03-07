@@ -205,3 +205,31 @@ export interface HealthCheckResponse {
     };
   };
 }
+
+// ============================================================================
+// AI Exception Resolution
+// ============================================================================
+
+/**
+ * Unified AI Suggestion interface for exception resolution
+ * Used by both AISuggestionCard component and useExceptionResolver hook
+ */
+export interface AISuggestion {
+  exception_id: string; // exception ID
+  title: string; // exception message
+  description: string;
+  trade_id: string;
+  similarity_score: number; // used to derive __% match 
+  priority?: string;
+  status?: string;
+  asset_type?: string;
+  clearing_house?: string;
+  exception_msg?: string;
+  explanation?: string;
+  text?: string;
+
+  // New fields from solution endpoint
+  solution_description?: string;
+  exception_description?: string;
+  solution_score?: number; // not displayed, this is the score given
+}

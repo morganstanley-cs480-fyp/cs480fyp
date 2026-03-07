@@ -41,8 +41,29 @@ export interface GeneratedSolution {
   message: string;
 }
 
+	
+// exception_id	19757932
+// title	"INSUFFICIENT MARGIN"
+// exception_description	"IRS trade through JSCC failed during credit reject phase due to insufficient margin. TAS system rejected the trade after exceeding retry limits during credit approval process."
+// reference_event	""
+// solution_description	"Contact counterparty to post additional collateral to meet Initial Margin requirements. Review margin calculation methodology with JSCC to ensure accuracy. If margin is borderline, consider reducing notional amount or restructuring trade to lower margin requirements."
+// scores	18
+// id	100000
+// create_time	"2026-03-07T06:46:41.910192Z"
+
+export interface RetrievedSolution {
+  exception_id: number; // convert from number to string.
+  title: string;
+  exception_description?: string;
+  reference_event?: string;
+  solution_description: string;
+  scores: number;
+  id: number;
+  create_time: string;
+}
+
 export interface CreateSolutionRequest {
-  exceptionId: string;
+  exception_id: number;
   title: string;
   exception_description: string;
   reference_event?: string;
@@ -57,6 +78,8 @@ export interface CreateSolutionResponse {
   reference_event: string;
   solution_description: string;
   scores: number;
+  id: number;
+  create_time: string;
 }
 
 /**
@@ -147,16 +170,29 @@ export const exceptionService = {
     return apiClient.get(`/api/rag/generate/${exceptionId}`);
   },
 
+  // NEW: Retrieve solution tied to a similar exception. Just grab exception_description and solution_description.
+  async getSolution(exceptionId: string): Promise<RetrievedSolution> {
+    return apiClient.get(`/api/solutions/${exceptionId}`);
+  },
+
   // NEW: Save manually created solution
   async createSolution(request: CreateSolutionRequest): Promise<CreateSolutionResponse> {
     return apiClient.post('/api/solutions', {
-      exceptionId: request.exceptionId,
+      exception_id: request.exception_id, // Convert to snake_case and ensure it's a number
       title: request.title,
       exception_description: request.exception_description,
-      reference_event: request.reference_event || '',
-      solution_description: request.solution_description || '',
-      scores: request.scores || Math.floor(Math.random() * 38) // Random 0-37 as specified
+      reference_event: request.reference_event || '', // not being used
+      solution_description: request.solution_description,
+      scores: request.scores || Math.floor(Math.random() * 28) // Random 0-27 as specified
+    });
+  },
+
+    // Resolve exception
+  async resolveException(exception_id: string): Promise<Exception> {
+    return apiClient.post(`/api/exceptions/${exception_id}/resolve`, {
+      exceptionId: parseInt(exception_id)
     });
   }
+
 
 };

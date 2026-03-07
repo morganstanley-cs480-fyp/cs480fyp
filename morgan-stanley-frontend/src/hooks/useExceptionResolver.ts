@@ -1,26 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import type { Exception } from "@/lib/api/types";
+import type { Exception, AISuggestion } from "@/lib/api/types";
 import { exceptionService, type SimilarException } from "@/lib/api/exceptionService";
-
-export interface AISuggestion {
-  id: string;
-  title: string;
-  description: string;
-  confidence: number;
-  reasoning: string;
-  similarCases: number;
-  estimatedTime: string;
-  // Additional fields from API
-  exception_id?: string;
-  trade_id?: string;
-  similarity_score?: number;
-  priority?: string;
-  status?: string;
-  asset_type?: string;
-  clearing_house?: string;
-  exception_msg?: string;
-  explanation?: string;
-}
+import type { HistoricalCase } from "@/components/exceptions-individual/AIGeneratorPanel";
 
 export function useExceptionResolver(exceptionId: string) {
   const [exception, setException] = useState<Exception | null>(null);
@@ -30,13 +11,16 @@ export function useExceptionResolver(exceptionId: string) {
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
   const [aiGeneratedSolution, setAiGeneratedSolution] = useState<string>("");
+  const [historicalCases, setHistoricalCases] = useState<HistoricalCase[]>([]);
   const [newSolutionTitle, setNewSolutionTitle] = useState<string>("");
+  const [newExceptionDescription, setNewExceptionDescription] = useState<string>("");
   const [newSolutionDescription, setNewSolutionDescription] = useState<string>("");
   const [aiSolutionType, setAiSolutionType] = useState<string>("");
   const [selectedSuggestion, setSelectedSuggestion] = useState<AISuggestion | null>(null);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasTriedAISearch, setHasTriedAISearch] = useState(false);
+  const [loadingSolutionId, setLoadingSolutionId] = useState<string | null>(null);
 
   // Clear selected suggestion when switching tabs
   useEffect(() => {
@@ -46,23 +30,22 @@ export function useExceptionResolver(exceptionId: string) {
   // Convert API similar exceptions to AISuggestion format
   const convertSimilarExceptionsToSuggestions = (similarExceptions: SimilarException[]): AISuggestion[] => {
     return similarExceptions.map((similar) => ({
-      id: similar.exception_id,
-      title: `Similar Case: ${similar.exception_msg}`,
+      title: similar.exception_msg,
       description: similar.explanation || similar.exception_msg,
       confidence: Math.round(similar.similarity_score),
-      reasoning: similar.explanation || `Similar ${similar.asset_type} trade with ${similar.clearing_house}`,
-      similarCases: 1,
-      estimatedTime: "5-10 minutes",
-      // Include original API fields
-      exception_id: similar.exception_id,
+      exception_id: similar.exception_id.toString(),
       trade_id: similar.trade_id.toString(),
       similarity_score: similar.similarity_score,
       priority: similar.priority,
       status: similar.status,
       asset_type: similar.asset_type,
       clearing_house: similar.clearing_house,
-      exception_msg: similar.exception_msg,
-      explanation: similar.explanation
+      explanation: similar.explanation,
+      text: similar.text,
+      // Solution fields will be populated when suggestion is selected
+      solution_description: undefined,
+      exception_description: undefined,
+      solution_score: undefined
     }));
   };
 
@@ -106,7 +89,7 @@ export function useExceptionResolver(exceptionId: string) {
     } finally {
       setAiSearching(false);
     }
-  }, [exception]); // ✅ Remove hasTriedAISearch from dependencies
+  }, [exception, hasTriedAISearch]); // ✅ Remove hasTriedAISearch from dependencies
 
   // ✅ Fix retry function to force a new search
   const retryAISearch = useCallback(() => {
@@ -163,11 +146,17 @@ export function useExceptionResolver(exceptionId: string) {
         `${response.generated_solution.root_cause_analysis}\n\nRESOLUTION STEPS:\n${response.generated_solution.recommended_resolution_steps}\n\nRISK CONSIDERATIONS:\n${response.generated_solution.risk_considerations}`;
       
       setAiGeneratedSolution(formattedSolution);
+      
+      // Extract and set historical cases
+      const cases: HistoricalCase[] = response.historical_cases || [];
+      setHistoricalCases(cases);
+      
       console.log('✅ AI solution generated');
     } catch (error) {
       console.error('❌ Failed to generate AI solution:', error);
       setError('Failed to generate AI solution. Please try again.');
       setAiGeneratedSolution('');
+      setHistoricalCases([]);
     } finally {
       setAiGenerating(false);
     }
@@ -187,8 +176,47 @@ export function useExceptionResolver(exceptionId: string) {
     }
   }, [aiGeneratedSolution]);
 
-  const handleSuggestionClick = useCallback((suggestion: AISuggestion) => {
+  const handleSuggestionClick = useCallback(async (suggestion: AISuggestion) => {
+    // Set the basic suggestion first for immediate UI feedback
     setSelectedSuggestion(suggestion);
+    
+    // Fetch solution details if not already loaded
+    if (!suggestion.solution_description || !suggestion.exception_description) {
+      try {
+        
+        setLoadingSolutionId(suggestion.exception_id); // ✅ Set loading state
+        console.log('📥 Fetching solution details for exception:', suggestion.exception_id);
+        
+      
+        const solutionDetails = await exceptionService.getSolution(suggestion.exception_id);
+        
+        // Update the suggestion with solution details
+        const updatedSuggestion: AISuggestion = {
+          ...suggestion,
+          solution_description: solutionDetails.solution_description,
+          exception_description: solutionDetails.exception_description,
+          solution_score: solutionDetails.scores
+        };
+        
+        setSelectedSuggestion(updatedSuggestion);
+        
+        // Also update the suggestion in the aiSuggestions array to cache the result
+        setAiSuggestions(prev => 
+          prev.map(s => 
+            s.exception_id === suggestion.exception_id 
+              ? updatedSuggestion 
+              : s
+          )
+        );
+        
+        console.log('✅ Solution details loaded for suggestion');
+      } catch (error) {
+        console.error('❌ Failed to fetch solution details:', error);
+        // Keep the basic suggestion even if solution fetch fails
+      } finally {
+      setLoadingSolutionId(null); // ✅ Clear loading state
+    }
+    }
   }, []);
 
   const filteredSuggestions = aiSuggestions.filter(
@@ -208,8 +236,11 @@ export function useExceptionResolver(exceptionId: string) {
     aiGenerating,
     aiSuggestions,
     aiGeneratedSolution,
+    historicalCases,
     newSolutionTitle,
     setNewSolutionTitle,
+    newExceptionDescription,
+    setNewExceptionDescription,
     newSolutionDescription,
     setNewSolutionDescription,
     aiSolutionType,
@@ -222,6 +253,7 @@ export function useExceptionResolver(exceptionId: string) {
     handleGenerateAISolution,
     handleCopyToDescription,
     handleCopyToClipboard,
+    loadingSolutionId,
     handleSuggestionClick,
     retryAISearch,
   };

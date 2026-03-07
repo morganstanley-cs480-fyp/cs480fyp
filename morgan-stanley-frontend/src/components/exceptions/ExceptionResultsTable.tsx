@@ -37,6 +37,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Exception } from "@/lib/api/types";
 
+interface ExceptionFilterOptions {
+  ids: string[];
+  tradeIds: string[];
+  messages: string[];
+  comments: string[];
+  createTimes: string[];
+  updateTimes: string[];
+}
+
 interface ExceptionResultsTableProps {
   table: TableType<Exception>;
   resultsCount: number;
@@ -47,6 +56,7 @@ interface ExceptionResultsTableProps {
   onPriorityFilterChange: (value: "ALL" | "HIGH" | "MEDIUM" | "LOW") => void;
   onRowClick: (exception: Exception) => void;
   onRefresh?: () => void; // Add this prop
+  filterOptions?: ExceptionFilterOptions
 }
 
 export function ExceptionResultsTable({
@@ -59,6 +69,7 @@ export function ExceptionResultsTable({
   onPriorityFilterChange,
   onRowClick,
   onRefresh,
+  filterOptions
 }: ExceptionResultsTableProps) {
   const [openFilter, setOpenFilter] = useState<string | null>(null);
 
@@ -123,12 +134,24 @@ export function ExceptionResultsTable({
     document.body.removeChild(link);
   };  
 
-  // Generate dropdown options from table data
+  // ✅ Copy exact implementation from TradeResultsTable
   const optionMap = useMemo(() => {
+    // Prefer API-sourced options (complete set of all possible values).
+    // Fall back to deriving from loaded rows if filterOptions hasn't loaded yet.
+    if (filterOptions) {
+      return {
+        id: filterOptions.ids,
+        trade_id: filterOptions.tradeIds,
+        msg: filterOptions.messages,
+        comment: filterOptions.comments,
+        create_time: filterOptions.createTimes,
+        update_time: filterOptions.updateTimes,
+      } as Record<string, string[]>;
+    }
+    // Fallback: derive from current rows
     const rows = table.getPreFilteredRowModel().flatRows;
     const collect = (key: keyof Exception) =>
       Array.from(new Set(rows.map((r) => String(r.original[key])))).sort();
-    
     return {
       id: collect("id"),
       trade_id: collect("trade_id"),
@@ -136,8 +159,8 @@ export function ExceptionResultsTable({
       comment: collect("comment"),
       create_time: collect("create_time"),
       update_time: collect("update_time"),
-    };
-  }, [table]);
+    } as Record<string, string[]>;
+  }, [filterOptions, table]); // ✅ Copy exact dependencies from TradeResultsTable
 
   return (
     <Card>
@@ -239,17 +262,21 @@ export function ExceptionResultsTable({
                     {/* Status Column - Dropdown */}
                     {header.column.id === "status" && (
                       <Select
-                        value={statusFilter}
-                        onValueChange={(v) => onStatusFilterChange(v as "PENDING" | "CLOSED" | "ALL")}
+                        value={(header.column.getFilterValue() as string) ?? "ALL"}
+                        onValueChange={(value) => {
+                          if (value === "ALL") {
+                            header.column.setFilterValue(undefined);
+                          } else {
+                            header.column.setFilterValue(value);
+                          }
+                        }}
                       >
                         <SelectTrigger className="h-8 text-xs">
                           <SelectValue placeholder="All" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="ALL">All</SelectItem>
-                          <SelectItem value="PENDING">
-                            Pending
-                          </SelectItem>
+                          <SelectItem value="PENDING">Pending</SelectItem>
                           <SelectItem value="CLOSED">Closed</SelectItem>
                         </SelectContent>
                       </Select>
@@ -258,8 +285,14 @@ export function ExceptionResultsTable({
                     {/* Priority Column - Dropdown */}
                     {header.column.id === "priority" && (
                       <Select
-                        value={priorityFilter}
-                        onValueChange={(v) => onPriorityFilterChange(v as "HIGH" | "MEDIUM" | "LOW" | "ALL")}
+                        value={(header.column.getFilterValue() as string) ?? "ALL"}
+                        onValueChange={(value) => {
+                          if (value === "ALL") {
+                            header.column.setFilterValue(undefined);
+                          } else {
+                            header.column.setFilterValue(value);
+                          }
+                        }}
                       >
                         <SelectTrigger className="h-8 text-xs">
                           <SelectValue placeholder="All" />

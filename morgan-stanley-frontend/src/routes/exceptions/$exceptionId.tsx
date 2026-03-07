@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { AlertCircle, AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertCircle, AlertTriangle, RefreshCw, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Component imports
 import { ExceptionDetailSidebar } from '@/components/exceptions-individual/ExceptionDetailSidebar';
@@ -26,6 +27,13 @@ function ResolveExceptionPage() {
   const navigate = useNavigate();
   const [isApplying, setIsApplying] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [resolutionDetails, setResolutionDetails] = useState<{
+    type: 'existing' | 'new';
+    solutionTitle: string;
+    exceptionId: number;
+    solutionId?: number | string;
+  } | null>(null);
   
   const {
     exception,
@@ -35,8 +43,11 @@ function ResolveExceptionPage() {
     aiGenerating,
     aiSuggestions,
     aiGeneratedSolution,
+    historicalCases,
     newSolutionTitle,
     setNewSolutionTitle,
+    newExceptionDescription,
+    setNewExceptionDescription,
     newSolutionDescription,
     setNewSolutionDescription,
     aiSolutionType,
@@ -50,6 +61,7 @@ function ResolveExceptionPage() {
     handleCopyToClipboard,
     handleSuggestionClick,
     retryAISearch, // ✅ Get retry function
+    loadingSolutionId
   } = useExceptionResolver(exceptionId);
 
   const handleApplySolution = async () => {
@@ -60,28 +72,65 @@ function ResolveExceptionPage() {
 
     try {
       if (selectedTab === 'existing' && selectedSuggestion) {
-        // Apply existing solution - just log for now since there's no specific endpoint for this
-        console.log('✅ Applied existing solution:', selectedSuggestion.title);
+        // Apply existing solution - create a solution record using the selected suggestion's details
+        console.log('✅ Applying existing solution:', selectedSuggestion.title);
         console.log('Exception ID:', exception.id);
         console.log('Selected suggestion:', selectedSuggestion);
+        
+        // Create solution record using selected suggestion's details
+        const solutionResponse = await exceptionService.createSolution({
+          exception_id: exception.id,
+          title: selectedSuggestion.title,
+          exception_description: selectedSuggestion.exception_description || selectedSuggestion.description,
+          reference_event: '',
+          solution_description: selectedSuggestion.solution_description,
+          scores: selectedSuggestion.solution_score || Math.round(selectedSuggestion.similarity_score)
+        });
+
+        console.log('✅ Solution record created:', solutionResponse);
+
+        // Resolve the exception
+        await exceptionService.resolveException(exception.id.toString());
+
+        console.log('✅ Exception resolved with existing solution');
+        
+        // Show success dialog with existing solution details
+        setResolutionDetails({
+          type: 'existing',
+          solutionTitle: selectedSuggestion.title,
+          exceptionId: exception.id,
+          solutionId: solutionResponse.id
+        });
       } else if (selectedTab === 'new' && newSolutionTitle && newSolutionDescription) {
         // Create and save new solution using real API
         console.log('💾 Saving new solution to database...');
         
-        const response = await exceptionService.createSolution({
-          exceptionId: exception.id.toString(),
+        const solutionResponse = await exceptionService.createSolution({
+          exception_id: exception.id,
           title: newSolutionTitle,
-          exception_description: newSolutionDescription,
+          exception_description: newExceptionDescription,
           reference_event: '',
-          solution_description: '',
-          scores: Math.floor(Math.random() * 38) // Random score 0-37 as per API spec
+          solution_description: newSolutionDescription,
+          scores: Math.floor(Math.random() * 28) // Random score 0-37 as per API spec
         });
 
-        console.log('✅ Solution saved successfully:', response);
+        console.log('✅ Solution saved successfully:', solutionResponse);
+
+        await exceptionService.resolveException(exception.id.toString());
+
+        console.log('✅ Exception resolved with new solution');
+        
+        // Show success dialog with new solution details
+        setResolutionDetails({
+          type: 'new',
+          solutionTitle: newSolutionTitle,
+          exceptionId: exception.id,
+          solutionId: solutionResponse.id
+        });
       }
       
-      // Navigate back to exceptions list
-      navigate({ to: '/exceptions' });
+      // Show visual confirmation dialog
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error('❌ Failed to apply solution:', error);
       setApplyError('Failed to apply solution. Please try again.');
@@ -227,6 +276,7 @@ function ResolveExceptionPage() {
                     filteredSuggestions={filteredSuggestions}
                     onSuggestionClick={handleSuggestionClick}
                     selectedSuggestion={selectedSuggestion}
+                    loadingSolutionId={loadingSolutionId}
                   />
                 </TabsContent>
 
@@ -244,6 +294,7 @@ function ResolveExceptionPage() {
                             aiGenerating={aiGenerating}
                             onGenerate={handleGenerateAISolution}
                             aiGeneratedSolution={aiGeneratedSolution}
+                            historicalCases={historicalCases}
                             onCopyToDescription={handleCopyToDescription}
                             onCopyToClipboard={handleCopyToClipboard}
                             copiedToClipboard={copiedToClipboard}
@@ -264,6 +315,8 @@ function ResolveExceptionPage() {
                           <NewSolutionForm
                             solutionTitle={newSolutionTitle}
                             onSolutionTitleChange={setNewSolutionTitle}
+                            exceptionDescription={newExceptionDescription}
+                            onExceptionDescriptionChange={setNewExceptionDescription}
                             solutionDescription={newSolutionDescription}
                             onSolutionDescriptionChange={setNewSolutionDescription}
                           />
@@ -297,6 +350,73 @@ function ResolveExceptionPage() {
           </Button>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="rounded-full bg-green-100 p-2">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-semibold text-green-800">
+                  Exception Resolved Successfully!
+                </DialogTitle>
+                <DialogDescription className="text-sm text-gray-600 mt-1">
+                  {resolutionDetails?.type === 'existing' 
+                    ? `Applied existing solution "${resolutionDetails.solutionTitle}"`
+                    : `Created and applied new solution "${resolutionDetails?.solutionTitle}"`
+                  }
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Exception ID:</span>
+                <span className="text-sm text-gray-900">#{resolutionDetails?.exceptionId}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Solution ID:</span>
+                <span className="text-sm text-gray-900">#{resolutionDetails?.solutionId || 'N/A'}</span>
+              </div>              
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Resolution Method:</span>
+                <span className="text-sm text-gray-900">
+                  {resolutionDetails?.type === 'existing' ? 'Existing Solution' : 'New Solution'}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Status:</span>
+                <span className="text-sm font-semibold text-green-600">RESOLVED</span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2">
+            {/* <Button 
+              variant="outline" 
+              onClick={() => setShowSuccessDialog(false)}
+              className="flex-1"
+            >
+              Stay Here
+            </Button> */}
+            <Button 
+              onClick={() => {
+                setShowSuccessDialog(false);
+                navigate({ to: '/exceptions' });
+              }}
+              className="flex-1 bg-[#002B51] hover:bg-[#003a6b] text-white"
+            >
+              Back to Exceptions
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

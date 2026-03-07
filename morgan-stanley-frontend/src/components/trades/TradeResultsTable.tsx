@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Trade } from "@/lib/api/types";
 
-interface FilterOptions {
+interface TradeFilterOptions {
   accounts: string[];
   assetTypes: string[];
   bookingSystems: string[];
@@ -42,7 +42,7 @@ interface TradeResultsTableProps {
   table: TableType<Trade>;
   resultsCount: number;
   columnFiltersCount: number;
-  filterOptions?: FilterOptions;
+  filterOptions?: TradeFilterOptions;
   onRefresh? : () => void;
   isLoading? : boolean, // Add this with default value
 }
