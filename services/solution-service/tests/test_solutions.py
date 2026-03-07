@@ -106,7 +106,7 @@ async def test_create_solution_invalid_score_negative(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_get_solution(client: AsyncClient, sample_solution):
     """Test retrieving a single solution"""
-    response = await client.get(f"/api/solutions/{sample_solution.id}")
+    response = await client.get(f"/api/solutions/{sample_solution.exception_id}")
     
     assert response.status_code == 200
     data = response.json()
