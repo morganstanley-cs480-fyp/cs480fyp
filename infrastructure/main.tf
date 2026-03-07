@@ -32,7 +32,8 @@ data "aws_s3_bucket" "existing_frontend" {
 module "s3_data" {
   source           = "./modules/s3_data"
   bucket_name      = var.s3_data_bucket_name
-  file_key         = var.s3_data_file_key 
+  file_key         = var.s3_data_file_key
+  file_source      = "${path.root}/${var.s3_data_file_source}"
 }
 
 # SSM Parameter Store
@@ -236,7 +237,6 @@ module "gateway_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 102
-  # FIX: You must specify which requests go to the gateway
   path_pattern     = ["/api/ws*"]
   target_group_arn = module.gateway_target_group.target_group_arn
 }
@@ -282,6 +282,24 @@ module "ingestion_task_role" {
   sqs_queue_arn     = module.data_processing_queue.sqs_queue_arn
 }
 
+# ingestion target to ALB
+module "ingestion_target_group" {
+  source                = "./modules/alb_tg"
+  target_group_name     = var.ingestion_target_group_name
+  target_group_port     = 3000
+  target_group_protocol = "HTTP"
+  vpc_id                = module.networking.vpc_id
+}
+
+# ingestion listener rule
+module "ingestion_listener_rule" {
+  source           = "./modules/alb_rule"
+  listener_arn     = module.alb.http_listener_arn
+  priority         = 100
+  path_pattern     = ["/api/simulate*"]
+  target_group_arn = module.ingestion_target_group.target_group_arn
+}
+
 # ingestion cloudwatch
 module "ingestion_log_group" {
   source            = "./modules/cloudwatch"
@@ -295,7 +313,7 @@ module "ingestion_service" {
   family             = var.ingestion_family
   container_name     = var.ingestion_container_name
   container_image    = var.ingestion_container_image
-  container_port     = 0
+  container_port     = 3000
   log_group          = module.ingestion_log_group.log_group_name
   region             = var.region
   execution_role_arn = module.ecs_execution_role.role_arn
@@ -306,6 +324,7 @@ module "ingestion_service" {
   subnets            = module.networking.public_subnet_ids
   security_groups    = [module.ecs_security_group.ecs_service_sg_id]
   assign_public_ip   = true
+  target_group_arn   = module.ingestion_target_group.target_group_arn
   environments = [
     { name = "MIGRATE", value = "true"},
     { name = "S3_BUCKET_NAME", value = module.s3_data.bucket_name },
@@ -313,6 +332,7 @@ module "ingestion_service" {
     { name = "SSM_PARAM_NAME", value = module.xml_pointer.parameter_name },
     { name = "AWS_REGION", value = var.region },
     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
+    { name = "BATCH_SIZE", value = "100" },
   ]
   secrets =[]
 }

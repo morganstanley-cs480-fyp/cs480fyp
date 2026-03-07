@@ -2,10 +2,9 @@ variable "bucket_name" {
   type = string
 }
 
-variable "source_file_path" {
-  description = "Local path to your XML file (e.g., ./data/transactions.xml). Set null to skip upload."
+variable "file_source" {
+  description = "The local path to the source file to upload to S3"
   type        = string
-  default     = null
 }
 
 variable "file_key" {
