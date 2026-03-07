@@ -143,7 +143,7 @@ export function SearchHeader({
               title="Clear search"
             >
               <Eraser className="size-4 mr-1" />
-              Clear
+              Reset Search
             </Button>
             <Button
               variant="ghost"
