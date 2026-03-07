@@ -6,6 +6,7 @@ import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { SSMClient, GetParameterCommand, PutParameterCommand } from "@aws-sdk/client-ssm";
 import { XMLParser } from 'fast-xml-parser';
+import express from 'express';
 
 // Config
 export const config = {
@@ -17,6 +18,8 @@ export const config = {
   batchSize: parseInt(process.env.BATCH_SIZE || "10", 10),
   awsEndPoint: process.env.AWS_ENDPOINT 
 };
+
+const PORT = process.env.PORT || 3000;
 
 // AWS Clients
 const sqs = new SQSClient({ region: config.region,
@@ -35,39 +38,99 @@ const ssm = new SSMClient({ region: config.region,
 // Export clients for mocking if needed
 export const clients = { sqs, s3, ssm };
 
-export async function ingestData() {
+// Parses the XML string into an array of entries
+export function parseXML(xmlString) {
   const parser = new XMLParser({ preserveOrder: true });
-  console.log("Ingestor Service Started (AWS Production Mode)");
+  const parsed = parser.parse(xmlString);
+  const rootNode = parsed.find(n => n.root);
+  if (!rootNode) throw new Error("Invalid XML: Root node not found");
+  
+  return rootNode.root.filter(node => !node['#text']);
+}
 
+// Sends an individual entry to SQS
+export async function sendToSQS(entry) {
+  const type = Object.keys(entry)[0];
+  const fields = entry[type];
+  const cleanFields = cleanUpFields(fields);
+  const tradeId = (type === 'trade') 
+    ? cleanFields.id 
+    : (cleanFields.trade_id || "unknown");
+
+  console.log(`Sending [${type}] TradeID: ${tradeId}`);
+
+  await clients.sqs.send(new SendMessageCommand({
+    QueueUrl: config.queueUrl,
+    MessageBody: JSON.stringify({ type, data: cleanFields }),
+    MessageGroupId: String(tradeId), 
+    MessageDeduplicationId: `${type}-${tradeId}-${Date.now()}` // Added Date.now() for unique sim testing
+  }));
+}
+
+export const app = express();
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
+app.use(express.text({ type: 'application/xml' })); 
+
+app.post('/api/simulate', async (req, res) => {
+  try {
+    const xmlData = req.body;
+    if (!xmlData) {
+      return res.status(400).json({ error: "Empty XML payload" });
+    }
+
+    console.log("Simulation API Triggered");
+    const entries = parseXML(xmlData);
+    
+    // Process all incoming simulation entries immediately
+    for (const entry of entries) {
+      await sendToSQS(entry);
+    }
+
+    res.status(200).json({ 
+      message: `Simulation successful. Sent ${entries.length} items to SQS.`,
+      count: entries.length 
+    });
+
+  } catch (error) {
+    console.error("Simulation API Error:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+export async function ingestData() {
+  console.log("Ingestor Background Service Started...");
   let allEntries = [];
 
   try {
     const xmlData = await fetchS3File(config.bucketName, config.fileName);
-    const parsed = parser.parse(xmlData);
-    
-    const rootNode = parsed.find(n => n.root);
-    if (!rootNode) throw new Error("Invalid XML: Root node not found");
-    
-    // Filter out text nodes (newlines/indentation)
-    allEntries = rootNode.root.filter(node => !node['#text']);
-    console.log(`Successfully loaded ${allEntries.length} entries from S3.`);
-    
+    allEntries = parseXML(xmlData);
+    console.log(`Loaded ${allEntries.length} entries from S3.`);
   } catch (err) {
-    console.error("CRITICAL: Failed to load or parse XML from S3.", err.message);
-    if (process.env.NODE_ENV !== 'test') process.exit(1);
-    throw err;
+    console.error("Failed to load S3 XML.", err.message);
+    return;
   }
 
   while (true) {
     try {
       const lastPos = await getLastPosition(config.ssmParamName);
-      await processBatch(allEntries, lastPos);
-      // For testing purposes, we break the loop if requested
-      if (process.env.NODE_ENV === 'test') break;
+      const batch = allEntries.slice(lastPos, lastPos + config.batchSize);
 
+      if (batch.length > 0) {
+        let currentPos = lastPos;
+        for (const entry of batch) {
+          await sendToSQS(entry);
+          currentPos++;
+        }
+        await saveLastPosition(config.ssmParamName, currentPos);
+        console.log(`Batch success. SSM Updated to: ${currentPos}`);
+      } else {
+        console.log("No more S3 entries to process.");
+      }
+
+      if (process.env.NODE_ENV === 'test') break;
       await new Promise(res => setTimeout(res, 60000));
       
-      // Update position only after wait or successful cycle
     } catch (error) {
       console.error("Ingestion Loop Error:", error.message);
       if (process.env.NODE_ENV === 'test') break;
@@ -152,7 +215,11 @@ export function cleanUpFields(fields) {
   return cleanObj;
 }
 
-// Only run immediately if this file is the main entry point (not imported by test)
+
 if (process.argv[1] && process.argv[1].endsWith('main.js')) {
+    app.listen(PORT, () => {
+      console.log(`🚀 Simulation API listening on port ${PORT}`);
+    });
+
     ingestData();
 }
