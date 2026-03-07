@@ -1,0 +1,111 @@
+name: Terraform Change Tracker
+
+on:
+  push:
+    paths:
+      - "infrastructure/**/*.tf"
+      - "infrastructure/*.tf"
+      - "infrastructure/*.tfvars"
+      - ".github/workflows/terraform-tracker.yml"
+  pull_request:
+    paths:
+      - "infrastructure/**/*.tf"
+      - "infrastructure/*.tf"
+      - "infrastructure/*.tfvars"
+  workflow_dispatch:
+
+jobs:
+  report-changes:
+    name: Report Terraform Changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Identify changed Terraform files
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+            HEAD_SHA="${{ github.sha }}"
+          fi
+
+          # Handle first push (no before SHA)
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            CHANGED=$(git diff-tree --no-commit-id -r --name-only "$HEAD_SHA" | grep -E '\.(tf|tfvars)$' || true)
+          else
+            CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -E '\.(tf|tfvars)$' || true)
+          fi
+
+          echo "changed_files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          COUNT=$(echo "$CHANGED" | grep -c '.' || echo 0)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Show recent Terraform change history
+        run: |
+          echo "========================================"
+          echo "  Latest Terraform Changes"
+          echo "========================================"
+          git log --format="%C(yellow)%h%Creset  %C(cyan)%ad%Creset  %C(green)%an%Creset  %s" \
+            --date=format:"%Y-%m-%d %H:%M" \
+            -10 \
+            -- "infrastructure/*.tf" "infrastructure/**/*.tf" "infrastructure/*.tfvars"
+          echo ""
+          echo "========================================"
+          echo "  Files changed in this push/PR"
+          echo "========================================"
+          echo "${{ steps.changed-files.outputs.changed_files }}"
+
+      - name: Post PR comment with Terraform change summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const changedFiles = `${{ steps.changed-files.outputs.changed_files }}`.trim();
+            const author = context.payload.pull_request.user.login;
+            const prNumber = context.payload.pull_request.number;
+            const sha = context.payload.pull_request.head.sha.substring(0, 7);
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
+
+            if (!changedFiles) {
+              console.log('No Terraform files changed, skipping comment.');
+              return;
+            }
+
+            const fileList = changedFiles
+              .split('\n')
+              .filter(f => f.trim())
+              .map(f => `- \`${f}\``)
+              .join('\n');
+
+            const body = [
+              '### 🔧 Terraform Changes Detected',
+              '',
+              `**Author:** @${author}  `,
+              `**Commit:** \`${sha}\`  `,
+              `**Date:** ${now}`,
+              '',
+              '**Changed files:**',
+              fileList,
+              '',
+              '> Run `git log --oneline -- infrastructure/` to see the full Terraform change history.',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body,
+            });
