@@ -114,6 +114,7 @@ function TradeSearchPage() {
   const [submittedParams, setSubmittedParams] = useState<SearchRequest | null>(null);
 
   // Restore the last submitted NLQ from sessionStorage on mount (preserves results on Back navigation)
+  // If no saved query exists, load all trades by default
   useEffect(() => {
     const savedQuery = sessionStorage.getItem(SEARCH_KEY);
     if (savedQuery?.trim()) {
@@ -121,6 +122,15 @@ function TradeSearchPage() {
         search_type: "natural_language",
         user_id: userId,
         query_text: savedQuery,
+      });
+    } else {
+      // Load all trades on initial page load with empty manual filters
+      setSubmittedParams({
+        search_type: "manual",
+        user_id: userId,
+        filters: {
+          date_type: "update_time",
+        },
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -178,6 +188,30 @@ function TradeSearchPage() {
   // fetchSearchHistory is a stable async fn; adding it would require useCallback and cause re-renders
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchResponse?.query_id]);
+
+  const handleRefresh = async () => {
+    try {
+      // Clear all table filters and reset pagination
+      table.resetColumnFilters();
+      table.resetSorting();
+      table.resetPageIndex();
+      
+      // Clear query cache to force fresh data fetch
+      queryClient.removeQueries({ queryKey: ['trades', 'search'] });
+      
+      // Refetch current search if we have submitted params
+      if (submittedParams) {
+        await refetchSearch();
+      }
+      
+      // Refresh filter options in case new values were added
+      await fetchFilterOptions();
+      
+      console.log('Data refreshed successfully');
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    }
+  };
 
   // Fetch search history from backend
   const fetchSearchHistory = async () => {
@@ -488,6 +522,14 @@ function TradeSearchPage() {
     setFilters(getDefaultFilters());
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     queryClient.removeQueries({ queryKey: ['trades', 'search'] });
+
+    setSubmittedParams({
+      search_type: "manual",
+      user_id: userId,
+      filters: {
+        date_type: "update_time",
+      },
+    });    
   };
 
   const handleSuggestionClick = (query: string) => {
@@ -607,6 +649,8 @@ function TradeSearchPage() {
         resultsCount={results.length}
         columnFiltersCount={columnFilters.length}
         filterOptions={filterOptions}
+        onRefresh={handleRefresh}
+        isLoading={searching}
       />
     </div>
   );

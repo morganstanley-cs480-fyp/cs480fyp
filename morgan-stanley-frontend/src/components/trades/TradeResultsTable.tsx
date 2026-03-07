@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Trade } from "@/lib/api/types";
 
-interface FilterOptions {
+interface TradeFilterOptions {
   accounts: string[];
   assetTypes: string[];
   bookingSystems: string[];
@@ -42,7 +42,9 @@ interface TradeResultsTableProps {
   table: TableType<Trade>;
   resultsCount: number;
   columnFiltersCount: number;
-  filterOptions?: FilterOptions;
+  filterOptions?: TradeFilterOptions;
+  onRefresh? : () => void;
+  isLoading? : boolean, // Add this with default value
 }
 
 export function TradeResultsTable({
@@ -50,12 +52,34 @@ export function TradeResultsTable({
   resultsCount,
   columnFiltersCount,
   filterOptions,
+  onRefresh,
+  isLoading = false
 }: TradeResultsTableProps) {
   const navigate = useNavigate();
   const [openFilter, setOpenFilter] = useState<string | null>(null);
   const isDateFilterColumn = (columnId: string) =>
     columnId === "create_time" || columnId === "update_time";
 
+  const handleRefresh = () => {
+    // Clear all filters first
+    table.resetColumnFilters();
+    table.resetSorting();
+    table.resetPageIndex();
+    
+    // Then trigger data refresh if callback provided
+    onRefresh?.();
+  };
+
+  const handleClearFilters = () => {
+    // Clear all TanStack table filters and state
+    table.resetColumnFilters();
+    table.resetSorting();
+    table.resetPageIndex();
+    table.resetColumnVisibility();
+    
+    // Close any open dropdown filters
+    setOpenFilter(null);
+  };  
   const handleDownloadCSV = () => {
     const rows = table.getFilteredRowModel().rows;
     if (rows.length === 0) return;
@@ -146,15 +170,30 @@ export function TradeResultsTable({
           >
             <Download className="size-3.5 text-black/60" />
           </Button>
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 w-8 p-0"
+            onClick={handleRefresh}
+            title="Refresh data and clear filters"
+          >
             <RefreshCw className="size-3.5 text-black/60" />
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClearFilters}
+            className="h-8 text-xs border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
+          >
+            Clear All Filters
+          </Button>
+
           {/* Column Visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <ChevronDown className="size-4 mr-2" />
-                Columns
+              <Button variant="outline" size="sm" className="h-8 text-xs border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]">
+                <ChevronDown className="size-4" />
+                Columns Visibility
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[200px]">
@@ -228,18 +267,21 @@ export function TradeResultsTable({
                   <TableHead key={`filter-${header.id}`} className="py-2 px-2 overflow-visible">
                     {header.column.getCanFilter() && !isDateFilterColumn(header.id) && (
                       <div className="relative">
-                        <Input
-                          placeholder=""
-                          value={
-                            (header.column.getFilterValue() as string) ?? ""
+                      <Input
+                        placeholder={
+                          header.id === "trade_id" ? "Filter by Trade ID" :
+                          "Filter..."
+                        }
+                        value={
+                          (header.column.getFilterValue() as string) ?? ""
+                        }
+                        onChange={(event) => {
+                          header.column.setFilterValue(event.target.value);
+                          // Keep dropdown open while typing so user can pick a match
+                          if (optionMap[header.id]?.length) {
+                            setOpenFilter(header.id);
                           }
-                          onChange={(event) => {
-                            header.column.setFilterValue(event.target.value);
-                            // Keep dropdown open while typing so user can pick a match
-                            if (optionMap[header.id]?.length) {
-                              setOpenFilter(header.id);
-                            }
-                          }}
+                        }}
                           // Open on click so it works whether or not the input is already focused
                           onClick={() => {
                             if (optionMap[header.id]?.length) {
@@ -392,7 +434,14 @@ export function TradeResultsTable({
                     colSpan={table.getAllColumns().length}
                     className="h-32 text-center text-black/40 text-sm"
                   >
-                    No results found.
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                        Loading...
+                      </div>
+                    ) : (
+                      "No results found."
+                    )}
                   </TableCell>
                 </TableRow>
               )}

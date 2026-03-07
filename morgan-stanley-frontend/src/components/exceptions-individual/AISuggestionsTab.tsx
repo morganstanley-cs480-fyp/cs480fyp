@@ -1,7 +1,8 @@
 // AI suggestions list showing AISuggestionCard components (in Select Existing Solution)
 
 import { Loader2 } from "lucide-react";
-import { AISuggestionCard, type AISuggestion } from "./AISuggestionCard";
+import { AISuggestionCard  } from "./AISuggestionCard";
+import type { AISuggestion } from "@/lib/api/types";
 
 interface AISuggestionsTabProps {
   aiSearching: boolean;
@@ -9,6 +10,7 @@ interface AISuggestionsTabProps {
   filteredSuggestions: AISuggestion[];
   onSuggestionClick: (suggestion: AISuggestion) => void;
   selectedSuggestion: AISuggestion | null;
+  loadingSolutionId: string | null;
 }
 
 export function AISuggestionsTab({
@@ -17,6 +19,7 @@ export function AISuggestionsTab({
   filteredSuggestions,
   onSuggestionClick,
   selectedSuggestion,
+  loadingSolutionId
 }: AISuggestionsTabProps) {
   return (
     <div className="space-y-4">
@@ -24,10 +27,11 @@ export function AISuggestionsTab({
         <div className="space-y-3">
           {filteredSuggestions.map((suggestion) => (
             <AISuggestionCard
-              key={suggestion.id}
+              key={suggestion.exception_id}
               suggestion={suggestion}
               onClick={() => onSuggestionClick(suggestion)}
-              isSelected={selectedSuggestion?.id === suggestion.id}
+              isSelected={selectedSuggestion?.exception_id === suggestion.exception_id}
+              isLoadingSolution={loadingSolutionId === suggestion.exception_id}
             />
           ))}
         </div>

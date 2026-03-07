@@ -10,7 +10,7 @@ import {
     getPriorityColor,
     getPriorityIcon,
     getTransactionStatusColor
-} from "@/routes/trades/-tradeDetailUtils.ts";
+} from "@/lib/tradeDetailUtils";
 
 interface EntityAndTransactionDetailPanelProps {
     // selected: Trade | Transaction | null;

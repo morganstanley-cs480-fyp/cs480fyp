@@ -1,6 +1,5 @@
 from tortoise import fields, models
 from tortoise.validators import MinValueValidator, MaxValueValidator
-from enum import Enum
 
 # Defines the Solution model class
 # Tortoise ORM uses this to generate SQL and perform database operations
@@ -14,6 +13,7 @@ class Solution(models.Model):
     exception_description = fields.TextField(null=True)
     reference_event = fields.TextField(null=True)
     solution_description = fields.TextField(null=True)
+    # Tortoise auto-generates this timestamp on creation
     create_time = fields.DatetimeField(auto_now_add=True)
     scores = fields.IntField(validators=[MinValueValidator(0), MaxValueValidator(27)])
 

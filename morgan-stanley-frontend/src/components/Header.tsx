@@ -1,4 +1,4 @@
-import {User, Search, AlertTriangle, Bug, LogOut} from 'lucide-react';
+import {User, Search, AlertTriangle, LogOut} from 'lucide-react';
 import {Link, useRouterState} from '@tanstack/react-router';
 import {useAuth} from 'react-oidc-context';
 import {Button} from './ui/button';
@@ -8,7 +8,6 @@ import {cn} from '../lib/utils';
 const navItems = [
     {id: 'search', label: 'Trade Search', icon: Search, path: '/trades'},
     {id: 'exceptions', label: 'Exceptions', icon: AlertTriangle, path: '/exceptions'},
-    {id: 'testing', label: 'Visualisation Testing Page', icon: Bug, path: '/visualisation'},
 ];
 
 export const Header = () => {

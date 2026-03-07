@@ -8,21 +8,22 @@ from app.models import Solution
 
 router = APIRouter(prefix="/api/solutions", tags=["solutions"])
 
-@router.get("/", response_model=List[SolutionResponse])
+@router.get("", response_model=List[SolutionResponse])
 async def list_solutions():
     solutions = await Solution.all()
     return solutions
 
-@router.get("/{solution_id}", response_model=SolutionResponse)
-async def get_solution(solution_id: int):
-    solution = await Solution.get_or_none(id=solution_id)
+@router.get("/{exception_id}", response_model=SolutionResponse)
+async def get_solution(exception_id: int):
+    solution = await Solution.get_or_none(exception_id=exception_id)
     if not solution:
         raise HTTPException(status_code=404, detail="Solution not found")
     return solution
 
-@router.post("/", response_model=SolutionResponse, status_code=201)
+@router.post("", response_model=SolutionResponse, status_code=201)
 async def create_solution(solution_data: SolutionCreate):
-    solution = await Solution.create(**solution_data.model_dump())
+    solution = await Solution.create(**solution_data.model_dump(exclude_unset=True))
+    await solution.refresh_from_db()
     return solution
 
 @router.post("/batch", response_model=List[SolutionResponse], status_code=201)
@@ -32,7 +33,8 @@ async def batch_create_solutions(solutions_data: List[SolutionCreate]):
     """
     created_solutions = []
     for solution_data in solutions_data:
-        solution = await Solution.create(**solution_data.model_dump())
+        solution = await Solution.create(**solution_data.model_dump(exclude_unset=True))
+        await solution.refresh_from_db()
         created_solutions.append(solution)  
     return created_solutions
 
@@ -70,7 +72,7 @@ async def create_solutions_table():
         reference_event TEXT,
         solution_description TEXT,
         scores INTEGER NOT NULL,
-        create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         
         -- Foreign key constraint
         CONSTRAINT fk_solutions_exception_id 
@@ -112,3 +114,22 @@ async def create_solutions_table():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create table: {str(e)}")
+
+@router.delete("/table/drop", status_code=200)
+async def drop_solutions_table():
+    """
+    Drops the solutions table if it exists.
+    WARNING: This will delete all solution data permanently.
+    """
+    sql = "DROP TABLE IF EXISTS solutions CASCADE;"
+    
+    try:
+        conn = Tortoise.get_connection("default")
+        await conn.execute_script(sql)
+        
+        return {
+            "message": "Solutions table dropped successfully",
+            "details": "All solution data has been deleted"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to drop table: {str(e)}")

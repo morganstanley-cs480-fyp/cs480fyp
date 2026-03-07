@@ -1,6 +1,6 @@
 // The gradient search header with natural language search input
 
-import { Search, Filter, Sparkles, Star, X as XIcon, Eraser } from "lucide-react";
+import { Search, Filter, Sparkles, Star, X as XIcon, Eraser, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -60,13 +60,51 @@ export function SearchHeader({
   onDeleteSavedQuery,
 }: SearchHeaderProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const isQueryValid = searchQuery.trim().length >= 3;
+
+  const handleSearch = () => {
+    if (!isQueryValid) {
+      setValidationError("Search failed: Value error, query_text must be at least 3 characters");
+      return;
+    }
+    setValidationError(null);
+    onSearch();
+  };
 
   const handleSearchClick = (query: string) => {
+    setValidationError(null); // Clear any validation errors when clicking suggestions
     onRecentSearchClick(query);
   };
 
   const handleSavedQueryClick = (queryText: string) => {
+    setValidationError(null); // Clear any validation errors when clicking suggestions
     onRecentSearchClick(queryText);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      setShowSuggestions(false);
+      handleSearch(); // Use our validation wrapper
+    }
+    if (e.key === "Escape") {
+      setShowSuggestions(false);
+      setValidationError(null);
+    }
+  };
+
+  const handleQueryChange = (query: string) => {
+    onSearchQueryChange(query);
+    if (validationError && query.trim().length >= 3) {
+      setValidationError(null); // Clear error once user types enough characters
+    }
+    setShowSuggestions(true);
+  };
+
+  const handleClearSearch = () => {
+    setValidationError(null);
+    onClearSearch();
   };
 
   return (
@@ -98,23 +136,19 @@ export function SearchHeader({
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-black/50 z-10" />
           <Input
-            placeholder="Search by trade ID, counterparty, product type..."
-            className="pl-10 pr-32 bg-white h-12 text-black"
+            placeholder="Search by trade ID, counterparty, product type etc. Please enter at least 3 characters or more."
+            className={`pl-10 pr-32 bg-white h-12 text-black ${
+              validationError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+            }`}
             value={searchQuery}
             autoComplete="off"
-            onChange={(e) => {
-              onSearchQueryChange(e.target.value);
-              setShowSuggestions(true);
-            }}
+            onChange={(e) => handleQueryChange(e.target.value)}
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") { setShowSuggestions(false); onSearch(); }
-              if (e.key === "Escape") setShowSuggestions(false);
-            }}
+            onKeyDown={handleKeyDown}
           />
           {/* Typeahead suggestions dropdown */}
-          {showSuggestions && suggestions.length > 0 && (
+          {showSuggestions && suggestions.length > 0 && !validationError && (
             <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-black/10 bg-white shadow-lg overflow-hidden">
               {suggestions.map((s, i) => (
                 <button
@@ -138,20 +172,20 @@ export function SearchHeader({
             <Button
               variant="ghost"
               size="sm"
-              onClick={onClearSearch}
+              onClick={handleClearSearch}
               className="h-8 px-2 text-black/60 hover:text-black hover:bg-black/5"
               title="Clear search"
             >
               <Eraser className="size-4 mr-1" />
-              Clear
+              Reset Search
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onSaveCurrentQuery}
-              disabled={!canSaveQuery}
+              disabled={!canSaveQuery || !isQueryValid}
               className="h-8 px-2 text-black/60 hover:text-black hover:bg-black/5 disabled:opacity-40 disabled:cursor-not-allowed"
-              title="Save this query"
+              title={!isQueryValid ? "Query must be at least 3 characters to save" : "Save this query"}
             >
               <Star className="size-4 mr-1" />
               Save Query
@@ -159,9 +193,14 @@ export function SearchHeader({
           </div>
         </div>
         <Button
-          onClick={onSearch}
-          disabled={searching}
-          className="bg-white text-[#002B51] hover:bg-white/90 h-12 px-7 font-semibold text-sm shadow-sm border-0"
+          onClick={handleSearch}
+          disabled={searching || !isQueryValid}
+          className={`h-12 px-7 font-semibold text-sm shadow-sm border-0 ${
+            !isQueryValid 
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+              : 'bg-white text-[#002B51] hover:bg-white/90'
+          }`}
+          title={!isQueryValid ? "Please enter at least 3 characters" : "Search"}
         >
           {searching ? "Searching..." : "Search"}
         </Button>
@@ -173,6 +212,17 @@ export function SearchHeader({
           Manual Search
         </Button>
       </div>
+
+      {/* Validation Error */}
+      {validationError && (
+        <div className="mt-3 flex items-center gap-2 px-4 py-2.5 bg-red-100 border border-red-300 rounded-lg">
+          <AlertCircle className="size-4 text-red-600 shrink-0" />
+          <div className="text-sm">
+            <p className="font-medium text-red-800">Search Error</p>
+            <p className="text-red-700">{validationError}</p>
+          </div>
+        </div>
+      )}
 
       {/* Recent and Saved chips strip */}
       {(recentSearches.length > 0 || savedQueries.length > 0) && (
