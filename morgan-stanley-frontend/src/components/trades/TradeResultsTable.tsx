@@ -43,6 +43,7 @@ interface TradeResultsTableProps {
   resultsCount: number;
   columnFiltersCount: number;
   filterOptions?: FilterOptions;
+  onRefresh? : () => void;
 }
 
 export function TradeResultsTable({
@@ -50,11 +51,22 @@ export function TradeResultsTable({
   resultsCount,
   columnFiltersCount,
   filterOptions,
+  onRefresh,
 }: TradeResultsTableProps) {
   const navigate = useNavigate();
   const [openFilter, setOpenFilter] = useState<string | null>(null);
   const isDateFilterColumn = (columnId: string) =>
     columnId === "create_time" || columnId === "update_time";
+
+  const handleRefresh = () => {
+    // Clear all filters first
+    table.resetColumnFilters();
+    table.resetSorting();
+    table.resetPageIndex();
+    
+    // Then trigger data refresh if callback provided
+    onRefresh?.();
+  };
 
   const handleDownloadCSV = () => {
     const rows = table.getFilteredRowModel().rows;
@@ -146,7 +158,13 @@ export function TradeResultsTable({
           >
             <Download className="size-3.5 text-black/60" />
           </Button>
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 w-8 p-0"
+            onClick={handleRefresh}
+            title="Refresh data and clear filters"
+          >
             <RefreshCw className="size-3.5 text-black/60" />
           </Button>
           {/* Column Visibility */}
@@ -228,18 +246,21 @@ export function TradeResultsTable({
                   <TableHead key={`filter-${header.id}`} className="py-2 px-2 overflow-visible">
                     {header.column.getCanFilter() && !isDateFilterColumn(header.id) && (
                       <div className="relative">
-                        <Input
-                          placeholder=""
-                          value={
-                            (header.column.getFilterValue() as string) ?? ""
+                      <Input
+                        placeholder={
+                          header.id === "trade_id" ? "Filter by Trade ID" :
+                          "Filter..."
+                        }
+                        value={
+                          (header.column.getFilterValue() as string) ?? ""
+                        }
+                        onChange={(event) => {
+                          header.column.setFilterValue(event.target.value);
+                          // Keep dropdown open while typing so user can pick a match
+                          if (optionMap[header.id]?.length) {
+                            setOpenFilter(header.id);
                           }
-                          onChange={(event) => {
-                            header.column.setFilterValue(event.target.value);
-                            // Keep dropdown open while typing so user can pick a match
-                            if (optionMap[header.id]?.length) {
-                              setOpenFilter(header.id);
-                            }
-                          }}
+                        }}
                           // Open on click so it works whether or not the input is already focused
                           onClick={() => {
                             if (optionMap[header.id]?.length) {

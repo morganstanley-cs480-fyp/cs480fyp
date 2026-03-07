@@ -52,6 +52,7 @@ export function useTradeColumns(): ColumnDef<Trade>[] {
       ),
       filterFn: (row, columnId, filterValue: string) =>
         String(row.getValue(columnId)).includes(filterValue),
+      
     },
     {
       accessorKey: "account",

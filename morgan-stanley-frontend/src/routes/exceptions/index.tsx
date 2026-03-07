@@ -195,14 +195,14 @@ function ExceptionsPage() {
         <>
           <StatsOverview stats={stats} />
 
-          {results.length > 0 && (
+          {exceptions.length > 0 && (
             <ExceptionFilters
               table={table}
               onClearFilters={handleClearFilters}
             />
           )}
 
-          {results.length > 0 && (
+          {exceptions.length > 0 && (
             <div className={selectedException ? "grid grid-cols-3 gap-6" : ""}>
               <div className={selectedException ? "col-span-2" : ""}>
                 <ExceptionResultsTable

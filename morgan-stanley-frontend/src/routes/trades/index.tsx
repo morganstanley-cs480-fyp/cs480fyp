@@ -189,6 +189,30 @@ function TradeSearchPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchResponse?.query_id]);
 
+  const handleRefresh = async () => {
+    try {
+      // Clear all table filters and reset pagination
+      table.resetColumnFilters();
+      table.resetSorting();
+      table.resetPageIndex();
+      
+      // Clear query cache to force fresh data fetch
+      queryClient.removeQueries({ queryKey: ['trades', 'search'] });
+      
+      // Refetch current search if we have submitted params
+      if (submittedParams) {
+        await refetchSearch();
+      }
+      
+      // Refresh filter options in case new values were added
+      await fetchFilterOptions();
+      
+      console.log('Data refreshed successfully');
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    }
+  };
+
   // Fetch search history from backend
   const fetchSearchHistory = async () => {
     try {
@@ -617,6 +641,7 @@ function TradeSearchPage() {
         resultsCount={results.length}
         columnFiltersCount={columnFilters.length}
         filterOptions={filterOptions}
+        onRefresh={handleRefresh}
       />
     </div>
   );

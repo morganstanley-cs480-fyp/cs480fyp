@@ -1,6 +1,6 @@
-// Tanstack data table with dropdowns
-
+// ...existing code...
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
 import {
   flexRender,
   type Table as TableType,
@@ -50,6 +50,24 @@ export function ExceptionResultsTable({
   onPriorityFilterChange,
   onRowClick,
 }: ExceptionResultsTableProps) {
+  const [openFilter, setOpenFilter] = useState<string | null>(null);
+
+  // Generate dropdown options from table data
+  const optionMap = useMemo(() => {
+    const rows = table.getPreFilteredRowModel().flatRows;
+    const collect = (key: keyof Exception) =>
+      Array.from(new Set(rows.map((r) => String(r.original[key])))).sort();
+    
+    return {
+      id: collect("id"),
+      trade_id: collect("trade_id"),
+      msg: collect("msg"),
+      comment: collect("comment"),
+      create_time: collect("create_time"),
+      update_time: collect("update_time"),
+    };
+  }, [table]);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between py-4 px-6 border-b border-black/6">
@@ -84,7 +102,7 @@ export function ExceptionResultsTable({
                 {table.getHeaderGroups()[0].headers.map((header) => (
                   <TableHead
                     key={`filter-${header.id}`}
-                    className="py-2 px-4"
+                    className="py-2 px-4 relative"
                   >
                     {/* Status Column - Dropdown */}
                     {header.column.id === "status" && (
@@ -123,23 +141,64 @@ export function ExceptionResultsTable({
                       </Select>
                     )}
 
-                    {/* Other Columns - Text Input */}
+                    {/* Other Columns - Searchable Dropdown Input */}
                     {header.column.id !== "status" &&
                       header.column.id !== "priority" &&
                       header.column.getCanFilter() && (
-                        <Input
-                          placeholder="Filter..."
-                          value={
-                            (header.column.getFilterValue() as string) ??
-                            ""
-                          }
-                          onChange={(event) =>
-                            header.column.setFilterValue(
-                              event.target.value
-                            )
-                          }
-                          className="h-8 text-xs"
-                        />
+                        <div className="relative">
+                          <Input
+                            placeholder={
+                              header.column.id === "id" ? "Filter by Exception ID..." :
+                              header.column.id === "trade_id" ? "Filter by Trade ID..." :
+                              header.column.id === "msg" ? "Filter by Message..." :
+                              header.column.id === "comment" ? "Filter by Comment..." :
+                              "Filter..."
+                            }
+                            value={
+                              (header.column.getFilterValue() as string) ?? ""
+                            }
+                            onChange={(event) => {
+                              header.column.setFilterValue(event.target.value);
+                              if (optionMap[header.column.id as keyof typeof optionMap]?.length) {
+                                setOpenFilter(header.column.id);
+                              }
+                            }}
+                            onClick={() => {
+                              if (optionMap[header.column.id as keyof typeof optionMap]?.length) {
+                                setOpenFilter(openFilter === header.column.id ? null : header.column.id);
+                              }
+                            }}
+                            onBlur={() => {
+                              // Delay to allow option selection
+                              setTimeout(() => setOpenFilter(null), 200);
+                            }}
+                            className="h-8 text-xs"
+                          />
+                          
+                          {/* Dropdown Options */}
+                          {openFilter === header.column.id && optionMap[header.column.id as keyof typeof optionMap]?.length ? (
+                            <div className="absolute left-0 right-auto top-full z-30 mt-1 max-h-64 min-w-48 overflow-y-auto rounded-md border bg-white shadow-md">
+                              {optionMap[header.column.id as keyof typeof optionMap]
+                                .filter((option) => {
+                                  const typed = ((header.column.getFilterValue() as string) ?? "").toLowerCase();
+                                  return !typed || option.toLowerCase().includes(typed);
+                                })
+                                .slice(0, 10) // Limit to 10 options for performance
+                                .map((option) => (
+                                  <button
+                                    key={option}
+                                    className="block w-full px-3 py-2 text-left text-xs hover:bg-gray-100 transition-colors"
+                                    onMouseDown={() => {
+                                      header.column.setFilterValue(option);
+                                      setOpenFilter(null);
+                                    }}
+                                  >
+                                    {option}
+                                  </button>
+                                ))}
+                            </div>
+                          ) : null}
+                        </div>
                       )}
                   </TableHead>
                 ))}

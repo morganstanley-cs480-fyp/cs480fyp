@@ -37,6 +37,8 @@ export function useExceptionColumns({
           {row.getValue("id")}
         </span>
       ),
+      filterFn: (row, columnId, filterValue: string) =>
+        String(row.getValue(columnId)).includes(filterValue),
       enableColumnFilter: true,
     },
     {
@@ -47,6 +49,8 @@ export function useExceptionColumns({
           {row.getValue("trade_id")}
         </span>
       ),
+      filterFn: (row, columnId, filterValue: string) =>
+        String(row.getValue(columnId)).includes(filterValue),
       enableColumnFilter: true,
     },
     {

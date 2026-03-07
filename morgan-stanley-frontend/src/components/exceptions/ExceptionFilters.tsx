@@ -62,7 +62,7 @@ export function ExceptionFilters({
                 onCheckedChange={(value) => col.toggleVisibility(!!value)}
                 onSelect={(e) => e.preventDefault()}
               >
-                {col.id}
+                {col.id == 'id' ? 'Exception_id' : col.id}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
