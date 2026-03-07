@@ -114,6 +114,7 @@ function TradeSearchPage() {
   const [submittedParams, setSubmittedParams] = useState<SearchRequest | null>(null);
 
   // Restore the last submitted NLQ from sessionStorage on mount (preserves results on Back navigation)
+  // If no saved query exists, load all trades by default
   useEffect(() => {
     const savedQuery = sessionStorage.getItem(SEARCH_KEY);
     if (savedQuery?.trim()) {
@@ -121,6 +122,15 @@ function TradeSearchPage() {
         search_type: "natural_language",
         user_id: userId,
         query_text: savedQuery,
+      });
+    } else {
+      // Load all trades on initial page load with empty manual filters
+      setSubmittedParams({
+        search_type: "manual",
+        user_id: userId,
+        filters: {
+          date_type: "update_time",
+        },
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
