@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronDown, ChevronUp, Info, Calendar, Clock, Activity, AlertTriangle, Wifi, WifiOff } from "lucide-react";
 import type { Trade, Transaction, Exception } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
-import { getPriorityColor } from "@/routes/trades/-tradeDetailUtils";
+import { getPriorityColor } from "@/lib/tradeDetailUtils";
 import { useNavigate } from "@tanstack/react-router";
 
 interface TradeInfoCardProps {

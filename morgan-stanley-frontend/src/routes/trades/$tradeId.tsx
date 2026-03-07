@@ -15,7 +15,7 @@ import {
     getTransactionStatusColor,
     getTransactionBackgroundColor,
     getRelatedExceptions,
-} from "./-tradeDetailUtils";
+} from "../../lib/tradeDetailUtils";
 import { requireAuth } from "@/lib/utils";
 import {EntityAndTransactionDetailPanel} from "@/components/trades-individual/EntityAndTransactionDetailPanel";
 import { useTradeWebSocket } from "@/hooks/useTradeWebSocket";

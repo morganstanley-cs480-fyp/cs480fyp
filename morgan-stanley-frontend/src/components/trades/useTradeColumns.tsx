@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Trade } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
-import { getStatusBadgeClassName } from "@/routes/trades/-tradeDetailUtils";
+import { getStatusBadgeClassName } from "@/lib/tradeDetailUtils";
 
 export function useTradeColumns(): ColumnDef<Trade>[] {
   const SortHeader = ({ column, label }: { column: Column<Trade>; label: string }) => (

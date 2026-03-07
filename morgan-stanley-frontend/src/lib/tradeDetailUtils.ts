@@ -58,7 +58,7 @@ export function getPriorityIcon(priority: string): React.ReactElement {
 }
 
 export function getTransactionBackgroundColor(transaction: Transaction, exceptions: Exception[]) {
-  const hasException = exceptions.some((exc) => exc.trans_id === transaction.trans_id);
+  const hasException = exceptions.some((exc) => exc.trans_id === transaction.id);
 
   if (hasException) {
     return "bg-red-50 border-red-300";
