@@ -214,6 +214,7 @@ export function TradeInfoCard({
                         Comment {exception.comment || "-"}
                       </div>
                     </div>
+                    {exception.status !== "CLOSED" && (
                     <div className="mt-3 flex justify-end">
                       <Button
                         type="button"
@@ -227,9 +228,10 @@ export function TradeInfoCard({
                           });
                         }}
                       >
-                        View exception
+                        Resolve exception
                       </Button>
                     </div>
+                    )}
                   </div>
                 ))}
               </div>
