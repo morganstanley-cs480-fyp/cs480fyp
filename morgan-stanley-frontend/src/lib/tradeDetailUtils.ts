@@ -60,6 +60,17 @@ export function getTransactionStatusColor(status: string): "default" | "destruct
   }
 }
 
+  export const getExceptionStatusClassName = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "CLOSED":
+        return "bg-green-100 text-green-800 border-green-200";
+      default:
+        return "bg-black/[0.04] text-black/75 border-black/10";
+    }
+  };
+
 export function getPriorityColor(priority: string): "default" | "destructive" | "secondary" {
   if (priority === "HIGH") return "destructive";
   if (priority === "MEDIUM") return "default";
@@ -80,9 +91,10 @@ export function getTransactionBackgroundColor(transaction: Transaction, exceptio
       return 'bg-green-50 border-green-200';
     case 'REJECTED':
       return 'bg-red-50 border-red-200';
-    case 'PENDING':
+    case 'ALLEGED':
       return 'bg-yellow-50 border-yellow-200';
-    default:
+    case 'CANCELLED':
+    default: 
       return 'bg-gray-50 border-gray-200';
   }
 }

@@ -9,6 +9,8 @@ import type { Trade, Transaction, Exception } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
 import { getPriorityColor } from "@/lib/tradeDetailUtils";
 import { useNavigate } from "@tanstack/react-router";
+import { getExceptionStatusClassName } from "@/lib/tradeDetailUtils";
+import { getPriorityBadgeClassName } from "@/lib/tradeDetailUtils";
 
 interface TradeInfoCardProps {
   trade: Trade;
@@ -32,16 +34,6 @@ export function TradeInfoCard({
   connectionStatus = "Disconnected",  
 }: TradeInfoCardProps) {
   const navigate = useNavigate();
-  const getExceptionStatusClassName = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "CLOSED":
-        return "bg-green-100 text-green-800 border-green-200";
-      default:
-        return "bg-black/[0.04] text-black/75 border-black/10";
-    }
-  };
 
    const getLatestTransactionStatus = () => {
     if (transactions.length === 0) {
@@ -206,7 +198,7 @@ export function TradeInfoCard({
                         <Badge variant="secondary" className={getExceptionStatusClassName(exception.status)}>
                           {exception.status}
                         </Badge>
-                        <Badge variant={getPriorityColor(exception.priority)}>
+                        <Badge variant={getPriorityColor(exception.priority)} className={getPriorityBadgeClassName(exception.priority)}>
                           {exception.priority}
                         </Badge>
                       </div>

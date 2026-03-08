@@ -6,7 +6,8 @@ import { Separator } from "@/components/ui/separator";
 import { AlertCircle } from "lucide-react";
 import type { Transaction, Exception } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
-import { getStatusBadgeClassName } from "@/lib/tradeDetailUtils";
+import { getExceptionStatusClassName, getStatusBadgeClassName } from "@/lib/tradeDetailUtils";
+import { getPriorityBadgeClassName } from "@/lib/tradeDetailUtils";
 
 interface TransactionDetailPanelProps {
   selectedTransaction: Transaction;
@@ -146,7 +147,7 @@ export function TransactionDetailPanel({
                         <p className="text-sm text-black/75 mb-1">Priority</p>
                         <div className="flex items-center gap-2">
                           {getPriorityIcon(exception.priority)}
-                          <Badge variant={getPriorityColor(exception.priority)}>
+                          <Badge variant={getPriorityColor(exception.priority)} className={getPriorityBadgeClassName(exception.priority)}>
                             {exception.priority}
                           </Badge>
                         </div>
@@ -155,6 +156,7 @@ export function TransactionDetailPanel({
                         <p className="text-sm text-black/75 mb-1">Status</p>
                         <Badge
                           variant={exception.status === "CLOSED" ? "default" : "secondary"}
+                          className={getExceptionStatusClassName(exception.status)}
                         >
                           {exception.status}
                         </Badge>
