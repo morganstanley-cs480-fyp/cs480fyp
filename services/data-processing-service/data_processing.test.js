@@ -166,7 +166,7 @@ describe('Data Processor Service', () => {
       trade_id: 10000000,      
       trans_id: 50000000, 
       event: "Validation Failure",
-      status: "ERROR",
+      status: "PENDING",
       msg: "Invalid Account Number",
       create_time: "2025-01-01T10:10:00Z",
       comment: "Auto-generated exception",
