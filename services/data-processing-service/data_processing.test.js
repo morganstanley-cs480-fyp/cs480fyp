@@ -201,14 +201,14 @@ describe('Data Processor Service', () => {
       expect(publisher.publish).toHaveBeenNthCalledWith(
         1, 
         'trade-updates', 
-        expect.stringContaining('"type":"exception"')
+        expect.stringContaining('"status":"PENDING"')
       );
 
       // Check Payload 2: The newly rejected Transaction
       expect(publisher.publish).toHaveBeenNthCalledWith(
         2, 
         'trade-updates', 
-        expect.stringContaining('"type":"transaction"')
+        expect.stringContaining('"status":"REJECTED"')
       );
       
       // Verify the transaction payload contains the mock updated data
