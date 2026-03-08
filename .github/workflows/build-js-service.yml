@@ -43,6 +43,10 @@ jobs:
   test:
     needs: static-analysis
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -57,14 +61,59 @@ jobs:
         working-directory: ./services/${{ inputs.service_name }}
         run: npm ci
 
-      - name: Run tests
+      - name: Run tests with coverage
         working-directory: ./services/${{ inputs.service_name }}
         run: |
           if grep -q '"test"' package.json; then
-            npm test
+            # Check if jest-junit is installed
+            if ! npm list jest-junit --depth=0 >/dev/null 2>&1; then
+              echo "Installing jest-junit for test reporting..."
+              npm install --no-save jest-junit
+            fi
+            
+            # Run tests with coverage and junit reporting
+            JEST_JUNIT_OUTPUT_DIR="./test-results" \
+            JEST_JUNIT_OUTPUT_NAME="junit.xml" \
+            npm test -- \
+              --coverage \
+              --coverageDirectory=coverage \
+              --coverageReporters=text \
+              --coverageReporters=lcov \
+              --coverageReporters=html \
+              --reporters=default \
+              --reporters=jest-junit \
+              --passWithNoTests
           else
             echo "No tests configured, skipping..."
           fi
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            services/${{ inputs.service_name }}/junit.xml
+            services/${{ inputs.service_name }}/test-results/**/*.xml
+          check_name: Test Results (${{ inputs.service_name }})
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.service_name }}-test-results
+          path: |
+            services/${{ inputs.service_name }}/coverage/
+            services/${{ inputs.service_name }}/test-results/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Code Coverage Report
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          lcov-file: services/${{ inputs.service_name }}/coverage/lcov.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          delete-old-comments: true
 
   build:
     needs: test
