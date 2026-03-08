@@ -260,7 +260,7 @@ export async function handleTransaction(trans) {
     if (!isInsert) {
       const closeExceptionQuery = `
         UPDATE exceptions 
-        SET status = 'closed' 
+        SET status = 'CLOSED' 
         WHERE trans_id = $1;
       `;
       // Note: Ensure your table is named 'exceptions' or adjust the query above
