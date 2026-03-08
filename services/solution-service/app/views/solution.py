@@ -22,9 +22,26 @@ async def get_solution(exception_id: int):
 
 @router.post("", response_model=SolutionResponse, status_code=201)
 async def create_solution(solution_data: SolutionCreate):
-    solution = await Solution.create(**solution_data.model_dump(exclude_unset=True))
-    await solution.refresh_from_db()
-    return solution
+    try:
+        # Exclude create_time - let DB generate it
+        data = solution_data.model_dump(exclude_unset=True, exclude={'create_time'})
+        solution = await Solution.create(**data)
+        await solution.refresh_from_db()
+        return solution
+    except Exception as e:
+        # If duplicate key error, sync sequence and retry once
+        if "duplicate key value violates unique constraint" in str(e) and "solutions_pkey" in str(e):
+            conn = Tortoise.get_connection("default")
+            await conn.execute_script("""
+                SELECT setval('solutions_id_seq', (SELECT COALESCE(MAX(id), 99999) FROM solutions));
+            """)
+            # Retry the creation
+            data = solution_data.model_dump(exclude_unset=True, exclude={'create_time'})
+            solution = await Solution.create(**data)
+            await solution.refresh_from_db()
+            return solution
+        else:
+            raise
 
 @router.post("/batch", response_model=List[SolutionResponse], status_code=201)
 async def batch_create_solutions(solutions_data: List[SolutionCreate]):
@@ -32,10 +49,30 @@ async def batch_create_solutions(solutions_data: List[SolutionCreate]):
     Create multiple solutions in a single request.
     """
     created_solutions = []
+    sequence_synced = False
+    
     for solution_data in solutions_data:
-        solution = await Solution.create(**solution_data.model_dump(exclude_unset=True))
-        await solution.refresh_from_db()
-        created_solutions.append(solution)  
+        try:
+            # Exclude create_time - let DB generate it
+            data = solution_data.model_dump(exclude_unset=True, exclude={'create_time'})
+            solution = await Solution.create(**data)
+            await solution.refresh_from_db()
+            created_solutions.append(solution)
+        except Exception as e:
+            if not sequence_synced and "duplicate key value violates unique constraint" in str(e) and "solutions_pkey" in str(e):
+                conn = Tortoise.get_connection("default")
+                await conn.execute_script("""
+                    SELECT setval('solutions_id_seq', (SELECT COALESCE(MAX(id), 99999) FROM solutions));
+                """)
+                sequence_synced = True
+                # Retry this solution
+                data = solution_data.model_dump(exclude_unset=True, exclude={'create_time'})
+                solution = await Solution.create(**data)
+                await solution.refresh_from_db()
+                created_solutions.append(solution)
+            else:
+                raise
+    
     return created_solutions
 
 @router.put("/{solution_id}", response_model=SolutionResponse)
