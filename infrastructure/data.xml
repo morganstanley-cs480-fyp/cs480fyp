@@ -1,169 +1,4 @@
 <root>
-	<exception>
-		<id>20030001</id>
-		<trade_id>36106022</trade_id>
-		<trans_id>10030004</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2024-01-17 09:55:40</create_time>
-		<comment>NO MAPPING FOR SCHEDULE</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2024-01-17 09:55:40</update_time>
-	</exception>
-	<exception>
-		<id>20002001</id>
-		<trade_id>60724962</trade_id>
-		<trans_id>10002005</trans_id>
-		<status>CLOSED</status>
-		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2024-02-02T10:31:00</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>HIGH</priority>
-		<update_time>2024-02-02T10:31:00</update_time>
-	</exception>
-	<exception>
-		<id>20007001</id>
-		<trade_id>25399440</trade_id>
-		<trans_id>10007004</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2024-02-27 09:46:15</create_time>
-		<comment>NO MAPPING FOR INDEX</comment>
-		<priority>HIGH</priority>
-		<update_time>2024-02-27 09:46:15</update_time>
-	</exception>
-	<exception>
-		<id>20026001</id>
-		<trade_id>49964172</trade_id>
-		<trans_id>10026004</trans_id>
-		<status>CLOSED</status>
-		<msg>TIME OUT OF RANGE</msg>
-		<create_time>2024-03-29 00:01:00</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2024-03-29 00:01:00</update_time>
-	</exception>
-	<exception>
-		<id>20003001</id>
-		<trade_id>86836834</trade_id>
-		<trans_id>10003004</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2024-04-09 14:35:30</create_time>
-		<comment>NO MAPPING FOR CSA</comment>
-		<priority>HIGH</priority>
-		<update_time>2024-04-09 14:35:30</update_time>
-	</exception>
-	<exception>
-		<id>20012001</id>
-		<trade_id>42511774</trade_id>
-		<trans_id>10012003</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2024-05-14 13:24:15</create_time>
-		<comment>NO MAPPING FOR CREDIT RATING</comment>
-		<priority>HIGH</priority>
-		<update_time>2024-05-14 13:24:15</update_time>
-	</exception>
-	<exception>
-		<id>20008001</id>
-		<trade_id>53850480</trade_id>
-		<trans_id>10008005</trans_id>
-		<status>CLOSED</status>
-		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2024-06-15 15:38:00</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2024-06-15 15:38:00</update_time>
-	</exception>
-	<exception>
-		<id>20028001</id>
-		<trade_id>98159040</trade_id>
-		<trans_id>10028005</trans_id>
-		<status>CLOSED</status>
-		<msg>TIME OUT OF RANGE</msg>
-		<create_time>2024-06-18 12:48:45</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2024-06-18 12:48:45</update_time>
-	</exception>
-	<exception>
-		<id>20020001</id>
-		<trade_id>81930671</trade_id>
-		<trans_id>10020005</trans_id>
-		<status>CLOSED</status>
-		<msg>MISSING BIC</msg>
-		<create_time>2024-07-11 10:12:00</create_time>
-		<comment>NO BIC</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2024-07-11 10:12:00</update_time>
-	</exception>
-	<exception>
-		<id>20014001</id>
-		<trade_id>14355627</trade_id>
-		<trans_id>10014004</trans_id>
-		<status>CLOSED</status>
-		<msg>TIME OUT OF RANGE</msg>
-		<create_time>2024-08-19 15:42:30</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2024-08-19 15:42:30</update_time>
-	</exception>
-	<exception>
-		<id>20018001</id>
-		<trade_id>56535550</trade_id>
-		<trans_id>10018005</trans_id>
-		<status>CLOSED</status>
-		<msg>TIME OUT OF RANGE</msg>
-		<create_time>2024-09-05 12:02:15</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2024-09-05 12:02:15</update_time>
-	</exception>
-	<exception>
-		<id>20022001</id>
-		<trade_id>69755320</trade_id>
-		<trans_id>10022004</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2024-10-29 10:53:30</create_time>
-		<comment>NO MAPPING FOR MATURITY</comment>
-		<priority>LOW</priority>
-		<update_time>2024-10-29 10:53:30</update_time>
-	</exception>
-	<exception>
-		<id>20016001</id>
-		<trade_id>54146216</trade_id>
-		<trans_id>10016005</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2024-11-22 14:21:00</create_time>
-		<comment>NO MAPPING FOR LEI</comment>
-		<priority>HIGH</priority>
-		<update_time>2024-11-22 14:21:00</update_time>
-	</exception>
-	<exception>
-		<id>20024001</id>
-		<trade_id>15706882</trade_id>
-		<trans_id>10024005</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2024-12-03 11:49:20</create_time>
-		<comment>NO MAPPING FOR NOTIONAL</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2024-12-03 11:49:20</update_time>
-	</exception>
-	<exception>
-		<id>20009001</id>
-		<trade_id>89369810</trade_id>
-		<trans_id>10009005</trans_id>
-		<status>CLOSED</status>
-		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2024-12-29 10:28:00</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>HIGH</priority>
-		<update_time>2024-12-29 10:28:00</update_time>
-	</exception>
 	<trade>
 		<id>73972538</id>
 		<account>ACC024</account>
@@ -1627,17 +1462,6 @@
 		<update_time>2025-01-13T09:41:41</update_time>
 		<status>CLEARED</status>
 	</trade>
-	<exception>
-		<id>20006001</id>
-		<trade_id>98962729</trade_id>
-		<trans_id>10006005</trans_id>
-		<status>CLOSED</status>
-		<msg>TIME OUT OF RANGE</msg>
-		<create_time>2025-01-24 13:55:00</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>CRITICAL</priority>
-		<update_time>2025-01-24 13:55:00</update_time>
-	</exception>
 	<trade>
 		<id>37158077</id>
 		<account>ACC076</account>
@@ -2683,17 +2507,6 @@
 		<update_time>2025-02-06T18:48:45</update_time>
 		<status>REJECTED</status>
 	</trade>
-	<exception>
-		<id>20025001</id>
-		<trade_id>96904486</trade_id>
-		<trans_id>10025004</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-02-07 09:41:30</create_time>
-		<comment>NO MAPPING FOR REFERENCE OBLIGATION</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2025-02-07 09:41:30</update_time>
-	</exception>
 	<trade>
 		<id>97897651</id>
 		<account>ACC021</account>
@@ -5411,17 +5224,6 @@
 		<update_time>2025-03-15T23:58:51</update_time>
 		<status>ALLEGED</status>
 	</trade>
-	<exception>
-		<id>20013001</id>
-		<trade_id>48712564</trade_id>
-		<trans_id>10013005</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-03-21 09:58:00</create_time>
-		<comment>NO MAPPING FOR SUCCESSION</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2025-03-21 09:58:00</update_time>
-	</exception>
 	<trade>
 		<id>70712244</id>
 		<account>ACC037</account>
@@ -7094,17 +6896,6 @@
 		<update_time>2025-04-14T18:04:12</update_time>
 		<status>REJECTED</status>
 	</trade>
-	<exception>
-		<id>20021001</id>
-		<trade_id>64737734</trade_id>
-		<trans_id>10021003</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-04-16 14:34:30</create_time>
-		<comment>NO MAPPING FOR CLEARING MEMBER</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2025-04-16 14:34:30</update_time>
-	</exception>
 	<trade>
 		<id>51089450</id>
 		<account>ACC059</account>
@@ -8150,17 +7941,6 @@
 		<update_time>2025-05-05T03:51:26</update_time>
 		<status>ALLEGED</status>
 	</trade>
-	<exception>
-		<id>20037001</id>
-		<trade_id>17194044</trade_id>
-		<trans_id>10037004</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-05-08T16:20:00</create_time>
-		<comment>NO MAPPING FOR COMPRESSION</comment>
-		<priority>LOW</priority>
-		<update_time>2025-05-08T16:20:00</update_time>
-	</exception>
 	<trade>
 		<id>82105744</id>
 		<account>ACC039</account>
@@ -9624,17 +9404,6 @@
 		<update_time>2025-05-22T04:13:58</update_time>
 		<status>CLEARED</status>
 	</trade>
-	<exception>
-		<id>20023001</id>
-		<trade_id>66663488</trade_id>
-		<trans_id>10023005</trans_id>
-		<status>CLOSED</status>
-		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2025-05-23 15:35:40</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>HIGH</priority>
-		<update_time>2025-05-23 15:35:40</update_time>
-	</exception>
 	<trade>
 		<id>87841659</id>
 		<account>ACC082</account>
@@ -10889,17 +10658,6 @@
 		<update_time>2025-06-06T06:33:32</update_time>
 		<status>CLEARED</status>
 	</trade>
-	<exception>
-		<id>20035001</id>
-		<trade_id>76369566</trade_id>
-		<trans_id>10035005</trans_id>
-		<status>CLOSED</status>
-		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2025-06-12T11:55:00</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2025-06-12T11:55:00</update_time>
-	</exception>
 	<trade>
 		<id>30461963</id>
 		<account>ACC079</account>
@@ -12154,39 +11912,6 @@
 		<update_time>2025-06-28T21:01:57</update_time>
 		<status>CLEARED</status>
 	</trade>
-	<exception>
-		<id>20017001</id>
-		<trade_id>72427554</trade_id>
-		<trans_id>10017005</trans_id>
-		<status>CLOSED</status>
-		<msg>TIME OUT OF RANGE</msg>
-		<create_time>2025-06-30 16:35:30</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>CRITICAL</priority>
-		<update_time>2025-06-30 16:35:30</update_time>
-	</exception>
-	<exception>
-		<id>20040001</id>
-		<trade_id>87339954</trade_id>
-		<trans_id>10040004</trans_id>
-		<status>PENDING</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-07-01T10:00:00</create_time>
-		<comment>NO MAPPING FOR BACKLOADING</comment>
-		<priority>HIGH</priority>
-		<update_time>2025-07-01T10:00:00</update_time>
-	</exception>
-	<exception>
-		<id>20004001</id>
-		<trade_id>77186642</trade_id>
-		<trans_id>10004005</trans_id>
-		<status>CLOSED</status>
-		<msg>MISSING BIC</msg>
-		<create_time>2025-07-03 08:32:15</create_time>
-		<comment>NO BIC</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2025-07-03 08:32:15</update_time>
-	</exception>
 	<trade>
 		<id>96565146</id>
 		<account>ACC017</account>
@@ -13441,17 +13166,6 @@
 		<update_time>2025-07-12T13:17:10</update_time>
 		<status>CLEARED</status>
 	</trade>
-	<exception>
-		<id>20034001</id>
-		<trade_id>76689540</trade_id>
-		<trans_id>10034003</trans_id>
-		<status>CLOSED</status>
-		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2025-07-15T13:25:00</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2025-07-15T13:25:00</update_time>
-	</exception>
 	<trade>
 		<id>81459852</id>
 		<account>ACC060</account>
@@ -13661,17 +13375,6 @@
 		<update_time>2025-07-16T06:21:18</update_time>
 		<status>CLEARED</status>
 	</trade>
-	<exception>
-		<id>20005001</id>
-		<trade_id>61270683</trade_id>
-		<trans_id>10005004</trans_id>
-		<status>CLOSED</status>
-		<msg>TIME OUT OF RANGE</msg>
-		<create_time>2025-07-19 11:17:00</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2025-07-19 11:17:00</update_time>
-	</exception>
 	<trade>
 		<id>39461893</id>
 		<account>ACC099</account>
@@ -14104,58 +13807,69 @@
 	<transaction>
 		<id>10006001</id>
 		<trade_id>98962729</trade_id>
-		<create_time>2025-08-04T02:57:30</create_time>
+		<create_time>2025-08-04T02:57:51</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-04T02:57:30</update_time>
+		<update_time>2025-08-04T02:57:51</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10006002</id>
 		<trade_id>98962729</trade_id>
-		<create_time>2025-08-04T02:58:58</create_time>
+		<create_time>2025-08-04T02:59:50</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-04T02:58:58</update_time>
+		<update_time>2025-08-04T02:59:50</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10006003</id>
 		<trade_id>98962729</trade_id>
-		<create_time>2025-08-04T03:00:54</create_time>
+		<create_time>2025-08-04T03:01:12</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-04T03:00:54</update_time>
+		<update_time>2025-08-04T03:01:12</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10006004</id>
 		<trade_id>98962729</trade_id>
-		<create_time>2025-08-04T03:03:48</create_time>
+		<create_time>2025-08-04T03:02:37</create_time>
 		<entity>JSCC</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-04T03:03:48</update_time>
+		<update_time>2025-08-04T03:02:37</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10006005</id>
 		<trade_id>98962729</trade_id>
-		<create_time>2025-08-04T03:06:42</create_time>
+		<create_time>2025-08-04T03:03:49</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>REFERENCE_ENTITY_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-08-04T03:06:42</update_time>
+		<update_time>2025-08-04T03:03:49</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20006001</id>
+		<trade_id>98962729</trade_id>
+		<trans_id>10006005</trans_id>
+		<status>CLOSED</status>
+		<msg>TIME OUT OF RANGE</msg>
+		<create_time>2025-08-04T03:03:49</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>CRITICAL</priority>
+		<update_time>2025-08-04T03:03:49</update_time>
+	</exception>
 	<trade>
 		<id>33154292</id>
 		<account>ACC083</account>
@@ -14170,80 +13884,91 @@
 	<transaction>
 		<id>10031001</id>
 		<trade_id>33154292</trade_id>
-		<create_time>2025-08-05T15:15:47</create_time>
+		<create_time>2025-08-05T15:17:44</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-05T15:15:47</update_time>
+		<update_time>2025-08-05T15:17:44</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10031002</id>
 		<trade_id>33154292</trade_id>
-		<create_time>2025-08-05T15:17:23</create_time>
+		<create_time>2025-08-05T15:20:25</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-05T15:17:23</update_time>
+		<update_time>2025-08-05T15:20:25</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10031003</id>
 		<trade_id>33154292</trade_id>
-		<create_time>2025-08-05T15:18:24</create_time>
+		<create_time>2025-08-05T15:22:30</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-05T15:18:24</update_time>
+		<update_time>2025-08-05T15:22:30</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10031004</id>
 		<trade_id>33154292</trade_id>
-		<create_time>2025-08-05T15:21:08</create_time>
+		<create_time>2025-08-05T15:22:53</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-05T15:21:08</update_time>
+		<update_time>2025-08-05T15:22:53</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10031005</id>
 		<trade_id>33154292</trade_id>
-		<create_time>2025-08-05T15:22:29</create_time>
+		<create_time>2025-08-05T15:23:17</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>STATUS_UPDATE</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-05T15:22:29</update_time>
+		<update_time>2025-08-05T15:23:17</update_time>
 		<step>5</step>
 	</transaction>
 	<transaction>
 		<id>10031006</id>
 		<trade_id>33154292</trade_id>
-		<create_time>2025-08-05T15:25:14</create_time>
+		<create_time>2025-08-05T15:25:52</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>CLEARING_CONFIRMED</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-05T15:25:14</update_time>
+		<update_time>2025-08-05T15:25:52</update_time>
 		<step>6</step>
 	</transaction>
 	<transaction>
 		<id>10031007</id>
 		<trade_id>33154292</trade_id>
-		<create_time>2025-08-05T15:27:13</create_time>
+		<create_time>2025-08-05T15:27:22</create_time>
 		<entity>RED KEEP</entity>
 		<direction>send</direction>
 		<type>TRADE_CAPTURE_MISMATCH</type>
 		<status>REJECTED</status>
-		<update_time>2025-08-05T15:27:13</update_time>
+		<update_time>2025-08-05T15:27:22</update_time>
 		<step>7</step>
 	</transaction>
+	<exception>
+		<id>20031001</id>
+		<trade_id>33154292</trade_id>
+		<trans_id>10031007</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-08-05T15:27:22</create_time>
+		<comment>NO MAPPING FOR RATE</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-08-05T15:27:22</update_time>
+	</exception>
 	<trade>
 		<id>55623053</id>
 		<account>ACC7526</account>
@@ -14294,10 +14019,10 @@
 		<trans_id>88242387</trans_id>
 		<status>CLOSED</status>
 		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2025-08-07T09:12:25</create_time>
+		<create_time>2025-08-07T09:12:18</create_time>
 		<comment>RETRY LIMIT EXCEEDED</comment>
 		<priority>HIGH</priority>
-		<update_time>2025-08-07T09:12:25</update_time>
+		<update_time>2025-08-07T09:12:18</update_time>
 	</exception>
 	<trade>
 		<id>68186799</id>
@@ -14371,10 +14096,10 @@
 		<trans_id>15153056</trans_id>
 		<status>CLOSED</status>
 		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-08-09T03:17:28</create_time>
+		<create_time>2025-08-09T03:17:23</create_time>
 		<comment>NO MAPPING FOR LEI</comment>
 		<priority>HIGH</priority>
-		<update_time>2025-08-09T03:17:28</update_time>
+		<update_time>2025-08-09T03:17:23</update_time>
 	</exception>
 	<trade>
 		<id>54146216</id>
@@ -14390,79 +14115,68 @@
 	<transaction>
 		<id>10016001</id>
 		<trade_id>54146216</trade_id>
-		<create_time>2025-08-10T14:54:26</create_time>
+		<create_time>2025-08-10T14:55:15</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-10T14:54:26</update_time>
+		<update_time>2025-08-10T14:55:15</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10016002</id>
 		<trade_id>54146216</trade_id>
-		<create_time>2025-08-10T14:56:16</create_time>
+		<create_time>2025-08-10T14:57:46</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-10T14:56:16</update_time>
+		<update_time>2025-08-10T14:57:46</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10016003</id>
 		<trade_id>54146216</trade_id>
-		<create_time>2025-08-10T14:57:19</create_time>
+		<create_time>2025-08-10T15:00:13</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-10T14:57:19</update_time>
+		<update_time>2025-08-10T15:00:13</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10016004</id>
 		<trade_id>54146216</trade_id>
-		<create_time>2025-08-10T14:58:14</create_time>
+		<create_time>2025-08-10T15:02:32</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-10T14:58:14</update_time>
+		<update_time>2025-08-10T15:02:32</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10016005</id>
 		<trade_id>54146216</trade_id>
-		<create_time>2025-08-10T15:00:53</create_time>
+		<create_time>2025-08-10T15:03:17</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>LEI_VALIDATION</type>
 		<status>REJECTED</status>
-		<update_time>2025-08-10T15:00:53</update_time>
+		<update_time>2025-08-10T15:03:17</update_time>
 		<step>5</step>
 	</transaction>
 	<exception>
-		<id>20033001</id>
-		<trade_id>85373053</trade_id>
-		<trans_id>10033005</trans_id>
+		<id>20016001</id>
+		<trade_id>54146216</trade_id>
+		<trans_id>10016005</trans_id>
 		<status>CLOSED</status>
 		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-08-11T09:40:00</create_time>
-		<comment>NO MAPPING FOR UTI</comment>
+		<create_time>2025-08-10T15:03:17</create_time>
+		<comment>NO MAPPING FOR LEI</comment>
 		<priority>HIGH</priority>
-		<update_time>2025-08-11T09:40:00</update_time>
-	</exception>
-	<exception>
-		<id>20027001</id>
-		<trade_id>42668494</trade_id>
-		<trans_id>10027003</trans_id>
-		<status>CLOSED</status>
-		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2025-08-14 12:31:30</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>HIGH</priority>
-		<update_time>2025-08-14 12:31:30</update_time>
+		<update_time>2025-08-10T15:03:17</update_time>
 	</exception>
 	<trade>
 		<id>50899479</id>
@@ -14478,36 +14192,47 @@
 	<transaction>
 		<id>10039001</id>
 		<trade_id>50899479</trade_id>
-		<create_time>2025-08-17T03:45:11</create_time>
+		<create_time>2025-08-17T03:43:23</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-17T03:45:11</update_time>
+		<update_time>2025-08-17T03:43:23</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10039002</id>
 		<trade_id>50899479</trade_id>
-		<create_time>2025-08-17T03:47:25</create_time>
+		<create_time>2025-08-17T03:44:26</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-17T03:47:25</update_time>
+		<update_time>2025-08-17T03:44:26</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10039003</id>
 		<trade_id>50899479</trade_id>
-		<create_time>2025-08-17T03:50:07</create_time>
+		<create_time>2025-08-17T03:45:07</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>TRADE_CONFIRMATION_DISPUTE</type>
 		<status>REJECTED</status>
-		<update_time>2025-08-17T03:50:07</update_time>
+		<update_time>2025-08-17T03:45:07</update_time>
 		<step>3</step>
 	</transaction>
+	<exception>
+		<id>20039001</id>
+		<trade_id>50899479</trade_id>
+		<trans_id>10039003</trans_id>
+		<status>PENDING</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-08-17T03:45:07</create_time>
+		<comment>NO MAPPING FOR TRADE ECONOMICS</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-08-17T03:45:07</update_time>
+	</exception>
 	<trade>
 		<id>36349602</id>
 		<account>ACC092</account>
@@ -14522,58 +14247,69 @@
 	<transaction>
 		<id>10032001</id>
 		<trade_id>36349602</trade_id>
-		<create_time>2025-08-19T00:52:17</create_time>
+		<create_time>2025-08-19T00:53:59</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-19T00:52:17</update_time>
+		<update_time>2025-08-19T00:53:59</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10032002</id>
 		<trade_id>36349602</trade_id>
-		<create_time>2025-08-19T00:52:57</create_time>
+		<create_time>2025-08-19T00:55:32</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-19T00:52:57</update_time>
+		<update_time>2025-08-19T00:55:32</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10032003</id>
 		<trade_id>36349602</trade_id>
-		<create_time>2025-08-19T00:55:25</create_time>
+		<create_time>2025-08-19T00:55:56</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-19T00:55:25</update_time>
+		<update_time>2025-08-19T00:55:56</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10032004</id>
 		<trade_id>36349602</trade_id>
-		<create_time>2025-08-19T00:57:13</create_time>
+		<create_time>2025-08-19T00:58:24</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-19T00:57:13</update_time>
+		<update_time>2025-08-19T00:58:24</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10032005</id>
 		<trade_id>36349602</trade_id>
-		<create_time>2025-08-19T00:57:46</create_time>
+		<create_time>2025-08-19T01:00:34</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>CCP_MARGIN_MODEL_UPDATE</type>
 		<status>REJECTED</status>
-		<update_time>2025-08-19T00:57:46</update_time>
+		<update_time>2025-08-19T01:00:34</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20032001</id>
+		<trade_id>36349602</trade_id>
+		<trans_id>10032005</trans_id>
+		<status>CLOSED</status>
+		<msg>INSUFFICIENT MARGIN</msg>
+		<create_time>2025-08-19T01:00:34</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>CRITICAL</priority>
+		<update_time>2025-08-19T01:00:34</update_time>
+	</exception>
 	<trade>
 		<id>91404528</id>
 		<account>ACC3147</account>
@@ -14706,17 +14442,6 @@
 		<update_time>2025-08-19T12:47:56</update_time>
 		<step>11</step>
 	</transaction>
-	<exception>
-		<id>20039001</id>
-		<trade_id>50899479</trade_id>
-		<trans_id>10039003</trans_id>
-		<status>PENDING</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-08-19T12:48:00</create_time>
-		<comment>NO MAPPING FOR TRADE ECONOMICS</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2025-08-19T12:48:00</update_time>
-	</exception>
 	<transaction>
 		<id>80440424</id>
 		<trade_id>91404528</trade_id>
@@ -14841,13 +14566,24 @@
 	<transaction>
 		<id>10037001</id>
 		<trade_id>17194044</trade_id>
-		<create_time>2025-08-19T19:48:31</create_time>
+		<create_time>2025-08-19T19:47:30</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-19T19:48:31</update_time>
+		<update_time>2025-08-19T19:47:30</update_time>
 		<step>1</step>
+	</transaction>
+	<transaction>
+		<id>10037002</id>
+		<trade_id>17194044</trade_id>
+		<create_time>2025-08-19T19:47:58</create_time>
+		<entity>TAS</entity>
+		<direction>send</direction>
+		<type>CREDIT_CHECK</type>
+		<status>CLEARED</status>
+		<update_time>2025-08-19T19:47:58</update_time>
+		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10001001</id>
@@ -14861,15 +14597,15 @@
 		<step>1</step>
 	</transaction>
 	<transaction>
-		<id>10037002</id>
+		<id>10037003</id>
 		<trade_id>17194044</trade_id>
-		<create_time>2025-08-19T19:50:23</create_time>
+		<create_time>2025-08-19T19:48:41</create_time>
 		<entity>TAS</entity>
-		<direction>send</direction>
-		<type>CREDIT_CHECK</type>
+		<direction>receive</direction>
+		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-19T19:50:23</update_time>
-		<step>2</step>
+		<update_time>2025-08-19T19:48:41</update_time>
+		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10001002</id>
@@ -14883,27 +14619,27 @@
 		<step>2</step>
 	</transaction>
 	<transaction>
-		<id>10037003</id>
-		<trade_id>17194044</trade_id>
-		<create_time>2025-08-19T19:51:10</create_time>
-		<entity>TAS</entity>
-		<direction>receive</direction>
-		<type>CREDIT_APPROVE</type>
-		<status>CLEARED</status>
-		<update_time>2025-08-19T19:51:10</update_time>
-		<step>3</step>
-	</transaction>
-	<transaction>
 		<id>10037004</id>
 		<trade_id>17194044</trade_id>
-		<create_time>2025-08-19T19:51:53</create_time>
+		<create_time>2025-08-19T19:50:44</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>TRADE_COMPRESSION_CONFLICT</type>
 		<status>REJECTED</status>
-		<update_time>2025-08-19T19:51:53</update_time>
+		<update_time>2025-08-19T19:50:44</update_time>
 		<step>4</step>
 	</transaction>
+	<exception>
+		<id>20037001</id>
+		<trade_id>17194044</trade_id>
+		<trans_id>10037004</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-08-19T19:50:44</create_time>
+		<comment>NO MAPPING FOR COMPRESSION</comment>
+		<priority>LOW</priority>
+		<update_time>2025-08-19T19:50:44</update_time>
+	</exception>
 	<transaction>
 		<id>10001003</id>
 		<trade_id>77194044</trade_id>
@@ -14937,6 +14673,17 @@
 		<update_time>2025-08-19T19:56:56</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20001001</id>
+		<trade_id>77194044</trade_id>
+		<trans_id>10001005</trans_id>
+		<status>CLOSED</status>
+		<msg>TIME OUT OF RANGE</msg>
+		<create_time>2025-08-19T19:56:56</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>CRITICAL</priority>
+		<update_time>2025-08-19T19:56:56</update_time>
+	</exception>
 	<trade>
 		<id>42511774</id>
 		<account>ACC001</account>
@@ -14951,46 +14698,46 @@
 	<transaction>
 		<id>10012001</id>
 		<trade_id>42511774</trade_id>
-		<create_time>2025-08-24T05:18:14</create_time>
+		<create_time>2025-08-24T05:17:28</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-24T05:18:14</update_time>
+		<update_time>2025-08-24T05:17:28</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10012002</id>
 		<trade_id>42511774</trade_id>
-		<create_time>2025-08-24T05:19:54</create_time>
+		<create_time>2025-08-24T05:18:18</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-08-24T05:19:54</update_time>
+		<update_time>2025-08-24T05:18:18</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10012003</id>
 		<trade_id>42511774</trade_id>
-		<create_time>2025-08-24T05:21:59</create_time>
+		<create_time>2025-08-24T05:20:40</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_DOWNGRADE_ALERT</type>
 		<status>REJECTED</status>
-		<update_time>2025-08-24T05:21:59</update_time>
+		<update_time>2025-08-24T05:20:40</update_time>
 		<step>3</step>
 	</transaction>
 	<exception>
-		<id>20001001</id>
-		<trade_id>77194044</trade_id>
-		<trans_id>10001005</trans_id>
+		<id>20012001</id>
+		<trade_id>42511774</trade_id>
+		<trans_id>10012003</trans_id>
 		<status>CLOSED</status>
-		<msg>TIME OUT OF RANGE</msg>
-		<create_time>2025-07-27T09:16:00</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>CRITICAL</priority>
-		<update_time>2025-08-27T09:16:00</update_time>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-08-24T05:20:40</create_time>
+		<comment>NO MAPPING FOR CREDIT RATING</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-08-24T05:20:40</update_time>
 	</exception>
 	<trade>
 		<id>46195889</id>
@@ -15075,10 +14822,10 @@
 		<trans_id>97337730</trans_id>
 		<status>CLOSED</status>
 		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-08-28T05:14:05</create_time>
+		<create_time>2025-08-28T05:13:59</create_time>
 		<comment>NO MAPPING FOR ACCOUNT</comment>
 		<priority>MEDIUM</priority>
-		<update_time>2025-08-28T05:14:05</update_time>
+		<update_time>2025-08-28T05:13:59</update_time>
 	</exception>
 	<trade>
 		<id>54707890</id>
@@ -15201,17 +14948,6 @@
 		<update_time>2025-08-31T18:50:08</update_time>
 		<step>10</step>
 	</transaction>
-	<exception>
-		<id>20031001</id>
-		<trade_id>33154292</trade_id>
-		<trans_id>10031007</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-09-02T10:15:00</create_time>
-		<comment>NO MAPPING FOR RATE</comment>
-		<priority>HIGH</priority>
-		<update_time>2025-09-02T10:15:00</update_time>
-	</exception>
 	<trade>
 		<id>61270683</id>
 		<account>ACC016</account>
@@ -15226,47 +14962,58 @@
 	<transaction>
 		<id>10005001</id>
 		<trade_id>61270683</trade_id>
-		<create_time>2025-09-04T05:43:05</create_time>
+		<create_time>2025-09-04T05:43:26</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-04T05:43:05</update_time>
+		<update_time>2025-09-04T05:43:26</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10005002</id>
 		<trade_id>61270683</trade_id>
-		<create_time>2025-09-04T05:43:45</create_time>
+		<create_time>2025-09-04T05:45:32</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-04T05:43:45</update_time>
+		<update_time>2025-09-04T05:45:32</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10005003</id>
 		<trade_id>61270683</trade_id>
-		<create_time>2025-09-04T05:46:00</create_time>
+		<create_time>2025-09-04T05:48:14</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-04T05:46:00</update_time>
+		<update_time>2025-09-04T05:48:14</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10005004</id>
 		<trade_id>61270683</trade_id>
-		<create_time>2025-09-04T05:47:54</create_time>
+		<create_time>2025-09-04T05:50:49</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>SETTLEMENT_DATE_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-04T05:47:54</update_time>
+		<update_time>2025-09-04T05:50:49</update_time>
 		<step>4</step>
 	</transaction>
+	<exception>
+		<id>20005001</id>
+		<trade_id>61270683</trade_id>
+		<trans_id>10005004</trans_id>
+		<status>CLOSED</status>
+		<msg>TIME OUT OF RANGE</msg>
+		<create_time>2025-09-04T05:50:49</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-04T05:50:49</update_time>
+	</exception>
 	<trade>
 		<id>27625806</id>
 		<account>ACC013</account>
@@ -15281,58 +15028,69 @@
 	<transaction>
 		<id>10029001</id>
 		<trade_id>27625806</trade_id>
-		<create_time>2025-09-05T07:49:15</create_time>
+		<create_time>2025-09-05T07:51:00</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-05T07:49:15</update_time>
+		<update_time>2025-09-05T07:51:00</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10029002</id>
 		<trade_id>27625806</trade_id>
-		<create_time>2025-09-05T07:49:54</create_time>
+		<create_time>2025-09-05T07:52:55</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-05T07:49:54</update_time>
+		<update_time>2025-09-05T07:52:55</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10029003</id>
 		<trade_id>27625806</trade_id>
-		<create_time>2025-09-05T07:51:25</create_time>
+		<create_time>2025-09-05T07:53:30</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-05T07:51:25</update_time>
+		<update_time>2025-09-05T07:53:30</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10029004</id>
 		<trade_id>27625806</trade_id>
-		<create_time>2025-09-05T07:54:04</create_time>
+		<create_time>2025-09-05T07:56:28</create_time>
 		<entity>CME</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-05T07:54:04</update_time>
+		<update_time>2025-09-05T07:56:28</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10029005</id>
 		<trade_id>27625806</trade_id>
-		<create_time>2025-09-05T07:56:48</create_time>
+		<create_time>2025-09-05T07:59:25</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>NETTING_ELIGIBILITY</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-05T07:56:48</update_time>
+		<update_time>2025-09-05T07:59:25</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20029001</id>
+		<trade_id>27625806</trade_id>
+		<trans_id>10029005</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-09-05T07:59:25</create_time>
+		<comment>NO MAPPING FOR NETTING</comment>
+		<priority>LOW</priority>
+		<update_time>2025-09-05T07:59:25</update_time>
+	</exception>
 	<trade>
 		<id>66663488</id>
 		<account>ACC091</account>
@@ -15347,58 +15105,69 @@
 	<transaction>
 		<id>10023001</id>
 		<trade_id>66663488</trade_id>
-		<create_time>2025-09-06T20:33:58</create_time>
+		<create_time>2025-09-06T20:34:02</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-06T20:33:58</update_time>
+		<update_time>2025-09-06T20:34:02</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10023002</id>
 		<trade_id>66663488</trade_id>
-		<create_time>2025-09-06T20:35:07</create_time>
+		<create_time>2025-09-06T20:36:27</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-06T20:35:07</update_time>
+		<update_time>2025-09-06T20:36:27</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10023003</id>
 		<trade_id>66663488</trade_id>
-		<create_time>2025-09-06T20:38:05</create_time>
+		<create_time>2025-09-06T20:38:52</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-06T20:38:05</update_time>
+		<update_time>2025-09-06T20:38:52</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10023004</id>
 		<trade_id>66663488</trade_id>
-		<create_time>2025-09-06T20:40:39</create_time>
+		<create_time>2025-09-06T20:41:09</create_time>
 		<entity>JSCC</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-06T20:40:39</update_time>
+		<update_time>2025-09-06T20:41:09</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10023005</id>
 		<trade_id>66663488</trade_id>
-		<create_time>2025-09-06T20:42:03</create_time>
+		<create_time>2025-09-06T20:42:12</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>DUAL_CURRENCY_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-06T20:42:03</update_time>
+		<update_time>2025-09-06T20:42:12</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20023001</id>
+		<trade_id>66663488</trade_id>
+		<trans_id>10023005</trans_id>
+		<status>CLOSED</status>
+		<msg>INSUFFICIENT MARGIN</msg>
+		<create_time>2025-09-06T20:42:12</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-09-06T20:42:12</update_time>
+	</exception>
 	<trade>
 		<id>69755320</id>
 		<account>ACC045</account>
@@ -15413,47 +15182,58 @@
 	<transaction>
 		<id>10022001</id>
 		<trade_id>69755320</trade_id>
-		<create_time>2025-09-07T08:11:31</create_time>
+		<create_time>2025-09-07T08:10:25</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-07T08:11:31</update_time>
+		<update_time>2025-09-07T08:10:25</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10022002</id>
 		<trade_id>69755320</trade_id>
-		<create_time>2025-09-07T08:13:41</create_time>
+		<create_time>2025-09-07T08:12:52</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-07T08:13:41</update_time>
+		<update_time>2025-09-07T08:12:52</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10022003</id>
 		<trade_id>69755320</trade_id>
-		<create_time>2025-09-07T08:14:46</create_time>
+		<create_time>2025-09-07T08:15:32</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-07T08:14:46</update_time>
+		<update_time>2025-09-07T08:15:32</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10022004</id>
 		<trade_id>69755320</trade_id>
-		<create_time>2025-09-07T08:15:33</create_time>
+		<create_time>2025-09-07T08:17:18</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>MATURITY_VALIDATION</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-07T08:15:33</update_time>
+		<update_time>2025-09-07T08:17:18</update_time>
 		<step>4</step>
 	</transaction>
+	<exception>
+		<id>20022001</id>
+		<trade_id>69755320</trade_id>
+		<trans_id>10022004</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-09-07T08:17:18</create_time>
+		<comment>NO MAPPING FOR MATURITY</comment>
+		<priority>LOW</priority>
+		<update_time>2025-09-07T08:17:18</update_time>
+	</exception>
 	<trade>
 		<id>81930671</id>
 		<account>ACC031</account>
@@ -15468,58 +15248,69 @@
 	<transaction>
 		<id>10020001</id>
 		<trade_id>81930671</trade_id>
-		<create_time>2025-09-08T05:35:40</create_time>
+		<create_time>2025-09-08T05:37:22</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-08T05:35:40</update_time>
+		<update_time>2025-09-08T05:37:22</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10020002</id>
 		<trade_id>81930671</trade_id>
-		<create_time>2025-09-08T05:36:01</create_time>
+		<create_time>2025-09-08T05:38:57</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-08T05:36:01</update_time>
+		<update_time>2025-09-08T05:38:57</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10020003</id>
 		<trade_id>81930671</trade_id>
-		<create_time>2025-09-08T05:38:37</create_time>
+		<create_time>2025-09-08T05:39:56</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-08T05:38:37</update_time>
+		<update_time>2025-09-08T05:39:56</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10020004</id>
 		<trade_id>81930671</trade_id>
-		<create_time>2025-09-08T05:41:18</create_time>
+		<create_time>2025-09-08T05:41:06</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-08T05:41:18</update_time>
+		<update_time>2025-09-08T05:41:06</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10020005</id>
 		<trade_id>81930671</trade_id>
-		<create_time>2025-09-08T05:43:23</create_time>
+		<create_time>2025-09-08T05:42:50</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>SSI_COMPLETENESS</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-08T05:43:23</update_time>
+		<update_time>2025-09-08T05:42:50</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20020001</id>
+		<trade_id>81930671</trade_id>
+		<trans_id>10020005</trans_id>
+		<status>CLOSED</status>
+		<msg>MISSING BIC</msg>
+		<create_time>2025-09-08T05:42:50</create_time>
+		<comment>NO BIC</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-08T05:42:50</update_time>
+	</exception>
 	<trade>
 		<id>85373053</id>
 		<account>ACC075</account>
@@ -15534,58 +15325,69 @@
 	<transaction>
 		<id>10033001</id>
 		<trade_id>85373053</trade_id>
-		<create_time>2025-09-10T02:09:57</create_time>
+		<create_time>2025-09-10T02:09:43</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-10T02:09:57</update_time>
+		<update_time>2025-09-10T02:09:43</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10033002</id>
 		<trade_id>85373053</trade_id>
-		<create_time>2025-09-10T02:10:36</create_time>
+		<create_time>2025-09-10T02:10:30</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-10T02:10:36</update_time>
+		<update_time>2025-09-10T02:10:30</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10033003</id>
 		<trade_id>85373053</trade_id>
-		<create_time>2025-09-10T02:12:23</create_time>
+		<create_time>2025-09-10T02:11:14</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-10T02:12:23</update_time>
+		<update_time>2025-09-10T02:11:14</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10033004</id>
 		<trade_id>85373053</trade_id>
-		<create_time>2025-09-10T02:15:17</create_time>
+		<create_time>2025-09-10T02:13:48</create_time>
 		<entity>JSCC</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-10T02:15:17</update_time>
+		<update_time>2025-09-10T02:13:48</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10033005</id>
 		<trade_id>85373053</trade_id>
-		<create_time>2025-09-10T02:18:14</create_time>
+		<create_time>2025-09-10T02:14:46</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>EMIR_REPORTING_FAILURE</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-10T02:18:14</update_time>
+		<update_time>2025-09-10T02:14:46</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20033001</id>
+		<trade_id>85373053</trade_id>
+		<trans_id>10033005</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-09-10T02:14:46</create_time>
+		<comment>NO MAPPING FOR UTI</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-09-10T02:14:46</update_time>
+	</exception>
 	<trade>
 		<id>42668494</id>
 		<account>ACC097</account>
@@ -15600,36 +15402,47 @@
 	<transaction>
 		<id>10027001</id>
 		<trade_id>42668494</trade_id>
-		<create_time>2025-09-10T19:18:20</create_time>
+		<create_time>2025-09-10T19:19:44</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-10T19:18:20</update_time>
+		<update_time>2025-09-10T19:19:44</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10027002</id>
 		<trade_id>42668494</trade_id>
-		<create_time>2025-09-10T19:20:47</create_time>
+		<create_time>2025-09-10T19:20:39</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-10T19:20:47</update_time>
+		<update_time>2025-09-10T19:20:39</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10027003</id>
 		<trade_id>42668494</trade_id>
-		<create_time>2025-09-10T19:22:58</create_time>
+		<create_time>2025-09-10T19:21:58</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_LINE_EXCEEDED</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-10T19:22:58</update_time>
+		<update_time>2025-09-10T19:21:58</update_time>
 		<step>3</step>
 	</transaction>
+	<exception>
+		<id>20027001</id>
+		<trade_id>42668494</trade_id>
+		<trans_id>10027003</trans_id>
+		<status>CLOSED</status>
+		<msg>INSUFFICIENT MARGIN</msg>
+		<create_time>2025-09-10T19:21:58</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-09-10T19:21:58</update_time>
+	</exception>
 	<trade>
 		<id>76369566</id>
 		<account>ACC052</account>
@@ -15644,58 +15457,69 @@
 	<transaction>
 		<id>10035001</id>
 		<trade_id>76369566</trade_id>
-		<create_time>2025-09-11T04:44:29</create_time>
+		<create_time>2025-09-11T04:45:12</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-11T04:44:29</update_time>
+		<update_time>2025-09-11T04:45:12</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10035002</id>
 		<trade_id>76369566</trade_id>
-		<create_time>2025-09-11T04:47:10</create_time>
+		<create_time>2025-09-11T04:46:36</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-11T04:47:10</update_time>
+		<update_time>2025-09-11T04:46:36</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10035003</id>
 		<trade_id>76369566</trade_id>
-		<create_time>2025-09-11T04:49:06</create_time>
+		<create_time>2025-09-11T04:48:26</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-11T04:49:06</update_time>
+		<update_time>2025-09-11T04:48:26</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10035004</id>
 		<trade_id>76369566</trade_id>
-		<create_time>2025-09-11T04:51:16</create_time>
+		<create_time>2025-09-11T04:49:54</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-11T04:51:16</update_time>
+		<update_time>2025-09-11T04:49:54</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10035005</id>
 		<trade_id>76369566</trade_id>
-		<create_time>2025-09-11T04:52:23</create_time>
+		<create_time>2025-09-11T04:51:55</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>CROSS_MARGIN_INELIGIBLE</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-11T04:52:23</update_time>
+		<update_time>2025-09-11T04:51:55</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20035001</id>
+		<trade_id>76369566</trade_id>
+		<trans_id>10035005</trans_id>
+		<status>CLOSED</status>
+		<msg>INSUFFICIENT MARGIN</msg>
+		<create_time>2025-09-11T04:51:55</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-11T04:51:55</update_time>
+	</exception>
 	<trade>
 		<id>88531321</id>
 		<account>ACC074</account>
@@ -15710,68 +15534,68 @@
 	<transaction>
 		<id>10015001</id>
 		<trade_id>88531321</trade_id>
-		<create_time>2025-09-11T18:19:07</create_time>
+		<create_time>2025-09-11T18:18:59</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-11T18:19:07</update_time>
+		<update_time>2025-09-11T18:18:59</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10015002</id>
 		<trade_id>88531321</trade_id>
-		<create_time>2025-09-11T18:21:47</create_time>
+		<create_time>2025-09-11T18:21:35</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-11T18:21:47</update_time>
+		<update_time>2025-09-11T18:21:35</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10015003</id>
 		<trade_id>88531321</trade_id>
-		<create_time>2025-09-11T18:23:33</create_time>
+		<create_time>2025-09-11T18:23:26</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-11T18:23:33</update_time>
+		<update_time>2025-09-11T18:23:26</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10015004</id>
 		<trade_id>88531321</trade_id>
-		<create_time>2025-09-11T18:24:58</create_time>
+		<create_time>2025-09-11T18:25:04</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-11T18:24:58</update_time>
+		<update_time>2025-09-11T18:25:04</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10015005</id>
 		<trade_id>88531321</trade_id>
-		<create_time>2025-09-11T18:27:23</create_time>
+		<create_time>2025-09-11T18:26:30</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>RATE_VALIDATION</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-11T18:27:23</update_time>
+		<update_time>2025-09-11T18:26:30</update_time>
 		<step>5</step>
 	</transaction>
 	<exception>
-		<id>20011001</id>
-		<trade_id>69269882</trade_id>
-		<trans_id>10011005</trans_id>
+		<id>20015001</id>
+		<trade_id>88531321</trade_id>
+		<trans_id>10015005</trans_id>
 		<status>CLOSED</status>
-		<msg>MISSING BIC</msg>
-		<create_time>2025-09-12 11:39:00</create_time>
-		<comment>NO BIC</comment>
-		<priority>MEDIUM</priority>
-		<update_time>2025-09-12 11:39:00</update_time>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-09-11T18:26:30</create_time>
+		<comment>NO MAPPING FOR RATE</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-09-11T18:26:30</update_time>
 	</exception>
 	<trade>
 		<id>64737734</id>
@@ -15787,36 +15611,47 @@
 	<transaction>
 		<id>10021001</id>
 		<trade_id>64737734</trade_id>
-		<create_time>2025-09-14T16:18:21</create_time>
+		<create_time>2025-09-14T16:17:04</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-14T16:18:21</update_time>
+		<update_time>2025-09-14T16:17:04</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10021002</id>
 		<trade_id>64737734</trade_id>
-		<create_time>2025-09-14T16:19:51</create_time>
+		<create_time>2025-09-14T16:19:01</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-14T16:19:51</update_time>
+		<update_time>2025-09-14T16:19:01</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10021003</id>
 		<trade_id>64737734</trade_id>
-		<create_time>2025-09-14T16:22:28</create_time>
+		<create_time>2025-09-14T16:21:46</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CLEARING_ELIGIBILITY</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-14T16:22:28</update_time>
+		<update_time>2025-09-14T16:21:46</update_time>
 		<step>3</step>
 	</transaction>
+	<exception>
+		<id>20021001</id>
+		<trade_id>64737734</trade_id>
+		<trans_id>10021003</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-09-14T16:21:46</create_time>
+		<comment>NO MAPPING FOR CLEARING MEMBER</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-14T16:21:46</update_time>
+	</exception>
 	<trade>
 		<id>99202386</id>
 		<account>ACC067</account>
@@ -15831,58 +15666,69 @@
 	<transaction>
 		<id>10010001</id>
 		<trade_id>99202386</trade_id>
-		<create_time>2025-09-15T01:21:23</create_time>
+		<create_time>2025-09-15T01:20:34</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-15T01:21:23</update_time>
+		<update_time>2025-09-15T01:20:34</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10010002</id>
 		<trade_id>99202386</trade_id>
-		<create_time>2025-09-15T01:23:42</create_time>
+		<create_time>2025-09-15T01:23:24</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-15T01:23:42</update_time>
+		<update_time>2025-09-15T01:23:24</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10010003</id>
 		<trade_id>99202386</trade_id>
-		<create_time>2025-09-15T01:26:18</create_time>
+		<create_time>2025-09-15T01:26:07</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-15T01:26:18</update_time>
+		<update_time>2025-09-15T01:26:07</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10010004</id>
 		<trade_id>99202386</trade_id>
-		<create_time>2025-09-15T01:28:09</create_time>
+		<create_time>2025-09-15T01:27:22</create_time>
 		<entity>CME</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-15T01:28:09</update_time>
+		<update_time>2025-09-15T01:27:22</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10010005</id>
 		<trade_id>99202386</trade_id>
-		<create_time>2025-09-15T01:29:47</create_time>
+		<create_time>2025-09-15T01:29:44</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>IM_REQUIREMENT</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-15T01:29:47</update_time>
+		<update_time>2025-09-15T01:29:44</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20010001</id>
+		<trade_id>99202386</trade_id>
+		<trans_id>10010005</trans_id>
+		<status>CLOSED</status>
+		<msg>INSUFFICIENT MARGIN</msg>
+		<create_time>2025-09-15T01:29:44</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-09-15T01:29:44</update_time>
+	</exception>
 	<trade>
 		<id>87339954</id>
 		<account>ACC038</account>
@@ -15897,47 +15743,58 @@
 	<transaction>
 		<id>10040001</id>
 		<trade_id>87339954</trade_id>
-		<create_time>2025-09-16T04:30:00</create_time>
+		<create_time>2025-09-16T04:32:01</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-16T04:30:00</update_time>
+		<update_time>2025-09-16T04:32:01</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10040002</id>
 		<trade_id>87339954</trade_id>
-		<create_time>2025-09-16T04:30:42</create_time>
+		<create_time>2025-09-16T04:34:12</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-16T04:30:42</update_time>
+		<update_time>2025-09-16T04:34:12</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10040003</id>
 		<trade_id>87339954</trade_id>
-		<create_time>2025-09-16T04:32:32</create_time>
+		<create_time>2025-09-16T04:35:56</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-16T04:32:32</update_time>
+		<update_time>2025-09-16T04:35:56</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10040004</id>
 		<trade_id>87339954</trade_id>
-		<create_time>2025-09-16T04:35:13</create_time>
+		<create_time>2025-09-16T04:38:40</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>BACKLOADING_VALIDATION_FAILURE</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-16T04:35:13</update_time>
+		<update_time>2025-09-16T04:38:40</update_time>
 		<step>4</step>
 	</transaction>
+	<exception>
+		<id>20040001</id>
+		<trade_id>87339954</trade_id>
+		<trans_id>10040004</trans_id>
+		<status>PENDING</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-09-16T04:38:40</create_time>
+		<comment>NO MAPPING FOR BACKLOADING</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-09-16T04:38:40</update_time>
+	</exception>
 	<trade>
 		<id>77186642</id>
 		<account>ACC043</account>
@@ -15952,58 +15809,69 @@
 	<transaction>
 		<id>10004001</id>
 		<trade_id>77186642</trade_id>
-		<create_time>2025-09-17T05:22:11</create_time>
+		<create_time>2025-09-17T05:21:05</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-17T05:22:11</update_time>
+		<update_time>2025-09-17T05:21:05</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10004002</id>
 		<trade_id>77186642</trade_id>
-		<create_time>2025-09-17T05:24:46</create_time>
+		<create_time>2025-09-17T05:22:01</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-17T05:24:46</update_time>
+		<update_time>2025-09-17T05:22:01</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10004003</id>
 		<trade_id>77186642</trade_id>
-		<create_time>2025-09-17T05:25:40</create_time>
+		<create_time>2025-09-17T05:24:19</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-17T05:25:40</update_time>
+		<update_time>2025-09-17T05:24:19</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10004004</id>
 		<trade_id>77186642</trade_id>
-		<create_time>2025-09-17T05:27:39</create_time>
+		<create_time>2025-09-17T05:24:53</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-17T05:27:39</update_time>
+		<update_time>2025-09-17T05:24:53</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10004005</id>
 		<trade_id>77186642</trade_id>
-		<create_time>2025-09-17T05:29:01</create_time>
+		<create_time>2025-09-17T05:27:36</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>SSI_VALIDATION</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-17T05:29:01</update_time>
+		<update_time>2025-09-17T05:27:36</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20004001</id>
+		<trade_id>77186642</trade_id>
+		<trans_id>10004005</trans_id>
+		<status>CLOSED</status>
+		<msg>MISSING BIC</msg>
+		<create_time>2025-09-17T05:27:36</create_time>
+		<comment>NO BIC</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-17T05:27:36</update_time>
+	</exception>
 	<trade>
 		<id>69269882</id>
 		<account>ACC084</account>
@@ -16018,58 +15886,69 @@
 	<transaction>
 		<id>10011001</id>
 		<trade_id>69269882</trade_id>
-		<create_time>2025-09-17T06:16:12</create_time>
+		<create_time>2025-09-17T06:14:54</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-17T06:16:12</update_time>
+		<update_time>2025-09-17T06:14:54</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10011002</id>
 		<trade_id>69269882</trade_id>
-		<create_time>2025-09-17T06:18:39</create_time>
+		<create_time>2025-09-17T06:16:39</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-17T06:18:39</update_time>
+		<update_time>2025-09-17T06:16:39</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10011003</id>
 		<trade_id>69269882</trade_id>
-		<create_time>2025-09-17T06:20:58</create_time>
+		<create_time>2025-09-17T06:18:16</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-17T06:20:58</update_time>
+		<update_time>2025-09-17T06:18:16</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10011004</id>
 		<trade_id>69269882</trade_id>
-		<create_time>2025-09-17T06:21:43</create_time>
+		<create_time>2025-09-17T06:18:39</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-17T06:21:43</update_time>
+		<update_time>2025-09-17T06:18:39</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10011005</id>
 		<trade_id>69269882</trade_id>
-		<create_time>2025-09-17T06:24:03</create_time>
+		<create_time>2025-09-17T06:19:53</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>PAYMENT_INSTRUCTION</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-17T06:24:03</update_time>
+		<update_time>2025-09-17T06:19:53</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20011001</id>
+		<trade_id>69269882</trade_id>
+		<trans_id>10011005</trans_id>
+		<status>CLOSED</status>
+		<msg>MISSING BIC</msg>
+		<create_time>2025-09-17T06:19:53</create_time>
+		<comment>NO BIC</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-17T06:19:53</update_time>
+	</exception>
 	<trade>
 		<id>98159040</id>
 		<account>ACC032</account>
@@ -16084,58 +15963,69 @@
 	<transaction>
 		<id>10028001</id>
 		<trade_id>98159040</trade_id>
-		<create_time>2025-09-19T04:22:23</create_time>
+		<create_time>2025-09-19T04:20:25</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-19T04:22:23</update_time>
+		<update_time>2025-09-19T04:20:25</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10028002</id>
 		<trade_id>98159040</trade_id>
-		<create_time>2025-09-19T04:22:53</create_time>
+		<create_time>2025-09-19T04:21:23</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-19T04:22:53</update_time>
+		<update_time>2025-09-19T04:21:23</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10028003</id>
 		<trade_id>98159040</trade_id>
-		<create_time>2025-09-19T04:24:11</create_time>
+		<create_time>2025-09-19T04:21:45</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-19T04:24:11</update_time>
+		<update_time>2025-09-19T04:21:45</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10028004</id>
 		<trade_id>98159040</trade_id>
-		<create_time>2025-09-19T04:25:25</create_time>
+		<create_time>2025-09-19T04:23:00</create_time>
 		<entity>JSCC</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-19T04:25:25</update_time>
+		<update_time>2025-09-19T04:23:00</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10028005</id>
 		<trade_id>98159040</trade_id>
-		<create_time>2025-09-19T04:28:10</create_time>
+		<create_time>2025-09-19T04:25:29</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>AFFIRMATION_TIMEOUT</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-19T04:28:10</update_time>
+		<update_time>2025-09-19T04:25:29</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20028001</id>
+		<trade_id>98159040</trade_id>
+		<trans_id>10028005</trans_id>
+		<status>CLOSED</status>
+		<msg>TIME OUT OF RANGE</msg>
+		<create_time>2025-09-19T04:25:29</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-19T04:25:29</update_time>
+	</exception>
 	<trade>
 		<id>89369810</id>
 		<account>ACC006</account>
@@ -16150,58 +16040,69 @@
 	<transaction>
 		<id>10009001</id>
 		<trade_id>89369810</trade_id>
-		<create_time>2025-09-19T07:55:32</create_time>
+		<create_time>2025-09-19T07:56:06</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-19T07:55:32</update_time>
+		<update_time>2025-09-19T07:56:06</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10009002</id>
 		<trade_id>89369810</trade_id>
-		<create_time>2025-09-19T07:58:26</create_time>
+		<create_time>2025-09-19T07:59:00</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-19T07:58:26</update_time>
+		<update_time>2025-09-19T07:59:00</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10009003</id>
 		<trade_id>89369810</trade_id>
-		<create_time>2025-09-19T07:59:38</create_time>
+		<create_time>2025-09-19T08:01:54</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-19T07:59:38</update_time>
+		<update_time>2025-09-19T08:01:54</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10009004</id>
 		<trade_id>89369810</trade_id>
-		<create_time>2025-09-19T08:01:39</create_time>
+		<create_time>2025-09-19T08:02:24</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-19T08:01:39</update_time>
+		<update_time>2025-09-19T08:02:24</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10009005</id>
 		<trade_id>89369810</trade_id>
-		<create_time>2025-09-19T08:03:00</create_time>
+		<create_time>2025-09-19T08:03:02</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>WWR_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-19T08:03:00</update_time>
+		<update_time>2025-09-19T08:03:02</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20009001</id>
+		<trade_id>89369810</trade_id>
+		<trans_id>10009005</trans_id>
+		<status>CLOSED</status>
+		<msg>INSUFFICIENT MARGIN</msg>
+		<create_time>2025-09-19T08:03:02</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-09-19T08:03:02</update_time>
+	</exception>
 	<trade>
 		<id>56535550</id>
 		<account>ACC034</account>
@@ -16227,47 +16128,58 @@
 	<transaction>
 		<id>10018002</id>
 		<trade_id>56535550</trade_id>
-		<create_time>2025-09-20T17:35:04</create_time>
+		<create_time>2025-09-20T17:34:40</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-20T17:35:04</update_time>
+		<update_time>2025-09-20T17:34:40</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10018003</id>
 		<trade_id>56535550</trade_id>
-		<create_time>2025-09-20T17:36:23</create_time>
+		<create_time>2025-09-20T17:37:24</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-20T17:36:23</update_time>
+		<update_time>2025-09-20T17:37:24</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10018004</id>
 		<trade_id>56535550</trade_id>
-		<create_time>2025-09-20T17:37:00</create_time>
+		<create_time>2025-09-20T17:38:40</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-20T17:37:00</update_time>
+		<update_time>2025-09-20T17:38:40</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10018005</id>
 		<trade_id>56535550</trade_id>
-		<create_time>2025-09-20T17:37:58</create_time>
+		<create_time>2025-09-20T17:39:37</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>BOOKING_CONFIRMATION</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-20T17:37:58</update_time>
+		<update_time>2025-09-20T17:39:37</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20018001</id>
+		<trade_id>56535550</trade_id>
+		<trans_id>10018005</trans_id>
+		<status>CLOSED</status>
+		<msg>TIME OUT OF RANGE</msg>
+		<create_time>2025-09-20T17:39:37</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-20T17:39:37</update_time>
+	</exception>
 	<trade>
 		<id>67515456</id>
 		<account>ACC046</account>
@@ -16282,58 +16194,69 @@
 	<transaction>
 		<id>10019001</id>
 		<trade_id>67515456</trade_id>
-		<create_time>2025-09-20T19:32:31</create_time>
+		<create_time>2025-09-20T19:30:26</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-20T19:32:31</update_time>
+		<update_time>2025-09-20T19:30:26</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10019002</id>
 		<trade_id>67515456</trade_id>
-		<create_time>2025-09-20T19:34:47</create_time>
+		<create_time>2025-09-20T19:31:52</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-20T19:34:47</update_time>
+		<update_time>2025-09-20T19:31:52</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10019003</id>
 		<trade_id>67515456</trade_id>
-		<create_time>2025-09-20T19:36:42</create_time>
+		<create_time>2025-09-20T19:34:33</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-20T19:36:42</update_time>
+		<update_time>2025-09-20T19:34:33</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10019004</id>
 		<trade_id>67515456</trade_id>
-		<create_time>2025-09-20T19:37:17</create_time>
+		<create_time>2025-09-20T19:37:22</create_time>
 		<entity>CME</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-20T19:37:17</update_time>
+		<update_time>2025-09-20T19:37:22</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10019005</id>
 		<trade_id>67515456</trade_id>
-		<create_time>2025-09-20T19:40:15</create_time>
+		<create_time>2025-09-20T19:40:10</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>INDEX_VERSION_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-20T19:40:15</update_time>
+		<update_time>2025-09-20T19:40:10</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20019001</id>
+		<trade_id>67515456</trade_id>
+		<trans_id>10019005</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-09-20T19:40:10</create_time>
+		<comment>NO MAPPING FOR INDEX</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-20T19:40:10</update_time>
+	</exception>
 	<trade>
 		<id>86836834</id>
 		<account>ACC056</account>
@@ -16348,47 +16271,58 @@
 	<transaction>
 		<id>10003001</id>
 		<trade_id>86836834</trade_id>
-		<create_time>2025-09-21T13:55:03</create_time>
+		<create_time>2025-09-21T13:56:04</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-21T13:55:03</update_time>
+		<update_time>2025-09-21T13:56:04</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10003002</id>
 		<trade_id>86836834</trade_id>
-		<create_time>2025-09-21T13:55:59</create_time>
+		<create_time>2025-09-21T13:58:25</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-21T13:55:59</update_time>
+		<update_time>2025-09-21T13:58:25</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10003003</id>
 		<trade_id>86836834</trade_id>
-		<create_time>2025-09-21T13:58:17</create_time>
+		<create_time>2025-09-21T13:59:46</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-21T13:58:17</update_time>
+		<update_time>2025-09-21T13:59:46</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10003004</id>
 		<trade_id>86836834</trade_id>
-		<create_time>2025-09-21T13:58:51</create_time>
+		<create_time>2025-09-21T14:01:03</create_time>
 		<entity>JSCC</entity>
 		<direction>send</direction>
 		<type>LEGAL_DOC_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-21T13:58:51</update_time>
+		<update_time>2025-09-21T14:01:03</update_time>
 		<step>4</step>
 	</transaction>
+	<exception>
+		<id>20003001</id>
+		<trade_id>86836834</trade_id>
+		<trans_id>10003004</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-09-21T14:01:03</create_time>
+		<comment>NO MAPPING FOR CSA</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-09-21T14:01:03</update_time>
+	</exception>
 	<trade>
 		<id>48712564</id>
 		<account>ACC054</account>
@@ -16403,58 +16337,69 @@
 	<transaction>
 		<id>10013001</id>
 		<trade_id>48712564</trade_id>
-		<create_time>2025-09-22T21:35:52</create_time>
+		<create_time>2025-09-22T21:36:17</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-22T21:35:52</update_time>
+		<update_time>2025-09-22T21:36:17</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10013002</id>
 		<trade_id>48712564</trade_id>
-		<create_time>2025-09-22T21:36:16</create_time>
+		<create_time>2025-09-22T21:39:11</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-22T21:36:16</update_time>
+		<update_time>2025-09-22T21:39:11</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10013003</id>
 		<trade_id>48712564</trade_id>
-		<create_time>2025-09-22T21:37:42</create_time>
+		<create_time>2025-09-22T21:40:23</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-22T21:37:42</update_time>
+		<update_time>2025-09-22T21:40:23</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10013004</id>
 		<trade_id>48712564</trade_id>
-		<create_time>2025-09-22T21:40:23</create_time>
+		<create_time>2025-09-22T21:42:24</create_time>
 		<entity>CME</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-22T21:40:23</update_time>
+		<update_time>2025-09-22T21:42:24</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10013005</id>
 		<trade_id>48712564</trade_id>
-		<create_time>2025-09-22T21:43:12</create_time>
+		<create_time>2025-09-22T21:43:45</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>SUCCESSION_EVENT_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-22T21:43:12</update_time>
+		<update_time>2025-09-22T21:43:45</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20013001</id>
+		<trade_id>48712564</trade_id>
+		<trans_id>10013005</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-09-22T21:43:45</create_time>
+		<comment>NO MAPPING FOR SUCCESSION</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-22T21:43:45</update_time>
+	</exception>
 	<trade>
 		<id>53850480</id>
 		<account>ACC094</account>
@@ -16469,68 +16414,68 @@
 	<transaction>
 		<id>10008001</id>
 		<trade_id>53850480</trade_id>
-		<create_time>2025-09-23T01:11:49</create_time>
+		<create_time>2025-09-23T01:10:47</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-23T01:11:49</update_time>
+		<update_time>2025-09-23T01:10:47</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10008002</id>
 		<trade_id>53850480</trade_id>
-		<create_time>2025-09-23T01:13:26</create_time>
+		<create_time>2025-09-23T01:13:24</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-23T01:13:26</update_time>
+		<update_time>2025-09-23T01:13:24</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10008003</id>
 		<trade_id>53850480</trade_id>
-		<create_time>2025-09-23T01:13:49</create_time>
+		<create_time>2025-09-23T01:14:32</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-23T01:13:49</update_time>
+		<update_time>2025-09-23T01:14:32</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10008004</id>
 		<trade_id>53850480</trade_id>
-		<create_time>2025-09-23T01:15:03</create_time>
+		<create_time>2025-09-23T01:15:05</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-23T01:15:03</update_time>
+		<update_time>2025-09-23T01:15:05</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10008005</id>
 		<trade_id>53850480</trade_id>
-		<create_time>2025-09-23T01:16:11</create_time>
+		<create_time>2025-09-23T01:16:33</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>NOTIONAL_LIMIT_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-23T01:16:11</update_time>
+		<update_time>2025-09-23T01:16:33</update_time>
 		<step>5</step>
 	</transaction>
 	<exception>
-		<id>20036001</id>
-		<trade_id>73847580</trade_id>
-		<trans_id>10036008</trans_id>
+		<id>20008001</id>
+		<trade_id>53850480</trade_id>
+		<trans_id>10008005</trans_id>
 		<status>CLOSED</status>
 		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2025-09-29 10:11:30</create_time>
+		<create_time>2025-09-23T01:16:33</create_time>
 		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>HIGH</priority>
-		<update_time>2025-09-29 10:11:30</update_time>
+		<priority>MEDIUM</priority>
+		<update_time>2025-09-23T01:16:33</update_time>
 	</exception>
 	<trade>
 		<id>25399440</id>
@@ -16546,47 +16491,58 @@
 	<transaction>
 		<id>10007001</id>
 		<trade_id>25399440</trade_id>
-		<create_time>2025-09-30T18:31:29</create_time>
+		<create_time>2025-09-30T18:32:05</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-30T18:31:29</update_time>
+		<update_time>2025-09-30T18:32:05</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10007002</id>
 		<trade_id>25399440</trade_id>
-		<create_time>2025-09-30T18:34:19</create_time>
+		<create_time>2025-09-30T18:32:45</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-30T18:34:19</update_time>
+		<update_time>2025-09-30T18:32:45</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10007003</id>
 		<trade_id>25399440</trade_id>
-		<create_time>2025-09-30T18:37:02</create_time>
+		<create_time>2025-09-30T18:35:00</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-09-30T18:37:02</update_time>
+		<update_time>2025-09-30T18:35:00</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10007004</id>
 		<trade_id>25399440</trade_id>
-		<create_time>2025-09-30T18:38:17</create_time>
+		<create_time>2025-09-30T18:36:54</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>RATE_VALIDATION</type>
 		<status>REJECTED</status>
-		<update_time>2025-09-30T18:38:17</update_time>
+		<update_time>2025-09-30T18:36:54</update_time>
 		<step>4</step>
 	</transaction>
+	<exception>
+		<id>20007001</id>
+		<trade_id>25399440</trade_id>
+		<trans_id>10007004</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-09-30T18:36:54</create_time>
+		<comment>NO MAPPING FOR INDEX</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-09-30T18:36:54</update_time>
+	</exception>
 	<trade>
 		<id>58392014</id>
 		<account>ACC0982</account>
@@ -16601,68 +16557,68 @@
 	<transaction>
 		<id>10038001</id>
 		<trade_id>58392014</trade_id>
-		<create_time>2025-10-02T22:16:18</create_time>
+		<create_time>2025-10-02T22:16:02</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-02T22:16:18</update_time>
+		<update_time>2025-10-02T22:16:02</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10038002</id>
 		<trade_id>58392014</trade_id>
-		<create_time>2025-10-02T22:18:10</create_time>
+		<create_time>2025-10-02T22:17:58</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-02T22:18:10</update_time>
+		<update_time>2025-10-02T22:17:58</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10038003</id>
 		<trade_id>58392014</trade_id>
-		<create_time>2025-10-02T22:19:39</create_time>
+		<create_time>2025-10-02T22:20:39</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-02T22:19:39</update_time>
+		<update_time>2025-10-02T22:20:39</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10038004</id>
 		<trade_id>58392014</trade_id>
-		<create_time>2025-10-02T22:20:25</create_time>
+		<create_time>2025-10-02T22:23:00</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-02T22:20:25</update_time>
+		<update_time>2025-10-02T22:23:00</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10038005</id>
 		<trade_id>58392014</trade_id>
-		<create_time>2025-10-02T22:21:18</create_time>
+		<create_time>2025-10-02T22:23:34</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>DEFAULT_FUND_CONTRIBUTION_SHORTFALL</type>
 		<status>REJECTED</status>
-		<update_time>2025-10-02T22:21:18</update_time>
+		<update_time>2025-10-02T22:23:34</update_time>
 		<step>5</step>
 	</transaction>
 	<exception>
-		<id>20015001</id>
-		<trade_id>88531321</trade_id>
-		<trans_id>10015005</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-10-08 10:31:15</create_time>
-		<comment>NO MAPPING FOR RATE</comment>
-		<priority>HIGH</priority>
-		<update_time>2025-10-08 10:31:15</update_time>
+		<id>20038001</id>
+		<trade_id>58392014</trade_id>
+		<trans_id>10038005</trans_id>
+		<status>PENDING</status>
+		<msg>INSUFFICIENT MARGIN</msg>
+		<create_time>2025-10-02T22:23:34</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>CRITICAL</priority>
+		<update_time>2025-10-02T22:23:34</update_time>
 	</exception>
 	<trade>
 		<id>96904486</id>
@@ -16678,47 +16634,58 @@
 	<transaction>
 		<id>10025001</id>
 		<trade_id>96904486</trade_id>
-		<create_time>2025-10-08T00:30:40</create_time>
+		<create_time>2025-10-08T00:30:11</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-08T00:30:40</update_time>
+		<update_time>2025-10-08T00:30:11</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10025002</id>
 		<trade_id>96904486</trade_id>
-		<create_time>2025-10-08T00:31:20</create_time>
+		<create_time>2025-10-08T00:32:49</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-08T00:31:20</update_time>
+		<update_time>2025-10-08T00:32:49</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10025003</id>
 		<trade_id>96904486</trade_id>
-		<create_time>2025-10-08T00:31:48</create_time>
+		<create_time>2025-10-08T00:33:24</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-08T00:31:48</update_time>
+		<update_time>2025-10-08T00:33:24</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10025004</id>
 		<trade_id>96904486</trade_id>
-		<create_time>2025-10-08T00:32:31</create_time>
+		<create_time>2025-10-08T00:35:58</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>DELIVERABLE_OBLIGATION_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-10-08T00:32:31</update_time>
+		<update_time>2025-10-08T00:35:58</update_time>
 		<step>4</step>
 	</transaction>
+	<exception>
+		<id>20025001</id>
+		<trade_id>96904486</trade_id>
+		<trans_id>10025004</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-10-08T00:35:58</create_time>
+		<comment>NO MAPPING FOR REFERENCE OBLIGATION</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-10-08T00:35:58</update_time>
+	</exception>
 	<trade>
 		<id>73847580</id>
 		<account>ACC015</account>
@@ -16733,91 +16700,102 @@
 	<transaction>
 		<id>10036001</id>
 		<trade_id>73847580</trade_id>
-		<create_time>2025-10-12T21:57:40</create_time>
+		<create_time>2025-10-12T21:55:22</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-12T21:57:40</update_time>
+		<update_time>2025-10-12T21:55:22</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10036002</id>
 		<trade_id>73847580</trade_id>
-		<create_time>2025-10-12T21:59:15</create_time>
+		<create_time>2025-10-12T21:57:17</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-12T21:59:15</update_time>
+		<update_time>2025-10-12T21:57:17</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10036003</id>
 		<trade_id>73847580</trade_id>
-		<create_time>2025-10-12T22:00:38</create_time>
+		<create_time>2025-10-12T21:59:20</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-12T22:00:38</update_time>
+		<update_time>2025-10-12T21:59:20</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10036004</id>
 		<trade_id>73847580</trade_id>
-		<create_time>2025-10-12T22:01:16</create_time>
+		<create_time>2025-10-12T22:01:37</create_time>
 		<entity>LCH</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-12T22:01:16</update_time>
+		<update_time>2025-10-12T22:01:37</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10036005</id>
 		<trade_id>73847580</trade_id>
-		<create_time>2025-10-12T22:01:57</create_time>
+		<create_time>2025-10-12T22:04:21</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>STATUS_UPDATE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-12T22:01:57</update_time>
+		<update_time>2025-10-12T22:04:21</update_time>
 		<step>5</step>
 	</transaction>
 	<transaction>
 		<id>10036006</id>
 		<trade_id>73847580</trade_id>
-		<create_time>2025-10-12T22:03:25</create_time>
+		<create_time>2025-10-12T22:05:43</create_time>
 		<entity>LCH</entity>
 		<direction>receive</direction>
 		<type>CLEARING_CONFIRMED</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-12T22:03:25</update_time>
+		<update_time>2025-10-12T22:05:43</update_time>
 		<step>6</step>
 	</transaction>
 	<transaction>
 		<id>10036007</id>
 		<trade_id>73847580</trade_id>
-		<create_time>2025-10-12T22:04:24</create_time>
+		<create_time>2025-10-12T22:07:00</create_time>
 		<entity>WINTERFELL</entity>
 		<direction>send</direction>
 		<type>CLEARED_TRADE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-12T22:04:24</update_time>
+		<update_time>2025-10-12T22:07:00</update_time>
 		<step>7</step>
 	</transaction>
 	<transaction>
 		<id>10036008</id>
 		<trade_id>73847580</trade_id>
-		<create_time>2025-10-12T22:06:21</create_time>
+		<create_time>2025-10-12T22:08:36</create_time>
 		<entity>WINTERFELL</entity>
 		<direction>receive</direction>
 		<type>COLLATERAL_INELIGIBLE_SECURITY</type>
 		<status>REJECTED</status>
-		<update_time>2025-10-12T22:06:21</update_time>
+		<update_time>2025-10-12T22:08:36</update_time>
 		<step>8</step>
 	</transaction>
+	<exception>
+		<id>20036001</id>
+		<trade_id>73847580</trade_id>
+		<trans_id>10036008</trans_id>
+		<status>CLOSED</status>
+		<msg>INSUFFICIENT MARGIN</msg>
+		<create_time>2025-10-12T22:08:36</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-10-12T22:08:36</update_time>
+	</exception>
 	<trade>
 		<id>36106022</id>
 		<account>ACC012</account>
@@ -16832,47 +16810,58 @@
 	<transaction>
 		<id>10030001</id>
 		<trade_id>36106022</trade_id>
-		<create_time>2025-10-14T12:49:31</create_time>
+		<create_time>2025-10-14T12:50:14</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-14T12:49:31</update_time>
+		<update_time>2025-10-14T12:50:14</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10030002</id>
 		<trade_id>36106022</trade_id>
-		<create_time>2025-10-14T12:49:55</create_time>
+		<create_time>2025-10-14T12:52:38</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-14T12:49:55</update_time>
+		<update_time>2025-10-14T12:52:38</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10030003</id>
 		<trade_id>36106022</trade_id>
-		<create_time>2025-10-14T12:51:08</create_time>
+		<create_time>2025-10-14T12:53:02</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-14T12:51:08</update_time>
+		<update_time>2025-10-14T12:53:02</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10030004</id>
 		<trade_id>36106022</trade_id>
-		<create_time>2025-10-14T12:53:58</create_time>
+		<create_time>2025-10-14T12:53:23</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>NOTIONAL_SCHEDULE_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-10-14T12:53:58</update_time>
+		<update_time>2025-10-14T12:53:23</update_time>
 		<step>4</step>
 	</transaction>
+	<exception>
+		<id>20030001</id>
+		<trade_id>36106022</trade_id>
+		<trans_id>10030004</trans_id>
+		<status>CLOSED</status>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-10-14T12:53:23</create_time>
+		<comment>NO MAPPING FOR SCHEDULE</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-10-14T12:53:23</update_time>
+	</exception>
 	<trade>
 		<id>72427554</id>
 		<account>ACC019</account>
@@ -16887,58 +16876,69 @@
 	<transaction>
 		<id>10017001</id>
 		<trade_id>72427554</trade_id>
-		<create_time>2025-10-15T18:03:29</create_time>
+		<create_time>2025-10-15T18:03:11</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-15T18:03:29</update_time>
+		<update_time>2025-10-15T18:03:11</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10017002</id>
 		<trade_id>72427554</trade_id>
-		<create_time>2025-10-15T18:04:04</create_time>
+		<create_time>2025-10-15T18:04:52</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-15T18:04:04</update_time>
+		<update_time>2025-10-15T18:04:52</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10017003</id>
 		<trade_id>72427554</trade_id>
-		<create_time>2025-10-15T18:06:38</create_time>
+		<create_time>2025-10-15T18:06:04</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-15T18:06:38</update_time>
+		<update_time>2025-10-15T18:06:04</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10017004</id>
 		<trade_id>72427554</trade_id>
-		<create_time>2025-10-15T18:07:06</create_time>
+		<create_time>2025-10-15T18:07:58</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-15T18:07:06</update_time>
+		<update_time>2025-10-15T18:07:58</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10017005</id>
 		<trade_id>72427554</trade_id>
-		<create_time>2025-10-15T18:07:45</create_time>
+		<create_time>2025-10-15T18:09:38</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>AML_SCREENING</type>
 		<status>REJECTED</status>
-		<update_time>2025-10-15T18:07:45</update_time>
+		<update_time>2025-10-15T18:09:38</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20017001</id>
+		<trade_id>72427554</trade_id>
+		<trans_id>10017005</trans_id>
+		<status>CLOSED</status>
+		<msg>TIME OUT OF RANGE</msg>
+		<create_time>2025-10-15T18:09:38</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>CRITICAL</priority>
+		<update_time>2025-10-15T18:09:38</update_time>
+	</exception>
 	<trade>
 		<id>49964172</id>
 		<account>ACC077</account>
@@ -16953,47 +16953,58 @@
 	<transaction>
 		<id>10026001</id>
 		<trade_id>49964172</trade_id>
-		<create_time>2025-10-18T03:44:23</create_time>
+		<create_time>2025-10-18T03:42:55</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-18T03:44:23</update_time>
+		<update_time>2025-10-18T03:42:55</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10026002</id>
 		<trade_id>49964172</trade_id>
-		<create_time>2025-10-18T03:47:04</create_time>
+		<create_time>2025-10-18T03:43:34</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-18T03:47:04</update_time>
+		<update_time>2025-10-18T03:43:34</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10026003</id>
 		<trade_id>49964172</trade_id>
-		<create_time>2025-10-18T03:49:25</create_time>
+		<create_time>2025-10-18T03:44:06</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-18T03:49:25</update_time>
+		<update_time>2025-10-18T03:44:06</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10026004</id>
 		<trade_id>49964172</trade_id>
-		<create_time>2025-10-18T03:49:59</create_time>
+		<create_time>2025-10-18T03:44:27</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>VALUE_DATE_VALIDATION</type>
 		<status>REJECTED</status>
-		<update_time>2025-10-18T03:49:59</update_time>
+		<update_time>2025-10-18T03:44:27</update_time>
 		<step>4</step>
 	</transaction>
+	<exception>
+		<id>20026001</id>
+		<trade_id>49964172</trade_id>
+		<trans_id>10026004</trans_id>
+		<status>CLOSED</status>
+		<msg>TIME OUT OF RANGE</msg>
+		<create_time>2025-10-18T03:44:27</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-10-18T03:44:27</update_time>
+	</exception>
 	<trade>
 		<id>60724962</id>
 		<account>ACC023</account>
@@ -17008,58 +17019,69 @@
 	<transaction>
 		<id>10002001</id>
 		<trade_id>60724962</trade_id>
-		<create_time>2025-10-19T12:20:27</create_time>
+		<create_time>2025-10-19T12:20:55</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-19T12:20:27</update_time>
+		<update_time>2025-10-19T12:20:55</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10002002</id>
 		<trade_id>60724962</trade_id>
-		<create_time>2025-10-19T12:22:23</create_time>
+		<create_time>2025-10-19T12:21:53</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-19T12:22:23</update_time>
+		<update_time>2025-10-19T12:21:53</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10002003</id>
 		<trade_id>60724962</trade_id>
-		<create_time>2025-10-19T12:23:30</create_time>
+		<create_time>2025-10-19T12:23:29</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-19T12:23:30</update_time>
+		<update_time>2025-10-19T12:23:29</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10002004</id>
 		<trade_id>60724962</trade_id>
-		<create_time>2025-10-19T12:26:07</create_time>
+		<create_time>2025-10-19T12:25:25</create_time>
 		<entity>OTCCHK</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-19T12:26:07</update_time>
+		<update_time>2025-10-19T12:25:25</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10002005</id>
 		<trade_id>60724962</trade_id>
-		<create_time>2025-10-19T12:28:28</create_time>
+		<create_time>2025-10-19T12:26:32</create_time>
 		<entity>OTCCHK</entity>
 		<direction>receive</direction>
 		<type>COLLATERAL_CALL</type>
 		<status>REJECTED</status>
-		<update_time>2025-10-19T12:28:28</update_time>
+		<update_time>2025-10-19T12:26:32</update_time>
 		<step>5</step>
 	</transaction>
+	<exception>
+		<id>20002001</id>
+		<trade_id>60724962</trade_id>
+		<trans_id>10002005</trans_id>
+		<status>CLOSED</status>
+		<msg>INSUFFICIENT MARGIN</msg>
+		<create_time>2025-10-19T12:26:32</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>HIGH</priority>
+		<update_time>2025-10-19T12:26:32</update_time>
+	</exception>
 	<trade>
 		<id>15706882</id>
 		<account>ACC027</account>
@@ -17074,68 +17096,68 @@
 	<transaction>
 		<id>10024001</id>
 		<trade_id>15706882</trade_id>
-		<create_time>2025-10-21T00:12:48</create_time>
+		<create_time>2025-10-21T00:12:37</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-21T00:12:48</update_time>
+		<update_time>2025-10-21T00:12:37</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10024002</id>
 		<trade_id>15706882</trade_id>
-		<create_time>2025-10-21T00:13:28</create_time>
+		<create_time>2025-10-21T00:13:40</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-21T00:13:28</update_time>
+		<update_time>2025-10-21T00:13:40</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10024003</id>
 		<trade_id>15706882</trade_id>
-		<create_time>2025-10-21T00:15:23</create_time>
+		<create_time>2025-10-21T00:14:35</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-21T00:15:23</update_time>
+		<update_time>2025-10-21T00:14:35</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10024004</id>
 		<trade_id>15706882</trade_id>
-		<create_time>2025-10-21T00:17:26</create_time>
+		<create_time>2025-10-21T00:17:14</create_time>
 		<entity>CME</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-21T00:17:26</update_time>
+		<update_time>2025-10-21T00:17:14</update_time>
 		<step>4</step>
 	</transaction>
 	<transaction>
 		<id>10024005</id>
 		<trade_id>15706882</trade_id>
-		<create_time>2025-10-21T00:19:43</create_time>
+		<create_time>2025-10-21T00:19:39</create_time>
 		<entity>CME</entity>
 		<direction>receive</direction>
 		<type>PORTFOLIO_RECON</type>
 		<status>REJECTED</status>
-		<update_time>2025-10-21T00:19:43</update_time>
+		<update_time>2025-10-21T00:19:39</update_time>
 		<step>5</step>
 	</transaction>
 	<exception>
-		<id>20032001</id>
-		<trade_id>36349602</trade_id>
-		<trans_id>10032005</trans_id>
+		<id>20024001</id>
+		<trade_id>15706882</trade_id>
+		<trans_id>10024005</trans_id>
 		<status>CLOSED</status>
-		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2025-10-21T14:22:10</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>CRITICAL</priority>
-		<update_time>2025-10-21T14:22:10</update_time>
+		<msg>MAPPING ISSUE</msg>
+		<create_time>2025-10-21T00:19:39</create_time>
+		<comment>NO MAPPING FOR NOTIONAL</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-10-21T00:19:39</update_time>
 	</exception>
 	<trade>
 		<id>76689540</id>
@@ -17151,36 +17173,47 @@
 	<transaction>
 		<id>10034001</id>
 		<trade_id>76689540</trade_id>
-		<create_time>2025-10-22T06:33:57</create_time>
+		<create_time>2025-10-22T06:34:51</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-22T06:33:57</update_time>
+		<update_time>2025-10-22T06:34:51</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10034002</id>
 		<trade_id>76689540</trade_id>
-		<create_time>2025-10-22T06:35:26</create_time>
+		<create_time>2025-10-22T06:36:00</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-22T06:35:26</update_time>
+		<update_time>2025-10-22T06:36:00</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10034003</id>
 		<trade_id>76689540</trade_id>
-		<create_time>2025-10-22T06:37:41</create_time>
+		<create_time>2025-10-22T06:38:58</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>PORTFOLIO_LIMIT_BREACH</type>
 		<status>REJECTED</status>
-		<update_time>2025-10-22T06:37:41</update_time>
+		<update_time>2025-10-22T06:38:58</update_time>
 		<step>3</step>
 	</transaction>
+	<exception>
+		<id>20034001</id>
+		<trade_id>76689540</trade_id>
+		<trans_id>10034003</trans_id>
+		<status>CLOSED</status>
+		<msg>INSUFFICIENT MARGIN</msg>
+		<create_time>2025-10-22T06:38:58</create_time>
+		<comment>RETRY LIMIT EXCEEDED</comment>
+		<priority>MEDIUM</priority>
+		<update_time>2025-10-22T06:38:58</update_time>
+	</exception>
 	<trade>
 		<id>14355627</id>
 		<account>ACC011</account>
@@ -17195,89 +17228,56 @@
 	<transaction>
 		<id>10014001</id>
 		<trade_id>14355627</trade_id>
-		<create_time>2025-10-22T12:26:40</create_time>
+		<create_time>2025-10-22T12:28:22</create_time>
 		<entity>JSCC</entity>
 		<direction>receive</direction>
 		<type>REQUEST_CONSENT</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-22T12:26:40</update_time>
+		<update_time>2025-10-22T12:28:22</update_time>
 		<step>1</step>
 	</transaction>
 	<transaction>
 		<id>10014002</id>
 		<trade_id>14355627</trade_id>
-		<create_time>2025-10-22T12:27:50</create_time>
+		<create_time>2025-10-22T12:30:04</create_time>
 		<entity>TAS</entity>
 		<direction>send</direction>
 		<type>CREDIT_CHECK</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-22T12:27:50</update_time>
+		<update_time>2025-10-22T12:30:04</update_time>
 		<step>2</step>
 	</transaction>
 	<transaction>
 		<id>10014003</id>
 		<trade_id>14355627</trade_id>
-		<create_time>2025-10-22T12:29:34</create_time>
+		<create_time>2025-10-22T12:31:36</create_time>
 		<entity>TAS</entity>
 		<direction>receive</direction>
 		<type>CREDIT_APPROVE</type>
 		<status>CLEARED</status>
-		<update_time>2025-10-22T12:29:34</update_time>
+		<update_time>2025-10-22T12:31:36</update_time>
 		<step>3</step>
 	</transaction>
 	<transaction>
 		<id>10014004</id>
 		<trade_id>14355627</trade_id>
-		<create_time>2025-10-22T12:30:52</create_time>
+		<create_time>2025-10-22T12:33:33</create_time>
 		<entity>JSCC</entity>
 		<direction>send</direction>
 		<type>CAPITAL_FLOW_CHECK</type>
 		<status>REJECTED</status>
-		<update_time>2025-10-22T12:30:52</update_time>
+		<update_time>2025-10-22T12:33:33</update_time>
 		<step>4</step>
 	</transaction>
 	<exception>
-		<id>20038001</id>
-		<trade_id>58392014</trade_id>
-		<trans_id>10038005</trans_id>
-		<status>PENDING</status>
-		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2025-11-03T09:12:45</create_time>
+		<id>20014001</id>
+		<trade_id>14355627</trade_id>
+		<trans_id>10014004</trans_id>
+		<status>CLOSED</status>
+		<msg>TIME OUT OF RANGE</msg>
+		<create_time>2025-10-22T12:33:33</create_time>
 		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>CRITICAL</priority>
-		<update_time>2025-11-03T09:12:45</update_time>
-	</exception>
-	<exception>
-		<id>20029001</id>
-		<trade_id>27625806</trade_id>
-		<trans_id>10029005</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-11-05 14:07:50</create_time>
-		<comment>NO MAPPING FOR NETTING</comment>
-		<priority>LOW</priority>
-		<update_time>2025-11-05 14:07:50</update_time>
-	</exception>
-	<exception>
-		<id>20010001</id>
-		<trade_id>99202386</trade_id>
-		<trans_id>10010005</trans_id>
-		<status>CLOSED</status>
-		<msg>INSUFFICIENT MARGIN</msg>
-		<create_time>2025-11-17 14:22:00</create_time>
-		<comment>RETRY LIMIT EXCEEDED</comment>
-		<priority>HIGH</priority>
-		<update_time>2025-11-17 14:22:00</update_time>
-	</exception>
-	<exception>
-		<id>20019001</id>
-		<trade_id>67515456</trade_id>
-		<trans_id>10019005</trans_id>
-		<status>CLOSED</status>
-		<msg>MAPPING ISSUE</msg>
-		<create_time>2025-12-18 13:43:00</create_time>
-		<comment>NO MAPPING FOR INDEX</comment>
 		<priority>MEDIUM</priority>
-		<update_time>2025-12-18 13:43:00</update_time>
+		<update_time>2025-10-22T12:33:33</update_time>
 	</exception>
 </root>
