@@ -43,6 +43,18 @@ export function TradeInfoCard({
     }
   };
 
+   const getLatestTransactionStatus = () => {
+    if (transactions.length === 0) {
+      return trade.status; // Fallback to trade status if no transactions
+    }
+    
+    // Sort transactions by step (descending) to get the latest one
+    const sortedTransactions = [...transactions].sort((a, b) => b.step - a.step);
+    return sortedTransactions[0].status;
+  };
+
+    const latestTransactionStatus = getLatestTransactionStatus();
+
   return (
     <>
       {/* Toggle Header */}
@@ -105,7 +117,7 @@ export function TradeInfoCard({
               <div>
                 <p className="text-sm text-black/75 mb-1">Status</p>
                 <Badge variant="secondary" className={getStatusBadgeClassName(trade.status)}>
-                  {trade.status}
+                  {latestTransactionStatus}
                 </Badge>
               </div>
             </div>
