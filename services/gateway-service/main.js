@@ -43,6 +43,7 @@ export async function start() {
         clients.forEach((client) => {
           if (client.readyState === 1) {
             client.send(JSON.stringify(data));
+            console.log(JSON.stringify(data));
           }
         });
       } else {
