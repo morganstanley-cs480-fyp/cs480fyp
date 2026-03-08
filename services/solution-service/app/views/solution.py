@@ -22,6 +22,14 @@ async def get_solution(exception_id: int):
 
 @router.post("", response_model=SolutionResponse, status_code=201)
 async def create_solution(solution_data: SolutionCreate):
+    # Check if solution with this exception_id already exists
+    existing_solution = await Solution.filter(exception_id=solution_data.exception_id).first()
+    if existing_solution:
+        raise HTTPException(
+            status_code=409, 
+            detail=f"Solution for exception_id {solution_data.exception_id} already exists"
+        )
+    
     try:
         # Exclude create_time - let DB generate it
         data = solution_data.model_dump(exclude_unset=True, exclude={'create_time'})
@@ -47,11 +55,22 @@ async def create_solution(solution_data: SolutionCreate):
 async def batch_create_solutions(solutions_data: List[SolutionCreate]):
     """
     Create multiple solutions in a single request.
+    Skips solutions with duplicate exception_ids.
     """
     created_solutions = []
+    skipped = []
     sequence_synced = False
     
     for solution_data in solutions_data:
+        # Check if solution with this exception_id already exists
+        existing_solution = await Solution.filter(exception_id=solution_data.exception_id).first()
+        if existing_solution:
+            skipped.append({
+                "exception_id": solution_data.exception_id,
+                "reason": "Solution already exists"
+            })
+            continue
+        
         try:
             # Exclude create_time - let DB generate it
             data = solution_data.model_dump(exclude_unset=True, exclude={'create_time'})
