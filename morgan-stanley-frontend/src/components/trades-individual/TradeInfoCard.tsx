@@ -108,7 +108,7 @@ export function TradeInfoCard({
               </div>
               <div>
                 <p className="text-sm text-black/75 mb-1">Status</p>
-                <Badge variant="secondary" className={getStatusBadgeClassName(trade.status)}>
+                <Badge variant="secondary" className={getStatusBadgeClassName(latestTransactionStatus)}>
                   {latestTransactionStatus}
                 </Badge>
               </div>
