@@ -5,6 +5,7 @@ import type { Column, ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Exception } from "@/lib/api/types";
+import { getPriorityBadgeClassName } from "@/lib/tradeDetailUtils";
 
 interface UseExceptionColumnsOptions {
   getPriorityColor: (priority: string) => "destructive" | "default" | "secondary";
@@ -80,7 +81,7 @@ export function useExceptionColumns({
         return (
           <div className="flex items-center gap-2">
             {getPriorityIcon(priority)}
-            <Badge variant={getPriorityColor(priority)}>{priority}</Badge>
+            <Badge variant={getPriorityColor(priority)} className={getPriorityBadgeClassName(priority)}>{priority}</Badge>
           </div>
         );
       },

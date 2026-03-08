@@ -2,6 +2,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Badge} from "@/components/ui/badge";
 import {Landmark, ShieldCheck, ArrowRight, ArrowLeft, Activity} from "lucide-react";
 import type { Transaction } from "@/lib/api/types";
+import { getStatusBadgeClassName } from "@/lib/tradeDetailUtils";
 
 interface EntityDetailPanelProps {
     entityName: string;
@@ -87,10 +88,10 @@ export function EntityDetailPanel({entityName, isHub, transactions}: EntityDetai
                         {Object.entries(statusCounts).map(([status, count]) => (
                             <div key={status}
                                  className="flex items-center justify-between p-2 bg-black/[0.02] rounded border border-black/10">
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge variant="secondary" className={`text-xs ${getStatusBadgeClassName(status)}`}>
                                     {status}
                                 </Badge>
-                                <span className="text-sm font-semibold text-black/75">{count}</span>
+                                <span className="text-sm font-semibold text-black/75">Transactions: {count}</span>
                             </div>
                         ))}
                     </div>
@@ -102,11 +103,11 @@ export function EntityDetailPanel({entityName, isHub, transactions}: EntityDetai
                     <div className="space-y-2 max-h-[200px] overflow-y-auto">
                         {entityTransactions.slice(0, 5).map((transaction) => (
                             <div
-                                key={transaction.trans_id}
+                                key={transaction.id}
                                 className="p-2 bg-white rounded border border-black/10 hover:border-black/12 transition-colors">
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-xs font-mono text-black/75">{transaction.trans_id}</span>
-                                    <Badge variant="secondary" className="text-xs">
+                                    <span className="text-xs font-mono text-black/75">Transaction ID: {transaction.id}</span>
+                                    <Badge variant="secondary" className={`text-xs ${getStatusBadgeClassName(transaction.status)}`}>
                                         {transaction.status}
                                     </Badge>
                                 </div>

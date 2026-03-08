@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Exception } from "@/lib/api/types";
+import { getPriorityBadgeClassName } from "@/lib/tradeDetailUtils";
 
 interface ExceptionDetailPanelProps {
   exception: Exception | null;
@@ -82,7 +83,7 @@ export function ExceptionDetailPanel({
           <div>
             <p className="text-sm text-black/75 mb-1">Priority</p>
             <Badge
-              variant={getPriorityColor(exception.priority)}
+              variant={getPriorityColor(exception.priority)} className={getPriorityBadgeClassName(exception.priority)}
             >
               {exception.priority}
             </Badge>

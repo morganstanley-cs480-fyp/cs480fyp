@@ -142,7 +142,7 @@ export function useExceptionResolver(exceptionId: string) {
       
       const response = await exceptionService.generateSolution(exception.id.toString());
       
-      const formattedSolution = response.generated_solution.raw_response || 
+      const formattedSolution = response.generated_solution.recommended_resolution_steps || 
         `${response.generated_solution.root_cause_analysis}\n\nRESOLUTION STEPS:\n${response.generated_solution.recommended_resolution_steps}\n\nRISK CONSIDERATIONS:\n${response.generated_solution.risk_considerations}`;
       
       setAiGeneratedSolution(formattedSolution);

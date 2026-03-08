@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowDownRight, AlertCircle } from "lucide-react";
 import type { Transaction, Exception } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
+import { getStatusBadgeClassName } from "@/lib/tradeDetailUtils";
 
 interface TimelineTransactionCardProps {
   transaction: Transaction;
@@ -58,7 +59,7 @@ export function TimelineTransactionCard({
           <div className="flex items-start justify-between mb-2">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-medium">{transaction.trans_id}</span>
+                <span className="text-sm font-medium">{transaction.id}</span>
                 <Badge variant="outline" className="text-xs">
                   Step {index + 1}
                 </Badge>
@@ -66,10 +67,10 @@ export function TimelineTransactionCard({
               <p className="text-xs text-black/75">{transaction.entity}</p>
             </div>
             <Badge
-              variant={transaction.direction === "SEND" ? "default" : "secondary"}
+              variant={transaction.direction.toUpperCase() === "SEND" ? "default" : "secondary"}
               className="text-xs"
             >
-              {transaction.direction}
+              {transaction.direction.toUpperCase()}
             </Badge>
           </div>
 
@@ -79,7 +80,7 @@ export function TimelineTransactionCard({
           </div>
 
           <div className="flex items-center justify-between">
-            <Badge variant={getTransactionStatusColor(transaction.status)} className="text-xs">
+            <Badge variant={getTransactionStatusColor(transaction.status)} className={`text-xs ${getStatusBadgeClassName(transaction.status)}`}>
               {transaction.status}
             </Badge>
             {relatedExceptions.length > 0 && (

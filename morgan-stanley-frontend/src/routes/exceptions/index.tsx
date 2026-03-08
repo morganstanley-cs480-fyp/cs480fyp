@@ -160,6 +160,9 @@ function ExceptionsPage() {
   // Calculate stats from all exceptions (unfiltered)
   const stats = {
     total: allExceptions.filter((e) => e.status === "PENDING").length,
+    critical: allExceptions.filter(
+      (e) => e.status === "PENDING" && e.priority === "CRITICAL",
+    ).length,    
     high: allExceptions.filter(
       (e) => e.status === "PENDING" && e.priority === "HIGH",
     ).length,

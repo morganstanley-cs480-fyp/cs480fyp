@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { AlertCircle } from "lucide-react";
 import type { Transaction, Exception } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
+import { getStatusBadgeClassName } from "@/lib/tradeDetailUtils";
 
 interface TransactionDetailPanelProps {
   selectedTransaction: Transaction;
@@ -76,9 +77,9 @@ export function TransactionDetailPanel({
             <div>
               <p className="text-sm text-black/75 mb-1">Direction</p>
               <Badge
-                variant={selectedTransaction.direction === "SEND" ? "default" : "secondary"}
+                variant={selectedTransaction.direction.toUpperCase() === "SEND" ? "default" : "secondary"}
               >
-                {selectedTransaction.direction}
+                {selectedTransaction.direction.toUpperCase()}
               </Badge>
             </div>
             <div>
@@ -94,7 +95,7 @@ export function TransactionDetailPanel({
             </div>
             <div>
               <p className="text-sm text-black/75 mb-1">Status</p>
-              <Badge variant={getTransactionStatusColor(selectedTransaction.status)}>
+              <Badge variant={getTransactionStatusColor(selectedTransaction.status)} className={getStatusBadgeClassName(selectedTransaction.status)}>
                 {selectedTransaction.status}
               </Badge>
             </div>
