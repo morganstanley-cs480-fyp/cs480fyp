@@ -336,27 +336,43 @@ function WorkflowEdge(props: EdgeProps) {
   let badgeBorderColor = '#cbd5e1';
   let badgeTextColor = '#000000';
   
-  if (status === 'REJECTED') {
-    badgeBackgroundColor = '#dc2626'; // bright red
-    badgeBorderColor = '#b91c1c'; // darker red
-    badgeTextColor = '#ffffff'; // white text
-  } else if (hasExceptions) {
-    badgeBackgroundColor = '#fef3c7'; // light yellow
-    badgeBorderColor = '#eab308'; // yellow
-    badgeTextColor = '#854d0e'; // dark yellow
-  } else if (status === 'CLEARED') {
-    badgeBackgroundColor = '#bbf7d0'; // light green
-    badgeBorderColor = '#22c55e'; // green
-    badgeTextColor = '#15803d'; // dark green
-  } else if (status === 'ALLEGED') {
-    badgeBackgroundColor = '#e5e7eb'; // light gray
-    badgeBorderColor = '#9ca3af'; // gray
-    badgeTextColor = '#374151'; // dark gray
-  } else if (status === 'CANCELLED') {
-    badgeBackgroundColor = '#fef3c7'; // light yellow
-    badgeBorderColor = '#eab308'; // yellow
-    badgeTextColor = '#854d0e'; // dark yellow
+  switch (status.toUpperCase()) {
+    case 'CLEARED':
+      // ✅ Green scheme (matches bg-green-50 border-green-200)
+      badgeBackgroundColor = '#f0fdf4'; // green-50
+      badgeBorderColor = '#bbf7d0';      // green-200
+      badgeTextColor = '#15803d';        // green-700
+      break;
+      
+    case 'REJECTED':
+      // ✅ Red scheme (matches bg-red-50 border-red-200) 
+      badgeBackgroundColor = '#fef2f2'; // red-50
+      badgeBorderColor = '#fecaca';      // red-200
+      badgeTextColor = '#dc2626';        // red-600
+      break;
+      
+    case 'ALLEGED':
+      // ✅ Yellow scheme (matches bg-yellow-50 border-yellow-200)
+      badgeBackgroundColor = '#fefce8'; // yellow-50
+      badgeBorderColor = '#fde68a';      // yellow-200  
+      badgeTextColor = '#d97706';        // yellow-600
+      break;
+      
+    case 'CANCELLED':
+    default:
+      // ✅ Gray scheme (matches bg-gray-50 border-gray-200)
+      badgeBackgroundColor = '#f9fafb'; // gray-50
+      badgeBorderColor = '#e5e7eb';      // gray-200
+      badgeTextColor = '#6b7280';        // gray-500
+      break;
   }
+  
+  // ✅ Override with exception indicator if needed (optional - only for non-CLEARED)
+  if (hasExceptions && status !== 'CLEARED') {
+    // Add subtle exception indicator (slightly darker border)
+    badgeBorderColor = status === 'ALLEGED' ? '#facc15' : badgeBorderColor; // Make yellow more prominent
+  }
+
 
   return (
     <>
