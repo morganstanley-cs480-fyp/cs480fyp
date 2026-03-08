@@ -67,10 +67,10 @@ export function TimelineTransactionCard({
               <p className="text-xs text-black/75">{transaction.entity}</p>
             </div>
             <Badge
-              variant={transaction.direction.toUpperCase() === "SEND" ? "default" : "secondary"}
+              variant={transaction.direction?.toUpperCase() === "SEND" ? "default" : "secondary"}
               className="text-xs"
             >
-              {transaction.direction.toUpperCase()}
+              {transaction.direction?.toUpperCase()}
             </Badge>
           </div>
 

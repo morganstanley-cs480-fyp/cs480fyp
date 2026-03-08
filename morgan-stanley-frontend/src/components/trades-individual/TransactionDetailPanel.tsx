@@ -78,9 +78,9 @@ export function TransactionDetailPanel({
             <div>
               <p className="text-sm text-black/75 mb-1">Direction</p>
               <Badge
-                variant={selectedTransaction.direction.toUpperCase() === "SEND" ? "default" : "secondary"}
+                variant={selectedTransaction.direction?.toUpperCase() === "SEND" ? "default" : "secondary"}
               >
-                {selectedTransaction.direction.toUpperCase()}
+                {selectedTransaction.direction?.toUpperCase()}
               </Badge>
             </div>
             <div>
