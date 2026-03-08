@@ -288,7 +288,6 @@ class NarrativeFormatter:
         # Extract exception details
         exception_msg = exception_data.get("msg", "No message provided")
         priority = exception_data.get("priority", "UNKNOWN")
-        status = exception_data.get("status", "UNKNOWN")
         comment = exception_data.get("comment", "")
         
         # Extract trade details
@@ -326,7 +325,6 @@ Primary Issue:
 Exception: {exception_msg}
 Context: {comment if comment else "No additional details provided"}
 Priority: {priority}
-Status: {status}
 
 Trade Context:
 - Asset Type: {asset_type}
@@ -434,7 +432,6 @@ Search Keywords: {exception_msg.lower()}, {problem_categories.lower()}, {asset_t
             "exception_msg": exception_data.get("msg", ""),
             "exception_comment": exception_data.get("comment", ""),
             "priority": exception_data.get("priority", "UNKNOWN"),
-            "status": exception_data.get("status", "UNKNOWN"),
             "account": trade_data.get("account", "Unknown"),
             "asset_type": trade_data.get("asset_type", "Unknown"),
             "clearing_house": trade_data.get("clearing_house", "Unknown"),
