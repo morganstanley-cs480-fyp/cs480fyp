@@ -50,6 +50,10 @@ jobs:
   test:
     needs: static-analysis
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -66,7 +70,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install pytest pytest-cov
 
-      - name: Run tests
+      - name: Run tests with coverage
         working-directory: ./services/${{ inputs.service_name }}
         env:
           # Test environment variables (required by pydantic settings)
@@ -79,7 +83,41 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           BEDROCK_REGION: us-east-1
-        run: pytest -m "not integration" --cov=. --cov-report=xml --cov-report=term
+        run: |
+          pytest -m "not integration" \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term \
+            --junitxml=test-results/junit.xml
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            services/${{ inputs.service_name }}/junit.xml
+            services/${{ inputs.service_name }}/test-results/**/*.xml
+          check_name: Test Results (${{ inputs.service_name }})
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.service_name }}-test-results
+          path: |
+            services/${{ inputs.service_name }}/coverage.xml
+            services/${{ inputs.service_name }}/htmlcov/
+            services/${{ inputs.service_name }}/test-results/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Code Coverage Report
+        if: github.event_name == 'pull_request'
+        uses: orgoro/coverage@v3.2
+        with:
+          coverageFile: services/${{ inputs.service_name }}/coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   build:
     needs: test

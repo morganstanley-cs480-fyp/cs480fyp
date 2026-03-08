@@ -59,6 +59,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/build-python-service.yml
     with:
       service_name: example-service
@@ -73,6 +75,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/build-python-service.yml
     with:
       service_name: search-service
@@ -87,6 +91,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/build-python-service.yml
     with:
       service_name: exception-service
@@ -101,6 +107,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/build-python-service.yml
     with:
       service_name: solution-service
@@ -115,6 +123,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/build-python-service.yml
     with:
       service_name: rag-service
@@ -145,6 +155,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/build-python-service.yml
     with:
       service_name: trade-flow-service
