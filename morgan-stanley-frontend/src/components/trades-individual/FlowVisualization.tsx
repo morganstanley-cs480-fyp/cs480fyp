@@ -682,6 +682,18 @@ export function FlowVisualization({
   const [isLoading, setIsLoading] = useState(!transactions || transactions.length === 0 ? false : true);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<Node, Edge> | null>(null);
 
+  // ✅ Enhanced function to get related exceptions with transaction status check
+  const getFilteredRelatedExceptions = useCallback((transaction: Transaction): Exception[] => {
+    // If transaction is CLEARED, don't show any exceptions
+    if (transaction.status === 'CLEARED') {
+      return [];
+    }
+    
+    // Otherwise, only show PENDING exceptions
+    const relatedExceptions = getRelatedExceptions(transaction.id);
+    return relatedExceptions.filter(exc => exc.status === 'PENDING');
+  }, [getRelatedExceptions]);
+
   // Use mergedTransactions for all rendering (combines API + WebSocket data)
   const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
 
@@ -854,7 +866,7 @@ export function FlowVisualization({
                             </div>
                         ) : (
                             sortedTransactions.map((transaction, index) => {
-                                const relatedExceptions = getRelatedExceptions(transaction.id);
+                                const relatedExceptions = getFilteredRelatedExceptions(transaction);
 
                                 return (
                                     <TimelineTransactionCard

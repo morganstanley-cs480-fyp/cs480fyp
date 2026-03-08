@@ -82,74 +82,103 @@ export interface CreateSolutionResponse {
   create_time: string;
 }
 
+function resolveExceptionApiBaseUrl(): string {
+  const raw: string =
+    import.meta.env.VITE_EXCEPTION_API_BASE_URL || window.location.origin;
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    return raw.replace(/^http:\/\//, 'https://');
+  }
+  return raw;
+}
+
+const EXCEPTION_API_BASE_URL = resolveExceptionApiBaseUrl();
+const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000;
+
 /**
- * Ensure the base URL uses HTTPS when the page is served over HTTPS.
- * Prevents Mixed Content errors when VITE_EXCEPTION_API_BASE_URL is built
- * with an http:// value (e.g. during a CI/CD build that bakes in the URL).
+ * Exception-specific API client that connects directly to exception service
  */
-// function resolveExceptionApiBaseUrl(): string {
-//   const raw: string =
-//     import.meta.env.VITE_EXCEPTION_API_BASE_URL || window.location.origin;
-//   if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-//     return raw.replace(/^http:\/\//, 'https://');
-//   }
-//   return raw;
-// }
+class ExceptionClient {
+  private baseUrl: string;
 
-// const EXCEPTION_API_BASE_URL = resolveExceptionApiBaseUrl();
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
 
-// class ExceptionClient {
-//   async get<T>(endpoint: string): Promise<T> {
-//     const url = `${EXCEPTION_API_BASE_URL}${endpoint}`;
-//     const response = await fetch(url);
+  async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-//     if (!response.ok) {
-//       const text = await response.text().catch(() => response.statusText);
-//       throw new Error(
-//         `Exception service error (${response.status}): ${
-//           text.substring(0, 200)
-//         }`
-//       );
-//     }
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        signal: controller.signal,
+      });
 
-//     // Guard against the server returning an HTML error page instead of JSON
-//     // (e.g. a CloudFront 403/404 page), which would crash JSON.parse.
-//     const contentType = response.headers.get('content-type');
-//     if (!contentType?.includes('application/json')) {
-//       const text = await response.text().catch(() => '');
-//       throw new Error(
-//         `Exception service returned non-JSON response (${
-//           contentType ?? 'unknown'
-//         }): ${text.substring(0, 200)}`
-//       );
-//     }
+      clearTimeout(timeoutId);
 
-//     return response.json() as Promise<T>;
-//   }
-// }
+      if (!response.ok) {
+        const text = await response.text().catch(() => response.statusText);
+        throw new Error(
+          `Exception service error (${response.status}): ${text.substring(0, 200)}`
+        );
+      }
 
-// const exceptionClient = new ExceptionClient();
+      // Guard against HTML error pages
+      const contentType = response.headers.get('content-type');
+      if (!contentType?.includes('application/json')) {
+        const text = await response.text().catch(() => '');
+        throw new Error(
+          `Exception service returned non-JSON response (${contentType ?? 'unknown'}): ${text.substring(0, 200)}`
+        );
+      }
+
+      return response.json() as Promise<T>;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, { method: 'GET' });
+  }
+
+  async post<T>(endpoint: string, body?: unknown): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  }
+}
+
+const exceptionClient = new ExceptionClient(EXCEPTION_API_BASE_URL);
 
 export const exceptionService = {
   /**
    * Fetch all exceptions from the exception service
    */
   async getExceptions(): Promise<Exception[]> {
-    return apiClient.get<Exception[]>('/api/exceptions');
+    return exceptionClient.get<Exception[]>('/api/exceptions');
   },
 
   /**
    * Fetch a single exception by ID
    */
   async getExceptionById(exceptionId: number): Promise<Exception> {
-    return apiClient.get<Exception>(`/api/exceptions/${exceptionId}`);
+    return exceptionClient.get<Exception>(`/api/exceptions/${exceptionId}`);
   },
 
   /**
    * Fetch exceptions for a trade
    */
   async getExceptionsByTrade(tradeId: number): Promise<Exception[]> {
-    return apiClient.get<Exception[]>(`/api/exceptions/trade/${tradeId}`);
+    return exceptionClient.get<Exception[]>(`/api/exceptions/trade/${tradeId}`);
   },
 
   // NEW: Get similar exceptions using RAG/Milvus
@@ -162,22 +191,22 @@ export const exceptionService = {
       limit: limit.toString(),
       explain: explain.toString()
     });
-    return apiClient.get(`/api/rag/documents/similar-exceptions/${exceptionId}?${params}`);
+    return exceptionClient.get(`/api/rag/documents/similar-exceptions/${exceptionId}?${params}`);
   },
 
   // NEW: Generate AI solution using Bedrock LLM
   async generateSolution(exceptionId: string): Promise<GeneratedSolution> {
-    return apiClient.get(`/api/rag/generate/${exceptionId}`);
+    return exceptionClient.get(`/api/rag/generate/${exceptionId}`);
   },
 
   // NEW: Retrieve solution tied to a similar exception. Just grab exception_description and solution_description.
   async getSolution(exceptionId: string): Promise<RetrievedSolution> {
-    return apiClient.get(`/api/solutions/${exceptionId}`);
+    return exceptionClient.get(`/api/solutions/${exceptionId}`);
   },
 
   // NEW: Save manually created solution
   async createSolution(request: CreateSolutionRequest): Promise<CreateSolutionResponse> {
-    return apiClient.post('/api/solutions', {
+    return exceptionClient.post('/api/solutions', {
       exception_id: request.exception_id, // Convert to snake_case and ensure it's a number
       title: request.title,
       exception_description: request.exception_description,
@@ -189,7 +218,7 @@ export const exceptionService = {
 
     // Resolve exception
   async resolveException(exception_id: string): Promise<Exception> {
-    return apiClient.post(`/api/exceptions/${exception_id}/resolve`, {
+    return exceptionClient.post(`/api/exceptions/${exception_id}/resolve`, {
       exceptionId: parseInt(exception_id)
     });
   }

@@ -59,13 +59,22 @@ export function useTradeWebSocket(
           );
 
           if (existingIndex !== -1) {
-            // Update existing transaction
+            // ✅ Replace existing transaction completely
             const updated = [...prev];
-            updated[existingIndex] = {
-              ...updated[existingIndex],
-              ...transactionData,
-            };
-            console.log("🔄 Updated existing transaction:", transactionData.id);
+            updated[existingIndex] = transactionData; // Complete replacement, not merge
+            console.log("🔄 Replaced existing transaction:", transactionData.id, "Status:", transactionData.status);
+            
+            // ✅ If transaction is CLEARED, hide related exceptions by setting them to CLOSED
+            if (transactionData.status === 'CLEARED') {
+              console.log("🎯 Transaction CLEARED - hiding related exceptions");
+              setMergedExceptions((prevExceptions) => 
+                prevExceptions.map(exc => 
+                  exc.trans_id === transactionData.id 
+                    ? { ...exc, status: 'CLOSED' }
+                    : exc
+                )
+              );
+            }
             return updated.sort((a, b) => a.step - b.step);
           } else {
             // Add new transaction

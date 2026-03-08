@@ -49,6 +49,7 @@ function TradeDetailPage() {
         connectionStatus // kept for now, can include in UI to let user know that it is listening for live updates.
     } = useTradeWebSocket(Number(tradeId), transactions, exceptions);
 
+
     // Params are strings.
     const handleResolveException = (exceptionId: string) => {
         navigate({

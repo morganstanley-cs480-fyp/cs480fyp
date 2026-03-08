@@ -73,25 +73,19 @@ export function getPriorityIcon(priority: string): React.ReactElement {
 }
 
 export function getTransactionBackgroundColor(transaction: Transaction, exceptions: Exception[]) {
-  const hasException = exceptions.some((exc) => exc.trans_id === transaction.id);
+  // const hasException = exceptions.some((exc) => exc.trans_id === transaction.id);
 
-  if (hasException) {
-    return "bg-red-50 border-red-300";
+  switch (transaction.status?.toUpperCase()) {
+    case 'CLEARED':
+      return 'bg-green-50 border-green-200';
+    case 'REJECTED':
+    case 'FAILED':
+      return 'bg-red-50 border-red-200';
+    case 'PENDING':
+      return 'bg-yellow-50 border-yellow-200';
+    default:
+      return 'bg-gray-50 border-gray-200';
   }
-
-  if (transaction.status === "CLEARED") {
-    return "bg-green-50 border-green-300";
-  }
-
-  if (transaction.status === "ALLEGED") {
-    return "bg-yellow-50 border-yellow-300";
-  }
-
-  if (transaction.status === "REJECTED") {
-    return "bg-red-50 border-red-300";
-  }
-
-  return "bg-black/4 border-black/15";
 }
 
 export function getRelatedExceptions(transId: number, exceptions: Exception[]): Exception[] {

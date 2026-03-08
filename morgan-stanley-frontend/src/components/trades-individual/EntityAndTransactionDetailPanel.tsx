@@ -6,6 +6,7 @@ import {TransactionDetailPanel} from "@/components/trades-individual/Transaction
 import type { Exception, Transaction } from "@/lib/api/types";
 import {Card, CardContent, CardHeader, CardTitle, CardDescription} from "@/components/ui/card";
 import {ArrowRight} from "lucide-react";
+import { useCallback, useMemo } from "react";
 import {
     getPriorityColor,
     getPriorityIcon,
@@ -13,34 +14,55 @@ import {
 } from "@/lib/tradeDetailUtils";
 
 interface EntityAndTransactionDetailPanelProps {
-    // selected: Trade | Transaction | null;
-    // selectedEntityPanel: typeof EntityDetailPanel
-    // selectedTransactionPanel: typeof TransactionDetailPanel
-    // selected?: Transaction | {name: string; isHub: boolean } | null;
     selectedEntity?: { name: string; isHub: boolean } | null;
     selectedTransaction?: Transaction | null;
     lastSelectedType?: 'entity' | 'transaction' | null;
     transactions?: Transaction[];
     relatedExceptions?: Exception[];
-    // getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
-    // getPriorityColor: (priority: string) => "default" | "destructive" | "secondary";
-    // getPriorityIcon: (priority: string) => React.ReactElement;
     onResolveException: (exceptionId: string) => void;
-    // onPanelClose: () => void;
+
 }
 
 export const EntityAndTransactionDetailPanel = ({
-                                                    selectedEntity,
-                                                    selectedTransaction,
-                                                    lastSelectedType,
-                                                    transactions,
-                                                    relatedExceptions,
-                                                    // getTransactionStatusColor,
-                                                    // getPriorityColor,
-                                                    // getPriorityIcon,
-                                                    onResolveException,
-                                                    // onPanelClose,
-                                                }: EntityAndTransactionDetailPanelProps) => {
+    selectedEntity,
+    selectedTransaction,
+    lastSelectedType,
+    transactions,
+    relatedExceptions,
+    onResolveException,
+
+}: EntityAndTransactionDetailPanelProps) => {
+
+    const currentTransaction = useMemo(() => {
+        if (!selectedTransaction || !transactions) {
+            return selectedTransaction;
+        }
+        
+        // Find the most current version of this transaction
+        const updatedTransaction = transactions.find(t => t.id === selectedTransaction.id);
+        return updatedTransaction || selectedTransaction;
+    }, [selectedTransaction, transactions]);
+
+
+    // ✅ Filter exceptions based on current transaction status
+    const getFilteredRelatedExceptions = useCallback((): Exception[] => {
+        if (!currentTransaction || !relatedExceptions) {
+            return [];
+        }
+
+        // If transaction is CLEARED, don't show any exceptions
+        if (currentTransaction.status === 'CLEARED') {
+            console.log(`🎯 Transaction ${currentTransaction.id} is CLEARED - hiding all exceptions`);
+            return [];
+        }
+        
+        // Otherwise, only show PENDING exceptions
+        const pendingExceptions = relatedExceptions.filter(exc => exc.status === 'PENDING');
+        
+        console.log(`📊 Transaction ${currentTransaction.id} (${currentTransaction.status}) - showing ${pendingExceptions.length}/${relatedExceptions.length} exceptions`);
+        return pendingExceptions;
+    }, [currentTransaction, relatedExceptions]);
+
     if (!selectedEntity && !selectedTransaction) {
         return (
             <Card className="sticky top-6">
@@ -59,16 +81,23 @@ export const EntityAndTransactionDetailPanel = ({
     }
 
     if (selectedEntity && transactions && lastSelectedType == "entity") {
-        return <EntityDetailPanel entityName={selectedEntity.name}
-                                  isHub={selectedEntity.isHub}
-                                  transactions={transactions} />
-        // onClose={onPanelClose}/>
-    } else if (selectedTransaction && relatedExceptions) {
-        return <TransactionDetailPanel selectedTransaction={selectedTransaction}
-                                       relatedExceptions={relatedExceptions}
-                                       getTransactionStatusColor={getTransactionStatusColor}
-                                       getPriorityColor={getPriorityColor} getPriorityIcon={getPriorityIcon}
-                                       onResolveException={onResolveException}/>
+        return <EntityDetailPanel 
+            entityName={selectedEntity.name}
+            isHub={selectedEntity.isHub}
+            transactions={transactions} 
+        />
+    } else if (currentTransaction) {
+        // ✅ Use filtered exceptions instead of raw relatedExceptions
+        const filteredExceptions = getFilteredRelatedExceptions();
+        
+        return <TransactionDetailPanel 
+            selectedTransaction={currentTransaction}
+            relatedExceptions={filteredExceptions} // ✅ Pass filtered exceptions
+            getTransactionStatusColor={getTransactionStatusColor}
+            getPriorityColor={getPriorityColor} 
+            getPriorityIcon={getPriorityIcon}
+            onResolveException={onResolveException}
+        />
     } else {
         return (
             <Card className="sticky text-red-500">
