@@ -129,6 +129,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/build-js-service.yml
     with:
       service_name: gateway-service
@@ -157,6 +159,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/build-js-service.yml
     with:
       service_name: ingestion-service
@@ -171,6 +175,8 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      checks: write
+      pull-requests: write
     uses: ./.github/workflows/build-js-service.yml
     with:
       service_name: data-processing-service
