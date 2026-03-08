@@ -79,7 +79,6 @@ export function getTransactionBackgroundColor(transaction: Transaction, exceptio
     case 'CLEARED':
       return 'bg-green-50 border-green-200';
     case 'REJECTED':
-    case 'FAILED':
       return 'bg-red-50 border-red-200';
     case 'PENDING':
       return 'bg-yellow-50 border-yellow-200';
