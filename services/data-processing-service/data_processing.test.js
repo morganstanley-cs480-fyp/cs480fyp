@@ -32,6 +32,7 @@ const {
 const sqsMock = mockClient(SQSClient);
 
 describe('Data Processor Service', () => {
+  jest.setTimeout(15000);
   let mockDbClient;
 
   beforeEach(() => {
