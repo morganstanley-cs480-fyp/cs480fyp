@@ -139,7 +139,7 @@ export function ExceptionDetailPanel({
                   })
                 }
               >
-                Resolve Exception
+                View Exception
               </Button>
             </>
           )}

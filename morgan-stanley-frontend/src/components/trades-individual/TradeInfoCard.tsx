@@ -232,7 +232,7 @@ export function TradeInfoCard({
                           });
                         }}
                       >
-                        Resolve exception
+                        View exception
                       </Button>
                     </div>
                     )}

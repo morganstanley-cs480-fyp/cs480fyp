@@ -180,7 +180,7 @@ export function TransactionDetailPanel({
                           className="w-full"
                           onClick={() => onResolveException(String(exception.id))}
                         >
-                          Resolve Exception
+                          View Exception
                         </Button>
                       </>
                     )}
