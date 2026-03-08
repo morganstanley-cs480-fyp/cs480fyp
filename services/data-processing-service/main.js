@@ -299,8 +299,6 @@ export async function handleTransaction(trans) {
       JSON.stringify(trans, null, 2)
     );
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
     // Publish exception if exception data present
     if (exceptionData) {
       await publishUpdate(trans.trade_id, exceptionData);
@@ -359,17 +357,15 @@ export async function handleException(excep) {
     console.log(`Processed Exception ID: ${excep.id}`);
 
     // Publish Exception
-    await publishUpdate(excep.trade_id, { type: 'exception', data: excep });
+    await publishUpdate(excep.trade_id, excep);
     console.log(
       `Send to Redis for exception with Trade ID: ${excep.trade_id}`, 
       JSON.stringify(excep, null, 2)
     );
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
     // Publish transaction with the status = REJECTED
     if (updatedTransaction) {
-      await publishUpdate(excep.trade_id, { type: 'transaction', data: updatedTransaction });
+      await publishUpdate(excep.trade_id, updatedTransaction );
       console.log(
         `Send to redis transaction with Trade ID: ${excep.trade_id}`, 
         JSON.stringify(updatedTransaction, null, 2)
