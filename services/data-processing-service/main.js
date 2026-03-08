@@ -86,10 +86,10 @@ async function initDB() {
       event TEXT, 
       status TEXT, 
       msg TEXT, 
-      create_time TIMESTAMP, 
+      create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
       comment TEXT, 
       priority TEXT, 
-      update_time TIMESTAMP
+      update_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     -- Solutions Table
@@ -295,7 +295,7 @@ export async function handleTransaction(trans) {
     // Publish transaction
     await publishUpdate(trans.trade_id, trans);
     console.log(
-      `Transaction data sent for Trade ID: ${trans.trade_id}\n`, 
+      `Transaction data sent for Trade ID: ${trans.trade_id}`, 
       JSON.stringify(trans, null, 2)
     );
 
@@ -303,7 +303,7 @@ export async function handleTransaction(trans) {
     if (exceptionData) {
       await publishUpdate(trans.trade_id, exceptionData);
       console.log(
-        `Exception data sent for Trade ID: ${trans.trade_id}\n`, 
+        `Exception data sent for Trade ID: ${trans.trade_id}`, 
         JSON.stringify(exceptionData, null, 2)
       );
     }
@@ -359,7 +359,7 @@ export async function handleException(excep) {
     // Publish Exception
     await publishUpdate(excep.trade_id, { type: 'exception', data: excep });
     console.log(
-      `Send to Redis for exception with Trade ID: ${excep.trade_id}\n`, 
+      `Send to Redis for exception with Trade ID: ${excep.trade_id}`, 
       JSON.stringify(excep, null, 2)
     );
 
@@ -367,7 +367,7 @@ export async function handleException(excep) {
     if (updatedTransaction) {
       await publishUpdate(excep.trade_id, { type: 'transaction', data: updatedTransaction });
       console.log(
-        `Send to redis transaction with Trade ID: ${excep.trade_id}\n`, 
+        `Send to redis transaction with Trade ID: ${excep.trade_id}`, 
         JSON.stringify(updatedTransaction, null, 2)
       );
     }
