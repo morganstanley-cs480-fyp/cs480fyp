@@ -41,7 +41,6 @@ class SimilarException(BaseModel):
     trade_id: str
     similarity_score: float = Field(..., description="Similarity percentage (0-100)")
     priority: str
-    status: str
     asset_type: str
     clearing_house: str
     exception_msg: str

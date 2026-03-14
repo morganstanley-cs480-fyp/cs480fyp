@@ -86,10 +86,10 @@ async function initDB() {
       event TEXT, 
       status TEXT, 
       msg TEXT, 
-      create_time TIMESTAMP, 
+      create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
       comment TEXT, 
       priority TEXT, 
-      update_time TIMESTAMP
+      update_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     -- Solutions Table
@@ -230,7 +230,14 @@ export async function handleTransaction(trans) {
   try {
     await client.query('BEGIN');
 
-    // 1. Upsert Transaction (and check if it was an insert or update)
+    // Fetch existing transaction status if present
+    const checkQuery = `SELECT status FROM transactions WHERE id = $1`;
+    const checkRes = await client.query(checkQuery, [parseInt(trans.id)]);
+    
+    const isInsert = checkRes.rowCount === 0;
+    const originalStatus = isInsert ? null : checkRes.rows[0].status;
+
+    // Upsert Transaction 
     const insertTransQuery = `
       INSERT INTO transactions (id, trade_id, create_time, entity, direction, type, status, update_time, step)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -242,8 +249,7 @@ export async function handleTransaction(trans) {
         type = EXCLUDED.type,
         status = EXCLUDED.status, 
         update_time = EXCLUDED.update_time,
-        step = EXCLUDED.step
-      RETURNING (xmax = 0) AS is_insert;
+        step = EXCLUDED.step;
     `;
     
     const transValues = [
@@ -253,22 +259,31 @@ export async function handleTransaction(trans) {
       trans.direction, trans.type, trans.status, trans.update_time, trans.step
     ];
     
-    const transResult = await client.query(insertTransQuery, transValues);
-    const isInsert = transResult.rows[0].is_insert;
+    await client.query(insertTransQuery, transValues);
 
-    // 2. If the row already existed (it was an update), close the exception
-    if (!isInsert) {
+    // Handle Exception Logic based if ORIGINAL status = REJECTED
+    let exceptionData = null;
+
+    if (!isInsert && originalStatus === 'REJECTED') {
       const closeExceptionQuery = `
         UPDATE exceptions 
-        SET status = 'closed' 
-        WHERE trans_id = $1;
+        SET status = 'CLOSED', update_time = $1
+        WHERE trans_id = $2
+        RETURNING *;
       `;
-      // Note: Ensure your table is named 'exceptions' or adjust the query above
-      await client.query(closeExceptionQuery, [parseInt(trans.id)]);
-      console.log(`Exception closed for Transaction ID: ${trans.id}`);
+      const exResult = await client.query(closeExceptionQuery, [trans.update_time, parseInt(trans.id)]);
+      exceptionData = exResult.rows[0] || null;
+      
+      if (exceptionData) {
+        console.log(`Exception closed for Transaction ID: ${trans.id}`);
+      }
+    } else {
+      const fetchExceptionQuery = `SELECT * FROM exceptions WHERE trans_id = $1`;
+      const exResult = await client.query(fetchExceptionQuery, [parseInt(trans.id)]);
+      exceptionData = exResult.rows[0] || null;
     }
 
-    // 3. Update parent Trade status to match the latest transaction state
+    // 4. Update parent Trade status
     const updateTradeQuery = `
       UPDATE trades SET status = $1, update_time = $2 WHERE id = $3;
     `;
@@ -277,8 +292,21 @@ export async function handleTransaction(trans) {
     await client.query('COMMIT');
     console.log(`Fully Updated Transaction ID: ${trans.id}`);
 
-    // Notify Frontend via Redis
+    // Publish transaction
     await publishUpdate(trans.trade_id, trans);
+    console.log(
+      `Transaction data sent for Trade ID: ${trans.trade_id}`, 
+      JSON.stringify(trans, null, 2)
+    );
+
+    // Publish exception if exception data present
+    if (exceptionData) {
+      await publishUpdate(trans.trade_id, exceptionData);
+      console.log(
+        `Exception data sent for Trade ID: ${trans.trade_id}`, 
+        JSON.stringify(exceptionData, null, 2)
+      );
+    }
 
   } catch (error) {
     await client.query('ROLLBACK');
@@ -293,6 +321,7 @@ export async function handleException(excep) {
   try {
     await client.query('BEGIN');
 
+    // Insert the Exception
     const insertExcepQuery = `
       INSERT INTO exceptions (id, trade_id, trans_id, status, msg, create_time, comment, priority, update_time)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -307,23 +336,41 @@ export async function handleException(excep) {
     ];
     await client.query(insertExcepQuery, excepValues);
 
-    // Update Transaction and Trade to REJECTED
-    await client.query(
-      `UPDATE transactions SET status = 'REJECTED', update_time = $1 WHERE id = $2`, 
-      [excep.update_time, parseInt(excep.trans_id)]
-    );
-    
+    // Update Transaction to REJECTED and grab the updated row
+    const updateTransQuery = `
+      UPDATE transactions 
+      SET status = 'REJECTED', update_time = $1 
+      WHERE id = $2
+      RETURNING *;
+    `;
+    const transResult = await client.query(updateTransQuery, [excep.update_time, parseInt(excep.trans_id)]);
+    const updatedTransaction = transResult.rows[0]; // This is the fully updated transaction
+
+    // Update Trade to REJECTED
     await client.query(
       `UPDATE trades SET status = 'REJECTED', update_time = $1 WHERE id = $2`, 
       [excep.update_time, parseInt(excep.trade_id)]
     );
 
-    // Commit Exception
+    // Commit Database Transaction
     await client.query('COMMIT');
     console.log(`Processed Exception ID: ${excep.id}`);
 
-    // Publish update to Redis
+    // Publish Exception
     await publishUpdate(excep.trade_id, excep);
+    console.log(
+      `Send to Redis for exception with Trade ID: ${excep.trade_id}`, 
+      JSON.stringify(excep, null, 2)
+    );
+
+    // Publish transaction with the status = REJECTED
+    if (updatedTransaction) {
+      await publishUpdate(excep.trade_id, updatedTransaction );
+      console.log(
+        `Send to redis transaction with Trade ID: ${excep.trade_id}`, 
+        JSON.stringify(updatedTransaction, null, 2)
+      );
+    }
 
   } catch (error) {
     await client.query('ROLLBACK');

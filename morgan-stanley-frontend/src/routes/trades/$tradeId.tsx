@@ -49,6 +49,17 @@ function TradeDetailPage() {
         connectionStatus // kept for now, can include in UI to let user know that it is listening for live updates.
     } = useTradeWebSocket(Number(tradeId), transactions, exceptions);
 
+    const getLatestTransactionStatus = () => {
+        if (mergedTransactions.length === 0) {
+            return trade?.status || ''; // Fallback to trade status
+        }
+        
+        const sortedTransactions = [...mergedTransactions].sort((a, b) => b.step - a.step);
+        return sortedTransactions[0].status;
+    };
+
+    const latestTransactionStatus = getLatestTransactionStatus();
+
     // Params are strings.
     const handleResolveException = (exceptionId: string) => {
         navigate({
@@ -178,9 +189,9 @@ function TradeDetailPage() {
                         </div>
                         <Badge
                             variant="secondary"
-                            className={`text-lg px-4 py-2 ${getStatusBadgeClassName(trade.status)}`}
+                            className={`text-lg px-4 py-2 ${getStatusBadgeClassName(latestTransactionStatus)}`}
                         >
-                            {trade.status}
+                            {latestTransactionStatus}
                         </Badge>
                     </div>
                 </CardHeader>

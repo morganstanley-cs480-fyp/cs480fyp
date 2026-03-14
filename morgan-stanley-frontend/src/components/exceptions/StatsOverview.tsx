@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export interface ExceptionStats {
   total: number;
+  critical: number;
   high: number;
   medium: number;
   low: number;
@@ -17,14 +18,15 @@ interface StatsOverviewProps {
 export function StatsOverview({ stats }: StatsOverviewProps) {
   const cards = [
     { label: "Pending Exceptions", value: stats.total,  valueColor: "text-black",        dotColor: "bg-[#002B51]",   sub: "Awaiting resolution" },
-    { label: "High Priority",      value: stats.high,   valueColor: "text-red-600",       dotColor: "bg-red-600",     sub: "Requires urgent attention" },
-    { label: "Medium Priority",    value: stats.medium, valueColor: "text-orange-500",    dotColor: "bg-orange-500",  sub: "Action recommended" },
-    { label: "Low Priority",       value: stats.low,    valueColor: "text-yellow-600",    dotColor: "bg-yellow-500",  sub: "Monitor as needed" },
+    { label: "Critical Priority",      value: stats.critical,   valueColor: "text-red-600",       dotColor: "bg-red-600",     sub: "Requires urgent attention" },
+    { label: "High Priority",    value: stats.high, valueColor: "text-orange-500",    dotColor: "bg-orange-500",  sub: "Resolve as soon as possible" },
+    { label: "Medium Priority",       value: stats.medium,    valueColor: "text-yellow-600",    dotColor: "bg-yellow-500",  sub: "Action recommended" },
+    { label: "Low Priority",       value: stats.low,    valueColor: "text-blue-600",    dotColor: "bg-blue-500",  sub: "Monitor as needed" },
     { label: "Closed",             value: stats.closed, valueColor: "text-black/50",      dotColor: "bg-black/30",    sub: "Successfully resolved" },
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-4">
+    <div className="grid grid-cols-6 gap-4">
       {cards.map((card) => (
         <Card key={card.label} className="hover:shadow-md transition-shadow">
           <CardContent className="pt-4 pb-4 px-5">

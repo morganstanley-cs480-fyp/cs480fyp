@@ -224,7 +224,7 @@ export function TradeResultsTable({
         </div>
       </CardHeader>
       <CardContent>
-        {columnFiltersCount > 0 && (
+        {/* {columnFiltersCount > 0 && (
           <div className="flex items-center justify-end mb-4">
             <Button
               variant="outline"
@@ -235,7 +235,7 @@ export function TradeResultsTable({
               <X className="ml-2 size-4" />
             </Button>
           </div>
-        )}
+        )} */}
 
         {/* Search bar filters */}
         <div className="rounded-md border overflow-x-auto">

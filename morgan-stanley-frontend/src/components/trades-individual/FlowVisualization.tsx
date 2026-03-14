@@ -329,30 +329,50 @@ function WorkflowEdge(props: EdgeProps) {
   // Determine color based on transaction status and exceptions
   const hasExceptions = data?.hasExceptions ?? false;
   const transaction = data?.transaction;
-  const status = transaction?.status || 'PENDING';
+  const status = transaction?.status || 'ALLEGED';
   
-  // Determine badge colors based on status and exceptions
+  // Determine badge colors based on status and exceptions - REJECTED takes priority
   let badgeBackgroundColor = 'white';
   let badgeBorderColor = '#cbd5e1';
   let badgeTextColor = '#000000';
   
-  if (hasExceptions) {
-    badgeBackgroundColor = '#fef3c7'; // light yellow
-    badgeBorderColor = '#eab308'; // yellow
-    badgeTextColor = '#854d0e'; // dark yellow
-  } else if (status === 'REJECTED') {
-    badgeBackgroundColor = '#fecaca'; // light red
-    badgeBorderColor = '#ef4444'; // red
-    badgeTextColor = '#7f1d1d'; // dark red
-  } else if (status === 'CLEARED') {
-    badgeBackgroundColor = '#bbf7d0'; // light green
-    badgeBorderColor = '#22c55e'; // green
-    badgeTextColor = '#15803d'; // dark green
-  } else if (status === 'PENDING') {
-    badgeBackgroundColor = '#e5e7eb'; // light gray
-    badgeBorderColor = '#9ca3af'; // gray
-    badgeTextColor = '#374151'; // dark gray
+  switch (status.toUpperCase()) {
+    case 'CLEARED':
+      // ✅ Green scheme (matches bg-green-50 border-green-200)
+      badgeBackgroundColor = '#f0fdf4'; // green-50
+      badgeBorderColor = '#bbf7d0';      // green-200
+      badgeTextColor = '#15803d';        // green-700
+      break;
+      
+    case 'REJECTED':
+      // ✅ Red scheme (matches bg-red-50 border-red-200) 
+      badgeBackgroundColor = '#fef2f2'; // red-50
+      badgeBorderColor = '#fecaca';      // red-200
+      badgeTextColor = '#dc2626';        // red-600
+      break;
+      
+    case 'ALLEGED':
+      // ✅ Yellow scheme (matches bg-yellow-50 border-yellow-200)
+      badgeBackgroundColor = '#fefce8'; // yellow-50
+      badgeBorderColor = '#fde68a';      // yellow-200  
+      badgeTextColor = '#d97706';        // yellow-600
+      break;
+      
+    case 'CANCELLED':
+    default:
+      // ✅ Gray scheme (matches bg-gray-50 border-gray-200)
+      badgeBackgroundColor = '#f9fafb'; // gray-50
+      badgeBorderColor = '#e5e7eb';      // gray-200
+      badgeTextColor = '#6b7280';        // gray-500
+      break;
   }
+  
+  // ✅ Override with exception indicator if needed (optional - only for non-CLEARED)
+  if (hasExceptions && status !== 'CLEARED') {
+    // Add subtle exception indicator (slightly darker border)
+    badgeBorderColor = status === 'ALLEGED' ? '#facc15' : badgeBorderColor; // Make yellow more prominent
+  }
+
 
   return (
     <>
@@ -407,17 +427,19 @@ function WorkflowEdge(props: EdgeProps) {
 const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?: string; label: string; onEntitySelect?: () => void } }) => {
   const isHub = data.isHub;
   const width = data.width || NODE_WIDTH;
-  const status = data.status || 'PENDING';
+  const status = data.status || 'ALLEGED';
 
   // Get background color based on status
   const getStatusBgColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
+      case 'CLEARED':
         return 'bg-green-50';
-      case 'PENDING':
+      case 'ALLEGED':
         return 'bg-black/[0.02]';
-      case 'FAILED':
+      case 'REJECTED':
         return 'bg-red-50';
+      case 'CANCELLED':
+        return 'bg-yellow-50';
       default:
         return 'bg-black/[0.02]';
     }
@@ -425,12 +447,14 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
 
   const getStatusBorderColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED':
+      case 'CLEARED':
         return 'border-green-400';
-      case 'PENDING':
+      case 'ALLEGED':
         return 'border-black/10';
-      case 'FAILED':
+      case 'REJECTED':
         return 'border-red-400';
+      case 'CANCELLED':
+        return 'border-yellow-400';
       default:
         return 'border-black/10';
     }
@@ -443,11 +467,16 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
     }
   };
 
+  // Override colors for hub entity to be blue
+  const getHubBgColor = () => 'bg-blue-50';
+  const getHubBorderColor = () => 'border-blue-400';
+
   return (
     <div
       onClick={handleClick}
       className={`p-3 rounded-lg border-2 shadow-md flex flex-col justify-center cursor-pointer hover:shadow-lg transition-all text-center ${
-        getStatusBgColor(status)} ${getStatusBorderColor(status)} ${
+        isHub ? getHubBgColor() : getStatusBgColor(status)} ${
+        isHub ? getHubBorderColor() : getStatusBorderColor(status)} ${
         isHub ? 'hover:border-[#002B51]' : 'hover:border-black/15'
       }`}
       style={{ width, height: NODE_HEIGHT, boxSizing: 'border-box' }}
@@ -555,10 +584,28 @@ async function generateElkLayout(
 
   // Map entity names to their most recent transaction status
   const entityStatusMap: Record<string, string> = {};
+  
+  // Group transactions by entity and get the latest status
+  const transactionsByEntity: Record<string, Transaction[]> = {};
   allTransactions.forEach((tx) => {
     if (tx.entity && tx.entity !== 'CCP') {
-      entityStatusMap[tx.entity] = tx.status; // Latest status (transactions are ordered by step)
+      if (!transactionsByEntity[tx.entity]) {
+        transactionsByEntity[tx.entity] = [];
+      }
+      transactionsByEntity[tx.entity].push(tx);
     }
+  });
+  
+  // For each entity, find the most recent transaction status
+  Object.entries(transactionsByEntity).forEach(([entity, entityTransactions]) => {
+    // Sort by step descending to get the latest transaction
+    const sortedEntityTx = entityTransactions.sort((a, b) => b.step - a.step);
+    const latestTransaction = sortedEntityTx[0];
+    
+    // Use the actual transaction status directly
+    entityStatusMap[entity] = latestTransaction.status;
+    
+    console.log(`📊 Entity ${entity} status: ${entityStatusMap[entity]} (from transaction ${latestTransaction.id} step ${latestTransaction.step} with status ${latestTransaction.status})`);
   });
 
   const nodeLookup: Record<string, { x: number; y: number; width: number }> = {};
@@ -567,7 +614,7 @@ async function generateElkLayout(
     const x = (n.x ?? 0) - xCenter;
     const y = n.y ?? 0;
     const width = isHub ? hubWidth : NODE_WIDTH;
-    const status = isHub ? 'COMPLETED' : (entityStatusMap[n.id!] || 'PENDING');
+    const status = isHub ? 'CLEARED' : (entityStatusMap[n.id!] || 'ALLEGED');
 
     nodeLookup[n.id!] = { x, y, width };
 
@@ -614,9 +661,17 @@ async function generateElkLayout(
     // Find the corresponding transaction for this edge
     const correspondingTransaction = sortedTransactions[idx] || null;
     
-    // Check if this transaction has exceptions
+    // Check if this transaction has exceptions (only count PENDING exceptions for non-CLEARED transactions)
     const hasExceptions = correspondingTransaction 
-      ? getRelatedExceptions(correspondingTransaction.id).length > 0 
+      ? (() => {
+          // If transaction is CLEARED, don't show any exceptions
+          if (correspondingTransaction.status === 'CLEARED') {
+            return false;
+          }
+          // Otherwise, only count PENDING exceptions
+          const relatedExceptions = getRelatedExceptions(correspondingTransaction.id);
+          return relatedExceptions.filter(exc => exc.status === 'PENDING').length > 0;
+        })()
       : false;
 
     edges.push({
@@ -640,7 +695,11 @@ async function generateElkLayout(
     });
   });
 
-  console.log('📊 Layout generated - returning nodes and edges', { nodeCount: nodes.length, edgeCount: edges.length });
+  console.log('📊 Layout generated with updated entity statuses - returning nodes and edges', { 
+    nodeCount: nodes.length, 
+    edgeCount: edges.length,
+    entityStatuses: Object.entries(entityStatusMap).map(([entity, status]) => `${entity}:${status}`)
+  });
   return { nodes, edges };
   } catch (error) {
     console.error('💥 Error in generateElkLayout:', error);
@@ -681,6 +740,18 @@ export function FlowVisualization({
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(!transactions || transactions.length === 0 ? false : true);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<Node, Edge> | null>(null);
+
+  // ✅ Enhanced function to get related exceptions with transaction status check
+  const getFilteredRelatedExceptions = useCallback((transaction: Transaction): Exception[] => {
+    // If transaction is CLEARED, don't show any exceptions
+    if (transaction.status === 'CLEARED') {
+      return [];
+    }
+    
+    // Otherwise, only show PENDING exceptions
+    const relatedExceptions = getRelatedExceptions(transaction.id);
+    return relatedExceptions.filter(exc => exc.status === 'PENDING');
+  }, [getRelatedExceptions]);
 
   // Use mergedTransactions for all rendering (combines API + WebSocket data)
   const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
@@ -736,11 +807,11 @@ export function FlowVisualization({
       return;
     }
 
-    console.log('🚀 Calling generateElkLayout with:', { entityCount: entities.length, flowCount: validFlows.length });
+    console.log('🚀 Calling generateElkLayout with updated transactions:', { entityCount: entities.length, flowCount: validFlows.length, transactionCount: transactions.length });
     
     generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect, getRelatedExceptions)
       .then((result) => {
-        console.log('✅ ELK layout generated:', { nodeCount: result.nodes.length, edgeCount: result.edges.length });
+        console.log('✅ ELK layout regenerated with updated entity statuses:', { nodeCount: result.nodes.length, edgeCount: result.edges.length });
         setLayoutData(result);
         setIsLoading(false);
       })
@@ -854,7 +925,7 @@ export function FlowVisualization({
                             </div>
                         ) : (
                             sortedTransactions.map((transaction, index) => {
-                                const relatedExceptions = getRelatedExceptions(transaction.id);
+                                const relatedExceptions = getFilteredRelatedExceptions(transaction);
 
                                 return (
                                     <TimelineTransactionCard

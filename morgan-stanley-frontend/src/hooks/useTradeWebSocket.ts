@@ -42,83 +42,107 @@ export function useTradeWebSocket(
     });
   };
 
-  const onMessage = useCallback((event: MessageEvent) => {
-    try {
-      const data = JSON.parse(event.data);
-      console.log("🎯 RAW WebSocket message received (2):", data);
+const onMessage = useCallback((event: MessageEvent) => {
+  try {
+    const data = JSON.parse(event.data);
+    console.log("🎯 RAW WebSocket message received:", data);
 
-      // Check if the data is a transaction or exception based on properties
-      // Case 1 - Transaction
-      if (data.trans_id == undefined) {
-        const transactionData = data as Transaction;
-        setLastUpdate(transactionData);
+    // Case 1 - Transaction
+    if (data.trans_id == undefined) {
+      const transactionData = data as Transaction;
+      setLastUpdate(transactionData);
 
-        setMergedTransactions((prev) => {
-          const existingIndex = prev.findIndex(
-            (t) => t.id === transactionData.id,
+      setMergedTransactions((prevTransactions) => {
+        // ✅ Use functional update to get fresh state
+        const isExistingTransaction = prevTransactions.some(t => t.id === transactionData.id);
+        const existingIndex = prevTransactions.findIndex(t => t.id === transactionData.id);
+
+        let updatedTransactions;
+        if (existingIndex !== -1) {
+          // Replace existing transaction completely
+          updatedTransactions = [...prevTransactions];
+          updatedTransactions[existingIndex] = transactionData;
+          console.log("🔄 Replaced existing transaction:", transactionData.id);
+        } else {
+          // Add new transaction
+          updatedTransactions = [...prevTransactions, transactionData];
+          console.log("➕ Added new transaction:", transactionData.id);
+        }
+
+        // ✅ Show toast inside the state update to ensure it runs once
+        setTimeout(() => {
+          showToast(
+            transactionData.id, 
+            "Transaction Update", 
+            isExistingTransaction ? "Updated existing transaction" : "Added new transaction"
           );
+        }, 0);
 
-          if (existingIndex !== -1) {
-            // Update existing transaction
-            const updated = [...prev];
-            updated[existingIndex] = {
-              ...updated[existingIndex],
-              ...transactionData,
-            };
-            console.log("🔄 Updated existing transaction:", transactionData.id);
-            return updated.sort((a, b) => a.step - b.step);
-          } else {
-            // Add new transaction
-            console.log("➕ Added new transaction:", transactionData.id);
-            return [...prev, transactionData].sort((a, b) => a.step - b.step);
-          }
-        });
+        return updatedTransactions.sort((a, b) => a.step - b.step);
+      });
 
-        // Show toast AFTER state update
-        showToast(transactionData.id, "Transaction Update", 
-          mergedTransactions.some(t => t.id === transactionData.id) 
-            ? "Updated existing transaction" 
-            : "Added new transaction"
-        );
-      } else {
-        // Case 2 - Handle exception data
-        const exceptionData = data as Exception;
-        setLastExceptionUpdate(exceptionData);
-
-        setMergedExceptions((prev) => {
-          const existingIndex = prev.findIndex(
-            (e) => e.id === exceptionData.id,
-          );
-
-          if (existingIndex !== -1) {
-            // Update existing exception
-            const updated = [...prev];
-            updated[existingIndex] = {
-              ...updated[existingIndex],
-              ...exceptionData,
-            };
-            console.log("🔄 Updated existing exception:", exceptionData.id);
-            showToast(exceptionData.id, "Incoming exception update", `Transaction ID ${exceptionData.trans_id} - Updated existing exception`)
-            return updated;
-          } else {
-            // Add new exception
-            console.log("➕ Added new exception:", exceptionData.id);
-            showToast(exceptionData.id, "Incoming exception created", `Transaction ID ${exceptionData.trans_id} - Added new exception`) 
-            return [...prev, exceptionData];
-          }
-        });
-
-        // Show toast AFTER state update
-        showToast(exceptionData.id, "Exception Update",
-          mergedExceptions.some(e => e.id === exceptionData.id)
-            ? "Updated existing exception"
-            : "Added new exception"
+      // If transaction is CLEARED, update related exceptions
+      if (transactionData.status === 'CLEARED') {
+        setMergedExceptions((prevExceptions) => 
+          prevExceptions.map(exc => 
+            exc.trans_id === transactionData.id 
+              ? { ...exc, status: 'CLOSED' }
+              : exc
+          )
         );
       }
-    } catch (e) {
-      console.error("Invalid JSON received:", e);
+
+    } else {
+      // Case 2 - Exception
+      const exceptionData = data as Exception;
+      setLastExceptionUpdate(exceptionData);
+
+      setMergedExceptions((prevExceptions) => {
+        // ✅ Use fresh state from functional update
+        const isExistingException = prevExceptions.some(e => e.id === exceptionData.id);
+        const existingIndex = prevExceptions.findIndex(e => e.id === exceptionData.id);
+
+        // ✅ Validate exception against current transaction state
+        setMergedTransactions((currentTransactions) => {
+          const relatedTransaction = currentTransactions.find(t => t.id === exceptionData.trans_id);
+          if (!relatedTransaction) {
+            console.warn(`⚠️ Exception ${exceptionData.id} references non-existent transaction ${exceptionData.trans_id}`);
+            console.log("📊 Available transactions:", currentTransactions.map(t => t.id));
+          }
+          return currentTransactions; // No change to transactions
+        });
+
+        let updatedExceptions;
+        if (existingIndex !== -1) {
+          // Update existing exception
+          updatedExceptions = [...prevExceptions];
+          updatedExceptions[existingIndex] = {
+            ...updatedExceptions[existingIndex],
+            ...exceptionData,
+          };
+          console.log("🔄 Updated existing exception:", exceptionData.id);
+        } else {
+          // Add new exception  
+          updatedExceptions = [...prevExceptions, exceptionData];
+          console.log("➕ Added new exception:", exceptionData.id);
+        }
+
+        // ✅ Show toast inside state update
+        setTimeout(() => {
+          showToast(
+            exceptionData.id, 
+            isExistingException ? "Exception Updated" : "New Exception Created", 
+            `Transaction ${exceptionData.trans_id} - ${isExistingException ? "Updated exception" : "New exception"}`
+          );
+        }, 0);
+
+        return updatedExceptions;
+      });
     }
-  }, []);
+  } catch (e) {
+    console.error("Invalid JSON received:", e);
+  }
+}, []); // ✅ Remove dependencies to prevent stale closures
 
   useEffect(() => {
     if (!tradeId) {

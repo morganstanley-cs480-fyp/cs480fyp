@@ -2,12 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Lightbulb, Copy, Check, FileText, History } from "lucide-react";
+import { Loader2, Lightbulb, Copy, Check, FileText, History, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 export interface HistoricalCase {
   exception_id: string;
@@ -37,9 +36,23 @@ export function AIGeneratorPanel({
   onCopyToDescription,
   onCopyToClipboard,
   copiedToClipboard,
-  aiSolutionType,
-  onAiSolutionTypeChange,
+  // aiSolutionType,
+  // onAiSolutionTypeChange,
 }: AIGeneratorPanelProps) {
+  const [expandedCases, setExpandedCases] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (caseId: string) => {
+    setExpandedCases(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(caseId)) {
+        newSet.delete(caseId);
+      } else {
+        newSet.add(caseId);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <div className="space-y-2">
       {/* <div className="flex items-center gap-4">
@@ -143,44 +156,71 @@ export function AIGeneratorPanel({
                   </div>
                 </TabsContent>
                 
-                <TabsContent value="historical" className="mt-4">
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {historicalCases.length > 0 ? (
-                      historicalCases.map((case_item, index) => (
-                        <Card key={case_item.exception_id} className="border-black/10">
-                          <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                              <CardTitle className="text-sm font-medium">
-                                Exception {case_item.exception_id}
-                              </CardTitle>
-                              <div className="flex items-center gap-2">
-                                <Badge 
-                                  variant="secondary" 
-                                  className="text-xs bg-green-100 text-green-800"
-                                >
-                                  {case_item.similarity_score.toFixed(1)}% match
-                                </Badge>
-                              </div>
-                            </div>
-                            <p className="text-xs text-black/60">
-                              Trade ID: {case_item.trade_id}
-                            </p>
-                          </CardHeader>
-                          <CardContent className="pt-0">
-                            <div className="text-xs text-black/75">
-                              {case_item.exception_narrative.slice(0, 200)}...
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))
-                    ) : (
-                      <div className="text-center py-8 text-black/50">
-                        <History className="size-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">No historical cases available</p>
+      <TabsContent value="historical" className="mt-4">
+        <div className="space-y-3 max-h-64 overflow-y-auto">
+          {historicalCases.length > 0 ? (
+            historicalCases.map((case_item, index) => {
+              const isExpanded = expandedCases.has(case_item.exception_id);
+              const shouldTruncate = case_item.exception_narrative.length > 200;
+              
+              return (
+                <Card key={case_item.exception_id} className="border-black/10">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium">
+                        Exception {case_item.exception_id}
+                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant="secondary" 
+                          className="text-xs bg-green-100 text-green-800"
+                        >
+                          {case_item.similarity_score.toFixed(1)}% match
+                        </Badge>
                       </div>
+                    </div>
+                    <p className="text-xs text-black/60">
+                      Trade ID: {case_item.trade_id}
+                    </p>
+                  </CardHeader>
+
+                  <CardContent className="pt-0">
+                    <CardTitle className="pb-2 text-sm"> Exception Narrative</CardTitle>
+
+                    <div className="text-xs text-black/75">
+                      {isExpanded || !shouldTruncate 
+                        ? case_item.exception_narrative 
+                        : `${case_item.exception_narrative.slice(0, 200)}...`
+                      }
+                    </div>
+                    {shouldTruncate && (
+                      <button
+                        onClick={() => toggleExpanded(case_item.exception_id)}
+                        className="mt-2 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                      >
+                        {isExpanded ? (
+                          <>
+                            Show Less <ChevronUp className="size-3" />
+                          </>
+                        ) : (
+                          <>
+                            Show More <ChevronDown className="size-3" />
+                          </>
+                        )}
+                      </button>
                     )}
-                  </div>
-                </TabsContent>
+                  </CardContent>
+                </Card>
+              );
+            })
+          ) : (
+            <div className="text-center py-8 text-black/50">
+              <History className="size-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No historical cases available</p>
+            </div>
+          )}
+        </div>
+      </TabsContent>
               </Tabs>
             </CardContent>
           </Card>

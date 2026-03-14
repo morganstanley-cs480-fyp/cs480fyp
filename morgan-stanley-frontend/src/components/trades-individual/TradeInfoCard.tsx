@@ -9,6 +9,8 @@ import type { Trade, Transaction, Exception } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
 import { getPriorityColor } from "@/lib/tradeDetailUtils";
 import { useNavigate } from "@tanstack/react-router";
+import { getExceptionStatusClassName } from "@/lib/tradeDetailUtils";
+import { getPriorityBadgeClassName } from "@/lib/tradeDetailUtils";
 
 interface TradeInfoCardProps {
   trade: Trade;
@@ -32,16 +34,18 @@ export function TradeInfoCard({
   connectionStatus = "Disconnected",  
 }: TradeInfoCardProps) {
   const navigate = useNavigate();
-  const getExceptionStatusClassName = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "CLOSED":
-        return "bg-green-100 text-green-800 border-green-200";
-      default:
-        return "bg-black/[0.04] text-black/75 border-black/10";
+
+   const getLatestTransactionStatus = () => {
+    if (transactions.length === 0) {
+      return trade.status; // Fallback to trade status if no transactions
     }
+    
+    // Sort transactions by step (descending) to get the latest one
+    const sortedTransactions = [...transactions].sort((a, b) => b.step - a.step);
+    return sortedTransactions[0].status;
   };
+
+    const latestTransactionStatus = getLatestTransactionStatus();
 
   return (
     <>
@@ -104,8 +108,8 @@ export function TradeInfoCard({
               </div>
               <div>
                 <p className="text-sm text-black/75 mb-1">Status</p>
-                <Badge variant="secondary" className={getStatusBadgeClassName(trade.status)}>
-                  {trade.status}
+                <Badge variant="secondary" className={getStatusBadgeClassName(latestTransactionStatus)}>
+                  {latestTransactionStatus}
                 </Badge>
               </div>
             </div>
@@ -194,7 +198,7 @@ export function TradeInfoCard({
                         <Badge variant="secondary" className={getExceptionStatusClassName(exception.status)}>
                           {exception.status}
                         </Badge>
-                        <Badge variant={getPriorityColor(exception.priority)}>
+                        <Badge variant={getPriorityColor(exception.priority)} className={getPriorityBadgeClassName(exception.priority)}>
                           {exception.priority}
                         </Badge>
                       </div>
@@ -214,6 +218,7 @@ export function TradeInfoCard({
                         Comment {exception.comment || "-"}
                       </div>
                     </div>
+                    {exception.status !== "CLOSED" && (
                     <div className="mt-3 flex justify-end">
                       <Button
                         type="button"
@@ -230,6 +235,7 @@ export function TradeInfoCard({
                         View exception
                       </Button>
                     </div>
+                    )}
                   </div>
                 ))}
               </div>

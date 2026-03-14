@@ -51,9 +51,9 @@ interface ExceptionResultsTableProps {
   resultsCount: number;
   selectedExceptionId: number | null;
   statusFilter: "ALL" | "PENDING" | "CLOSED";
-  priorityFilter: "ALL" | "HIGH" | "MEDIUM" | "LOW";
+  priorityFilter: "ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
   onStatusFilterChange: (value: "ALL" | "PENDING" | "CLOSED") => void;
-  onPriorityFilterChange: (value: "ALL" | "HIGH" | "MEDIUM" | "LOW") => void;
+  onPriorityFilterChange: (value: "ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW") => void;
   onRowClick: (exception: Exception) => void;
   onRefresh?: () => void; // Add this prop
   filterOptions?: ExceptionFilterOptions
@@ -299,6 +299,7 @@ export function ExceptionResultsTable({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="ALL">All</SelectItem>
+                          <SelectItem value="CRITICAL">Critical</SelectItem>  
                           <SelectItem value="HIGH">High</SelectItem>
                           <SelectItem value="MEDIUM">Medium</SelectItem>
                           <SelectItem value="LOW">Low</SelectItem>

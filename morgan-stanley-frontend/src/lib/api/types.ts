@@ -39,7 +39,7 @@ export interface Exception {
   msg: string;
   create_time: string;
   comment: string | null;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   update_time: string;
 }
 
