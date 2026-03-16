@@ -145,6 +145,14 @@ function ResolveExceptionPage() {
     return 'secondary';
   };
 
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    navigate({ to: '/exceptions' });
+  };
+
   if (error && !exception) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
@@ -190,7 +198,7 @@ function ResolveExceptionPage() {
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={() => navigate({ to: '/exceptions' })}
+          onClick={handleBack}
           className="border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
         >
           Back

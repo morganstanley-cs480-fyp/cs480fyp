@@ -3,7 +3,7 @@ import { exceptionService } from '@/lib/api/exceptionService';
 
 export interface ExceptionSearchParams {
   statusFilter: 'ALL' | 'PENDING' | 'CLOSED';
-  priorityFilter: 'ALL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  priorityFilter: 'ALL' | 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
 }
 
 export function useExceptionSearch(searchParams: ExceptionSearchParams) {
