@@ -416,7 +416,7 @@ function ResolveExceptionPage() {
             <Button 
               onClick={() => {
                 setShowSuccessDialog(false);
-                navigate({ to: '/exceptions' });
+                window.location.href = '/exceptions';
               }}
               className="flex-1 bg-[#002B51] hover:bg-[#003a6b] text-white"
             >
