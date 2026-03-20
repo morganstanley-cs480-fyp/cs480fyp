@@ -36,6 +36,7 @@ db_password = "dbpassword"
 # MESSAGE QUEUES
 # ==========================================
 data_processing_queue_name = "data-processing-queue.fifo" # This is a fifo queue
+graph_ingestion_queue_name = "graph-ingestion-queue.fifo" # This is a fifo queue
 
 # ==========================================
 # ECS Cluster & General
@@ -100,3 +101,9 @@ trade_flow_family = "trade-flow-service-task"
 trade_flow_container_name = "trade-flow-service-container"
 trade_flow_container_image = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/trade-flow-service:latest"
 trade_flow_service_name = "trade-flow-service"
+
+graph_maker_log_group_name = "/ecs/graph-maker-service-logs"
+graph_maker_family = "graph-maker-service-task"
+graph_maker_container_name = "graph-maker-service-container"
+graph_maker_container_image = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/graph-maker-service:latest"
+graph_maker_service_name = "graph-maker-service"

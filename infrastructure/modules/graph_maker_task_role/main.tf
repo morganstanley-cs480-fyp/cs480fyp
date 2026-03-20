@@ -31,11 +31,28 @@ resource "aws_iam_policy" "processing_policy" {
           "sqs:DeleteMessage",       # Remove after processing (ACK)
           "sqs:GetQueueAttributes"   # Check queue status
         ]
-        Resource = [
-          var.data_processing_queue_arn,
-          var.graph_ingestion_queue_arn
-        ]
+        Resource = var.graph_ingestion_queue_arn
       },
+    ]
+  })
+}
+
+# The IAM Policy (Permissions for Neptune/Graph)
+resource "aws_iam_policy" "neptune_access" {
+  name        = "${var.service_name}-neptune-access"
+  description = "Allows the graph-maker service to connect to Neptune"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = "neptune-db:connect"
+        Effect   = "Allow"
+        Resource = [
+          "${var.neptune_cluster_arn}/*", # Access to instances
+          "${var.neptune_cluster_arn}"    # Access to cluster
+        ]
+      }
     ]
   })
 }
@@ -44,4 +61,10 @@ resource "aws_iam_policy" "processing_policy" {
 resource "aws_iam_role_policy_attachment" "attach" {
   role       = aws_iam_role.this.name
   policy_arn = aws_iam_policy.processing_policy.arn
+}
+
+# Attach this policy to the role we created earlier
+resource "aws_iam_role_policy_attachment" "attach_neptune" {
+  role       = aws_iam_role.this.name
+  policy_arn = aws_iam_policy.neptune_access.arn
 }

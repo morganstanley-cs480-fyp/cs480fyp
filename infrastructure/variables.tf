@@ -89,6 +89,11 @@ variable "data_processing_queue_name" {
   default = "data-processing-queue.fifo"
 }
 
+variable "graph_ingestion_queue_name" {
+  type = string
+  default = "graph_ingestion_queue.fifo"
+}
+
 variable "main_db_identifier" {
   type    = string
   default = "main-postgres-rds-instance"

@@ -66,6 +66,14 @@ module "data_processing_queue" {
   visibility_timeout_seconds = 240
 }
 
+# Graph Ingestion SQS (Data Processing Service To Graph Maker Service)
+module "graph_ingestion_queue" {
+  source                     = "./modules/sqs"
+  sqs_name                   = var.graph_ingestion_queue_name # Needs to end with .fifo
+  is_fifo                    = true
+  visibility_timeout_seconds = 240
+}
+
 # RDS-SG
 module "rds_security_group" {
   source                 = "./modules/rds_sg"
@@ -106,6 +114,13 @@ module "milvus_db" {
   public_key_path = "~/.ssh/milvus_ec2_key.pub" 
 }
 
+module "neptune_db" {
+  source             = "./modules/neptune"
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = module.networking.public_subnet_ids[0]
+  ecs_sg_id          = module.ecs_security_group.ecs_service_sg_id
+}
+
 # ECS-SG
 module "ecs_security_group" {
   source    = "./modules/ecs_sg"
@@ -131,6 +146,7 @@ module "data_processing_task_role" {
   source        = "./modules/data_processing_task_role"
   service_name  = var.data_processing_service_name
   data_processing_queue_arn = module.data_processing_queue.sqs_queue_arn
+  graph_ingestion_queue_arn = module.graph_ingestion_queue.sqs_queue_arn
 }
 
 # data_processing_cloudwatch
@@ -163,7 +179,8 @@ module "data_processing_service" {
     { name = "DB_PASSWORD", value = var.db_password },
     { name = "DB_NAME", value = module.main_rds.db_name },
     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
-    { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
+    { name = "GRAPH_INGESTION_QUEUE_URL", value = module.graph_ingestion_queue.sqs_queue_url },
+    { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
   ]
   secrets =[]
 }
@@ -575,4 +592,45 @@ module "trade_flow_service" {
     { name = "DB_NAME", value = module.main_rds.db_name },
   ]
   secrets = []
+}
+
+# GRAPH MAKER SERVICE
+# graph_maker_task_role
+module "graph_maker_task_role" {
+  source        = "./modules/graph_maker_task_role"
+  service_name  = var.graph_maker_service_name
+  graph_ingestion_queue_arn = module.graph_ingestion_queue.sqs_queue_arn
+  neptune_cluster_arn = module.neptune_db.neptune_cluster_arn
+  neptune_endpoint    = module.neptune_db.neptune_endpoint
+}
+
+# graph_maker_cloudwatch
+module "graph_maker_log_group" {
+  source            = "./modules/cloudwatch"
+  log_group_name    = var.graph_maker_log_group_name
+  retention_in_days = 14
+}
+
+# graph_maker_ecs
+module "graph_maker_service" {
+  source                  = "./modules/ecs"
+  family                  = var.graph_maker_family
+  container_name          = var.graph_maker_container_name
+  container_image         = var.graph_maker_container_image
+  container_port          = 0
+  log_group               = module.graph_maker_log_group.log_group_name
+  region                  = var.region
+  execution_role_arn      = module.ecs_execution_role.role_arn
+  task_role_arn           = module.graph_maker_task_role.role_arn
+  service_name            = var.graph_maker_service_name
+  cluster_id              = module.ecs_cluster.cluster_id
+  desired_count           = 1
+  subnets                 = module.networking.public_subnet_ids
+  security_groups         = [module.ecs_security_group.ecs_service_sg_id]
+  assign_public_ip        = true
+  environments = [
+    { name = "GRAPH_INGESTION_QUEUE_URL", value = module.graph_ingestion_queue.sqs_queue_url },
+    { name = "NEPTUNE_ENDPOINT", value = module.neptune_db.neptune_endpoint }
+  ]
+  secrets =[]
 }
