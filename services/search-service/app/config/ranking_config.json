@@ -6,7 +6,6 @@
   "ranking_enabled": true,
   
   "weights": {
-    "description": "Weights control how much each factor contributes to the final relevance score. Total should equal 1.0. Exception handling is managed via dedicated Exceptions page.",
     "status_urgency": 0.45,
     "recency": 0.30,
     "transaction_volume": 0.15,

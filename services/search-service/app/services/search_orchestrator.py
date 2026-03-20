@@ -71,20 +71,41 @@ class SearchOrchestrator:
 
         # Save to query history early (before execution) so failed searches are tracked
         try:
-            query_text = (
-                request.query_text
-                if request.search_type == "natural_language"
-                else request.filters.model_dump_json()
-            )
-            query_id = await self.history.save_query(
-                user_id=request.user_id,
-                query_text=query_text,
-                search_type=request.search_type,
-            )
-            logger.info(
-                "Query saved to history",
-                extra={"user_id": request.user_id, "query_id": query_id},
-            )
+            should_save = True
+            if request.search_type == "manual" and request.filters:
+                # Check if filters are effectively empty (default state)
+                f = request.filters
+                is_empty = (
+                    f.trade_id is None
+                    and not f.account
+                    and not f.asset_type
+                    and not f.booking_system
+                    and not f.affirmation_system
+                    and not f.clearing_house
+                    and not f.status
+                    and not f.date_from
+                    and not f.date_to
+                    and not f.with_exceptions_only
+                    and not f.cleared_trades_only
+                )
+                if is_empty:
+                    should_save = False
+
+            if should_save:
+                query_text = (
+                    request.query_text
+                    if request.search_type == "natural_language"
+                    else request.filters.model_dump_json()
+                )
+                query_id = await self.history.save_query(
+                    user_id=request.user_id,
+                    query_text=query_text,
+                    search_type=request.search_type,
+                )
+                logger.debug(
+                    "Search history save completed",
+                    extra={"user_id": request.user_id, "query_id": query_id},
+                )
         except Exception as e:
             # Log but don't fail search if history save fails
             logger.warning(

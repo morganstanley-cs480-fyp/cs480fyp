@@ -73,9 +73,45 @@ class RankingConfig:
 
     def _validate(self) -> None:
         """Validate configuration values."""
+        # Validate and normalize required sections
+        weights = self._coerce_numeric_map(self.config.get("weights", {}))
+        status_priority = self._coerce_numeric_map(
+            self.config.get("status_priority", {})
+        )
+        asset_type_priority = self._coerce_numeric_map(
+            self.config.get("asset_type_priority", {})
+        )
+
+        required_weights = {
+            "status_urgency",
+            "recency",
+            "transaction_volume",
+            "asset_type_risk",
+        }
+        missing_weight_keys = required_weights - set(weights.keys())
+        if missing_weight_keys:
+            raise ValueError(
+                "Missing required ranking weights: "
+                + ", ".join(sorted(missing_weight_keys))
+            )
+
+        if not status_priority:
+            raise ValueError("status_priority must contain numeric values")
+        if not asset_type_priority:
+            raise ValueError("asset_type_priority must contain numeric values")
+
+        self.config["weights"] = weights
+        self.config["status_priority"] = status_priority
+        self.config["asset_type_priority"] = asset_type_priority
+
         # Validate weights sum to ~1.0
-        weights = self.config.get("weights", {})
-        weight_sum = sum(weights.values())
+        try:
+            params_values = list(weights.values())
+            weight_sum = sum(float(x) for x in params_values)
+        except (TypeError, ValueError) as e:
+            logger.error(f"Weight summation failed. Weights: {weights} - Error: {e}")
+            raise ValueError(f"Invalid weight values: {e}")
+
         if not 0.99 <= weight_sum <= 1.01:
             logger.warning(
                 f"Ranking weights sum to {weight_sum:.2f}, should be 1.0. Using as-is."
@@ -86,6 +122,19 @@ class RankingConfig:
         for section in required_sections:
             if section not in self.config:
                 raise ValueError(f"Missing required config section: {section}")
+
+    @staticmethod
+    def _coerce_numeric_map(values: Dict[str, Any]) -> Dict[str, float]:
+        """Return only numeric key/value pairs as floats."""
+        if not isinstance(values, dict):
+            return {}
+
+        numeric_map: Dict[str, float] = {}
+        for key, value in values.items():
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                numeric_map[key] = float(value)
+
+        return numeric_map
 
     def _load_defaults(self) -> None:
         """Load safe default configuration."""

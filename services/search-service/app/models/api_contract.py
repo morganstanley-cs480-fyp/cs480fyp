@@ -5,7 +5,7 @@ This file defines the exact request/response format between frontend and backend
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # ============================================================================
 # REQUEST MODELS (Frontend → Backend)
@@ -67,8 +67,8 @@ class SearchRequest(BaseModel):
         None, description="Manual search filters (required if search_type='manual')"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "user_id": "user123",
@@ -88,6 +88,7 @@ class SearchRequest(BaseModel):
                 },
             ]
         }
+    )
 
 
 class UpdateHistoryRequest(BaseModel):
@@ -101,10 +102,11 @@ class UpdateHistoryRequest(BaseModel):
         None, description="Name for saved query (required if is_saved=True)"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {"is_saved": True, "query_name": "My weekly FX review"}
         }
+    )
 
 
 # ============================================================================
@@ -128,8 +130,8 @@ class Trade(BaseModel):
     update_time: str  # ISO 8601 format: "2025-01-15 10:00:00"
     status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED"]
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "trade_id": "10001234",
                 "account": "ACC12345",
@@ -142,6 +144,7 @@ class Trade(BaseModel):
                 "status": "CLEARED",
             }
         }
+    )
 
 
 class SearchResponse(BaseModel):
@@ -159,8 +162,8 @@ class SearchResponse(BaseModel):
         None, description="Query execution time in milliseconds"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query_id": 42,
                 "total_results": 2,
@@ -182,6 +185,7 @@ class SearchResponse(BaseModel):
                 "execution_time_ms": 234.5,
             }
         }
+    )
 
 
 class QueryHistory(BaseModel):
@@ -198,8 +202,8 @@ class QueryHistory(BaseModel):
     create_time: str  # ISO 8601 format
     last_use_time: str  # ISO 8601 format
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query_id": 42,
                 "user_id": "user123",
@@ -210,6 +214,7 @@ class QueryHistory(BaseModel):
                 "last_use_time": "2025-01-20 09:00:00",
             }
         }
+    )
 
 
 class HistoryListResponse(BaseModel):
@@ -224,8 +229,8 @@ class HistoryListResponse(BaseModel):
     recent_count: int
     queries: list[QueryHistory]
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "user_id": "user123",
                 "total_count": 10,
@@ -234,6 +239,7 @@ class HistoryListResponse(BaseModel):
                 "queries": [],
             }
         }
+    )
 
 
 class HealthResponse(BaseModel):
@@ -246,8 +252,8 @@ class HealthResponse(BaseModel):
     cache: str
     timestamp: str
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "status": "healthy",
                 "service": "search-service",
@@ -257,6 +263,7 @@ class HealthResponse(BaseModel):
                 "timestamp": "2025-01-20T10:00:00Z",
             }
         }
+    )
 
 
 class ErrorResponse(BaseModel):
@@ -267,8 +274,8 @@ class ErrorResponse(BaseModel):
     details: Optional[dict] = Field(None, description="Additional error details")
     timestamp: str = Field(..., description="Error timestamp")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "error": "ValidationError",
                 "message": "Invalid search request: query_text is required for natural_language search",
@@ -276,6 +283,7 @@ class ErrorResponse(BaseModel):
                 "timestamp": "2025-01-20T10:00:00Z",
             }
         }
+    )
 
 
 # ============================================================================

@@ -6,7 +6,7 @@ These models map to database tables and represent the core data structures.
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Trade(BaseModel):
@@ -37,8 +37,8 @@ class Trade(BaseModel):
         ..., description="Trade status"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "trade_id": 10001234,
                 "account": "ACC12345",
@@ -51,6 +51,7 @@ class Trade(BaseModel):
                 "status": "CLEARED",
             }
         }
+    )
 
     @classmethod
     def from_db_record(cls, record) -> "Trade":
@@ -98,8 +99,8 @@ class QueryHistory(BaseModel):
     create_time: str = Field(..., description="Query creation timestamp")
     last_use_time: str = Field(..., description="Last time query was executed")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query_id": 42,
                 "user_id": "user123",
@@ -110,6 +111,7 @@ class QueryHistory(BaseModel):
                 "last_use_time": "2025-01-20 09:00:00",
             }
         }
+    )
 
     @classmethod
     def from_db_record(cls, record) -> "QueryHistory":
@@ -156,8 +158,8 @@ class ExtractedParams(BaseModel):
     with_exceptions_only: bool = False
     cleared_trades_only: bool = False
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "trade_id": None,
                 "accounts": ["ACC123", "ACC456"],
@@ -172,3 +174,4 @@ class ExtractedParams(BaseModel):
                 "cleared_trades_only": False,
             }
         }
+    )

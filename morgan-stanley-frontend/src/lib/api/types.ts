@@ -163,6 +163,46 @@ export interface SearchResponse {
   extracted_params?: ExtractedParams | null;
 }
 
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatRequest {
+  user_id: string;
+  message: string;
+  conversation?: ChatMessage[];
+}
+
+export interface ChatResponse {
+  mode: 'table' | 'analysis' | 'both';
+  query_id: number;
+  total_results: number;
+  results?: Trade[] | null;
+  ai_answer?: string | null;
+  evidence?: {
+    dimensions: string[];
+    rows: Record<string, unknown>[];
+    chart: {
+      title: string;
+      x_key: string;
+      y_key: string;
+      labels: string[];
+      series: Array<{
+        name: string;
+        data: number[];
+      }>;
+    };
+    metadata: {
+      top_k: number;
+      priority_filter: string[] | null;
+      row_count: number;
+    };
+  } | null;
+  follow_up_prompts: string[];
+  execution_time_ms?: number | null;
+}
+
 export interface HistoryListResponse {
   user_id: string;
   total_count: number;

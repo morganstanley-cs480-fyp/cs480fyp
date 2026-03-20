@@ -61,8 +61,7 @@ export const tradeFlowService = {
     return mapTrade(raw);
   },
 
-    // NOTE : TEMPORARILY NOT USE LIMIT AND OFFSET FOR NOW.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // NOTE : TEMPORARILY NOT USE LIMIT AND OFFSET FOR NOW.
   // async getTrades(_limit: number = 1000, _offset: number = 0): Promise<Trade[]> {
   //   const response = await request<TradeTableResponse>(`/api/trades`);
   //   return response.data.map(mapTrade);

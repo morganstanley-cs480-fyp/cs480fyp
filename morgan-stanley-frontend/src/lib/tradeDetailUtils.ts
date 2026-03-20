@@ -83,8 +83,7 @@ export function getPriorityIcon(priority: string): React.ReactElement {
   return React.createElement(Clock, { className: "size-4 text-yellow-600" });
 }
 
-export function getTransactionBackgroundColor(transaction: Transaction, exceptions: Exception[]) {
-  // const hasException = exceptions.some((exc) => exc.trans_id === transaction.id);
+export function getTransactionBackgroundColor(transaction: Transaction, _exceptions: Exception[]) {
 
   switch (transaction.status?.toUpperCase()) {
     case 'CLEARED':

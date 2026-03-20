@@ -74,16 +74,17 @@ export function useExceptionResolver(exceptionId: string) {
       setAiSuggestions(suggestions);
       
       console.log('✅ Found', suggestions.length, 'similar exceptions');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Failed to fetch similar exceptions:', error);
-      
+
+      const errorMessageText = error instanceof Error ? error.message : '';
       let errorMessage = 'Failed to load similar exceptions. Please try again.';
-      if (error?.message?.includes('validation error')) {
+      if (errorMessageText.includes('validation error')) {
         errorMessage = 'API validation error. The similar exceptions service may be experiencing issues.';
-      } else if (error?.message?.includes('trade_id')) {
+      } else if (errorMessageText.includes('trade_id')) {
         errorMessage = 'Data format error in similar exceptions response. Please contact support.';
       }
-      
+
       setError(errorMessage);
       setAiSuggestions([]);
     } finally {
@@ -129,6 +130,8 @@ export function useExceptionResolver(exceptionId: string) {
     return () => {
       isActive = false;
     };
+    // handleAISearch intentionally omitted to avoid retriggering the full load flow on callback identity changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exceptionId]); // ✅ Keep only exceptionId in dependencies
 
   const handleGenerateAISolution = useCallback(async () => {

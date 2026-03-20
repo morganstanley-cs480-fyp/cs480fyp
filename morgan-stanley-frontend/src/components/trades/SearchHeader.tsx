@@ -1,9 +1,11 @@
 // The gradient search header with natural language search input
 
-import { Search, Filter, Sparkles, Star, X as XIcon, Eraser, AlertCircle } from "lucide-react";
+import { Search, Filter, Sparkles, Star, X as XIcon, Eraser, AlertCircle, Bot } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import type { QueryHistory } from "@/lib/api/types";
 
 export interface RecentSearch {
@@ -26,6 +28,31 @@ export interface TypeaheadSuggestion {
 interface SearchHeaderProps {
   searchQuery: string;
   searching: boolean;
+  chatLoading: boolean;
+  chatMode?: "table" | "analysis" | "both" | null;
+  chatAnswer?: string | null;
+  chatEvidence?: {
+    dimensions: string[];
+    rows: Record<string, unknown>[];
+    chart: {
+      title: string;
+      x_key: string;
+      y_key: string;
+      labels: string[];
+      series: Array<{
+        name: string;
+        data: number[];
+      }>;
+    };
+    metadata: {
+      top_k: number;
+      priority_filter: string[] | null;
+      row_count: number;
+    };
+  } | null;
+  chatThread?: Array<{ role: "user" | "assistant"; content: string }>;
+  followUpPrompts?: string[];
+  chatError?: string | null;
   showFilters: boolean;
   recentSearches: RecentSearch[];
   savedQueries: QueryHistory[];
@@ -33,34 +60,46 @@ interface SearchHeaderProps {
   suggestions: TypeaheadSuggestion[];
   onSearchQueryChange: (query: string) => void;
   onSearch: () => void;
+  onAskAI: () => void;
   onToggleFilters: () => void;
   onRecentSearchClick: (query: string) => void;
   onDeleteSearch: (id: string) => void;
   onSaveCurrentQuery: () => void;
   onClearSearch: () => void;
   onSuggestionClick: (query: string) => void;
+  onFollowUpPromptClick: (query: string) => void;
   onDeleteSavedQuery: (queryId: number) => void;
 }
 
 export function SearchHeader({
   searchQuery,
   searching,
+  chatLoading,
+  chatMode,
+  chatAnswer,
+  chatEvidence,
+  chatThread,
+  followUpPrompts,
+  chatError,
   recentSearches,
   savedQueries,
   canSaveQuery,
   suggestions,
   onSearchQueryChange,
   onSearch,
+  onAskAI,
   onToggleFilters,
   onRecentSearchClick,
   onDeleteSearch,
   onSaveCurrentQuery,
   onClearSearch,
   onSuggestionClick,
+  onFollowUpPromptClick,
   onDeleteSavedQuery,
 }: SearchHeaderProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [evidenceSortDirection, setEvidenceSortDirection] = useState<"desc" | "asc">("desc");
 
   const isQueryValid = searchQuery.trim().length >= 3;
 
@@ -71,6 +110,15 @@ export function SearchHeader({
     }
     setValidationError(null);
     onSearch();
+  };
+
+  const handleAskAI = () => {
+    if (!isQueryValid) {
+      setValidationError("Search failed: Value error, query_text must be at least 3 characters");
+      return;
+    }
+    setValidationError(null);
+    onAskAI();
   };
 
   const handleSearchClick = (query: string) => {
@@ -106,6 +154,31 @@ export function SearchHeader({
     setValidationError(null);
     onClearSearch();
   };
+
+  const chartData = chatEvidence?.chart?.labels?.map((label, index) => ({
+    label,
+    exception_count: chatEvidence.chart.series[0]?.data[index] ?? 0,
+  })) ?? [];
+
+  const evidenceRows = (() => {
+    if (!chatEvidence?.rows?.length) return [];
+
+    const rows = chatEvidence.rows.map((row) => ({
+      label:
+        `${String(row.dimension_1 ?? "UNKNOWN")}${row.dimension_2 ? ` · ${String(row.dimension_2)}` : ""}`,
+      priority: String(row.priority ?? "N/A"),
+      exception_count: Number(row.exception_count ?? 0),
+      affected_trades: Number(row.affected_trades ?? 0),
+    }));
+
+    rows.sort((a, b) =>
+      evidenceSortDirection === "desc"
+        ? b.exception_count - a.exception_count
+        : a.exception_count - b.exception_count
+    );
+
+    return rows;
+  })();
 
   return (
     <div
@@ -154,7 +227,7 @@ export function SearchHeader({
                 <button
                   key={`${s.query_id}-${i}`}
                   type="button"
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-black hover:bg-black/[0.04] transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-black hover:bg-black/4 transition-colors"
                   onMouseDown={(e) => {
                     e.preventDefault(); // prevent blur before click registers
                     setShowSuggestions(false);
@@ -205,6 +278,19 @@ export function SearchHeader({
           {searching ? "Searching..." : "Search"}
         </Button>
         <Button
+          onClick={handleAskAI}
+          disabled={chatLoading || !isQueryValid}
+          className={`h-12 px-7 font-semibold text-sm shadow-sm border-0 ${
+            !isQueryValid
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-[#002B51] text-white hover:bg-[#003a6b]'
+          }`}
+          title={!isQueryValid ? "Please enter at least 3 characters" : "Ask AI"}
+        >
+          <Bot className="size-4 mr-2" />
+          {chatLoading ? "Thinking..." : "Ask AI"}
+        </Button>
+        <Button
           onClick={onToggleFilters}
           className="bg-white/10 text-white hover:bg-white/18 border border-white/18 h-12 px-5 text-sm font-medium"
         >
@@ -224,6 +310,146 @@ export function SearchHeader({
         </div>
       )}
 
+      {chatError && (
+        <div className="mt-3 flex items-center gap-2 px-4 py-2.5 bg-white border border-[#002B51]/30 rounded-lg">
+          <AlertCircle className="size-4 text-[#002B51] shrink-0" />
+          <div className="text-sm">
+            <p className="font-medium text-[#002B51]">AI Chat Error</p>
+            <p className="text-black">{chatError}</p>
+          </div>
+        </div>
+      )}
+
+      {chatAnswer && (
+        <div className="mt-4 bg-white border border-black/15 rounded-lg p-4 text-black">
+          <div className="flex items-center gap-2 mb-2">
+            <Bot className="size-4 text-[#002B51]" />
+            <span className="text-xs uppercase tracking-wider text-black font-medium">
+              AI Response {chatMode ? `(${chatMode})` : ""}
+            </span>
+          </div>
+          <p className="text-sm text-black whitespace-pre-wrap">{chatAnswer}</p>
+          {chatMode && (chatMode === "table" || chatMode === "both") && (
+            <p className="mt-2 text-xs text-black">
+              Table results have been applied to the main results table below.
+            </p>
+          )}
+
+          {chatThread && chatThread.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-black/15 space-y-2 max-h-52 overflow-y-auto pr-1">
+              {chatThread.slice(-6).map((msg, index) => (
+                <div
+                  key={`${msg.role}-${index}`}
+                  className={`rounded-md px-3 py-2 text-xs ${
+                    msg.role === "user" ? "bg-[#002B51]/10" : "bg-black/5"
+                  }`}
+                >
+                  <span className="uppercase tracking-wider text-[10px] text-black mr-2">
+                    {msg.role}
+                  </span>
+                  <span className="text-black">{msg.content}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {chatEvidence && chartData.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-black/15">
+              <p className="text-xs uppercase tracking-wider text-black font-medium mb-2">
+                {chatEvidence.chart.title}
+              </p>
+              <ChartContainer
+                className="h-52 w-full"
+                config={{
+                  exception_count: {
+                    label: "Exception Count",
+                    color: "#002B51",
+                  },
+                }}
+              >
+                <BarChart accessibilityLayer data={chartData.slice(0, 8)} margin={{ left: 8, right: 8 }}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="label"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={6}
+                    tickFormatter={(value) => String(value).slice(0, 12)}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                  <Bar dataKey="exception_count" fill="var(--color-exception_count)" radius={4} />
+                </BarChart>
+              </ChartContainer>
+
+              {chatEvidence.rows.length > 0 && (
+                <div className="mt-3 text-xs text-black">
+                  Showing top {Math.min(5, chatEvidence.rows.length)} of {chatEvidence.metadata.row_count} evidence rows.
+                </div>
+              )}
+
+              {evidenceRows.length > 0 && (
+                <div className="mt-3 bg-white rounded-lg border border-black/15 overflow-hidden">
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-black/10">
+                    <p className="text-xs uppercase tracking-wider text-black">Evidence Grid</p>
+                    <button
+                      type="button"
+                      className="text-xs text-black hover:text-[#002B51] underline underline-offset-2"
+                      onClick={() =>
+                        setEvidenceSortDirection((prev) => (prev === "desc" ? "asc" : "desc"))
+                      }
+                    >
+                      Sort: {evidenceSortDirection === "desc" ? "high → low" : "low → high"}
+                    </button>
+                  </div>
+                  <div className="max-h-44 overflow-y-auto">
+                    <table className="w-full text-xs">
+                      <thead className="text-black">
+                        <tr>
+                          <th className="text-left px-3 py-2 font-medium">Dimension</th>
+                          <th className="text-left px-3 py-2 font-medium">Priority</th>
+                          <th className="text-right px-3 py-2 font-medium">Exceptions</th>
+                          <th className="text-right px-3 py-2 font-medium">Trades</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {evidenceRows.slice(0, 10).map((row, idx) => (
+                          <tr key={`${row.label}-${row.priority}-${idx}`} className="border-t border-black/10">
+                            <td className="px-3 py-2 text-black truncate max-w-55">{row.label}</td>
+                            <td className="px-3 py-2 text-black">{row.priority}</td>
+                            <td className="px-3 py-2 text-right text-black">{row.exception_count}</td>
+                            <td className="px-3 py-2 text-right text-black">{row.affected_trades}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {followUpPrompts && followUpPrompts.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-black/15">
+              <p className="text-xs uppercase tracking-wider text-black font-medium mb-2">
+                Follow-up prompts
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {followUpPrompts.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    className="px-3 py-1.5 rounded-full bg-white hover:bg-[#002B51]/10 border border-black/20 text-xs text-black transition-colors"
+                    onClick={() => onFollowUpPromptClick(prompt)}
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Recent and Saved chips strip */}
       {(recentSearches.length > 0 || savedQueries.length > 0) && (
         <div className="flex flex-col gap-3 mt-5">
@@ -234,7 +460,7 @@ export function SearchHeader({
               {recentSearches.slice(0, 4).map((s) => (
                 <div
                   key={s.id}
-                  className="group relative inline-flex items-center gap-1.5 px-3 py-1 bg-white/8 border border-white/14 rounded-full text-xs text-white hover:bg-white/14 transition-colors max-w-[200px]"
+                  className="group relative inline-flex items-center gap-1.5 px-3 py-1 bg-white/8 border border-white/14 rounded-full text-xs text-white hover:bg-white/14 transition-colors max-w-50"
                 >
                   <button
                     onClick={() => handleSearchClick(s.query)}
@@ -267,7 +493,7 @@ export function SearchHeader({
               {savedQueries.slice(0, 4).map((q) => (
                 <div
                   key={q.query_id}
-                  className="group relative inline-flex items-center gap-1.5 px-3 py-1 bg-white/8 border border-white/14 rounded-full text-xs text-white hover:bg-white/14 transition-colors max-w-[200px]"
+                  className="group relative inline-flex items-center gap-1.5 px-3 py-1 bg-white/8 border border-white/14 rounded-full text-xs text-white hover:bg-white/14 transition-colors max-w-50"
                 >
                   <button
                     onClick={() => handleSavedQueryClick(q.query_text)}
