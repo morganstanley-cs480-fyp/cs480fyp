@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     CACHE_TTL_SEARCH_RESULTS: int = 300  # 5 minutes
     CACHE_TTL_QUERY_HISTORY: int = 900  # 15 minutes
 
+    # Chat Configuration
+    CHAT_MAX_TOOL_ITERATIONS: int = 4
+
     # Application Settings
     MAX_SEARCH_RESULTS: int = 1000
     LOG_LEVEL: str = "INFO"

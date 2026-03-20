@@ -3,7 +3,7 @@ Health Check Routes
 Provides health and readiness endpoints for ECS monitoring and load balancers.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -44,7 +44,7 @@ async def health_check():
     """
     health_status = {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": settings.SERVICE_NAME,
         "version": settings.VERSION,
         "checks": {},
@@ -134,7 +134,7 @@ async def readiness_check():
     """
     readiness_status = {
         "ready": True,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": settings.SERVICE_NAME,
         "checks": {},
     }
@@ -200,7 +200,7 @@ async def liveness_check():
     """
     return {
         "alive": True,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": settings.SERVICE_NAME,
         "version": settings.VERSION,
     }

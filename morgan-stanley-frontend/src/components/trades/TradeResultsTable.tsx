@@ -50,7 +50,7 @@ interface TradeResultsTableProps {
 export function TradeResultsTable({
   table,
   resultsCount,
-  columnFiltersCount,
+  columnFiltersCount: _columnFiltersCount,
   filterOptions,
   onRefresh,
   isLoading = false

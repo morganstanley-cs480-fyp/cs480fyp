@@ -1,4 +1,3 @@
-import { apiClient } from './client';
 import type { Exception } from './types';
 
 export interface SimilarException {

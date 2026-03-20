@@ -5,7 +5,7 @@ These define the structure of incoming requests from the frontend.
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class ManualSearchFilters(BaseModel):
@@ -64,8 +64,8 @@ class ManualSearchFilters(BaseModel):
 
         return v
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "asset_type": "FX",
                 "status": ["ALLEGED", "CLEARED"],
@@ -76,6 +76,7 @@ class ManualSearchFilters(BaseModel):
                 "with_exceptions_only": False,
             }
         }
+    )
 
 
 class SearchRequest(BaseModel):
@@ -118,8 +119,8 @@ class SearchRequest(BaseModel):
 
         return self
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "user_id": "user123",
@@ -139,6 +140,7 @@ class SearchRequest(BaseModel):
                 },
             ]
         }
+    )
 
 
 class UpdateHistoryRequest(BaseModel):
@@ -167,13 +169,14 @@ class UpdateHistoryRequest(BaseModel):
 
         return self
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {"is_saved": True, "query_name": "My weekly FX review"},
                 {"is_saved": False, "query_name": None},
             ]
         }
+    )
 
 
 class HistoryQueryParams(BaseModel):
@@ -188,7 +191,8 @@ class HistoryQueryParams(BaseModel):
     )
     saved_only: bool = Field(False, description="Return only saved/bookmarked queries")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {"user_id": "user123", "limit": 20, "saved_only": True}
         }
+    )

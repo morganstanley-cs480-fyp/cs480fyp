@@ -55,8 +55,8 @@ async def test_database_connection():
 
         # Check if tables exist
         tables_query = """
-            SELECT table_name 
-            FROM information_schema.tables 
+            SELECT table_name
+            FROM information_schema.tables
             WHERE table_schema = 'public'
         """
         tables = await db_manager.fetch(tables_query)

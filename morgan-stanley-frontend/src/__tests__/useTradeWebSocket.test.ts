@@ -26,10 +26,10 @@ class MockWebSocket {
   CLOSED = MockWebSocket.CLOSED
 
   // Support for event handlers
-  onopen: ((event: any) => void) | null = null
-  onmessage: ((event: any) => void) | null = null
-  onclose: ((event: any) => void) | null = null
-  onerror: ((event: any) => void) | null = null
+  onopen: ((event: Event) => void) | null = null
+  onmessage: ((event: MessageEvent<string>) => void) | null = null
+  onclose: ((event: CloseEvent) => void) | null = null
+  onerror: ((event: Event) => void) | null = null
 
   constructor(url: string) {
     // Simple constructor that doesn't trigger any events

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "react-oidc-context";
 // ✅ TANSTACK QUERY - Added imports
 import { useQueryClient } from "@tanstack/react-query";
@@ -20,7 +20,7 @@ import type {
 
 import type { TypeaheadSuggestion } from "@/lib/api/types";
 // ✅ TANSTACK QUERY - Added SearchRequest type import for query params
-import type { QueryHistory, SearchRequest } from "@/lib/api/types";
+import type { ChatMessage, QueryHistory, SearchRequest, Trade } from "@/lib/api/types";
 
 import {
   SearchHeader,
@@ -34,6 +34,7 @@ import { TradeStatsCards } from "@/components/trades/TradeStatsCards";
 import { TradeResultsTable } from "@/components/trades/TradeResultsTable";
 import { useTradeColumns } from "@/components/trades/useTradeColumns";
 import { searchService } from "@/lib/api/searchService";
+import { chatService } from "@/lib/api/chatService";
 import { APIError } from "@/lib/api/client";
 import { requireAuth } from "@/lib/utils";
 import { useTradeSearch } from "@/hooks/useTradeSearch";
@@ -92,6 +93,29 @@ function TradeSearchPage() {
   });
   const [currentQueryId, setCurrentQueryId] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatAnswer, setChatAnswer] = useState<string | null>(null);
+  const [chatMode, setChatMode] = useState<"table" | "analysis" | "both" | null>(null);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [chatTableResults, setChatTableResults] = useState<Trade[] | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [followUpPrompts, setFollowUpPrompts] = useState<string[]>([]);
+  const [chatEvidence, setChatEvidence] = useState<{
+    dimensions: string[];
+    rows: Record<string, unknown>[];
+    chart: {
+      title: string;
+      x_key: string;
+      y_key: string;
+      labels: string[];
+      series: Array<{ name: string; data: number[] }>;
+    };
+    metadata: {
+      top_k: number;
+      priority_filter: string[] | null;
+      row_count: number;
+    };
+  } | null>(null);
   // ❌ TANSTACK QUERY - Removed manual loading/error states (replaced by query)
   // const [searching, setSearching] = useState(false);
   // const [searchError, setSearchError] = useState<string | null>(null);
@@ -169,7 +193,10 @@ function TradeSearchPage() {
   } = useTradeSearch(submittedParams);
 
   // ✅ TANSTACK QUERY - Extract results from query response
-  const results = searchResponse?.results ?? [];
+  const results = useMemo(
+    () => chatTableResults ?? searchResponse?.results ?? [],
+    [chatTableResults, searchResponse?.results]
+  );
 
   // ✅ TANSTACK QUERY - Log results when they change (works the same as before)
   useEffect(() => {
@@ -259,13 +286,13 @@ function TradeSearchPage() {
     }
   };
 
-  // Fetch history, saved queries, and filter options on mount.
+  // Fetch history, saved queries, and filter options on mount (and when userId changes).
   useEffect(() => {
     fetchSearchHistory();
     fetchSavedQueries();
     fetchFilterOptions();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [userId]);
 
   const [sorting, setSorting] = useState<SortingState>(() => {
     if (typeof window === "undefined") return [];
@@ -407,6 +434,7 @@ function TradeSearchPage() {
 
   // Submit the current filter state as a manual search
   const handleManualSearch = () => {
+    setChatTableResults(null);
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     setSubmittedParams(buildManualParams());
     // History refresh is handled by the searchResponse useEffect
@@ -416,6 +444,7 @@ function TradeSearchPage() {
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
 
+    setChatTableResults(null);
     setSuggestions([]);
     sessionStorage.setItem(SEARCH_KEY, searchQuery);
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
@@ -427,8 +456,15 @@ function TradeSearchPage() {
     // History refresh is handled by the searchResponse useEffect
   };
 
+  const handleAskAI = async () => {
+    const message = searchQuery.trim();
+    if (!message) return;
+    await handleAskAIWithPrompt(message);
+  };
+
   // Re-run a query from history
   const handleRecentSearchClick = (query: string) => {
+    setChatTableResults(null);
     setSearchQuery(query);
     sessionStorage.setItem(SEARCH_KEY, query);
     setSuggestions([]);
@@ -439,29 +475,6 @@ function TradeSearchPage() {
       query_text: query,
     });
     // History refresh is handled by the searchResponse useEffect
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleClearAllSearches = async () => {
-    // Show confirmation dialog
-    const confirmed = window.confirm(
-      "Confirm Clear All?\n\nThis will permanently delete all your search history.",
-    );
-
-    if (!confirmed) {
-      return; // User clicked "No" or cancelled
-    }
-
-    try {
-      await searchService.clearSearchHistory(userId);
-      // Clear local state
-      setRecentSearches([]);
-      console.log("All search history cleared successfully");
-    } catch (error) {
-      console.error("Failed to clear search history:", error);
-      // Still clear local state even if backend fails
-      setRecentSearches([]);
-    }
   };
 
   const handleSaveQuery = async (queryId: number, queryName: string) => {
@@ -515,6 +528,13 @@ function TradeSearchPage() {
 
   const handleClearSearch = () => {
     setSearchQuery("");
+    setChatAnswer(null);
+    setChatMode(null);
+    setChatEvidence(null);
+    setChatError(null);
+    setChatTableResults(null);
+    setChatHistory([]);
+    setFollowUpPrompts([]);
     setSubmittedParams(null);
     sessionStorage.removeItem(SEARCH_KEY);
     setCurrentQueryId(null);
@@ -534,6 +554,56 @@ function TradeSearchPage() {
 
   const handleSuggestionClick = (query: string) => {
     handleRecentSearchClick(query);
+  };
+
+  const handleFollowUpPromptClick = (prompt: string) => {
+    setSearchQuery(prompt);
+    void handleAskAIWithPrompt(prompt);
+  };
+
+  const handleAskAIWithPrompt = async (prompt: string) => {
+    const message = prompt.trim();
+    if (!message) return;
+
+    setChatLoading(true);
+    setChatError(null);
+
+    try {
+      const response = await chatService.sendMessage({
+        user_id: userId,
+        message,
+        conversation: chatHistory.slice(-6),
+      });
+
+      setChatMode(response.mode);
+      setChatAnswer(response.ai_answer ?? null);
+      setChatEvidence(response.evidence ?? null);
+      setFollowUpPrompts(response.follow_up_prompts ?? []);
+      setCurrentQueryId(response.query_id || null);
+
+      setChatHistory((prev) => [
+        ...prev,
+        { role: "user", content: message },
+        {
+          role: "assistant",
+          content: response.ai_answer ?? `Completed in ${response.mode} mode.`,
+        },
+      ]);
+
+      if ((response.mode === "table" || response.mode === "both") && response.results) {
+        setChatTableResults(response.results);
+        setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+      }
+
+      await fetchSearchHistory();
+    } catch (error) {
+      const messageText =
+        error instanceof APIError ? error.message : "Failed to process AI chat request";
+      setChatError(messageText);
+      console.error("AI chat request failed:", error);
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   const handleDeleteRecentSearch = async (id: string) => {
@@ -572,6 +642,13 @@ function TradeSearchPage() {
       <SearchHeader
         searchQuery={searchQuery}
         searching={searching}
+        chatLoading={chatLoading}
+        chatMode={chatMode}
+        chatAnswer={chatAnswer}
+        chatEvidence={chatEvidence}
+        chatThread={chatHistory}
+        followUpPrompts={followUpPrompts}
+        chatError={chatError}
         showFilters={showFilters}
         recentSearches={recentSearches}
         savedQueries={savedQueries}
@@ -579,12 +656,14 @@ function TradeSearchPage() {
         suggestions={suggestions}
         onSearchQueryChange={setSearchQuery}
         onSearch={handleSearch}
+        onAskAI={handleAskAI}
         onToggleFilters={() => setShowFilters(!showFilters)}
         onRecentSearchClick={handleRecentSearchClick}
         onDeleteSearch={handleDeleteRecentSearch}
         onSaveCurrentQuery={handleSaveCurrentQuery}
         onClearSearch={handleClearSearch}
         onSuggestionClick={handleSuggestionClick}
+        onFollowUpPromptClick={handleFollowUpPromptClick}
         onDeleteSavedQuery={handleDeleteSavedQuery}
       />
 
@@ -592,7 +671,7 @@ function TradeSearchPage() {
       {errorMessage && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
           <svg
-            className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0"
+            className="w-5 h-5 text-red-600 mt-0.5 shrink-0"
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -608,7 +687,7 @@ function TradeSearchPage() {
           </div>
           <button
             onClick={() => queryClient.removeQueries({ queryKey: ['trades', 'search'] })}
-            className="text-red-400 hover:text-red-600 flex-shrink-0"
+            className="text-red-400 hover:text-red-600 shrink-0"
             aria-label="Dismiss error"
           >
             <svg

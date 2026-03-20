@@ -199,6 +199,8 @@ function ExceptionsPage() {
     getStatusBadgeVariant,
   });
 
+  // TanStack Table returns function values by design; React Compiler warning is expected here
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: results,
     columns,

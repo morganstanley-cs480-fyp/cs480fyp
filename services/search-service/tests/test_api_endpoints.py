@@ -267,6 +267,115 @@ class TestHistoryEndpoints:
             assert response.status_code == 403
 
 
+class TestChatEndpoint:
+    """Tests for POST /api/chat endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_chat_analysis_success(self, client):
+        """Test chat endpoint returns analysis response."""
+        with patch("app.api.routes.chat.chat_service.execute_chat") as mock_chat:
+            mock_chat.return_value = {
+                "mode": "analysis",
+                "query_id": 999,
+                "total_results": 0,
+                "results": None,
+                "ai_answer": "Top booking system by critical exceptions is HIGHGARDEN.",
+                "evidence": {
+                    "dimensions": ["booking_system"],
+                    "rows": [
+                        {
+                            "dimension_1": "HIGHGARDEN",
+                            "priority": "CRITICAL",
+                            "exception_count": 10,
+                            "affected_trades": 6,
+                        }
+                    ],
+                    "chart": {
+                        "title": "Exception Count by Dimension",
+                        "x_key": "label",
+                        "y_key": "exception_count",
+                        "labels": ["HIGHGARDEN"],
+                        "series": [{"name": "exception_count", "data": [10]}],
+                    },
+                    "metadata": {
+                        "top_k": 5,
+                        "priority_filter": ["CRITICAL"],
+                        "row_count": 1,
+                    },
+                },
+                "follow_up_prompts": ["Break this down by asset type"],
+                "execution_time_ms": 123.4,
+            }
+
+            request_data = {
+                "user_id": "test_user",
+                "message": "What are the booking systems with highest critical exceptions?",
+                "conversation": [],
+            }
+
+            response = await client.post("/api/chat", json=request_data)
+
+            assert response.status_code == 200
+            payload = response.json()
+            assert payload["mode"] == "analysis"
+            assert payload["query_id"] == 999
+            assert payload["ai_answer"]
+            assert isinstance(payload["follow_up_prompts"], list)
+
+    @pytest.mark.asyncio
+    async def test_chat_table_success(self, client):
+        """Test chat endpoint returns table mode with results."""
+        with patch("app.api.routes.chat.chat_service.execute_chat") as mock_chat:
+            mock_chat.return_value = {
+                "mode": "table",
+                "query_id": 1000,
+                "total_results": 1,
+                "results": [
+                    {
+                        "trade_id": 123,
+                        "account": "ACC001",
+                        "asset_type": "FX",
+                        "booking_system": "HIGHGARDEN",
+                        "affirmation_system": "MARC",
+                        "clearing_house": "LCH",
+                        "create_time": "2026-03-16T00:00:00Z",
+                        "update_time": "2026-03-16T00:00:00Z",
+                        "status": "ALLEGED",
+                    }
+                ],
+                "ai_answer": None,
+                "evidence": None,
+                "follow_up_prompts": ["Explain why these are risky"],
+                "execution_time_ms": 55.0,
+            }
+
+            request_data = {
+                "user_id": "test_user",
+                "message": "show me risky trades",
+                "conversation": [],
+            }
+
+            response = await client.post("/api/chat", json=request_data)
+
+            assert response.status_code == 200
+            payload = response.json()
+            assert payload["mode"] == "table"
+            assert payload["total_results"] == 1
+            assert len(payload["results"]) == 1
+
+    @pytest.mark.asyncio
+    async def test_chat_validation_error(self, client):
+        """Test chat request validation for short message."""
+        request_data = {
+            "user_id": "test_user",
+            "message": "hi",
+            "conversation": [],
+        }
+
+        response = await client.post("/api/chat", json=request_data)
+        assert response.status_code == 422
+
+
 class TestErrorHandling:
     """Tests for global error handling."""
 

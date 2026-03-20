@@ -3,10 +3,10 @@ Response models for API endpoints.
 These define the structure of responses sent back to the frontend.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.domain import ExtractedParams, QueryHistory, Trade
 
@@ -31,8 +31,8 @@ class SearchResponse(BaseModel):
         None, description="Extracted parameters (for natural_language searches only)"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query_id": 42,
                 "total_results": 2,
@@ -65,6 +65,7 @@ class SearchResponse(BaseModel):
                 "execution_time_ms": 234.5,
             }
         }
+    )
 
 
 class HistoryListResponse(BaseModel):
@@ -81,8 +82,8 @@ class HistoryListResponse(BaseModel):
         ..., description="List of query history records"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "user_id": "user123",
                 "total_count": 10,
@@ -101,6 +102,7 @@ class HistoryListResponse(BaseModel):
                 ],
             }
         }
+    )
 
 
 class UpdateHistoryResponse(BaseModel):
@@ -118,8 +120,8 @@ class UpdateHistoryResponse(BaseModel):
     last_use_time: str = Field(..., description="Last use timestamp")
     message: str = Field(..., description="Success message")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query_id": 42,
                 "user_id": "user123",
@@ -131,6 +133,7 @@ class UpdateHistoryResponse(BaseModel):
                 "message": "Query saved successfully",
             }
         }
+    )
 
 
 class TypeaheadSuggestion(BaseModel):
@@ -148,8 +151,8 @@ class TypeaheadSuggestion(BaseModel):
     score: float = Field(..., description="Similarity score used for ranking")
     category: Optional[str] = Field(None, description="Suggestion category label")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query_id": 42,
                 "query_text": "show me pending FX trades from last week",
@@ -159,6 +162,7 @@ class TypeaheadSuggestion(BaseModel):
                 "score": 0.82,
             }
         }
+    )
 
 
 class DeleteHistoryResponse(BaseModel):
@@ -169,10 +173,11 @@ class DeleteHistoryResponse(BaseModel):
     query_id: int = Field(..., description="Query ID that was deleted")
     message: str = Field(..., description="Success message")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {"query_id": 42, "message": "Query deleted successfully"}
         }
+    )
 
 
 class HealthResponse(BaseModel):
@@ -190,8 +195,8 @@ class HealthResponse(BaseModel):
     cache: str = Field(..., description="Cache connection status")
     timestamp: str = Field(..., description="Health check timestamp (ISO 8601)")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "status": "healthy",
                 "service": "search-service",
@@ -201,6 +206,7 @@ class HealthResponse(BaseModel):
                 "timestamp": "2025-01-20T10:00:00Z",
             }
         }
+    )
 
 
 class ErrorResponse(BaseModel):
@@ -239,12 +245,12 @@ class ErrorResponse(BaseModel):
             error=error,
             message=message,
             details=details,
-            timestamp=datetime.utcnow().isoformat() + "Z",
+            timestamp=datetime.now(timezone.utc).isoformat() + "Z",
             path=path,
         )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "error": "ValidationError",
@@ -276,6 +282,7 @@ class ErrorResponse(BaseModel):
                 },
             ]
         }
+    )
 
 
 class MessageResponse(BaseModel):
@@ -290,12 +297,13 @@ class MessageResponse(BaseModel):
     @classmethod
     def create(cls, message: str) -> "MessageResponse":
         """Factory method with current timestamp"""
-        return cls(message=message, timestamp=datetime.utcnow().isoformat() + "Z")
+        return cls(message=message, timestamp=datetime.now(timezone.utc).isoformat() + "Z")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "message": "Operation completed successfully",
                 "timestamp": "2025-01-20T10:00:00Z",
             }
         }
+    )

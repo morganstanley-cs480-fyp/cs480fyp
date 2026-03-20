@@ -75,6 +75,7 @@ class GeminiService:
         query: str,
         user_id: str,
         current_date: Optional[datetime] = None,
+        conversation: Optional[list[dict[str, str]]] = None,
     ) -> ExtractedParams:
         """
         Extract structured parameters from a natural language query.
@@ -90,6 +91,7 @@ class GeminiService:
             query: Natural language query string
             user_id: User ID for logging
             current_date: Current date for relative date calculations
+            conversation: Optional conversation history for context-aware extraction
 
         Returns:
             ExtractedParams model with extracted parameters
@@ -128,7 +130,7 @@ class GeminiService:
 
         # Step 2: Call Gemini API
         try:
-            raw_response = await self._invoke_gemini(query, current_date)
+            raw_response = await self._invoke_gemini(query, current_date, conversation)
         except Exception as e:
             logger.error(
                 f"Gemini API call failed: {e}",
@@ -174,6 +176,7 @@ class GeminiService:
         self,
         query: str,
         current_date: Optional[datetime] = None,
+        conversation: Optional[list[dict[str, str]]] = None,
     ) -> str:
         """
         Call Google Gemini synchronously via asyncio executor so the
@@ -182,7 +185,7 @@ class GeminiService:
         Returns:
             Raw JSON string from Gemini
         """
-        user_prompt = build_user_prompt(query, current_date)
+        user_prompt = build_user_prompt(query, current_date, conversation)
 
         generation_config = genai.types.GenerationConfig(
             temperature=0.0,  # Deterministic extraction

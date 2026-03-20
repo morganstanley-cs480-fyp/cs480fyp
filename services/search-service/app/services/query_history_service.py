@@ -39,7 +39,7 @@ class QueryHistoryService:
             DatabaseQueryError: If save fails
         """
         query = """
-            INSERT INTO query_history 
+            INSERT INTO query_history
             (user_id, query_text, is_saved, query_name, create_time, last_use_time)
             VALUES ($1, $2, FALSE, NULL, NOW(), NOW())
             RETURNING id
@@ -89,14 +89,14 @@ class QueryHistoryService:
         # Build query based on filters
         if saved_only:
             query = """
-                SELECT * FROM query_history 
+                SELECT * FROM query_history
                 WHERE user_id = $1 AND is_saved = TRUE
                 ORDER BY last_use_time DESC
                 LIMIT $2
             """
         else:
             query = """
-                SELECT * FROM query_history 
+                SELECT * FROM query_history
                 WHERE user_id = $1
                 ORDER BY last_use_time DESC
                 LIMIT $2
@@ -143,7 +143,7 @@ class QueryHistoryService:
             DatabaseQueryError: If query fails
         """
         query = """
-            SELECT 
+            SELECT
                 COUNT(*) as total_count,
                 COUNT(*) FILTER (WHERE is_saved = TRUE) as saved_count,
                 COUNT(*) FILTER (WHERE last_use_time >= NOW() - INTERVAL '7 days') as recent_count
@@ -205,7 +205,7 @@ class QueryHistoryService:
 
         # Update query
         query = """
-            UPDATE query_history 
+            UPDATE query_history
             SET is_saved = $1, query_name = $2
             WHERE id = $3 AND user_id = $4
             RETURNING *
@@ -266,7 +266,7 @@ class QueryHistoryService:
 
         # Delete query
         query = """
-            DELETE FROM query_history 
+            DELETE FROM query_history
             WHERE id = $1 AND user_id = $2
         """
 
@@ -311,7 +311,7 @@ class QueryHistoryService:
             DatabaseQueryError: If deletion fails
         """
         query = """
-            DELETE FROM query_history 
+            DELETE FROM query_history
             WHERE user_id = $1
         """
 
@@ -350,7 +350,7 @@ class QueryHistoryService:
             DatabaseQueryError: If update fails
         """
         query = """
-            UPDATE query_history 
+            UPDATE query_history
             SET last_use_time = NOW()
             WHERE id = $1 AND user_id = $2
         """
@@ -550,7 +550,7 @@ class QueryHistoryService:
             UnauthorizedAccessError: If user doesn't own the query
         """
         query = """
-            SELECT user_id FROM query_history 
+            SELECT user_id FROM query_history
             WHERE id = $1
         """
 

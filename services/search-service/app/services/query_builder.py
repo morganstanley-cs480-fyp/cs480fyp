@@ -30,7 +30,7 @@ class QueryBuilder:
 
     # Base SELECT query with all required columns
     BASE_QUERY = """
-        SELECT 
+        SELECT
             id,
             account,
             asset_type,
@@ -129,10 +129,10 @@ class QueryBuilder:
             param_index += 1
 
         # Handle with_exceptions_only filter
-        # Note: This requires an exceptions table join - for now we skip this filter
-        # TODO: Implement when exceptions table is available
         if params.with_exceptions_only:
-            logger.warning("with_exceptions_only filter not yet implemented")
+            conditions.append(
+                "EXISTS (SELECT 1 FROM exceptions e WHERE e.trade_id = trades.id)"
+            )
 
         # Handle cleared_trades_only filter
         if params.cleared_trades_only:
@@ -241,9 +241,10 @@ class QueryBuilder:
             param_index += 1
 
         # Handle with_exceptions_only filter
-        # TODO: Implement when exceptions table is available
         if filters.with_exceptions_only:
-            logger.warning("with_exceptions_only filter not yet implemented")
+            conditions.append(
+                "EXISTS (SELECT 1 FROM exceptions e WHERE e.trade_id = trades.id)"
+            )
 
         # Handle cleared_trades_only filter
         if filters.cleared_trades_only:
@@ -353,7 +354,7 @@ class QueryBuilder:
             return "", []
 
         query = """
-            SELECT 
+            SELECT
                 t.id as trade_id,
                 COUNT(DISTINCT tr.id) as transaction_count
             FROM trades t

@@ -60,7 +60,7 @@ class RedisManager:
         Called during application shutdown.
         """
         if self._client:
-            await self._client.close()
+            await self._client.aclose()
             logger.info("Redis connection closed")
             self._client = None
 
