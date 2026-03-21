@@ -26,6 +26,7 @@ jobs:
       trade-flow-service: ${{ steps.filter.outputs.trade-flow-service }}
       ingestion-service: ${{ steps.filter.outputs.ingestion-service }}
       data-processing-service: ${{ steps.filter.outputs.data-processing-service }}
+      graph-maker-service: ${{ steps.filter.outputs.graph-maker-service }}
     steps:
       - uses: actions/checkout@v4
       - name: Filter changed services
@@ -51,6 +52,8 @@ jobs:
               - 'services/ingestion-service/**'
             data-processing-service:
               - 'services/data-processing-service/**'
+            graph-maker-service:
+              - 'services/graph-maker-service/**'
 
   build-example-service:
     needs: filter
@@ -192,6 +195,22 @@ jobs:
     uses: ./.github/workflows/build-js-service.yml
     with:
       service_name: data-processing-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  graph-maker-service:
+    needs: filter
+    if: ${{ needs.filter.outputs.graph-maker-service == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      checks: write
+      pull-requests: write
+    uses: ./.github/workflows/build-js-service.yml
+    with:
+      service_name: graph-maker
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
