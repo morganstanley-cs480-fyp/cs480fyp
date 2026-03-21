@@ -629,7 +629,7 @@ module "graph_maker_service" {
   assign_public_ip        = true
   environments = [
     { name = "GRAPH_INGESTION_QUEUE_URL", value = module.graph_ingestion_queue.sqs_queue_url },
-    { name = "NEPTUNE_ENDPOINT", value = module.neptune_db.neptune_endpoint }
+    { name = "NEPTUNE_ENDPOINT", value = "bolt://${module.neptune_db.neptune_endpoint}:8182" }
   ]
   secrets =[]
 }

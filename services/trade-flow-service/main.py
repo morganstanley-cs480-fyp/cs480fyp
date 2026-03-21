@@ -6,12 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from psycopg_pool import AsyncConnectionPool
 from psycopg.rows import dict_row
+import neo4j
 
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_PORT = os.getenv("DB_PORT", "5432")
+NEPTUNE_ENDPOINT = os.getenv("NEPTUNE_ENDPOINT")
 
 DATABASE_URL = (
     f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
@@ -208,5 +210,60 @@ async def get_transactions_by_trade_id(trade_id: int):
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
+
+@api_router.get("/trades/{trade_id}/graph")
+async def get_trade_graph_journey(trade_id: int):
+    """
+    Fetches the visual journey of a trade from Neptune.
+    Useful for frontend graph visualizations.
+    """
+    if not hasattr(app.state, 'neptune_driver'):
+        raise HTTPException(status_code=500, detail="Neptune connection not configured")
+
+    query = """
+    MATCH (t:Trade {id: $id})
+    OPTIONAL MATCH (t)-[r1:HAS_TRANSACTION]->(tx:Transaction)
+    OPTIONAL MATCH (tx)-[r2:GENERATED_EXCEPTION]->(e:Exception)
+    RETURN t, r1, tx, r2, e
+    """
+    
+    try:
+        # Neptune queries are synchronous in the standard driver, 
+        # so we run it in the session
+        with app.state.neptune_driver.session() as session:
+            result = session.run(query, id=str(trade_id))
+            
+            # Format the output for the frontend
+            nodes = []
+            links = []
+            seen_nodes = set()
+
+            for record in result:
+                # Process Trade, Transaction, and Exception nodes
+                for key in ['t', 'tx', 'e']:
+                    node = record.get(key)
+                    if node and node.element_id not in seen_nodes:
+                        nodes.append({
+                            "id": node.element_id,
+                            "label": list(node.labels),
+                            "properties": dict(node)
+                        })
+                        seen_nodes.add(node.element_id)
+                
+                # Process Relationships
+                for key in ['r1', 'r2']:
+                    rel = record.get(key)
+                    if rel:
+                        links.append({
+                            "source": rel.start_node.element_id,
+                            "target": rel.end_node.element_id,
+                            "type": rel.type
+                        })
+
+            return {"nodes": nodes, "links": links}
+
+    except Exception as e:
+        print(f"Neptune Error: {e}")
+        raise HTTPException(status_code=500, detail="Error querying graph data")
 
 app.include_router(api_router)
