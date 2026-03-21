@@ -1,7 +1,7 @@
 // processor.test.js
 import { jest } from '@jest/globals';
 import { mockClient } from 'aws-sdk-client-mock';
-import { SQSClient } from '@aws-sdk/client-sqs';
+import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 
 // 1. Mock External Dependencies BEFORE importing the processor
 jest.unstable_mockModule('pg', () => ({
@@ -26,7 +26,8 @@ const {
   handleTransaction, 
   handleException, 
   pool, 
-  publisher 
+  publisher,
+  sendGraphUpdate
 } = await import('./main.js');
 
 const sqsMock = mockClient(SQSClient);
@@ -219,4 +220,61 @@ describe('Data Processor Service', () => {
       );
     });
   });
+
+  describe('sendGraphUpdate', () => {
+    const mockEnrichmentResult = (tradeId) => {
+    return {
+      rows: [{
+        "trade_id": tradeId,
+        "account": "ACC011",
+        "asset_type": "Equity",
+        "booking_system": "JSCC",
+        "affirmation_system": "WINTERFELL",
+        "clearing_house": "LCH",
+        "trade_status": "REJECTED",
+        "created_at": "2026-03-21T08:00:00.000Z",
+        "trans_status": "REJECTED",
+        "trans_id": 5000991,
+        "step": 2,
+        "entity": "Goldman Sachs",
+        "direction": "receive",
+        "type": "NEW",
+        "trans_created_at": "2026-03-21T08:05:15.000Z",
+        "excep_id": 9000112,
+        "excep_status": "PENDING",
+        "comment": "Invalid settlement instructions provided.",
+        "msg": "MISSING BIC",
+        "priority": "CRITICAL",
+        "excep_created_at": "2026-03-21T08:05:20.000Z"
+      }]
+    };
+  };
+
+    it('should query DB for enriched data and send to SQS', async () => {
+      pool.query.mockResolvedValueOnce(mockEnrichmentResult(10111101));
+      sqsMock.on(SendMessageCommand).resolves({});
+
+      await sendGraphUpdate(10111101);
+
+      expect(pool.query).toHaveBeenCalledWith(
+        expect.stringContaining('WITH latest_tx AS'),
+        expect.any(Array)
+      );
+      expect(sqsMock.commandCalls(SendMessageCommand).length).toBe(1);
+    });
+
+    it('should log a warning if data fields are missing but still send message', async () => {
+      // Mock data missing 'booking_system'
+      pool.query.mockResolvedValueOnce({
+        rows: [{ trade_id: 10111101, trade_status: "REJECTED" }] 
+      });
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      await sendGraphUpdate(10111101);
+
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('Missing fields: [booking_system'));
+      consoleWarnSpy.mockRestore();
+    });
+  });
 });
+
