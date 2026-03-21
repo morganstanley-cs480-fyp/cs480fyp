@@ -19,23 +19,32 @@ resource "aws_iam_role" "this" {
 # 2. The Policy (Permissions to Process the Queue)
 resource "aws_iam_policy" "processing_policy" {
   name        = "${var.service_name}-sqs-policy"
-  description = "Allow consuming messages from the processing queue"
+  description = "Permissions for SQS processing and graph ingestion"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # 1. Full Consumer Permissions for the Data Processing Queue
       {
         Effect = "Allow"
         Action = [
           "sqs:ReceiveMessage",      # Pull message
           "sqs:DeleteMessage",       # Remove after processing (ACK)
-          "sqs:GetQueueAttributes"   # Check queue status
+          "sqs:GetQueueAttributes",  # Check queue status
+          "sqs:ChangeMessageVisibility" # Recommended for long-running tasks
         ]
-        Resource = [
-          var.data_processing_queue_arn,
-          var.graph_ingestion_queue_arn
-        ]
+        Resource = var.data_processing_queue_arn
       },
+
+      # 2. Producer Permission for the Graph Ingestion Queue
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage",         # Send the transformed data to the next step
+          "sqs:GetQueueAttributes"   # Often needed by SDKs to verify queue existence
+        ]
+        Resource = var.graph_ingestion_queue_arn
+      }
     ]
   })
 }
