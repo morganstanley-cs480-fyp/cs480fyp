@@ -6,22 +6,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from psycopg_pool import AsyncConnectionPool
 from psycopg.rows import dict_row
-import neo4j
+from neo4j import GraphDatabase
 
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_PORT = os.getenv("DB_PORT", "5432")
-NEPTUNE_ENDPOINT = os.getenv("NEPTUNE_ENDPOINT")
-
 DATABASE_URL = (
     f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     )
+NEPTUNE_ENDPOINT = os.getenv("NEPTUNE_ENDPOINT")
 
 
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
+    # 1. Initialize Postgres Pool
     app.state.pool = AsyncConnectionPool(
         conninfo=DATABASE_URL,
         min_size=1,
@@ -29,10 +29,30 @@ async def lifespan(app: FastAPI):
         kwargs={"autocommit": True}
     )
     await app.state.pool.open()
-    print("Connected to Database")
-    yield
+    print("Connected to PostgreSQL Database")
+
+    # 2. Initialize Neptune Driver
+    try:
+        app.state.neptune_driver = GraphDatabase.driver(
+            NEPTUNE_ENDPOINT, 
+            auth=None # Neptune usually doesn't require auth unless IAM is specifically enabled
+        )
+        # Verify connectivity
+        app.state.neptune_driver.verify_connectivity()
+        print(f"Connected to Neptune at {NEPTUNE_ENDPOINT}")
+    except Exception as e:
+        print(f"Warning: Could not connect to Neptune: {e}")
+        app.state.neptune_driver = None
+
+    yield 
+
+    # 3. Teardown
     await app.state.pool.close()
-    print("Database connection closed")
+    print("PostgreSQL connection closed")
+    
+    if app.state.neptune_driver:
+        app.state.neptune_driver.close()
+        print("Neptune connection closed")
 
 
 # redirect_slashes=False prevents http:// redirects through CloudFront/ALB.
@@ -54,7 +74,15 @@ async def health_check():
             async with conn.cursor() as cur:
                 await cur.execute("SELECT NOW()")
                 result = await cur.fetchone()
-                return {"status": "ok", "time": result[0]}
+                
+                # Check Neptune status as well
+                neptune_status = "ok" if app.state.neptune_driver else "disconnected"
+                
+                return {
+                    "status": "ok", 
+                    "postgres_time": result,
+                    "neptune_status": neptune_status
+                }
     except Exception as e:
         print(f"DB Error: {e}")
         raise HTTPException(status_code=500,
@@ -210,60 +238,54 @@ async def get_transactions_by_trade_id(trade_id: int):
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
-
+    
+# ==========================================
+# NEW ENDPOINT: Get Full Graph Data
+# ==========================================
 @api_router.get("/trades/{trade_id}/graph")
-async def get_trade_graph_journey(trade_id: int):
+async def get_trade_graph(trade_id: int):
     """
-    Fetches the visual journey of a trade from Neptune.
-    Useful for frontend graph visualizations.
+    Fetches the full lifecycle of a trade from Neptune, including 
+    metadata, transactions, counterparties, and exceptions.
     """
-    if not hasattr(app.state, 'neptune_driver'):
-        raise HTTPException(status_code=500, detail="Neptune connection not configured")
+    if not app.state.neptune_driver:
+         raise HTTPException(status_code=503, detail="Neptune Graph Service is currently unavailable")
 
     query = """
-    MATCH (t:Trade {id: $id})
-    OPTIONAL MATCH (t)-[r1:HAS_TRANSACTION]->(tx:Transaction)
-    OPTIONAL MATCH (tx)-[r2:GENERATED_EXCEPTION]->(e:Exception)
-    RETURN t, r1, tx, r2, e
+    MATCH (t:Trade {id: $trade_id})
+    OPTIONAL MATCH (t)-[r1:BOOKED_ON|AFFIRMED_BY|CLEARED_BY]->(meta:Entity)
+    OPTIONAL MATCH (t)-[:HAS_TRANSACTION]->(tx:Transaction)
+    OPTIONAL MATCH (tx)-[r2:RECEIVED_FROM|SENT_TO]->(party:Entity)
+    OPTIONAL MATCH (tx)-[:GENERATED_EXCEPTION]->(e:Exception)
+    RETURN 
+        t, 
+        collect(DISTINCT meta) as metadata, 
+        collect(DISTINCT tx) as transactions, 
+        collect(DISTINCT party) as counterparties, 
+        collect(DISTINCT e) as exceptions
     """
     
     try:
-        # Neptune queries are synchronous in the standard driver, 
-        # so we run it in the session
         with app.state.neptune_driver.session() as session:
-            result = session.run(query, id=str(trade_id))
-            
-            # Format the output for the frontend
-            nodes = []
-            links = []
-            seen_nodes = set()
+            result = session.run(query, trade_id=str(trade_id))
+            record = result.single()
 
-            for record in result:
-                # Process Trade, Transaction, and Exception nodes
-                for key in ['t', 'tx', 'e']:
-                    node = record.get(key)
-                    if node and node.element_id not in seen_nodes:
-                        nodes.append({
-                            "id": node.element_id,
-                            "label": list(node.labels),
-                            "properties": dict(node)
-                        })
-                        seen_nodes.add(node.element_id)
-                
-                # Process Relationships
-                for key in ['r1', 'r2']:
-                    rel = record.get(key)
-                    if rel:
-                        links.append({
-                            "source": rel.start_node.element_id,
-                            "target": rel.end_node.element_id,
-                            "type": rel.type
-                        })
+            if not record or not record.get('t'):
+                raise HTTPException(status_code=404, detail=f"Graph data for Trade {trade_id} not found")
 
-            return {"nodes": nodes, "links": links}
+            # Parse the Neo4j Node objects into standard Python dictionaries for JSON serialization
+            return {
+                "trade": dict(record.get('t').items()),
+                "metadata": [dict(node.items()) for node in record.get('metadata')],
+                "transactions": [dict(node.items()) for node in record.get('transactions')],
+                "counterparties": [dict(node.items()) for node in record.get('counterparties')],
+                "exceptions": [dict(node.items()) for node in record.get('exceptions')]
+            }
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
-        print(f"Neptune Error: {e}")
-        raise HTTPException(status_code=500, detail="Error querying graph data")
+        print(f"Neptune Query Error: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching graph data")
 
 app.include_router(api_router)
