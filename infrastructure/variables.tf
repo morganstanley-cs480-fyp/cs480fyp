@@ -89,6 +89,11 @@ variable "data_processing_queue_name" {
   default = "data-processing-queue.fifo"
 }
 
+variable "graph_ingestion_queue_name" {
+  type = string
+  default = "graph_ingestion_queue.fifo"
+}
+
 variable "main_db_identifier" {
   type    = string
   default = "main-postgres-rds-instance"
@@ -465,6 +470,45 @@ variable "trade_flow_service_name" {
   type    = string
   default = "trade-flow-service"
 }
+
+# ==========================================
+# 8. Graph Maker Service
+# ==========================================
+variable "graph_maker_repo_name" {
+  type    = string
+  default = "graph-maker-service"
+}
+
+variable "graph_maker_target_group_name" {
+  type    = string
+  default = "graph-maker-target-group"
+}
+
+variable "graph_maker_log_group_name" {
+  type    = string
+  default = "/ecs/graph-maker-logs"
+}
+
+variable "graph_maker_family" {
+  type    = string
+  default = "graph-maker-service-task"
+}
+
+variable "graph_maker_container_name" {
+  type    = string
+  default = "graph-maker-service-container"
+}
+
+variable "graph_maker_container_image" {
+  type    = string
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/graph-maker-service:latest"
+}
+
+variable "graph_maker_service_name" {
+  type    = string
+  default = "graph-maker-service"
+}
+
 
 # ==========================================
 # Milvus EC2
