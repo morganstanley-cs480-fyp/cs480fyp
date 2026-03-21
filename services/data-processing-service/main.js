@@ -429,6 +429,7 @@ export async function sendGraphUpdate(trade_id) {
         QueueUrl: graphQueueUrl,
         MessageBody: JSON.stringify(superEvent),
         MessageGroupId: String(trade_id),
+        MessageDeduplicationId: `graph-update-${trade_id}-${Date.now()}`
       }));
 
     } else {
