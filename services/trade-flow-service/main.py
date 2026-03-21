@@ -287,5 +287,79 @@ async def get_trade_graph(trade_id: int):
     except Exception as e:
         print(f"Neptune Query Error: {e}")
         raise HTTPException(status_code=500, detail="Error fetching graph data")
+    
+@api_router.get("/graph/overview")
+async def get_graph_overview(limit: int = 100, status: Optional[str] = None):
+    """
+    Fetches a bounded overview of the graph. 
+    Can be filtered by Trade status (e.g., ?status=REJECTED)
+    """
+    if not app.state.neptune_driver:
+        raise HTTPException(status_code=503, detail="Neptune Graph Service is unavailable")
+
+    # The query targets trades (filtered by status), then finds everything 
+    # up to 2 "hops" away (Trade -> Transaction -> Exception/Counterparty)
+    query = """
+    MATCH (t:Trade)
+    WHERE $status IS NULL OR t.status = $status
+    WITH t LIMIT $limit
+    
+    // 1st Hop: Direct relationships (Transactions, Booking Systems, Clearing Houses)
+    OPTIONAL MATCH (t)-[r1]-(n1)
+    
+    // 2nd Hop: Secondary relationships (Exceptions or Counterparties tied to the Transaction)
+    OPTIONAL MATCH (n1:Transaction)-[r2]-(n2)
+    
+    RETURN t, r1, n1, r2, n2
+    """
+
+    try:
+        with app.state.neptune_driver.session() as session:
+            result = session.run(query, limit=limit, status=status)
+            
+            # Use dictionaries to automatically deduplicate nodes and edges
+            unique_nodes = {}
+            unique_edges = {}
+
+            # Helper functions to keep the loop clean
+            def parse_node(node):
+                if node and node.element_id not in unique_nodes:
+                    unique_nodes[node.element_id] = {
+                        "id": node.element_id,
+                        "labels": list(node.labels),
+                        "properties": dict(node.items())
+                    }
+
+            def parse_edge(rel):
+                if rel and rel.element_id not in unique_edges:
+                    unique_edges[rel.element_id] = {
+                        "id": rel.element_id,
+                        "source": rel.start_node.element_id,
+                        "target": rel.end_node.element_id,
+                        "type": rel.type,
+                        "properties": dict(rel.items())
+                    }
+
+            # Process every row returned by the database
+            for record in result:
+                # Add nodes (if they exist in this row)
+                parse_node(record.get('t'))
+                parse_node(record.get('n1'))
+                parse_node(record.get('n2'))
+                
+                # Add edges (if they exist in this row)
+                parse_edge(record.get('r1'))
+                parse_edge(record.get('r2'))
+
+            return {
+                "nodes": list(unique_nodes.values()),
+                "edges": list(unique_edges.values())
+            }
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Neptune Query Error: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching graph overview")
 
 app.include_router(api_router)
