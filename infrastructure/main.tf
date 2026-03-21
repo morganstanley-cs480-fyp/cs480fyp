@@ -590,6 +590,7 @@ module "trade_flow_service" {
     { name = "DB_USER", value = var.db_username },
     { name = "DB_PASSWORD", value = var.db_password },
     { name = "DB_NAME", value = module.main_rds.db_name },
+    { name = "NEPTUNE_ENDPOINT", value = "bolt://${module.neptune_db.neptune_endpoint}:8182" }
   ]
   secrets = []
 }
@@ -629,7 +630,7 @@ module "graph_maker_service" {
   assign_public_ip        = true
   environments = [
     { name = "GRAPH_INGESTION_QUEUE_URL", value = module.graph_ingestion_queue.sqs_queue_url },
-    { name = "NEPTUNE_ENDPOINT", value = module.neptune_db.neptune_endpoint }
+    { name = "NEPTUNE_ENDPOINT", value = "bolt://${module.neptune_db.neptune_endpoint}:8182" }
   ]
   secrets =[]
 }
