@@ -68,9 +68,7 @@ class ChatService:
                 extra={"model": settings.GOOGLE_MODEL_ID},
             )
         else:
-            logger.warning(
-                "GOOGLE_API_KEY missing - ChatService will use heuristic fallback"
-            )
+            logger.warning("GOOGLE_API_KEY missing - ChatService will use heuristic fallback")
 
     async def execute_chat(self, request: ChatRequest) -> ChatResponse:
         """Execute chat request and return table and/or analysis outputs."""
@@ -88,10 +86,7 @@ class ChatService:
 
         try:
             # Convert conversation models to simple dicts for extraction
-            conversation_context = [
-                {"role": msg.role, "content": msg.content}
-                for msg in request.conversation
-            ]
+            conversation_context = [{"role": msg.role, "content": msg.content} for msg in request.conversation]
 
             extracted_params = await extraction_service.extract_parameters(
                 query=request.message,
@@ -138,8 +133,7 @@ class ChatService:
 
         has_more_context = (
             len(table_results) > pre_context_table_count
-            or (len(evidence.get("rows", [])) if evidence else 0)
-            > pre_context_evidence_count
+            or (len(evidence.get("rows", [])) if evidence else 0) > pre_context_evidence_count
         )
 
         if mode in ("analysis", "both") and (not ai_answer or has_more_context):
@@ -273,9 +267,7 @@ class ChatService:
     ) -> dict[str, Any]:
         """Execute approved tool call and return preview-safe output."""
         if tool_name == "get_trade_rows":
-            sql_query, params = self.query_builder.build_from_extracted_params(
-                extracted_params
-            )
+            sql_query, params = self.query_builder.build_from_extracted_params(extracted_params)
             self._validate_sql_or_raise(sql_query, params)
             records = await db_manager.fetch(sql_query, *params)
             trades = [Trade.from_db_record(record) for record in records]
@@ -432,9 +424,7 @@ Rules:
         evidence: dict[str, Any] = {}
 
         if mode in ("table", "both"):
-            sql_query, params = self.query_builder.build_from_extracted_params(
-                extracted_params
-            )
+            sql_query, params = self.query_builder.build_from_extracted_params(extracted_params)
             self._validate_sql_or_raise(sql_query, params)
             records = await db_manager.fetch(sql_query, *params)
             table_results = [Trade.from_db_record(record) for record in records]
@@ -486,9 +476,7 @@ Rules:
         if not self._chat_model:
             return self._heuristic_mode(request.message)
 
-        history_lines = [
-            f"{msg.role}: {msg.content}" for msg in request.conversation[-6:]
-        ]
+        history_lines = [f"{msg.role}: {msg.content}" for msg in request.conversation[-6:]]
         history_text = "\n".join(history_lines) if history_lines else "(none)"
 
         prompt = f"""
@@ -521,19 +509,13 @@ Latest user query:
             mode = "both"
 
         dimensions = parsed.get("analysis_dimensions") or ["booking_system"]
-        cleaned_dimensions = [
-            dim for dim in dimensions if dim in self.ALLOWED_DIMENSIONS
-        ]
+        cleaned_dimensions = [dim for dim in dimensions if dim in self.ALLOWED_DIMENSIONS]
         if not cleaned_dimensions:
             cleaned_dimensions = ["booking_system"]
 
         priority_filter = parsed.get("priority_filter")
         if priority_filter:
-            priority_filter = [
-                value
-                for value in priority_filter
-                if value in self.ALLOWED_PRIORITIES
-            ]
+            priority_filter = [value for value in priority_filter if value in self.ALLOWED_PRIORITIES]
         else:
             priority_filter = None
 
@@ -655,9 +637,7 @@ Latest user query:
             param_index += 1
 
         if extracted_params.date_to:
-            conditions.append(
-                f"t.update_time < (${param_index}::timestamp + INTERVAL '1 day')"
-            )
+            conditions.append(f"t.update_time < (${param_index}::timestamp + INTERVAL '1 day')")
             values.append(datetime.strptime(extracted_params.date_to, "%Y-%m-%d").date())
             param_index += 1
 
@@ -669,11 +649,7 @@ Latest user query:
         if conditions:
             query += " AND " + " AND ".join(conditions)
 
-        query += (
-            f" GROUP BY {', '.join(group_parts)}, e.priority"
-            " ORDER BY exception_count DESC"
-            f" LIMIT {top_k}"
-        )
+        query += f" GROUP BY {', '.join(group_parts)}, e.priority" " ORDER BY exception_count DESC" f" LIMIT {top_k}"
 
         self._validate_sql_or_raise(query, values)
         records = await db_manager.fetch(query, *values)
@@ -818,9 +794,7 @@ Trade sample rows:
             param_index += 1
 
         if extracted_params.date_to:
-            conditions.append(
-                f"t.update_time < (${param_index}::timestamp + INTERVAL '1 day')"
-            )
+            conditions.append(f"t.update_time < (${param_index}::timestamp + INTERVAL '1 day')")
             values.append(datetime.strptime(extracted_params.date_to, "%Y-%m-%d").date())
             param_index += 1
 

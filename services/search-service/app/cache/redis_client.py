@@ -91,9 +91,7 @@ class RedisManager:
             return None
         except Exception as e:
             logger.error(f"Cache get error: {e}", extra={"key": key})
-            raise CacheOperationError(
-                "Failed to get value from cache", details={"error": str(e), "key": key}
-            )
+            raise CacheOperationError("Failed to get value from cache", details={"error": str(e), "key": key})
 
     async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """
@@ -116,9 +114,7 @@ class RedisManager:
             return True
         except Exception as e:
             logger.error(f"Cache set error: {e}", extra={"key": key})
-            raise CacheOperationError(
-                "Failed to set value in cache", details={"error": str(e), "key": key}
-            )
+            raise CacheOperationError("Failed to set value in cache", details={"error": str(e), "key": key})
 
     async def delete(self, key: str) -> bool:
         """

@@ -93,9 +93,7 @@ async def lifespan(app: FastAPI):
             raise DatabaseConnectionError("Database is not healthy")
 
         if not redis_healthy:
-            logger.warning(
-                "Redis health check failed on startup - continuing without cache"
-            )
+            logger.warning("Redis health check failed on startup - continuing without cache")
 
         logger.info("Search service startup completed successfully")
 
@@ -152,9 +150,7 @@ if settings.ENABLE_CORS:
 
 
 @app.exception_handler(InvalidSearchRequestError)
-async def invalid_search_request_handler(
-    request: Request, exc: InvalidSearchRequestError
-):
+async def invalid_search_request_handler(request: Request, exc: InvalidSearchRequestError):
     """Handle invalid search request errors (400 Bad Request)"""
     logger.warning(
         f"Invalid search request: {exc.message}",
@@ -262,9 +258,7 @@ async def bedrock_response_error_handler(request: Request, exc: BedrockResponseE
 
 
 @app.exception_handler(DatabaseConnectionError)
-async def database_connection_error_handler(
-    request: Request, exc: DatabaseConnectionError
-):
+async def database_connection_error_handler(request: Request, exc: DatabaseConnectionError):
     """Handle database connection errors (503 Service Unavailable)"""
     logger.error(
         f"Database connection error: {exc.message}",
@@ -337,9 +331,7 @@ async def cache_operation_error_handler(request: Request, exc: CacheOperationErr
 
 
 @app.exception_handler(SearchServiceException)
-async def generic_search_exception_handler(
-    request: Request, exc: SearchServiceException
-):
+async def generic_search_exception_handler(request: Request, exc: SearchServiceException):
     """Handle all other SearchServiceException instances (500 Internal Server Error)"""
     logger.error(
         f"Search service error: {exc.message}",

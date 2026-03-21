@@ -10,16 +10,15 @@ Usage:
 import asyncio
 import sys
 from datetime import datetime, timedelta
-from random import choice, randint
 from pathlib import Path
+from random import choice, randint
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.database.connection import DatabaseManager
 from app.config.settings import settings
+from app.database.connection import DatabaseManager
 from app.utils.logger import logger
-
 
 # Sample data pools
 ACCOUNTS = [f"ACC{str(i).zfill(3)}" for i in range(1, 101)]
@@ -83,7 +82,7 @@ async def insert_trades(db_manager, num_trades: int = 100):
     trades = []
 
     # Generate trades
-    for i in range(1, num_trades + 1):
+    for _ in range(1, num_trades + 1):
         trade_id = randint(10000000, 99999999)
         trade = await generate_trade(trade_id, base_date)
         trades.append(trade)
@@ -95,7 +94,7 @@ async def insert_trades(db_manager, num_trades: int = 100):
         insert_query = """
             INSERT INTO trades (
                 id, account, asset_type, booking_system,
-                affirmation_system, clearing_house, 
+                affirmation_system, clearing_house,
                 create_time, update_time, status
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         """
@@ -148,9 +147,7 @@ async def main():
     try:
         logger.info("=" * 60)
         logger.info("Starting database seeding process")
-        logger.info(
-            f"Database: {settings.RDS_DB} @ {settings.RDS_HOST}:{settings.RDS_PORT}"
-        )
+        logger.info(f"Database: {settings.RDS_DB} @ {settings.RDS_HOST}:{settings.RDS_PORT}")
         logger.info("=" * 60)
 
         # Initialize database connection

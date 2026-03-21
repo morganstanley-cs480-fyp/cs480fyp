@@ -203,15 +203,9 @@ class TestTradeRanker:
 
     def test_status_urgency_scoring(self, ranker):
         """Test status urgency scoring."""
-        assert ranker._score_status_urgency("REJECTED") > ranker._score_status_urgency(
-            "ALLEGED"
-        )
-        assert ranker._score_status_urgency("ALLEGED") > ranker._score_status_urgency(
-            "CANCELLED"
-        )
-        assert ranker._score_status_urgency("CANCELLED") > ranker._score_status_urgency(
-            "CLEARED"
-        )
+        assert ranker._score_status_urgency("REJECTED") > ranker._score_status_urgency("ALLEGED")
+        assert ranker._score_status_urgency("ALLEGED") > ranker._score_status_urgency("CANCELLED")
+        assert ranker._score_status_urgency("CANCELLED") > ranker._score_status_urgency("CLEARED")
 
     def test_recency_scoring(self, ranker):
         """Test recency scoring with time decay."""
@@ -269,15 +263,9 @@ class TestTradeRanker:
     def test_asset_type_risk_scoring(self, ranker):
         """Test asset type risk scoring."""
         # Complex derivatives rank higher
-        assert ranker._score_asset_type_risk("CDS") > ranker._score_asset_type_risk(
-            "FX"
-        )
-        assert ranker._score_asset_type_risk("IRS") > ranker._score_asset_type_risk(
-            "EQUITY"
-        )
-        assert ranker._score_asset_type_risk("FX") > ranker._score_asset_type_risk(
-            "BOND"
-        )
+        assert ranker._score_asset_type_risk("CDS") > ranker._score_asset_type_risk("FX")
+        assert ranker._score_asset_type_risk("IRS") > ranker._score_asset_type_risk("EQUITY")
+        assert ranker._score_asset_type_risk("FX") > ranker._score_asset_type_risk("BOND")
 
     def test_ranking_disabled(self, ranker, sample_trades):
         """Test that ranking returns original order when disabled."""

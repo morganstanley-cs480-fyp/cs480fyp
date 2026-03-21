@@ -48,9 +48,7 @@ class GeminiService:
         self.validation_rules = build_validation_rules()
 
         if not api_key:
-            logger.warning(
-                "GOOGLE_API_KEY is not set – GeminiService will raise on first use."
-            )
+            logger.warning("GOOGLE_API_KEY is not set – GeminiService will raise on first use.")
             return
 
         genai.configure(api_key=api_key)
@@ -62,9 +60,7 @@ class GeminiService:
         )
         self._initialized = True
 
-        logger.info(
-            "Gemini service initialized", extra={"model": settings.GOOGLE_MODEL_ID}
-        )
+        logger.info("Gemini service initialized", extra={"model": settings.GOOGLE_MODEL_ID})
 
     # ------------------------------------------------------------------
     # Public interface (same signature as BedrockService)
@@ -101,9 +97,7 @@ class GeminiService:
             BedrockResponseError: Re-used for parse/validation failures
         """
         if not self._initialized:
-            raise ValueError(
-                "Google API key is required. Set GOOGLE_API_KEY environment variable."
-            )
+            raise ValueError("Google API key is required. Set GOOGLE_API_KEY environment variable.")
 
         normalized_query = query.strip().lower()
         cache_key = self._generate_cache_key(normalized_query)
@@ -277,9 +271,7 @@ class GeminiService:
                     value = [value] if value else []
 
                 if "allowed_values" in rules:
-                    invalid_values = [
-                        v for v in value if v not in rules["allowed_values"]
-                    ]
+                    invalid_values = [v for v in value if v not in rules["allowed_values"]]
                     if invalid_values:
                         logger.warning(
                             f"Invalid values in {field}: {invalid_values}",
@@ -324,9 +316,7 @@ class GeminiService:
                 return ExtractedParams(**json.loads(cached_json))
             return None
         except Exception as e:
-            logger.warning(
-                f"Cache retrieval error: {e}", extra={"cache_key": cache_key}
-            )
+            logger.warning(f"Cache retrieval error: {e}", extra={"cache_key": cache_key})
             return None
 
     async def _save_to_cache(self, cache_key: str, params: ExtractedParams) -> None:

@@ -121,15 +121,11 @@ class SearchOrchestrator:
                 extracted_params,
             ) = await self._handle_natural_language_search(request)
         else:  # manual
-            sql_query, params, extracted_params = await self._handle_manual_search(
-                request
-            )
+            sql_query, params, extracted_params = await self._handle_manual_search(request)
 
         # Step 2: Validate query safety
         if not self.builder.validate_query_safety(sql_query, params):
-            logger.error(
-                "Query safety validation failed", extra={"user_id": request.user_id}
-            )
+            logger.error("Query safety validation failed", extra={"user_id": request.user_id})
             raise InvalidSearchRequestError(
                 "Generated query failed safety validation",
                 details={"user_id": request.user_id},
@@ -151,9 +147,7 @@ class SearchOrchestrator:
             search_type=request.search_type,
             cached=False,  # TODO: Implement result caching in Phase 2
             execution_time_ms=execution_time,
-            extracted_params=extracted_params
-            if request.search_type == "natural_language"
-            else None,
+            extracted_params=extracted_params if request.search_type == "natural_language" else None,
         )
 
         logger.info(
@@ -187,9 +181,7 @@ class SearchOrchestrator:
         )
 
         # Extract parameters using Bedrock
-        extracted_params = await self.bedrock.extract_parameters(
-            query=request.query_text, user_id=request.user_id
-        )
+        extracted_params = await self.bedrock.extract_parameters(query=request.query_text, user_id=request.user_id)
 
         logger.info(
             "Parameters extracted from natural language",
@@ -210,9 +202,7 @@ class SearchOrchestrator:
 
         return sql_query, params, extracted_params
 
-    async def _handle_manual_search(
-        self, request: SearchRequest
-    ) -> Tuple[str, list[Any], None]:
+    async def _handle_manual_search(self, request: SearchRequest) -> Tuple[str, list[Any], None]:
         """
         Handle manual search: build SQL from filters directly.
 
@@ -232,9 +222,7 @@ class SearchOrchestrator:
 
         return sql_query, params, None
 
-    async def _execute_query(
-        self, sql_query: str, params: list[Any], user_id: str
-    ) -> list[Trade]:
+    async def _execute_query(self, sql_query: str, params: list[Any], user_id: str) -> list[Trade]:
         """
         Execute SQL query and convert results to Trade models.
 
@@ -312,9 +300,7 @@ class SearchOrchestrator:
             trade_ids = [trade.trade_id for trade in trades]
 
             # Fetch enriched data for ranking
-            enriched_query, enriched_params = self.builder.build_enriched_data_query(
-                trade_ids
-            )
+            enriched_query, enriched_params = self.builder.build_enriched_data_query(trade_ids)
 
             if not enriched_query:
                 logger.warning("No enriched data query generated, skipping ranking")
@@ -326,9 +312,7 @@ class SearchOrchestrator:
             # Convert to dict for efficient lookup
             enriched_data = {}
             for record in enriched_records:
-                enriched_data[record["trade_id"]] = {
-                    "transaction_count": record["transaction_count"]
-                }
+                enriched_data[record["trade_id"]] = {"transaction_count": record["transaction_count"]}
 
             logger.debug(
                 f"Fetched enriched data for {len(enriched_data)} trades",

@@ -125,9 +125,7 @@ class TestQueryBuilderFromManualFilters:
 
     def test_build_with_trade_id(self):
         """Test trade ID filter (integer type)."""
-        filters = ManualSearchFilters(
-            trade_id=12345678, account=None, asset_type=None, status=[]
-        )
+        filters = ManualSearchFilters(trade_id=12345678, account=None, asset_type=None, status=[])
 
         query, values = query_builder.build_from_manual_filters(filters)
 
@@ -136,9 +134,7 @@ class TestQueryBuilderFromManualFilters:
 
     def test_build_with_status_list(self):
         """Test status filter with multiple values."""
-        filters = ManualSearchFilters(
-            account=None, asset_type=None, status=["ALLEGED", "CLEARED", "REJECTED"]
-        )
+        filters = ManualSearchFilters(account=None, asset_type=None, status=["ALLEGED", "CLEARED", "REJECTED"])
 
         query, values = query_builder.build_from_manual_filters(filters)
 

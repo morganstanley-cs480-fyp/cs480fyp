@@ -20,13 +20,9 @@ class SearchResponse(BaseModel):
     query_id: int = Field(..., description="ID of saved query history record")
     total_results: int = Field(..., description="Total number of results found")
     results: list[Trade] = Field(..., description="List of matching trades")
-    search_type: str = Field(
-        ..., description="Type of search performed (natural_language or manual)"
-    )
+    search_type: str = Field(..., description="Type of search performed (natural_language or manual)")
     cached: bool = Field(False, description="Whether result was from cache")
-    execution_time_ms: Optional[float] = Field(
-        None, description="Query execution time in milliseconds"
-    )
+    execution_time_ms: Optional[float] = Field(None, description="Query execution time in milliseconds")
     extracted_params: Optional[ExtractedParams] = Field(
         None, description="Extracted parameters (for natural_language searches only)"
     )
@@ -78,9 +74,7 @@ class HistoryListResponse(BaseModel):
     total_count: int = Field(..., description="Total number of queries")
     saved_count: int = Field(..., description="Number of saved/bookmarked queries")
     recent_count: int = Field(..., description="Number of recent (unsaved) queries")
-    queries: list[QueryHistory] = Field(
-        ..., description="List of query history records"
-    )
+    queries: list[QueryHistory] = Field(..., description="List of query history records")
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -145,9 +139,7 @@ class TypeaheadSuggestion(BaseModel):
     query_text: str = Field(..., description="Suggested query text")
     is_saved: bool = Field(False, description="Whether the query is saved")
     query_name: Optional[str] = Field(None, description="Saved query name, if present")
-    last_use_time: Optional[str] = Field(
-        None, description="Last time query was executed"
-    )
+    last_use_time: Optional[str] = Field(None, description="Last time query was executed")
     score: float = Field(..., description="Similarity score used for ranking")
     category: Optional[str] = Field(None, description="Suggestion category label")
 
@@ -173,11 +165,7 @@ class DeleteHistoryResponse(BaseModel):
     query_id: int = Field(..., description="Query ID that was deleted")
     message: str = Field(..., description="Success message")
 
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {"query_id": 42, "message": "Query deleted successfully"}
-        }
-    )
+    model_config = ConfigDict(json_schema_extra={"example": {"query_id": 42, "message": "Query deleted successfully"}})
 
 
 class HealthResponse(BaseModel):
@@ -186,9 +174,7 @@ class HealthResponse(BaseModel):
     Used by ECS/ALB for health checks.
     """
 
-    status: Literal["healthy", "unhealthy"] = Field(
-        ..., description="Overall health status"
-    )
+    status: Literal["healthy", "unhealthy"] = Field(..., description="Overall health status")
     service: str = Field(..., description="Service name")
     version: str = Field(..., description="Service version")
     database: str = Field(..., description="Database connection status")

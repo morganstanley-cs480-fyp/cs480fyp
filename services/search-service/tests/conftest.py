@@ -151,9 +151,7 @@ def localstack_endpoint():
 def mock_bedrock_response():
     """Generate mock Bedrock AI responses"""
 
-    def _create_response(
-        extracted_query: str = "SELECT * FROM trades", confidence: float = 0.95
-    ):
+    def _create_response(extracted_query: str = "SELECT * FROM trades", confidence: float = 0.95):
         return {
             "extracted_query": extracted_query,
             "confidence": confidence,

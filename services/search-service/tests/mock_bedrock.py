@@ -63,11 +63,7 @@ class MockBedrockService:
         # Extract asset type
         if "fx" in query_lower or "foreign exchange" in query_lower:
             params["asset_type"] = "FX"
-        elif (
-            "equity" in query_lower
-            or "equities" in query_lower
-            or "stock" in query_lower
-        ):
+        elif "equity" in query_lower or "equities" in query_lower or "stock" in query_lower:
             params["asset_type"] = "EQUITY"
         elif "bond" in query_lower or "bonds" in query_lower:
             params["asset_type"] = "BOND"
@@ -147,11 +143,7 @@ class MockBedrockService:
             params["date_type"] = "update_time"
 
         # Extract exceptions
-        if (
-            "exception" in query_lower
-            or "error" in query_lower
-            or "issue" in query_lower
-        ):
+        if "exception" in query_lower or "error" in query_lower or "issue" in query_lower:
             params["with_exceptions_only"] = True
 
         logger.info("[MOCK] Extracted parameters: {json.dumps(params, indent=2)}")

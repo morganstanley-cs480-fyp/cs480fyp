@@ -14,9 +14,7 @@ from app.main import app
 @pytest.fixture
 async def client():
     """Create test client."""
-    async with AsyncClient(
-        app=app, base_url="http://test", follow_redirects=True
-    ) as ac:
+    async with AsyncClient(app=app, base_url="http://test", follow_redirects=True) as ac:
         yield ac
 
 
@@ -37,9 +35,7 @@ class TestHealthEndpoints:
     async def test_health_check_all_healthy(self, client):
         """Test GET /health when all systems healthy."""
         with (
-            patch(
-                "app.api.routes.health.db_manager.health_check", new_callable=AsyncMock
-            ) as mock_db,
+            patch("app.api.routes.health.db_manager.health_check", new_callable=AsyncMock) as mock_db,
             patch(
                 "app.api.routes.health.redis_manager.health_check",
                 new_callable=AsyncMock,
@@ -101,9 +97,7 @@ class TestSearchEndpoint:
     @pytest.mark.asyncio
     async def test_manual_search_success(self, client):
         """Test manual search with valid filters."""
-        with patch(
-            "app.services.search_orchestrator.search_orchestrator.execute_search"
-        ) as mock_search:
+        with patch("app.services.search_orchestrator.search_orchestrator.execute_search") as mock_search:
             mock_search.return_value = {
                 "query_id": 1,
                 "total_results": 5,
@@ -130,9 +124,7 @@ class TestSearchEndpoint:
     @pytest.mark.asyncio
     async def test_natural_language_search_success(self, client):
         """Test natural language search."""
-        with patch(
-            "app.services.search_orchestrator.search_orchestrator.execute_search"
-        ) as mock_search:
+        with patch("app.services.search_orchestrator.search_orchestrator.execute_search") as mock_search:
             mock_search.return_value = {
                 "query_id": 2,
                 "total_results": 10,
@@ -185,9 +177,7 @@ class TestHistoryEndpoints:
     @pytest.mark.asyncio
     async def test_get_history_success(self, client):
         """Test GET /history returns user history."""
-        with patch(
-            "app.services.query_history_service.query_history_service.get_user_history"
-        ) as mock_history:
+        with patch("app.services.query_history_service.query_history_service.get_user_history") as mock_history:
             mock_history.return_value = [
                 {
                     "query_id": 1,
@@ -217,9 +207,7 @@ class TestHistoryEndpoints:
     @pytest.mark.asyncio
     async def test_update_history_success(self, client):
         """Test PUT /history/{query_id} updates query."""
-        with patch(
-            "app.services.query_history_service.query_history_service.update_query"
-        ) as mock_update:
+        with patch("app.services.query_history_service.query_history_service.update_query") as mock_update:
             mock_update.return_value = {
                 "query_id": 1,
                 "user_id": "test_user",
@@ -232,9 +220,7 @@ class TestHistoryEndpoints:
 
             request_data = {"is_saved": True, "query_name": "My Saved Query"}
 
-            response = await client.put(
-                "/api/history/1?user_id=test_user", json=request_data
-            )
+            response = await client.put("/api/history/1?user_id=test_user", json=request_data)
 
             assert response.status_code == 200
             data = response.json()
@@ -244,9 +230,7 @@ class TestHistoryEndpoints:
     @pytest.mark.asyncio
     async def test_delete_history_success(self, client):
         """Test DELETE /history/{query_id} deletes query."""
-        with patch(
-            "app.services.query_history_service.query_history_service.delete_query"
-        ) as mock_delete:
+        with patch("app.services.query_history_service.query_history_service.delete_query") as mock_delete:
             mock_delete.return_value = None
 
             response = await client.delete("/api/history/1?user_id=test_user")

@@ -69,9 +69,7 @@ class Settings(BaseSettings):
     BEDROCK_RETRY_MIN_WAIT: int = 2
     BEDROCK_RETRY_MAX_WAIT: int = 10
 
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", case_sensitive=True, extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=True, extra="ignore")
 
     @property
     def database_url(self) -> str:

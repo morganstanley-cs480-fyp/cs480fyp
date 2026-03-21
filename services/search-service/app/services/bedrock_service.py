@@ -49,11 +49,7 @@ class BedrockService:
             session_config["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY
             logger.info(
                 "Using explicit AWS credentials for Bedrock",
-                extra={
-                    "access_key_prefix": settings.AWS_ACCESS_KEY_ID[:10]
-                    if settings.AWS_ACCESS_KEY_ID
-                    else "N/A"
-                },
+                extra={"access_key_prefix": settings.AWS_ACCESS_KEY_ID[:10] if settings.AWS_ACCESS_KEY_ID else "N/A"},
             )
         else:
             logger.warning(
@@ -176,9 +172,7 @@ class BedrockService:
         retry=retry_if_exception_type((ClientError, BotoCoreError)),
         before_sleep=before_sleep_log(logger, logging.WARNING),
     )
-    async def _invoke_bedrock(
-        self, query: str, current_date: Optional[datetime] = None
-    ) -> str:
+    async def _invoke_bedrock(self, query: str, current_date: Optional[datetime] = None) -> str:
         """
         Invoke Bedrock API with retry logic using async boto3.
 
@@ -252,9 +246,7 @@ class BedrockService:
 
         try:
             # Use async context manager for the Bedrock client
-            async with self.session.client(
-                "bedrock-runtime", region_name=self.region
-            ) as client:
+            async with self.session.client("bedrock-runtime", region_name=self.region) as client:
                 # Log invocation details
                 logger.info(
                     "Bedrock invocation details",
@@ -265,9 +257,7 @@ class BedrockService:
                 )
 
                 # Call Bedrock API asynchronously
-                response = await client.invoke_model(
-                    modelId=settings.BEDROCK_MODEL_ID, body=json.dumps(request_body)
-                )
+                response = await client.invoke_model(modelId=settings.BEDROCK_MODEL_ID, body=json.dumps(request_body))
 
                 # Log token usage from response headers
                 headers = response.get("ResponseMetadata", {}).get("HTTPHeaders", {})
@@ -277,9 +267,7 @@ class BedrockService:
                         "region": self.region,
                         "model_id": settings.BEDROCK_MODEL_ID,
                         "input_tokens": headers.get("x-amzn-bedrock-input-token-count"),
-                        "output_tokens": headers.get(
-                            "x-amzn-bedrock-output-token-count"
-                        ),
+                        "output_tokens": headers.get("x-amzn-bedrock-output-token-count"),
                     },
                 )
 
@@ -404,9 +392,7 @@ class BedrockService:
 
                 # Validate allowed values
                 if "allowed_values" in rules:
-                    invalid_values = [
-                        v for v in value if v not in rules["allowed_values"]
-                    ]
+                    invalid_values = [v for v in value if v not in rules["allowed_values"]]
                     if invalid_values:
                         logger.warning(
                             f"Invalid values in {field}: {invalid_values}",
@@ -477,9 +463,7 @@ class BedrockService:
             return None
 
         except Exception as e:
-            logger.warning(
-                f"Cache retrieval error: {e}", extra={"cache_key": cache_key}
-            )
+            logger.warning(f"Cache retrieval error: {e}", extra={"cache_key": cache_key})
             # Don't fail on cache errors
             return None
 
@@ -493,9 +477,7 @@ class BedrockService:
         """
         try:
             params_json = params.model_dump_json()
-            await self.cache.set(
-                cache_key, params_json, ttl=settings.CACHE_TTL_AI_EXTRACTION
-            )
+            await self.cache.set(cache_key, params_json, ttl=settings.CACHE_TTL_AI_EXTRACTION)
 
             logger.debug(
                 "Cached extraction result",
