@@ -427,7 +427,8 @@ export async function sendGraphUpdate(trade_id) {
 
       await sqs.send(new SendMessageCommand({
         QueueUrl: graphQueueUrl,
-        MessageBody: JSON.stringify(superEvent)
+        MessageBody: JSON.stringify(superEvent),
+        MessageGroupId: String(trade_id),
       }));
 
     } else {
