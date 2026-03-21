@@ -13,9 +13,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.database.connection import DatabaseManager
 from app.cache.redis_client import RedisManager
 from app.config.settings import settings
+from app.database.connection import DatabaseManager
 from app.utils.logger import logger
 
 
@@ -23,9 +23,7 @@ async def check_database():
     """Check PostgreSQL connection."""
     db_manager = DatabaseManager()
     try:
-        logger.info(
-            f"Checking database connection to {settings.RDS_HOST}:{settings.RDS_PORT}..."
-        )
+        logger.info(f"Checking database connection to {settings.RDS_HOST}:{settings.RDS_PORT}...")
 
         await db_manager.connect()
 
@@ -55,9 +53,7 @@ async def check_redis():
     """Check Redis connection."""
     redis_manager = RedisManager()
     try:
-        logger.info(
-            f"Checking Redis connection to {settings.REDIS_HOST}:{settings.REDIS_PORT}..."
-        )
+        logger.info(f"Checking Redis connection to {settings.REDIS_HOST}:{settings.REDIS_PORT}...")
 
         await redis_manager.connect()
 

@@ -4,8 +4,8 @@ Code quality check script for search service.
 Runs pylint and flake8 on the codebase.
 """
 
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 # Colors for terminal output
@@ -29,9 +29,7 @@ def run_command(cmd, description):
     print(f"Command: {' '.join(cmd)}\n")
 
     try:
-        result = subprocess.run(
-            cmd, cwd=Path(__file__).parent.parent, capture_output=False, text=True
-        )
+        result = subprocess.run(cmd, cwd=Path(__file__).parent.parent, capture_output=False, text=True)
 
         if result.returncode == 0:
             print(f"{GREEN}✓ {description} passed{RESET}")
@@ -42,9 +40,7 @@ def run_command(cmd, description):
     except FileNotFoundError as e:
         print(f"{RED}✗ {description} - command not found{RESET}")
         print(f"{RED}Error: {e}{RESET}")
-        print(
-            f"{YELLOW}Hint: Make sure you've installed requirements: pip install -r requirements.txt{RESET}"
-        )
+        print(f"{YELLOW}Hint: Make sure you've installed requirements: pip install -r requirements.txt{RESET}")
         return False
 
 
@@ -58,14 +54,10 @@ def main():
     python_exe = sys.executable
 
     # Run Pylint
-    results.append(
-        run_command([python_exe, "-m", "pylint", "app/"], "Pylint (code quality)")
-    )
+    results.append(run_command([python_exe, "-m", "pylint", "app/"], "Pylint (code quality)"))
 
     # Run Flake8
-    results.append(
-        run_command([python_exe, "-m", "flake8", "app/"], "Flake8 (style guide)")
-    )
+    results.append(run_command([python_exe, "-m", "flake8", "app/"], "Flake8 (style guide)"))
 
     # Summary
     print_header("SUMMARY")

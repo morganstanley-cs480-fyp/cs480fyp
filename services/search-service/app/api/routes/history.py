@@ -24,9 +24,7 @@ router = APIRouter(prefix="/api/history", tags=["history"])
 @router.get("", response_model=list[QueryHistory])
 async def get_history(
     user_id: str = Query(..., description="User ID to fetch history for", min_length=1),
-    limit: int = Query(
-        50, description="Maximum number of records to return", ge=1, le=100
-    ),
+    limit: int = Query(50, description="Maximum number of records to return", ge=1, le=100),
     saved_only: bool = Query(False, description="Return only saved/bookmarked queries"),
 ):
     """
@@ -70,16 +68,12 @@ async def get_history(
     )
 
     try:
-        history_list = await query_history_service.get_user_history(
-            user_id=user_id, limit=limit, saved_only=saved_only
-        )
+        history_list = await query_history_service.get_user_history(user_id=user_id, limit=limit, saved_only=saved_only)
 
         return history_list
 
     except DatabaseQueryError as e:
-        logger.error(
-            f"Failed to fetch query history: {e.message}", extra={"user_id": user_id}
-        )
+        logger.error(f"Failed to fetch query history: {e.message}", extra={"user_id": user_id})
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
@@ -107,12 +101,8 @@ async def get_history(
 
 @router.get("/saved-queries", response_model=list[QueryHistory])
 async def get_saved_queries(
-    user_id: str = Query(
-        ..., description="User ID to fetch saved queries for", min_length=1
-    ),
-    limit: int = Query(
-        50, description="Maximum number of records to return", ge=1, le=100
-    ),
+    user_id: str = Query(..., description="User ID to fetch saved queries for", min_length=1),
+    limit: int = Query(50, description="Maximum number of records to return", ge=1, le=100),
 ):
     """
     Get saved/bookmarked queries for a user.
@@ -126,9 +116,7 @@ async def get_saved_queries(
     logger.info("Fetching saved queries", extra={"user_id": user_id, "limit": limit})
 
     try:
-        saved_queries = await query_history_service.get_user_history(
-            user_id=user_id, limit=limit, saved_only=True
-        )
+        saved_queries = await query_history_service.get_user_history(user_id=user_id, limit=limit, saved_only=True)
 
         return saved_queries
 
@@ -153,13 +141,9 @@ async def get_saved_queries(
 
 @router.get("/suggestions", response_model=list[TypeaheadSuggestion])
 async def get_typeahead_suggestions(
-    user_id: str = Query(
-        ..., description="User ID to fetch suggestions for", min_length=1
-    ),
+    user_id: str = Query(..., description="User ID to fetch suggestions for", min_length=1),
     q: str = Query(..., description="Search input to match", min_length=1),
-    limit: int = Query(
-        10, description="Maximum number of suggestions to return", ge=1, le=20
-    ),
+    limit: int = Query(10, description="Maximum number of suggestions to return", ge=1, le=20),
 ):
     """
     Get typeahead suggestions for a user's search input.
@@ -171,9 +155,7 @@ async def get_typeahead_suggestions(
     )
 
     try:
-        suggestions = await query_history_service.get_suggestions(
-            user_id=user_id, query=q, limit=limit
-        )
+        suggestions = await query_history_service.get_suggestions(user_id=user_id, query=q, limit=limit)
 
         def format_time(value) -> str | None:
             if isinstance(value, datetime):
@@ -217,9 +199,7 @@ async def get_typeahead_suggestions(
 @router.put("/{query_id}", response_model=QueryHistory)
 async def update_history(
     query_id: int = Path(..., description="Query ID to update", ge=1),
-    user_id: str = Query(
-        ..., description="User ID (for ownership validation)", min_length=1
-    ),
+    user_id: str = Query(..., description="User ID (for ownership validation)", min_length=1),
     update: UpdateHistoryRequest = ...,
 ):
     """
@@ -306,9 +286,7 @@ async def update_history(
 @router.delete("/{query_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_history(
     query_id: int = Path(..., description="Query ID to delete", ge=1),
-    user_id: str = Query(
-        ..., description="User ID (for ownership validation)", min_length=1
-    ),
+    user_id: str = Query(..., description="User ID (for ownership validation)", min_length=1),
 ):
     """
     Delete a query from history.
@@ -336,9 +314,7 @@ async def delete_history(
     - 404: Query not found
     - 500: Database error
     """
-    logger.info(
-        "Deleting query history", extra={"query_id": query_id, "user_id": user_id}
-    )
+    logger.info("Deleting query history", extra={"query_id": query_id, "user_id": user_id})
 
     try:
         await query_history_service.delete_query(query_id=query_id, user_id=user_id)
@@ -407,9 +383,7 @@ async def clear_all_history(
     logger.info("Clearing all query history", extra={"user_id": user_id})
 
     try:
-        deleted_count = await query_history_service.delete_all_user_queries(
-            user_id=user_id
-        )
+        deleted_count = await query_history_service.delete_all_user_queries(user_id=user_id)
 
         return {
             "user_id": user_id,
@@ -440,12 +414,8 @@ async def clear_all_history(
 @router.put("/{query_id}/save", response_model=QueryHistory)
 async def save_query(
     query_id: int = Path(..., description="Query ID to save", ge=1),
-    user_id: str = Query(
-        ..., description="User ID for ownership validation", min_length=1
-    ),
-    query_name: str = Query(
-        ..., description="Name for the saved query", min_length=1, max_length=255
-    ),
+    user_id: str = Query(..., description="User ID for ownership validation", min_length=1),
+    query_name: str = Query(..., description="Name for the saved query", min_length=1, max_length=255),
 ):
     """
     Save/bookmark a query with a custom name.
@@ -528,9 +498,7 @@ async def save_query(
 @router.put("/{query_id}/use", status_code=status.HTTP_200_OK)
 async def use_query(
     query_id: int = Path(..., description="Query ID to mark as used", ge=1),
-    user_id: str = Query(
-        ..., description="User ID for ownership validation", min_length=1
-    ),
+    user_id: str = Query(..., description="User ID for ownership validation", min_length=1),
 ):
     """
     Update last_use_time for a query.
@@ -556,14 +524,10 @@ async def use_query(
     }
     ```
     """
-    logger.debug(
-        "Updating query last_use_time", extra={"query_id": query_id, "user_id": user_id}
-    )
+    logger.debug("Updating query last_use_time", extra={"query_id": query_id, "user_id": user_id})
 
     try:
-        await query_history_service.update_last_use_time(
-            query_id=query_id, user_id=user_id
-        )
+        await query_history_service.update_last_use_time(query_id=query_id, user_id=user_id)
 
         return {"success": True, "message": "Query last_use_time updated"}
 

@@ -82,9 +82,7 @@ async def health_check():
         }
 
         if not redis_healthy:
-            logger.warning(
-                "Redis health check failed - service will continue without cache"
-            )
+            logger.warning("Redis health check failed - service will continue without cache")
 
     except Exception as e:
         health_status["checks"]["cache"] = {
@@ -107,9 +105,7 @@ async def health_check():
             },
         )
 
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=health_status
-        )
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=health_status)
 
     # Service is healthy - check if running in degraded mode (cache down)
     if health_status["checks"].get("cache", {}).get("status") != "ok":
@@ -181,9 +177,7 @@ async def readiness_check():
     if not is_ready:
         readiness_status["ready"] = False
 
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=readiness_status
-        )
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=readiness_status)
 
     return readiness_status
 

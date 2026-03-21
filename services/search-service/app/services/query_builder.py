@@ -44,9 +44,7 @@ class QueryBuilder:
         WHERE 1=1
     """
 
-    def build_from_extracted_params(
-        self, params: ExtractedParams
-    ) -> Tuple[str, list[Any]]:
+    def build_from_extracted_params(self, params: ExtractedParams) -> Tuple[str, list[Any]]:
         """
         Build SQL query from AI-extracted parameters.
 
@@ -120,9 +118,7 @@ class QueryBuilder:
         # Handle date_to filter (always uses update_time)
         if params.date_to:
             # Add 1 day to include the entire end date
-            conditions.append(
-                f"update_time < (${param_index}::timestamp + INTERVAL '1 day')"
-            )
+            conditions.append(f"update_time < (${param_index}::timestamp + INTERVAL '1 day')")
             # Convert string date to datetime object for asyncpg
             date_value = datetime.strptime(params.date_to, "%Y-%m-%d").date()
             values.append(date_value)
@@ -130,9 +126,7 @@ class QueryBuilder:
 
         # Handle with_exceptions_only filter
         if params.with_exceptions_only:
-            conditions.append(
-                "EXISTS (SELECT 1 FROM exceptions e WHERE e.trade_id = trades.id)"
-            )
+            conditions.append("EXISTS (SELECT 1 FROM exceptions e WHERE e.trade_id = trades.id)")
 
         # Handle cleared_trades_only filter
         if params.cleared_trades_only:
@@ -149,16 +143,13 @@ class QueryBuilder:
             extra={
                 "num_conditions": len(conditions),
                 "num_params": len(values),
-                "has_date_filter": params.date_from is not None
-                or params.date_to is not None,
+                "has_date_filter": params.date_from is not None or params.date_to is not None,
             },
         )
 
         return query, values
 
-    def build_from_manual_filters(
-        self, filters: ManualSearchFilters
-    ) -> Tuple[str, list[Any]]:
+    def build_from_manual_filters(self, filters: ManualSearchFilters) -> Tuple[str, list[Any]]:
         """
         Build SQL query from manual frontend filters.
 
@@ -232,9 +223,7 @@ class QueryBuilder:
         # Handle date_to filter
         if filters.date_to:
             # Add 1 day to include the entire end date
-            conditions.append(
-                f"{date_field} < (${param_index}::timestamp + INTERVAL '1 day')"
-            )
+            conditions.append(f"{date_field} < (${param_index}::timestamp + INTERVAL '1 day')")
             # Convert string date to datetime object for asyncpg
             date_value = datetime.strptime(filters.date_to, "%Y-%m-%d").date()
             values.append(date_value)
@@ -242,9 +231,7 @@ class QueryBuilder:
 
         # Handle with_exceptions_only filter
         if filters.with_exceptions_only:
-            conditions.append(
-                "EXISTS (SELECT 1 FROM exceptions e WHERE e.trade_id = trades.id)"
-            )
+            conditions.append("EXISTS (SELECT 1 FROM exceptions e WHERE e.trade_id = trades.id)")
 
         # Handle cleared_trades_only filter
         if filters.cleared_trades_only:

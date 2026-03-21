@@ -61,17 +61,13 @@ class QueryHistoryService:
             return query_id
 
         except Exception as e:
-            logger.error(
-                f"Failed to save query to history: {e}", extra={"user_id": user_id}
-            )
+            logger.error(f"Failed to save query to history: {e}", extra={"user_id": user_id})
             raise DatabaseQueryError(
                 "Failed to save query to history",
                 details={"error": str(e), "user_id": user_id},
             )
 
-    async def get_user_history(
-        self, user_id: str, limit: int = 50, saved_only: bool = False
-    ) -> list[QueryHistory]:
+    async def get_user_history(self, user_id: str, limit: int = 50, saved_only: bool = False) -> list[QueryHistory]:
         """
         Get query history for a user.
 
@@ -121,9 +117,7 @@ class QueryHistoryService:
             return history_list
 
         except Exception as e:
-            logger.error(
-                f"Failed to retrieve query history: {e}", extra={"user_id": user_id}
-            )
+            logger.error(f"Failed to retrieve query history: {e}", extra={"user_id": user_id})
             raise DatabaseQueryError(
                 "Failed to retrieve query history",
                 details={"error": str(e), "user_id": user_id},
@@ -168,9 +162,7 @@ class QueryHistoryService:
             return stats
 
         except Exception as e:
-            logger.error(
-                f"Failed to retrieve history stats: {e}", extra={"user_id": user_id}
-            )
+            logger.error(f"Failed to retrieve history stats: {e}", extra={"user_id": user_id})
             raise DatabaseQueryError(
                 "Failed to retrieve history statistics",
                 details={"error": str(e), "user_id": user_id},
@@ -212,9 +204,7 @@ class QueryHistoryService:
         """
 
         try:
-            record = await db_manager.fetchrow(
-                query, is_saved, query_name, query_id, user_id
-            )
+            record = await db_manager.fetchrow(query, is_saved, query_name, query_id, user_id)
 
             if not record:
                 raise QueryHistoryNotFoundError(
@@ -329,9 +319,7 @@ class QueryHistoryService:
             return deleted_count
 
         except Exception as e:
-            logger.error(
-                f"Failed to delete all query history: {e}", extra={"user_id": user_id}
-            )
+            logger.error(f"Failed to delete all query history: {e}", extra={"user_id": user_id})
             raise DatabaseQueryError(
                 "Failed to delete all query history",
                 details={"error": str(e), "user_id": user_id},
@@ -414,9 +402,7 @@ class QueryHistoryService:
             LIMIT $3
         """
         try:
-            history_records = await db_manager.fetch(
-                history_sql, user_id, pattern, max_candidates
-            )
+            history_records = await db_manager.fetch(history_sql, user_id, pattern, max_candidates)
             for record in history_records:
                 raw_text = (record.get("query_text") or "").strip()
                 # Skip JSON blobs saved from manual filter searches
@@ -558,9 +544,7 @@ class QueryHistoryService:
             record = await db_manager.fetchrow(query, query_id)
 
             if not record:
-                raise QueryHistoryNotFoundError(
-                    f"Query {query_id} not found", details={"query_id": query_id}
-                )
+                raise QueryHistoryNotFoundError(f"Query {query_id} not found", details={"query_id": query_id})
             if record["user_id"] != user_id:
                 logger.warning(
                     "Unauthorized access attempt",

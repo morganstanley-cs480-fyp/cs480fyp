@@ -20,25 +20,15 @@ class ManualSearchFilters(BaseModel):
 
     trade_id: Optional[str] = Field(None, description="Trade ID to search for")
     account: Optional[str] = Field(None, description="Account filter")
-    asset_type: Optional[str] = Field(
-        None, description="Asset type (FX, EQUITY, BOND, etc.)"
-    )
+    asset_type: Optional[str] = Field(None, description="Asset type (FX, EQUITY, BOND, etc.)")
     booking_system: Optional[str] = Field(None, description="Booking system filter")
-    affirmation_system: Optional[str] = Field(
-        None, description="Affirmation system filter"
-    )
+    affirmation_system: Optional[str] = Field(None, description="Affirmation system filter")
     clearing_house: Optional[str] = Field(None, description="Clearing house filter")
-    status: Optional[list[str]] = Field(
-        default_factory=list, description="Status filters (can be multiple)"
-    )
-    date_type: Literal["create_time", "update_time"] = Field(
-        "update_time", description="Which date field to filter on"
-    )
+    status: Optional[list[str]] = Field(default_factory=list, description="Status filters (can be multiple)")
+    date_type: Literal["create_time", "update_time"] = Field("update_time", description="Which date field to filter on")
     date_from: Optional[str] = Field(None, description="Start date (YYYY-MM-DD)")
     date_to: Optional[str] = Field(None, description="End date (YYYY-MM-DD)")
-    with_exceptions_only: bool = Field(
-        False, description="Only show trades with exceptions"
-    )
+    with_exceptions_only: bool = Field(False, description="Only show trades with exceptions")
     cleared_trades_only: bool = Field(False, description="Only show cleared trades")
 
 
@@ -52,9 +42,7 @@ class SearchRequest(BaseModel):
     """
 
     user_id: str = Field(..., description="User ID from authentication")
-    search_type: Literal["natural_language", "manual"] = Field(
-        ..., description="Type of search"
-    )
+    search_type: Literal["natural_language", "manual"] = Field(..., description="Type of search")
 
     # For natural language search
     query_text: Optional[str] = Field(
@@ -98,15 +86,9 @@ class UpdateHistoryRequest(BaseModel):
     """
 
     is_saved: bool = Field(..., description="Whether to save this query")
-    query_name: Optional[str] = Field(
-        None, description="Name for saved query (required if is_saved=True)"
-    )
+    query_name: Optional[str] = Field(None, description="Name for saved query (required if is_saved=True)")
 
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {"is_saved": True, "query_name": "My weekly FX review"}
-        }
-    )
+    model_config = ConfigDict(json_schema_extra={"example": {"is_saved": True, "query_name": "My weekly FX review"}})
 
 
 # ============================================================================
@@ -158,9 +140,7 @@ class SearchResponse(BaseModel):
     results: list[Trade] = Field(..., description="List of matching trades")
     search_type: str = Field(..., description="Type of search performed")
     cached: bool = Field(False, description="Whether result was from cache")
-    execution_time_ms: Optional[float] = Field(
-        None, description="Query execution time in milliseconds"
-    )
+    execution_time_ms: Optional[float] = Field(None, description="Query execution time in milliseconds")
 
     model_config = ConfigDict(
         json_schema_extra={

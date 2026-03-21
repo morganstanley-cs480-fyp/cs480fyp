@@ -23,19 +23,13 @@ class Trade(BaseModel):
         serialization_alias="trade_id",
     )
     account: str = Field(..., description="Account identifier (e.g., ACC12345)")
-    asset_type: str = Field(
-        ..., description="Asset type (FX, EQUITY, BOND, COMMODITY, CDS, IRS)"
-    )
+    asset_type: str = Field(..., description="Asset type (FX, EQUITY, BOND, COMMODITY, CDS, IRS)")
     booking_system: str = Field(..., description="Booking system name")
     affirmation_system: str = Field(..., description="Affirmation system name")
-    clearing_house: str = Field(
-        ..., description="Clearing house (DTCC, LCH, CME, NSCC, JSCC, OTCCHK)"
-    )
+    clearing_house: str = Field(..., description="Clearing house (DTCC, LCH, CME, NSCC, JSCC, OTCCHK)")
     create_time: str = Field(..., description="Trade creation timestamp")
     update_time: str = Field(..., description="Trade last update timestamp")
-    status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED"] = Field(
-        ..., description="Trade status"
-    )
+    status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED"] = Field(..., description="Trade status")
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -93,9 +87,7 @@ class QueryHistory(BaseModel):
     user_id: str = Field(..., description="User who created the query")
     query_text: str = Field(..., description="Original query text or JSON filters")
     is_saved: bool = Field(False, description="Whether user bookmarked this query")
-    query_name: Optional[str] = Field(
-        None, description="User-provided name for saved query"
-    )
+    query_name: Optional[str] = Field(None, description="User-provided name for saved query")
     create_time: str = Field(..., description="Query creation timestamp")
     last_use_time: str = Field(..., description="Last time query was executed")
 
