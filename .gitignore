@@ -135,6 +135,3 @@ node_modules/
 # Localstack
 services/localstack-data
 services/volumes/
-
-services/SEARCH_SERVICE_GUIDE.md
-services/RAG_PIPELINE_GUIDE.md
