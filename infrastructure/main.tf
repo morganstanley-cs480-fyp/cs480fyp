@@ -117,7 +117,7 @@ module "milvus_db" {
 module "neptune_db" {
   source             = "./modules/neptune"
   vpc_id             = module.networking.vpc_id
-  private_subnet_ids = module.networking.public_subnet_ids[0]
+  public_subnet_ids = module.networking.public_subnet_ids
   ecs_sg_id          = module.ecs_security_group.ecs_service_sg_id
 }
 
@@ -601,7 +601,6 @@ module "graph_maker_task_role" {
   service_name  = var.graph_maker_service_name
   graph_ingestion_queue_arn = module.graph_ingestion_queue.sqs_queue_arn
   neptune_cluster_arn = module.neptune_db.neptune_cluster_arn
-  neptune_endpoint    = module.neptune_db.neptune_endpoint
 }
 
 # graph_maker_cloudwatch

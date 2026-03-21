@@ -472,6 +472,45 @@ variable "trade_flow_service_name" {
 }
 
 # ==========================================
+# 8. Graph Maker Service
+# ==========================================
+variable "graph_maker_repo_name" {
+  type    = string
+  default = "graph-maker-service"
+}
+
+variable "graph_maker_target_group_name" {
+  type    = string
+  default = "graph-maker-target-group"
+}
+
+variable "graph_maker_log_group_name" {
+  type    = string
+  default = "/ecs/graph-maker-logs"
+}
+
+variable "graph_maker_family" {
+  type    = string
+  default = "graph-maker-service-task"
+}
+
+variable "graph_maker_container_name" {
+  type    = string
+  default = "graph-maker-service-container"
+}
+
+variable "graph_maker_container_image" {
+  type    = string
+  default = "795367301114.dkr.ecr.ap-southeast-1.amazonaws.com/graph-maker-service:latest"
+}
+
+variable "graph_maker_service_name" {
+  type    = string
+  default = "graph-maker-service"
+}
+
+
+# ==========================================
 # Milvus EC2
 # ==========================================
 variable "key_name" {
