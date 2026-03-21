@@ -71,20 +71,41 @@ class SearchOrchestrator:
 
         # Save to query history early (before execution) so failed searches are tracked
         try:
-            query_text = (
-                request.query_text
-                if request.search_type == "natural_language"
-                else request.filters.model_dump_json()
-            )
-            query_id = await self.history.save_query(
-                user_id=request.user_id,
-                query_text=query_text,
-                search_type=request.search_type,
-            )
-            logger.info(
-                "Query saved to history",
-                extra={"user_id": request.user_id, "query_id": query_id},
-            )
+            should_save = True
+            if request.search_type == "manual" and request.filters:
+                # Check if filters are effectively empty (default state)
+                f = request.filters
+                is_empty = (
+                    f.trade_id is None
+                    and not f.account
+                    and not f.asset_type
+                    and not f.booking_system
+                    and not f.affirmation_system
+                    and not f.clearing_house
+                    and not f.status
+                    and not f.date_from
+                    and not f.date_to
+                    and not f.with_exceptions_only
+                    and not f.cleared_trades_only
+                )
+                if is_empty:
+                    should_save = False
+
+            if should_save:
+                query_text = (
+                    request.query_text
+                    if request.search_type == "natural_language"
+                    else request.filters.model_dump_json()
+                )
+                query_id = await self.history.save_query(
+                    user_id=request.user_id,
+                    query_text=query_text,
+                    search_type=request.search_type,
+                )
+                logger.debug(
+                    "Search history save completed",
+                    extra={"user_id": request.user_id, "query_id": query_id},
+                )
         except Exception as e:
             # Log but don't fail search if history save fails
             logger.warning(
@@ -100,15 +121,11 @@ class SearchOrchestrator:
                 extracted_params,
             ) = await self._handle_natural_language_search(request)
         else:  # manual
-            sql_query, params, extracted_params = await self._handle_manual_search(
-                request
-            )
+            sql_query, params, extracted_params = await self._handle_manual_search(request)
 
         # Step 2: Validate query safety
         if not self.builder.validate_query_safety(sql_query, params):
-            logger.error(
-                "Query safety validation failed", extra={"user_id": request.user_id}
-            )
+            logger.error("Query safety validation failed", extra={"user_id": request.user_id})
             raise InvalidSearchRequestError(
                 "Generated query failed safety validation",
                 details={"user_id": request.user_id},
@@ -130,9 +147,7 @@ class SearchOrchestrator:
             search_type=request.search_type,
             cached=False,  # TODO: Implement result caching in Phase 2
             execution_time_ms=execution_time,
-            extracted_params=extracted_params
-            if request.search_type == "natural_language"
-            else None,
+            extracted_params=extracted_params if request.search_type == "natural_language" else None,
         )
 
         logger.info(
@@ -166,9 +181,7 @@ class SearchOrchestrator:
         )
 
         # Extract parameters using Bedrock
-        extracted_params = await self.bedrock.extract_parameters(
-            query=request.query_text, user_id=request.user_id
-        )
+        extracted_params = await self.bedrock.extract_parameters(query=request.query_text, user_id=request.user_id)
 
         logger.info(
             "Parameters extracted from natural language",
@@ -189,9 +202,7 @@ class SearchOrchestrator:
 
         return sql_query, params, extracted_params
 
-    async def _handle_manual_search(
-        self, request: SearchRequest
-    ) -> Tuple[str, list[Any], None]:
+    async def _handle_manual_search(self, request: SearchRequest) -> Tuple[str, list[Any], None]:
         """
         Handle manual search: build SQL from filters directly.
 
@@ -211,9 +222,7 @@ class SearchOrchestrator:
 
         return sql_query, params, None
 
-    async def _execute_query(
-        self, sql_query: str, params: list[Any], user_id: str
-    ) -> list[Trade]:
+    async def _execute_query(self, sql_query: str, params: list[Any], user_id: str) -> list[Trade]:
         """
         Execute SQL query and convert results to Trade models.
 
@@ -291,9 +300,7 @@ class SearchOrchestrator:
             trade_ids = [trade.trade_id for trade in trades]
 
             # Fetch enriched data for ranking
-            enriched_query, enriched_params = self.builder.build_enriched_data_query(
-                trade_ids
-            )
+            enriched_query, enriched_params = self.builder.build_enriched_data_query(trade_ids)
 
             if not enriched_query:
                 logger.warning("No enriched data query generated, skipping ranking")
@@ -305,9 +312,7 @@ class SearchOrchestrator:
             # Convert to dict for efficient lookup
             enriched_data = {}
             for record in enriched_records:
-                enriched_data[record["trade_id"]] = {
-                    "transaction_count": record["transaction_count"]
-                }
+                enriched_data[record["trade_id"]] = {"transaction_count": record["transaction_count"]}
 
             logger.debug(
                 f"Fetched enriched data for {len(enriched_data)} trades",

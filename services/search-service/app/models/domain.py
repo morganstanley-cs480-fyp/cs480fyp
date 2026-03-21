@@ -6,7 +6,7 @@ These models map to database tables and represent the core data structures.
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Trade(BaseModel):
@@ -23,22 +23,16 @@ class Trade(BaseModel):
         serialization_alias="trade_id",
     )
     account: str = Field(..., description="Account identifier (e.g., ACC12345)")
-    asset_type: str = Field(
-        ..., description="Asset type (FX, EQUITY, BOND, COMMODITY, CDS, IRS)"
-    )
+    asset_type: str = Field(..., description="Asset type (FX, EQUITY, BOND, COMMODITY, CDS, IRS)")
     booking_system: str = Field(..., description="Booking system name")
     affirmation_system: str = Field(..., description="Affirmation system name")
-    clearing_house: str = Field(
-        ..., description="Clearing house (DTCC, LCH, CME, NSCC, JSCC, OTCCHK)"
-    )
+    clearing_house: str = Field(..., description="Clearing house (DTCC, LCH, CME, NSCC, JSCC, OTCCHK)")
     create_time: str = Field(..., description="Trade creation timestamp")
     update_time: str = Field(..., description="Trade last update timestamp")
-    status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED"] = Field(
-        ..., description="Trade status"
-    )
+    status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED"] = Field(..., description="Trade status")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "trade_id": 10001234,
                 "account": "ACC12345",
@@ -51,6 +45,7 @@ class Trade(BaseModel):
                 "status": "CLEARED",
             }
         }
+    )
 
     @classmethod
     def from_db_record(cls, record) -> "Trade":
@@ -92,14 +87,12 @@ class QueryHistory(BaseModel):
     user_id: str = Field(..., description="User who created the query")
     query_text: str = Field(..., description="Original query text or JSON filters")
     is_saved: bool = Field(False, description="Whether user bookmarked this query")
-    query_name: Optional[str] = Field(
-        None, description="User-provided name for saved query"
-    )
+    query_name: Optional[str] = Field(None, description="User-provided name for saved query")
     create_time: str = Field(..., description="Query creation timestamp")
     last_use_time: str = Field(..., description="Last time query was executed")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query_id": 42,
                 "user_id": "user123",
@@ -110,6 +103,7 @@ class QueryHistory(BaseModel):
                 "last_use_time": "2025-01-20 09:00:00",
             }
         }
+    )
 
     @classmethod
     def from_db_record(cls, record) -> "QueryHistory":
@@ -156,8 +150,8 @@ class ExtractedParams(BaseModel):
     with_exceptions_only: bool = False
     cleared_trades_only: bool = False
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "trade_id": None,
                 "accounts": ["ACC123", "ACC456"],
@@ -172,3 +166,4 @@ class ExtractedParams(BaseModel):
                 "cleared_trades_only": False,
             }
         }
+    )

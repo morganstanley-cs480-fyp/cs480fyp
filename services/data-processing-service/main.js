@@ -2,7 +2,7 @@
 AWS_REGION, QUEUE_URL, DB_HOST, DB_NAME, DB_PASSWORD, DB_USER, DB_PORT
 */
 
-import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from "@aws-sdk/client-sqs";
+import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { Pool } from 'pg';
 import { createClient } from 'redis';
 
@@ -10,6 +10,7 @@ import { createClient } from 'redis';
 export const queueUrl = process.env.DATA_PROCESSING_QUEUE_URL;
 export const awsRegion = process.env.AWS_REGION || "ap-southeast-1";
 export const redisHost = process.env.REDIS_HOST || "localhost";
+export const graphQueueUrl = process.env.GRAPH_INGESTION_QUEUE_URL;
 
 // AWS Clients
 export const sqs = new SQSClient({
@@ -83,7 +84,6 @@ async function initDB() {
       id INTEGER PRIMARY KEY, 
       trade_id INTEGER REFERENCES trades(id), 
       trans_id INTEGER REFERENCES transactions(id), 
-      event TEXT, 
       status TEXT, 
       msg TEXT, 
       create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -222,6 +222,7 @@ export async function handleTrade(trade) {
   ];
   
   await pool.query(query, values);
+  await sendGraphUpdate(trade.id);
   console.log(`Processed Trade ID: ${trade.id}`);
 }
 
@@ -308,6 +309,8 @@ export async function handleTransaction(trans) {
       );
     }
 
+    await sendGraphUpdate(trans.trade_id);
+
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -356,6 +359,8 @@ export async function handleException(excep) {
     await client.query('COMMIT');
     console.log(`Processed Exception ID: ${excep.id}`);
 
+    await sendGraphUpdate(excep.trade_id);
+
     // Publish Exception
     await publishUpdate(excep.trade_id, excep);
     console.log(
@@ -377,6 +382,59 @@ export async function handleException(excep) {
     throw error;
   } finally {
     client.release();
+  }
+}
+
+// --- 1. The "Super Event" Enrichment Function ---
+export async function sendGraphUpdate(trade_id) {
+  try {
+    // This query performs the 'Merge' logic at the Database level
+    // It finds the trade, the latest transaction step, and any exception linked to that specific transaction
+    const enrichmentQuery = `
+      WITH latest_tx AS (
+        SELECT * FROM transactions 
+        WHERE trade_id = $1 
+        ORDER BY step DESC LIMIT 1
+      )
+      SELECT 
+        t.id as trade_id, t.account, t.asset_type, t.booking_system, 
+        t.affirmation_system, t.clearing_house, t.status as trade_status, t.create_time as created_at,
+        ltx.status as trans_status, ltx.id as trans_id, ltx.step, ltx.entity, 
+        ltx.direction, ltx.type, ltx.create_time as trans_created_at,
+        ex.id as excep_id, ex.status as excep_status, ex.comment, ex.msg, ex.priority, ex.create_time as excep_created_at
+      FROM trades t
+      LEFT JOIN latest_tx ltx ON t.id = ltx.trade_id
+      LEFT JOIN exceptions ex ON ltx.id = ex.trans_id
+      WHERE t.id = $1;
+    `;
+
+   const res = await pool.query(enrichmentQuery, [trade_id]);
+    
+    if (res.rows.length > 0) {
+      const superEvent = res.rows[0];
+
+      // --- NEW LOGGING BLOCK ---
+      const requiredFields = ['booking_system', 'affirmation_system', 'clearing_house', 'entity'];
+      const missingFields = requiredFields.filter(field => !superEvent[field]);
+
+      if (missingFields.length > 0) {
+        console.warn(`DATA WARNING for Trade ${trade_id}:`);
+        console.warn(`Missing fields: [${missingFields.join(', ')}]`);
+        console.warn(`Transaction ID: ${superEvent.trans_id || 'N/A'}`);
+        console.warn(`Full Payload for Debug:`, JSON.stringify(superEvent, null, 2));
+      }
+      // -------------------------
+
+      await sqs.send(new SendMessageCommand({
+        QueueUrl: graphQueueUrl,
+        MessageBody: JSON.stringify(superEvent)
+      }));
+
+    } else {
+      console.error(`Enrichment Error: No data found for Trade ${trade_id} during enrichment.`);
+    }
+  } catch (err) {
+    console.error(`Failed to enrich graph data for Trade ${trade_id}:`, err);
   }
 }
 

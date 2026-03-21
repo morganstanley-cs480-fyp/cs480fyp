@@ -4,6 +4,7 @@ Pytest configuration and fixtures for LocalStack integration testing.
 
 import asyncio
 import os
+import socket
 import sys
 from pathlib import Path
 from typing import AsyncGenerator
@@ -24,6 +25,53 @@ if test_env_file.exists():
                 os.environ[key] = value
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+
+def _can_connect(host: str, port: int, timeout: float = 1.0) -> bool:
+    """Return True if TCP connection can be established."""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def _apply_compose_fallback_if_needed() -> None:
+    """Fallback from test-stack endpoints to default compose endpoints.
+
+    `.env.test` targets `docker-compose.test.yml` (DB 5433, Redis 6380).
+    If those ports are unavailable but default compose services are up,
+    switch to DB 5432/`trading_db` and Redis 6379.
+    """
+
+    db_host = os.getenv("RDS_HOST", "localhost")
+    db_port = int(os.getenv("RDS_PORT", "5433"))
+    redis_host = os.getenv("REDIS_HOST", "localhost")
+    redis_port = int(os.getenv("REDIS_PORT", "6380"))
+
+    test_db_unreachable = (
+        db_host == "localhost"
+        and db_port == 5433
+        and not _can_connect(db_host, db_port)
+        and _can_connect(db_host, 5432)
+    )
+    test_redis_unreachable = (
+        redis_host == "localhost"
+        and redis_port == 6380
+        and not _can_connect(redis_host, redis_port)
+        and _can_connect(redis_host, 6379)
+    )
+
+    if test_db_unreachable:
+        os.environ["RDS_PORT"] = "5432"
+        if os.getenv("RDS_DB") == "trading_db_test":
+            os.environ["RDS_DB"] = "trading_db"
+
+    if test_redis_unreachable:
+        os.environ["REDIS_PORT"] = "6379"
+
+
+_apply_compose_fallback_if_needed()
 
 from app.cache.redis_client import redis_manager  # noqa: E402
 from app.database.connection import db_manager  # noqa: E402
@@ -103,9 +151,7 @@ def localstack_endpoint():
 def mock_bedrock_response():
     """Generate mock Bedrock AI responses"""
 
-    def _create_response(
-        extracted_query: str = "SELECT * FROM trades", confidence: float = 0.95
-    ):
+    def _create_response(extracted_query: str = "SELECT * FROM trades", confidence: float = 0.95):
         return {
             "extracted_query": extracted_query,
             "confidence": confidence,

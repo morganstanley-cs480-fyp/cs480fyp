@@ -48,9 +48,7 @@ class GeminiService:
         self.validation_rules = build_validation_rules()
 
         if not api_key:
-            logger.warning(
-                "GOOGLE_API_KEY is not set – GeminiService will raise on first use."
-            )
+            logger.warning("GOOGLE_API_KEY is not set – GeminiService will raise on first use.")
             return
 
         genai.configure(api_key=api_key)
@@ -62,9 +60,7 @@ class GeminiService:
         )
         self._initialized = True
 
-        logger.info(
-            "Gemini service initialized", extra={"model": settings.GOOGLE_MODEL_ID}
-        )
+        logger.info("Gemini service initialized", extra={"model": settings.GOOGLE_MODEL_ID})
 
     # ------------------------------------------------------------------
     # Public interface (same signature as BedrockService)
@@ -75,6 +71,7 @@ class GeminiService:
         query: str,
         user_id: str,
         current_date: Optional[datetime] = None,
+        conversation: Optional[list[dict[str, str]]] = None,
     ) -> ExtractedParams:
         """
         Extract structured parameters from a natural language query.
@@ -90,6 +87,7 @@ class GeminiService:
             query: Natural language query string
             user_id: User ID for logging
             current_date: Current date for relative date calculations
+            conversation: Optional conversation history for context-aware extraction
 
         Returns:
             ExtractedParams model with extracted parameters
@@ -99,9 +97,7 @@ class GeminiService:
             BedrockResponseError: Re-used for parse/validation failures
         """
         if not self._initialized:
-            raise ValueError(
-                "Google API key is required. Set GOOGLE_API_KEY environment variable."
-            )
+            raise ValueError("Google API key is required. Set GOOGLE_API_KEY environment variable.")
 
         normalized_query = query.strip().lower()
         cache_key = self._generate_cache_key(normalized_query)
@@ -128,7 +124,7 @@ class GeminiService:
 
         # Step 2: Call Gemini API
         try:
-            raw_response = await self._invoke_gemini(query, current_date)
+            raw_response = await self._invoke_gemini(query, current_date, conversation)
         except Exception as e:
             logger.error(
                 f"Gemini API call failed: {e}",
@@ -174,6 +170,7 @@ class GeminiService:
         self,
         query: str,
         current_date: Optional[datetime] = None,
+        conversation: Optional[list[dict[str, str]]] = None,
     ) -> str:
         """
         Call Google Gemini synchronously via asyncio executor so the
@@ -182,7 +179,7 @@ class GeminiService:
         Returns:
             Raw JSON string from Gemini
         """
-        user_prompt = build_user_prompt(query, current_date)
+        user_prompt = build_user_prompt(query, current_date, conversation)
 
         generation_config = genai.types.GenerationConfig(
             temperature=0.0,  # Deterministic extraction
@@ -274,9 +271,7 @@ class GeminiService:
                     value = [value] if value else []
 
                 if "allowed_values" in rules:
-                    invalid_values = [
-                        v for v in value if v not in rules["allowed_values"]
-                    ]
+                    invalid_values = [v for v in value if v not in rules["allowed_values"]]
                     if invalid_values:
                         logger.warning(
                             f"Invalid values in {field}: {invalid_values}",
@@ -321,9 +316,7 @@ class GeminiService:
                 return ExtractedParams(**json.loads(cached_json))
             return None
         except Exception as e:
-            logger.warning(
-                f"Cache retrieval error: {e}", extra={"cache_key": cache_key}
-            )
+            logger.warning(f"Cache retrieval error: {e}", extra={"cache_key": cache_key})
             return None
 
     async def _save_to_cache(self, cache_key: str, params: ExtractedParams) -> None:

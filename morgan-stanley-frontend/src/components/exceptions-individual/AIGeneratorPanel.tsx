@@ -159,7 +159,7 @@ export function AIGeneratorPanel({
       <TabsContent value="historical" className="mt-4">
         <div className="space-y-3 max-h-64 overflow-y-auto">
           {historicalCases.length > 0 ? (
-            historicalCases.map((case_item, index) => {
+            historicalCases.map((case_item) => {
               const isExpanded = expandedCases.has(case_item.exception_id);
               const shouldTruncate = case_item.exception_narrative.length > 200;
               

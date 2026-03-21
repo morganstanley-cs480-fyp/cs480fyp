@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, AlertCircle, Clock } from "lucide-react";
 import {
@@ -13,6 +13,7 @@ import type {
   SortingState,
   VisibilityState,
   ColumnFiltersState,
+  PaginationState,
 } from "@tanstack/react-table";
 import type { Exception } from "@/lib/api/types";
 
@@ -62,16 +63,79 @@ function ExceptionHeader() {
 
 function ExceptionsPage() {
   const queryClient = useQueryClient();
+  const TABLE_STATE_KEY = "exceptionTableState:v1";
+  const FILTER_STATE_KEY = "exceptionFilters:v1";
   
   // TanStack Table state
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = useState<SortingState>(() => {
+    if (typeof window === "undefined") return [];
+    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved) as { sorting?: SortingState };
+      return parsed.sorting ?? [];
+    } catch {
+      return [];
+    }
+  });
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
+    if (typeof window === "undefined") return {};
+    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+    if (!saved) return {};
+    try {
+      const parsed = JSON.parse(saved) as { columnVisibility?: VisibilityState };
+      return parsed.columnVisibility ?? {};
+    } catch {
+      return {};
+    }
+  });
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+    if (typeof window === "undefined") return [];
+    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved) as { columnFilters?: ColumnFiltersState };
+      return parsed.columnFilters ?? [];
+    } catch {
+      return [];
+    }
+  });
+  const [pagination, setPagination] = useState<PaginationState>(() => {
+    if (typeof window === "undefined") return { pageIndex: 0, pageSize: 20 };
+    const saved = sessionStorage.getItem(TABLE_STATE_KEY);
+    if (!saved) return { pageIndex: 0, pageSize: 20 };
+    try {
+      const parsed = JSON.parse(saved) as { pagination?: PaginationState };
+      return parsed.pagination ?? { pageIndex: 0, pageSize: 20 };
+    } catch {
+      return { pageIndex: 0, pageSize: 20 };
+    }
+  });
   
   // Exception-specific state - no search query needed
   const [selectedException, setSelectedException] = useState<Exception | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "CLOSED">("ALL");
-  const [priorityFilter, setPriorityFilter] = useState<"ALL" | "HIGH" | "MEDIUM" | "LOW">("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "CLOSED">(() => {
+    if (typeof window === "undefined") return "ALL";
+    const saved = sessionStorage.getItem(FILTER_STATE_KEY);
+    if (!saved) return "ALL";
+    try {
+      const parsed = JSON.parse(saved) as { statusFilter?: "ALL" | "PENDING" | "CLOSED" };
+      return parsed.statusFilter ?? "ALL";
+    } catch {
+      return "ALL";
+    }
+  });
+  const [priorityFilter, setPriorityFilter] = useState<"ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW">(() => {
+    if (typeof window === "undefined") return "ALL";
+    const saved = sessionStorage.getItem(FILTER_STATE_KEY);
+    if (!saved) return "ALL";
+    try {
+      const parsed = JSON.parse(saved) as { priorityFilter?: "ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" };
+      return parsed.priorityFilter ?? "ALL";
+    } catch {
+      return "ALL";
+    }
+  });
 
   // Search params for TanStack Query - always active since we load all data
   const searchParams: ExceptionSearchParams = {
@@ -135,6 +199,8 @@ function ExceptionsPage() {
     getStatusBadgeVariant,
   });
 
+  // TanStack Table returns function values by design; React Compiler warning is expected here
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: results,
     columns,
@@ -145,17 +211,39 @@ function ExceptionsPage() {
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
     onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
+    autoResetPageIndex: false,
     state: {
       sorting,
       columnVisibility,
       columnFilters,
-    },
-    initialState: {
-      pagination: {
-        pageSize: 20,
-      },
+      pagination,
     },
   });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    sessionStorage.setItem(
+      TABLE_STATE_KEY,
+      JSON.stringify({
+        sorting,
+        columnVisibility,
+        columnFilters,
+        pagination,
+      }),
+    );
+  }, [sorting, columnVisibility, columnFilters, pagination]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    sessionStorage.setItem(
+      FILTER_STATE_KEY,
+      JSON.stringify({
+        statusFilter,
+        priorityFilter,
+      }),
+    );
+  }, [statusFilter, priorityFilter]);
 
   // Calculate stats from all exceptions (unfiltered)
   const stats = {

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 import { useTradeSearch } from '../hooks/useTradeSearch'
 import { searchService } from '../lib/api/searchService'
-import type { SearchRequest, ManualSearchFilters } from '../lib/api/types'
+import type { SearchRequest, ManualSearchFilters, SearchResponse } from '../lib/api/types'
 
 // Mock the search service
 vi.mock('../lib/api/searchService', () => ({
@@ -231,8 +231,8 @@ describe('useTradeSearch', () => {
 
   describe('Loading States', () => {
     it('should show loading state during fetch', async () => {
-      let resolvePromise: (value: any) => void
-      const promise = new Promise(resolve => {
+      let resolvePromise: (value: SearchResponse) => void
+      const promise = new Promise<SearchResponse>(resolve => {
         resolvePromise = resolve
       })
       
@@ -355,7 +355,7 @@ describe('useTradeSearch', () => {
         data: 'invalid'
       }
       
-      vi.mocked(searchService.searchTrades).mockResolvedValue(malformedResponse as any)
+      vi.mocked(searchService.searchTrades).mockResolvedValue(malformedResponse as unknown as SearchResponse)
 
       const searchParams: SearchRequest = {
         search_type: 'natural_language',

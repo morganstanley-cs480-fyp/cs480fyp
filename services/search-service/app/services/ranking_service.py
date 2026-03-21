@@ -24,9 +24,7 @@ class RankingConfig:
 
     def __init__(self, config_path: str = None):
         if config_path is None:
-            config_path = (
-                Path(__file__).parent.parent / "config" / "ranking_config.json"
-            )
+            config_path = Path(__file__).parent.parent / "config" / "ranking_config.json"
 
         self.config_path = Path(config_path)
         self.config: Dict[str, Any] = {}
@@ -73,19 +71,59 @@ class RankingConfig:
 
     def _validate(self) -> None:
         """Validate configuration values."""
+        # Validate and normalize required sections
+        weights = self._coerce_numeric_map(self.config.get("weights", {}))
+        status_priority = self._coerce_numeric_map(self.config.get("status_priority", {}))
+        asset_type_priority = self._coerce_numeric_map(self.config.get("asset_type_priority", {}))
+
+        required_weights = {
+            "status_urgency",
+            "recency",
+            "transaction_volume",
+            "asset_type_risk",
+        }
+        missing_weight_keys = required_weights - set(weights.keys())
+        if missing_weight_keys:
+            raise ValueError("Missing required ranking weights: " + ", ".join(sorted(missing_weight_keys)))
+
+        if not status_priority:
+            raise ValueError("status_priority must contain numeric values")
+        if not asset_type_priority:
+            raise ValueError("asset_type_priority must contain numeric values")
+
+        self.config["weights"] = weights
+        self.config["status_priority"] = status_priority
+        self.config["asset_type_priority"] = asset_type_priority
+
         # Validate weights sum to ~1.0
-        weights = self.config.get("weights", {})
-        weight_sum = sum(weights.values())
+        try:
+            params_values = list(weights.values())
+            weight_sum = sum(float(x) for x in params_values)
+        except (TypeError, ValueError) as e:
+            logger.error(f"Weight summation failed. Weights: {weights} - Error: {e}")
+            raise ValueError(f"Invalid weight values: {e}")
+
         if not 0.99 <= weight_sum <= 1.01:
-            logger.warning(
-                f"Ranking weights sum to {weight_sum:.2f}, should be 1.0. Using as-is."
-            )
+            logger.warning(f"Ranking weights sum to {weight_sum:.2f}, should be 1.0. Using as-is.")
 
         # Validate required sections exist
         required_sections = ["weights", "status_priority", "asset_type_priority"]
         for section in required_sections:
             if section not in self.config:
                 raise ValueError(f"Missing required config section: {section}")
+
+    @staticmethod
+    def _coerce_numeric_map(values: Dict[str, Any]) -> Dict[str, float]:
+        """Return only numeric key/value pairs as floats."""
+        if not isinstance(values, dict):
+            return {}
+
+        numeric_map: Dict[str, float] = {}
+        for key, value in values.items():
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                numeric_map[key] = float(value)
+
+        return numeric_map
 
     def _load_defaults(self) -> None:
         """Load safe default configuration."""
@@ -150,9 +188,7 @@ class TradeRanker:
     def __init__(self, config: RankingConfig = None):
         self.config = config or RankingConfig()
 
-    def rank_trades(
-        self, trades: List[Trade], enriched_data: Dict[int, Dict[str, Any]] = None
-    ) -> List[Trade]:
+    def rank_trades(self, trades: List[Trade], enriched_data: Dict[int, Dict[str, Any]] = None) -> List[Trade]:
         """
         Rank trades by relevance score and return sorted list.
 
@@ -200,9 +236,7 @@ class TradeRanker:
 
         return ranked_trades
 
-    def _calculate_relevance_score(
-        self, trade: Trade, enriched: Dict[str, Any]
-    ) -> float:
+    def _calculate_relevance_score(self, trade: Trade, enriched: Dict[str, Any]) -> float:
         """
         Calculate weighted relevance score for a single trade.
 
@@ -214,9 +248,7 @@ class TradeRanker:
         # Calculate individual factor scores (each 0-100)
         status_score = self._score_status_urgency(trade.status)
         recency_score = self._score_recency(trade.update_time, trade.create_time)
-        transaction_score = self._score_transaction_volume(
-            enriched.get("transaction_count", 0)
-        )
+        transaction_score = self._score_transaction_volume(enriched.get("transaction_count", 0))
         asset_type_score = self._score_asset_type_risk(trade.asset_type)
 
         # Weighted sum
@@ -290,9 +322,7 @@ class TradeRanker:
             return 100.0
 
         # Interpolate between 25 and 100
-        ratio = (transaction_count - min_transactions) / (
-            max_transactions - min_transactions
-        )
+        ratio = (transaction_count - min_transactions) / (max_transactions - min_transactions)
         score = 25.0 + (ratio * 75.0)
 
         return min(100.0, score)

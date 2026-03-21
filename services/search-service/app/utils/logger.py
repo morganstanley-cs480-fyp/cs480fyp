@@ -15,9 +15,7 @@ from app.config.settings import settings
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
     """Custom JSON formatter with additional context"""
 
-    def add_fields(
-        self, log_record: dict, record: logging.LogRecord, message_dict: dict
-    ) -> None:
+    def add_fields(self, log_record: dict, record: logging.LogRecord, message_dict: dict) -> None:
         super().add_fields(log_record, record, message_dict)
 
         # Add service context
@@ -61,9 +59,7 @@ def setup_logger(name: str = settings.SERVICE_NAME) -> logging.Logger:
             datefmt="%Y-%m-%d %H:%M:%S",
         )
     else:
-        formatter = CustomJsonFormatter(
-            "%(timestamp)s %(level)s %(service)s %(message)s", timestamp=True
-        )
+        formatter = CustomJsonFormatter("%(timestamp)s %(level)s %(service)s %(message)s", timestamp=True)
 
     handler.setFormatter(formatter)
     log_instance.addHandler(handler)

@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     CACHE_TTL_SEARCH_RESULTS: int = 300  # 5 minutes
     CACHE_TTL_QUERY_HISTORY: int = 900  # 15 minutes
 
+    # Chat Configuration
+    CHAT_MAX_TOOL_ITERATIONS: int = 4
+
     # Application Settings
     MAX_SEARCH_RESULTS: int = 1000
     LOG_LEVEL: str = "INFO"
@@ -66,9 +69,7 @@ class Settings(BaseSettings):
     BEDROCK_RETRY_MIN_WAIT: int = 2
     BEDROCK_RETRY_MAX_WAIT: int = 10
 
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", case_sensitive=True, extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=True, extra="ignore")
 
     @property
     def database_url(self) -> str:

@@ -27,13 +27,18 @@ RULES:
 CRITICAL: You must ONLY return valid JSON. No explanatory text, no markdown formatting, just pure JSON."""
 
 
-def build_user_prompt(query: str, current_date: Optional[datetime] = None) -> str:
+def build_user_prompt(
+    query: str,
+    current_date: Optional[datetime] = None,
+    conversation: Optional[list[dict[str, str]]] = None,
+) -> str:
     """
     Build the user prompt for parameter extraction.
 
     Args:
         query: The natural language query from the user
         current_date: Current date for relative date calculation (defaults to now)
+        conversation: Optional conversation history for context-aware extraction
 
     Returns:
         Formatted prompt string for Bedrock
@@ -48,163 +53,91 @@ def build_user_prompt(query: str, current_date: Optional[datetime] = None) -> st
     # Calculate reference dates for examples
     yesterday = (current_date - timedelta(days=1)).strftime("%Y-%m-%d")
     one_week_ago = (current_date - timedelta(days=7)).strftime("%Y-%m-%d")
-    one_month_ago = (current_date - timedelta(days=30)).strftime("%Y-%m-%d")
 
-    prompt = f"""Extract trade search parameters from this query and return them as JSON.
+    # Format conversation history if available
+    history_text = "(none)"
+    if conversation:
+        lines = []
+        # Take last 6 turns to keep context relevant but concise
+        for msg in conversation[-6:]:
+            role = msg.get("role", "unknown")
+            content = msg.get("content", "")
+            lines.append(f"{role}: {content}")
+        if lines:
+            history_text = "\n".join(lines)
 
-Query: "{query}"
+    prompt = f"""
+Current Date: {today} ({day_of_week})
+Reference Dates:
+- Yesterday: {yesterday}
+- One week ago: {one_week_ago}
 
-Today's date: {today} ({day_of_week})
+Conversation Context:
+{history_text}
 
-Extract these parameters (use null if not mentioned):
+USER QUERY: "{query}"
 
+Based on the query and conversation context above, extract the search parameters into valid JSON.
+If the user asks a follow-up question (e.g., "show me the rejected ones"), use the context to infer filters.
+Do not invent filters not present in the conversation or query.
+
+RESPONSE FORMAT:
 {{
-  "trade_id": integer or null,
-  "accounts": ["list of account IDs mentioned, e.g. ACC123, ACC456"] or null,
-  "asset_types": ["list of asset types as mentioned by user, e.g. FX, IRS, CDS"] or null,
-  "booking_systems": ["list of booking system names as mentioned"] or null,
-  "affirmation_systems": ["list of affirmation system names as mentioned"] or null,
-  "clearing_houses": ["list of clearing house names as mentioned"] or null,
-  "statuses": ["list from fixed set: ALLEGED, CLEARED, REJECTED, CANCELLED"] or null,
-  "date_from": "YYYY-MM-DD or null",
-  "date_to": "YYYY-MM-DD or null",
-  "with_exceptions_only": true or false
+  "asset_types": ["string"] | null,
+  "booking_systems": ["string"] | null,
+  "affirmation_systems": ["string"] | null,
+  "clearing_houses": ["string"] | null,
+  "accounts": ["string"] | null,
+  "statuses": ["ALLEGED" | "CLEARED" | "REJECTED" | "CANCELLED"] | null,
+  "date_from": "YYYY-MM-DD" | null,
+  "date_to": "YYYY-MM-DD" | null,
+  "trade_id": "string" | null
 }}
+"""
+    return prompt.strip()
 
-IMPORTANT EXTRACTION RULES:
 
-Trade ID (HIGHEST PRIORITY - if present, set all other fields to null/false):
-- "trade id 99202386", "trade 99202386", "find 99202386", "id 99202386" → trade_id: 99202386
-- When trade_id is set, every other field must be null or false.
-- If NO numeric trade ID is mentioned, trade_id must be null.
+def build_prompt(query: str, columns: list[str]) -> str:
+    """
+    Builds the prompt for the Bedrock model, including the query and schema.
 
-Trade Status (fixed set only):
-- "alleged", "pending", "unconfirmed" → ["ALLEGED"]
-- "cleared", "confirmed", "settled" → ["CLEARED"]
-- "rejected", "failed" → ["REJECTED"]
-- "cancelled", "canceled", "voided" → ["CANCELLED"]
-- Multiple statuses if mentioned: ["ALLEGED", "REJECTED"]
-- No status mentioned → null
+    Args:
+        query: The user's search query.
+        columns: The columns of the trades table.
 
-Asset Types (open-ended — extract exactly as user says, uppercase):
-- "FX", "foreign exchange", "forex" → ["FX"]
-- "IRS", "interest rate swap" → ["IRS"]
-- "CDS", "credit default swap" → ["CDS"]
-- Any other asset type the user mentions → extract it as-is, uppercased
-- No asset type mentioned → null
+    Returns:
+        The complete prompt string.
+    """
+    # f-string is used here to allow for future expansion if needed
+    prompt = f"""Extract trade search parameters from this query and return them as JSON.
+The query is: "{query}"
 
-Booking / Affirmation Systems and Clearing Houses (open-ended — extract exactly as user says, uppercase):
-- Extract whatever system or house name the user mentions
-- No system mentioned → null
+Today's date is {datetime.now().strftime('%Y-%m-%d')}.
 
-Date References (today is {today}):
-- "today" → date_from: "{today}", date_to: "{today}"
-- "yesterday" → date_from: "{yesterday}", date_to: "{yesterday}"
-- "last week" or "past week" → date_from: "{one_week_ago}", date_to: "{today}"
-- "last month" or "past month" → date_from: "{one_month_ago}", date_to: "{today}"
-- "from X to Y" → date_from: "X", date_to: "Y"
-- "since X" → date_from: "X", date_to: null
-- "before X" → date_from: null, date_to: "X"
-- "on X" → date_from: "X", date_to: "X"
-- No date mentioned → both null
+Here is the schema of the `trades` table:
+- {', '.join(columns)}
 
-Account Patterns:
-- "ACC123", "account ACC123", "ACC-123" → ["ACC123"]
-- Multiple: ["ACC123", "ACC456"]
+Possible values for `status`:
+- ALLEGED
+- CLEARED
+- REJECTED
+- CANCELLED
 
-Special Filters:
-- "with exceptions", "having exceptions", "exception trades" → with_exceptions_only: true
-- Otherwise → with_exceptions_only: false
-
-EXAMPLES:
-
-Query: "trade id 77194044"
-Output: {{
-  "trade_id": 77194044,
-  "accounts": null,
-  "asset_types": null,
-  "booking_systems": null,
-  "affirmation_systems": null,
-  "clearing_houses": null,
-  "statuses": null,
-  "date_from": null,
-  "date_to": null,
-  "with_exceptions_only": false
+Return a JSON object with the following structure.
+If a value is not present in the query, set it to null.
+{{
+  "asset_types": ["string"] | null,
+  "booking_systems": ["string"] | null,
+  "affirmation_systems": ["string"] | null,
+  "clearing_houses": ["string"] | null,
+  "accounts": ["string"] | null,
+  "statuses": ["ALLEGED" | "CLEARED" | "REJECTED" | "CANCELLED"] | null,
+  "date_from": "YYYY-MM-DD" | null,
+  "date_to": "YYYY-MM-DD" | null,
+  "trade_id": "string" | null
 }}
-
-Query: "show me alleged FX trades from last week"
-Output: {{
-  "trade_id": null,
-  "accounts": null,
-  "asset_types": ["FX"],
-  "booking_systems": null,
-  "affirmation_systems": null,
-  "clearing_houses": null,
-  "statuses": ["ALLEGED"],
-  "date_from": "{one_week_ago}",
-  "date_to": "{today}",
-  "with_exceptions_only": false
-}}
-
-Query: "cleared IRS trades for ACC012345"
-Output: {{
-  "trade_id": null,
-  "accounts": ["ACC012345"],
-  "asset_types": ["IRS"],
-  "booking_systems": null,
-  "affirmation_systems": null,
-  "clearing_houses": null,
-  "statuses": ["CLEARED"],
-  "date_from": null,
-  "date_to": null,
-  "with_exceptions_only": false
-}}
-
-Query: "all IRS and CDS trades from WINTERFELL"
-Output: {{
-  "trade_id": null,
-  "accounts": null,
-  "asset_types": ["IRS", "CDS"],
-  "booking_systems": ["WINTERFELL"],
-  "affirmation_systems": null,
-  "clearing_houses": null,
-  "statuses": null,
-  "date_from": null,
-  "date_to": null,
-  "with_exceptions_only": false
-}}
-
-Query: "rejected trades from 2025-01-01 to 2025-06-30 with exceptions"
-Output: {{
-  "trade_id": null,
-  "accounts": null,
-  "asset_types": null,
-  "booking_systems": null,
-  "affirmation_systems": null,
-  "clearing_houses": null,
-  "statuses": ["REJECTED"],
-  "date_from": "2025-01-01",
-  "date_to": "2025-06-30",
-  "with_exceptions_only": true
-}}
-
-Query: "show FX trades cleared by LCH from 2025-01-01 to 2025-01-15"
-Output: {{
-  "trade_id": null,
-  "accounts": null,
-  "asset_types": ["FX"],
-  "booking_systems": null,
-  "affirmation_systems": null,
-  "clearing_houses": ["LCH"],
-  "statuses": ["CLEARED"],
-  "date_from": "2025-01-01",
-  "date_to": "2025-01-15",
-  "with_exceptions_only": false
-}}
-
-Now extract parameters from the original query and return ONLY the JSON object, nothing else."""
-
-    return prompt
+"""
+    return prompt.strip()
 
 
 def build_validation_rules() -> dict:

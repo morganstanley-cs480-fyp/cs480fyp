@@ -5,7 +5,7 @@ These define the structure of incoming requests from the frontend.
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class ManualSearchFilters(BaseModel):
@@ -14,29 +14,17 @@ class ManualSearchFilters(BaseModel):
     Maps directly to frontend ManualSearchFilters interface.
     """
 
-    trade_id: Optional[int] = Field(
-        None, description="Trade ID to search for (integer)"
-    )
+    trade_id: Optional[int] = Field(None, description="Trade ID to search for (integer)")
     account: Optional[str] = Field(None, description="Account filter")
-    asset_type: Optional[str] = Field(
-        None, description="Asset type (FX, IRS, CDS, EQUITY, BOND, etc.)"
-    )
+    asset_type: Optional[str] = Field(None, description="Asset type (FX, IRS, CDS, EQUITY, BOND, etc.)")
     booking_system: Optional[str] = Field(None, description="Booking system filter")
-    affirmation_system: Optional[str] = Field(
-        None, description="Affirmation system filter"
-    )
+    affirmation_system: Optional[str] = Field(None, description="Affirmation system filter")
     clearing_house: Optional[str] = Field(None, description="Clearing house filter")
-    status: list[str] = Field(
-        default_factory=list, description="Status filters (can be multiple)"
-    )
-    date_type: Literal["create_time", "update_time"] = Field(
-        "update_time", description="Which date field to filter on"
-    )
+    status: list[str] = Field(default_factory=list, description="Status filters (can be multiple)")
+    date_type: Literal["create_time", "update_time"] = Field("update_time", description="Which date field to filter on")
     date_from: Optional[str] = Field(None, description="Start date (YYYY-MM-DD)")
     date_to: Optional[str] = Field(None, description="End date (YYYY-MM-DD)")
-    with_exceptions_only: bool = Field(
-        False, description="Only show trades with exceptions"
-    )
+    with_exceptions_only: bool = Field(False, description="Only show trades with exceptions")
     cleared_trades_only: bool = Field(False, description="Only show cleared trades")
 
     @field_validator("status")
@@ -46,9 +34,7 @@ class ManualSearchFilters(BaseModel):
         valid_statuses = {"CANCELLED", "ALLEGED", "REJECTED", "CLEARED"}
         for status in v:
             if status not in valid_statuses:
-                raise ValueError(
-                    f"Invalid status: {status}. Must be one of {valid_statuses}"
-                )
+                raise ValueError(f"Invalid status: {status}. Must be one of {valid_statuses}")
         return v
 
     @field_validator("date_from", "date_to")
@@ -64,8 +50,8 @@ class ManualSearchFilters(BaseModel):
 
         return v
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "asset_type": "FX",
                 "status": ["ALLEGED", "CLEARED"],
@@ -76,6 +62,7 @@ class ManualSearchFilters(BaseModel):
                 "with_exceptions_only": False,
             }
         }
+    )
 
 
 class SearchRequest(BaseModel):
@@ -88,9 +75,7 @@ class SearchRequest(BaseModel):
     """
 
     user_id: str = Field(..., description="User ID from authentication", min_length=1)
-    search_type: Literal["natural_language", "manual"] = Field(
-        ..., description="Type of search"
-    )
+    search_type: Literal["natural_language", "manual"] = Field(..., description="Type of search")
 
     # For natural language search
     query_text: Optional[str] = Field(
@@ -118,8 +103,8 @@ class SearchRequest(BaseModel):
 
         return self
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "user_id": "user123",
@@ -139,6 +124,7 @@ class SearchRequest(BaseModel):
                 },
             ]
         }
+    )
 
 
 class UpdateHistoryRequest(BaseModel):
@@ -148,9 +134,7 @@ class UpdateHistoryRequest(BaseModel):
     """
 
     is_saved: bool = Field(..., description="Whether to save this query")
-    query_name: Optional[str] = Field(
-        None, description="Name for saved query (required if is_saved=True)"
-    )
+    query_name: Optional[str] = Field(None, description="Name for saved query (required if is_saved=True)")
 
     @model_validator(mode="after")
     def validate_save_requirements(self):
@@ -167,13 +151,14 @@ class UpdateHistoryRequest(BaseModel):
 
         return self
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {"is_saved": True, "query_name": "My weekly FX review"},
                 {"is_saved": False, "query_name": None},
             ]
         }
+    )
 
 
 class HistoryQueryParams(BaseModel):
@@ -183,12 +168,7 @@ class HistoryQueryParams(BaseModel):
     """
 
     user_id: str = Field(..., description="User ID to fetch history for")
-    limit: int = Field(
-        50, description="Maximum number of records to return", ge=1, le=100
-    )
+    limit: int = Field(50, description="Maximum number of records to return", ge=1, le=100)
     saved_only: bool = Field(False, description="Return only saved/bookmarked queries")
 
-    class Config:
-        json_schema_extra = {
-            "example": {"user_id": "user123", "limit": 20, "saved_only": True}
-        }
+    model_config = ConfigDict(json_schema_extra={"example": {"user_id": "user123", "limit": 20, "saved_only": True}})

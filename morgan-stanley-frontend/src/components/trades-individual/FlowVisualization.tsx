@@ -513,9 +513,8 @@ async function generateElkLayout(
   onEntitySelect: (entityName: string, isHub: boolean) => void,
   allTransactions: Transaction[],
   sortedTransactions: Transaction[],
-  exceptions: Exception[],
-  onTransactionSelect: (transaction: Transaction) => void,
-  getRelatedExceptions: (trans_id: number) => Exception[]
+  _exceptions: Exception[],
+  onTransactionSelect: (transaction: Transaction) => void,  getRelatedExceptions: (trans_id: number) => Exception[]
 ) {
   try {
     console.log('📐 generateElkLayout function called');

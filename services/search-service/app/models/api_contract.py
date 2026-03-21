@@ -5,7 +5,7 @@ This file defines the exact request/response format between frontend and backend
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # ============================================================================
 # REQUEST MODELS (Frontend → Backend)
@@ -20,25 +20,15 @@ class ManualSearchFilters(BaseModel):
 
     trade_id: Optional[str] = Field(None, description="Trade ID to search for")
     account: Optional[str] = Field(None, description="Account filter")
-    asset_type: Optional[str] = Field(
-        None, description="Asset type (FX, EQUITY, BOND, etc.)"
-    )
+    asset_type: Optional[str] = Field(None, description="Asset type (FX, EQUITY, BOND, etc.)")
     booking_system: Optional[str] = Field(None, description="Booking system filter")
-    affirmation_system: Optional[str] = Field(
-        None, description="Affirmation system filter"
-    )
+    affirmation_system: Optional[str] = Field(None, description="Affirmation system filter")
     clearing_house: Optional[str] = Field(None, description="Clearing house filter")
-    status: Optional[list[str]] = Field(
-        default_factory=list, description="Status filters (can be multiple)"
-    )
-    date_type: Literal["create_time", "update_time"] = Field(
-        "update_time", description="Which date field to filter on"
-    )
+    status: Optional[list[str]] = Field(default_factory=list, description="Status filters (can be multiple)")
+    date_type: Literal["create_time", "update_time"] = Field("update_time", description="Which date field to filter on")
     date_from: Optional[str] = Field(None, description="Start date (YYYY-MM-DD)")
     date_to: Optional[str] = Field(None, description="End date (YYYY-MM-DD)")
-    with_exceptions_only: bool = Field(
-        False, description="Only show trades with exceptions"
-    )
+    with_exceptions_only: bool = Field(False, description="Only show trades with exceptions")
     cleared_trades_only: bool = Field(False, description="Only show cleared trades")
 
 
@@ -52,9 +42,7 @@ class SearchRequest(BaseModel):
     """
 
     user_id: str = Field(..., description="User ID from authentication")
-    search_type: Literal["natural_language", "manual"] = Field(
-        ..., description="Type of search"
-    )
+    search_type: Literal["natural_language", "manual"] = Field(..., description="Type of search")
 
     # For natural language search
     query_text: Optional[str] = Field(
@@ -67,8 +55,8 @@ class SearchRequest(BaseModel):
         None, description="Manual search filters (required if search_type='manual')"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "user_id": "user123",
@@ -88,6 +76,7 @@ class SearchRequest(BaseModel):
                 },
             ]
         }
+    )
 
 
 class UpdateHistoryRequest(BaseModel):
@@ -97,14 +86,9 @@ class UpdateHistoryRequest(BaseModel):
     """
 
     is_saved: bool = Field(..., description="Whether to save this query")
-    query_name: Optional[str] = Field(
-        None, description="Name for saved query (required if is_saved=True)"
-    )
+    query_name: Optional[str] = Field(None, description="Name for saved query (required if is_saved=True)")
 
-    class Config:
-        json_schema_extra = {
-            "example": {"is_saved": True, "query_name": "My weekly FX review"}
-        }
+    model_config = ConfigDict(json_schema_extra={"example": {"is_saved": True, "query_name": "My weekly FX review"}})
 
 
 # ============================================================================
@@ -128,8 +112,8 @@ class Trade(BaseModel):
     update_time: str  # ISO 8601 format: "2025-01-15 10:00:00"
     status: Literal["CANCELLED", "ALLEGED", "REJECTED", "CLEARED"]
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "trade_id": "10001234",
                 "account": "ACC12345",
@@ -142,6 +126,7 @@ class Trade(BaseModel):
                 "status": "CLEARED",
             }
         }
+    )
 
 
 class SearchResponse(BaseModel):
@@ -155,12 +140,10 @@ class SearchResponse(BaseModel):
     results: list[Trade] = Field(..., description="List of matching trades")
     search_type: str = Field(..., description="Type of search performed")
     cached: bool = Field(False, description="Whether result was from cache")
-    execution_time_ms: Optional[float] = Field(
-        None, description="Query execution time in milliseconds"
-    )
+    execution_time_ms: Optional[float] = Field(None, description="Query execution time in milliseconds")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query_id": 42,
                 "total_results": 2,
@@ -182,6 +165,7 @@ class SearchResponse(BaseModel):
                 "execution_time_ms": 234.5,
             }
         }
+    )
 
 
 class QueryHistory(BaseModel):
@@ -198,8 +182,8 @@ class QueryHistory(BaseModel):
     create_time: str  # ISO 8601 format
     last_use_time: str  # ISO 8601 format
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query_id": 42,
                 "user_id": "user123",
@@ -210,6 +194,7 @@ class QueryHistory(BaseModel):
                 "last_use_time": "2025-01-20 09:00:00",
             }
         }
+    )
 
 
 class HistoryListResponse(BaseModel):
@@ -224,8 +209,8 @@ class HistoryListResponse(BaseModel):
     recent_count: int
     queries: list[QueryHistory]
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "user_id": "user123",
                 "total_count": 10,
@@ -234,6 +219,7 @@ class HistoryListResponse(BaseModel):
                 "queries": [],
             }
         }
+    )
 
 
 class HealthResponse(BaseModel):
@@ -246,8 +232,8 @@ class HealthResponse(BaseModel):
     cache: str
     timestamp: str
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "status": "healthy",
                 "service": "search-service",
@@ -257,6 +243,7 @@ class HealthResponse(BaseModel):
                 "timestamp": "2025-01-20T10:00:00Z",
             }
         }
+    )
 
 
 class ErrorResponse(BaseModel):
@@ -267,8 +254,8 @@ class ErrorResponse(BaseModel):
     details: Optional[dict] = Field(None, description="Additional error details")
     timestamp: str = Field(..., description="Error timestamp")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "error": "ValidationError",
                 "message": "Invalid search request: query_text is required for natural_language search",
@@ -276,6 +263,7 @@ class ErrorResponse(BaseModel):
                 "timestamp": "2025-01-20T10:00:00Z",
             }
         }
+    )
 
 
 # ============================================================================

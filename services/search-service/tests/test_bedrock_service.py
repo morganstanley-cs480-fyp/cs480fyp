@@ -29,9 +29,7 @@ class TestBedrockServiceExtractParameters:
                 new_callable=AsyncMock,
                 return_value=None,
             ),
-            patch.object(
-                bedrock_service, "_invoke_bedrock", new_callable=AsyncMock
-            ) as mock_bedrock,
+            patch.object(bedrock_service, "_invoke_bedrock", new_callable=AsyncMock) as mock_bedrock,
             patch.object(bedrock_service, "_save_to_cache", new_callable=AsyncMock),
         ):
             # Mock Bedrock response - return JSON string (not ExtractedParams)
@@ -65,9 +63,7 @@ class TestBedrockServiceExtractParameters:
                 new_callable=AsyncMock,
                 return_value=cached_params,
             ),
-            patch.object(
-                bedrock_service, "_invoke_bedrock", new_callable=AsyncMock
-            ) as mock_bedrock,
+            patch.object(bedrock_service, "_invoke_bedrock", new_callable=AsyncMock) as mock_bedrock,
         ):
             result = await bedrock_service.extract_parameters(query_text, "user123")
 
@@ -91,9 +87,7 @@ class TestBedrockServiceExtractParameters:
                 new_callable=AsyncMock,
                 return_value=None,
             ),
-            patch.object(
-                bedrock_service, "_invoke_bedrock", new_callable=AsyncMock
-            ) as mock_bedrock,
+            patch.object(bedrock_service, "_invoke_bedrock", new_callable=AsyncMock) as mock_bedrock,
             patch.object(bedrock_service, "_save_to_cache", new_callable=AsyncMock),
         ):
             # Mock Bedrock response - return JSON string
@@ -122,9 +116,7 @@ class TestBedrockServiceInvokeBedrock:
 
         # Mock the body stream read
         response_body = {
-            "content": [
-                {"text": json.dumps({"asset_types": ["FX"], "statuses": ["ALLEGED"]})}
-            ],
+            "content": [{"text": json.dumps({"asset_types": ["FX"], "statuses": ["ALLEGED"]})}],
             "usage": {"input_tokens": 150, "output_tokens": 50},
         }
         mock_response["body"].read.return_value = json.dumps(response_body).encode()
@@ -160,9 +152,7 @@ class TestBedrockServiceInvokeBedrock:
             "content": [{"text": json.dumps({"asset_types": ["FX"]})}],
             "usage": {"input_tokens": 100, "output_tokens": 20},
         }
-        mock_response_success["body"].read.return_value = json.dumps(
-            response_body
-        ).encode()
+        mock_response_success["body"].read.return_value = json.dumps(response_body).encode()
 
         # Mock the async context manager for session.client()
         mock_client = AsyncMock()
