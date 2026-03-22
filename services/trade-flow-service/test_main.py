@@ -63,6 +63,23 @@ def mock_neptune():
 def client(mock_cursor):
     with TestClient(app) as c:
         yield c
+        
+@pytest.fixture
+def mock_neptune():
+    # changed from "main.GraphDatabase" to "neo4j.GraphDatabase"
+    with patch("neo4j.GraphDatabase") as MockGraphDB:
+        mock_driver_instance = MagicMock()
+        MockGraphDB.driver.return_value = mock_driver_instance
+        
+        # Mock the lifespan methods so it doesn't actually try to hit the network
+        mock_driver_instance.verify_connectivity = MagicMock()
+        mock_driver_instance.close = MagicMock()
+        
+        # Mock the session context manager
+        mock_session = MagicMock()
+        mock_driver_instance.session.return_value.__enter__.return_value = mock_session
+        
+        yield mock_session
 
 # --- TESTS ---
 # 1. Health Check Test
