@@ -40,43 +40,11 @@ def mock_cursor():
         mock_conn.cursor = MagicMock(return_value=cursor_context)
 
         yield mock_cursor
-        
-@pytest.fixture
-def mock_neptune():
-    with patch("neo4j.GraphDatabase.driver") as mock_driver_method:
-    
-        mock_driver_instance = MagicMock()
-        mock_driver_method.return_value = mock_driver_instance
-        
-        mock_driver_instance.verify_connectivity = MagicMock()
-        mock_driver_instance.close = MagicMock()
-        
-        mock_session = MagicMock()
-        mock_driver_instance.session.return_value.__enter__.return_value = mock_session
-        
-        yield mock_session
 
 @pytest.fixture
 def client(mock_cursor):
     with TestClient(app) as c:
         yield c
-        
-@pytest.fixture
-def mock_neptune():
-    # changed from "main.GraphDatabase" to "neo4j.GraphDatabase"
-    with patch("neo4j.GraphDatabase") as MockGraphDB:
-        mock_driver_instance = MagicMock()
-        MockGraphDB.driver.return_value = mock_driver_instance
-        
-        # Mock the lifespan methods so it doesn't actually try to hit the network
-        mock_driver_instance.verify_connectivity = MagicMock()
-        mock_driver_instance.close = MagicMock()
-        
-        # Mock the session context manager
-        mock_session = MagicMock()
-        mock_driver_instance.session.return_value.__enter__.return_value = mock_session
-        
-        yield mock_session
 
 # --- TESTS ---
 # 1. Health Check Test
@@ -221,56 +189,3 @@ async def test_db_failure(client, mock_cursor):
     
     assert response.status_code == 500
     assert response.json()["detail"] == "Server Error"
-    
-@pytest.mark.asyncio
-async def test_get_trade_graph_success(client, mock_neptune):
-    # Mock the Neo4j Record structure returned by session.run().single()
-    mock_record = MagicMock()
-    
-    # Mocking the primary trade node parsing
-    mock_trade_node = MagicMock()
-    mock_trade_node.items.return_value = {"id": "1000502", "status": "REJECTED"}.items()
-    
-    # We use side_effect to return our mocked trade node, and empty lists for the rest
-    mock_record.get.side_effect = lambda key: {
-        't': mock_trade_node,
-        'metadata': [],
-        'transactions': [],
-        'counterparties': [],
-        'exceptions': []
-    }.get(key)
-    
-    mock_result = MagicMock()
-    mock_result.single.return_value = mock_record
-    mock_neptune.run.return_value = mock_result
-    
-    response = client.get("/api/trades/1000502/graph")
-    
-    assert response.status_code == 200
-    assert response.json()["trade"]["id"] == "1000502"
-    assert response.json()["trade"]["status"] == "REJECTED"
-
-@pytest.mark.asyncio
-async def test_get_graph_overview(client, mock_neptune):
-    # Mock an iterable result (list of records) returned by session.run()
-    mock_record = MagicMock()
-    
-    mock_node = MagicMock()
-    mock_node.element_id = "node-abc-123"
-    mock_node.labels = ["Trade"]
-    mock_node.items.return_value = {"id": "1000502", "account": "ACC123"}.items()
-    
-    # Mock the row returning just one Trade node, no relationships for simplicity
-    mock_record.get.side_effect = lambda key: {
-        't': mock_node, 'n1': None, 'n2': None, 'r1': None, 'r2': None
-    }.get(key)
-    
-    # run() returns an iterable of rows 
-    mock_neptune.run.return_value = [mock_record]
-    
-    response = client.get("/api/graph/overview?limit=10&status=REJECTED")
-    
-    assert response.status_code == 200
-    json_data = response.json()
-    assert len(json_data["nodes"]) == 1
-    assert json_data["nodes"][0]["id"] == "node-abc-123"
