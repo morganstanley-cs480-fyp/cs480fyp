@@ -43,17 +43,14 @@ def mock_cursor():
         
 @pytest.fixture
 def mock_neptune():
-    # We use create=True so this doesn't crash if you run it against 
-    # the older version of main.py that didn't import GraphDatabase yet.
-    with patch("main.GraphDatabase", create=True) as MockGraphDB:
+    with patch("neo4j.GraphDatabase.driver") as mock_driver_method:
+    
         mock_driver_instance = MagicMock()
-        MockGraphDB.driver.return_value = mock_driver_instance
+        mock_driver_method.return_value = mock_driver_instance
         
-        # Lifespan methods
         mock_driver_instance.verify_connectivity = MagicMock()
         mock_driver_instance.close = MagicMock()
         
-        # Session context manager (sync)
         mock_session = MagicMock()
         mock_driver_instance.session.return_value.__enter__.return_value = mock_session
         
