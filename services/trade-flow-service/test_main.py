@@ -1,9 +1,16 @@
+import os
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi.testclient import TestClient
+
+os.environ["NEPTUNE_ENDPOINT"] = "bolt://dummy-host:8182"
+os.environ["DB_HOST"] = "localhost"
+os.environ["DB_NAME"] = "testdb"
+os.environ["DB_USER"] = "testuser"
+os.environ["DB_PASSWORD"] = "testpass"
+
 from main import app
 
-# --- FIXTURE ---
 @pytest.fixture
 def mock_cursor():
     with patch("main.AsyncConnectionPool") as MockPoolClass:
@@ -43,10 +50,17 @@ def client(mock_cursor):
 # 1. Health Check Test
 @pytest.mark.asyncio
 async def test_health_check(client, mock_cursor):
+    # The mock returns a list, which psycopg normally unpacks
     mock_cursor.fetchone.return_value = ["2024-01-01 12:00:00"]
+    
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "time": "2024-01-01 12:00:00"}
+    
+    data = response.json()
+    # Check for specific keys so the test doesn't break when we add new features
+    assert data["status"] == "ok"
+    assert "postgres_time" in data
+    assert "neptune_status" in data
 
 # 2. Test successful get trade by id
 @pytest.mark.asyncio

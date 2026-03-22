@@ -5,3 +5,4 @@ psycopg-pool
 pytest
 pytest-asyncio
 httpx
+neo4j
