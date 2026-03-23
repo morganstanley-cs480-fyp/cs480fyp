@@ -30,6 +30,8 @@ export const processGraphData = async (session, data) => {
         t.asset_type = $asset_type, 
         t.status = $trade_status,
         t.created_at = datetime($created_at)
+    
+    WITH t
 
     // 2. TRADE-LEVEL ENTITIES (Static Meta-data)
     CALL {
@@ -66,6 +68,8 @@ export const processGraphData = async (session, data) => {
       
       // Link the transaction to the parent trade
       MERGE (t)-[:HAS_TRANSACTION]->(tx)
+
+      WITH t, tx
 
       // 4. TRANSACTION ENTITY (The Counterparty)
       CALL {
