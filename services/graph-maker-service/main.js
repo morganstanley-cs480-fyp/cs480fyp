@@ -32,25 +32,31 @@ export const processGraphData = async (session, data) => {
         t.created_at = datetime($created_at)
 
     // 2. TRADE-LEVEL ENTITIES (Static Meta-data)
-    // We wrap these in FOREACH so if $booking_system is null, it doesn't crash.
-    FOREACH (_ IN CASE WHEN $booking_system IS NOT NULL THEN [1] ELSE [] END |
+    CALL {
+      WITH t
+      WITH t WHERE $booking_system IS NOT NULL
       MERGE (b:Entity {name: $booking_system})
       MERGE (t)-[:BOOKED_ON]->(b)
-    )
+    }
 
-    FOREACH (_ IN CASE WHEN $affirmation_system IS NOT NULL THEN [1] ELSE [] END |
+    CALL {
+      WITH t
+      WITH t WHERE $affirmation_system IS NOT NULL
       MERGE (a:Entity {name: $affirmation_system})
       MERGE (t)-[:AFFIRMED_BY]->(a)
-    )
+    }
 
-    FOREACH (_ IN CASE WHEN $clearing_house IS NOT NULL THEN [1] ELSE [] END |
+    CALL {
+      WITH t
+      WITH t WHERE $clearing_house IS NOT NULL
       MERGE (c:Entity {name: $clearing_house})
       MERGE (t)-[:CLEARED_BY]->(c)
-    )
+    }
 
     // 3. TRANSACTION DATA (The 'Event' Step)
-    // Only run this if we actually have a transaction ID (prevents issues during initial Trade creation)
-    FOREACH (_ IN CASE WHEN $trans_id IS NOT NULL THEN [1] ELSE [] END |
+    CALL {
+      WITH t
+      WITH t WHERE $trans_id IS NOT NULL
       MERGE (tx:Transaction {id: $trans_id})
       SET tx.step = toInteger($step), 
           tx.type = $type, 
@@ -62,18 +68,28 @@ export const processGraphData = async (session, data) => {
       MERGE (t)-[:HAS_TRANSACTION]->(tx)
 
       // 4. TRANSACTION ENTITY (The Counterparty)
-      // Only link the party if $entity (counterparty name) is present
-      FOREACH (__ IN CASE WHEN $entity IS NOT NULL THEN [1] ELSE [] END |
+      CALL {
+        WITH tx
+        WITH tx WHERE $entity IS NOT NULL
         MERGE (party:Entity {name: $entity})
         
-        // Create relationship based on money/asset flow direction
-        FOREACH (___ IN CASE WHEN $direction = 'receive' THEN [1] ELSE [] END | MERGE (tx)-[:RECEIVED_FROM]->(party))
-        FOREACH (___ IN CASE WHEN $direction = 'send' THEN [1] ELSE [] END | MERGE (tx)-[:SENT_TO]->(party))
-      )
+        // Conditional relationship based on money/asset flow direction
+        CALL {
+          WITH tx, party
+          WITH tx, party WHERE $direction = 'receive'
+          MERGE (tx)-[:RECEIVED_FROM]->(party)
+        }
+        CALL {
+          WITH tx, party
+          WITH tx, party WHERE $direction = 'send'
+          MERGE (tx)-[:SENT_TO]->(party)
+        }
+      }
 
       // 5. EXCEPTION DATA (The Error)
-      // Only run if an exception actually occurred in this step
-      FOREACH (__ IN CASE WHEN $excep_id IS NOT NULL THEN [1] ELSE [] END |
+      CALL {
+        WITH tx
+        WITH tx WHERE $excep_id IS NOT NULL
         MERGE (e:Exception {id: $excep_id})
         SET e.priority = $priority, 
             e.status = $excep_status, 
@@ -81,8 +97,8 @@ export const processGraphData = async (session, data) => {
             e.comment = $comment,
             e.created_at = datetime($excep_created_at)
         MERGE (tx)-[:GENERATED_EXCEPTION]->(e)
-      )
-    )
+      }
+    }
   `;
 
   await session.run(cypherQuery, {
