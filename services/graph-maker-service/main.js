@@ -11,8 +11,7 @@ const driver = neo4j.driver(
   boltUrl,
   neo4j.auth.none(), // Neptune/Local Neo4j setup
   { 
-    encrypted: 'ENCRYPTION_ON', 
-    trust: "TRUST_ALL_CERTIFICATES"
+    encrypted: 'ENCRYPTION_OFF', 
   }
 );
 
