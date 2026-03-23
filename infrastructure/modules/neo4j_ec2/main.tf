@@ -55,6 +55,7 @@ resource "aws_instance" "neo4j_server" {
   subnet_id     = var.subnet_id
 
   vpc_security_group_ids = [aws_security_group.neo4j_sg.id]
+  associate_public_ip_address = true
 
   # User Data script to install Docker and run Neo4j automatically on boot
   user_data = <<-EOF
