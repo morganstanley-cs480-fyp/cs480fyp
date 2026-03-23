@@ -24,7 +24,6 @@ const sqsClient = new SQSClient({
 export const processGraphData = async (session, data) => {
   const cypherQuery = `
     // 1. CORE TRADE DATA
-    // This part should always run. It creates the 'Anchor' for everything else.
     MERGE (t:Trade {id: $trade_id})
     SET t.account = $account, 
         t.asset_type = $asset_type, 
@@ -66,44 +65,39 @@ export const processGraphData = async (session, data) => {
           tx.direction = $direction,
           tx.created_at = datetime($trans_created_at)
       
-      // Link the transaction to the parent trade
       MERGE (t)-[:HAS_TRANSACTION]->(tx)
+    }
 
-      WITH t, tx
+    // 4a. TRANSACTION ENTITY (The Counterparty - Receive)
+    CALL {
+      WITH t
+      WITH t WHERE $trans_id IS NOT NULL AND $entity IS NOT NULL AND $direction = 'receive'
+      MATCH (t)-[:HAS_TRANSACTION]->(tx:Transaction {id: $trans_id})
+      MERGE (party:Entity {name: $entity})
+      MERGE (tx)-[:RECEIVED_FROM]->(party)
+    }
 
-      // 4. TRANSACTION ENTITY (The Counterparty)
-      CALL {
-        WITH tx
-        WITH tx WHERE $entity IS NOT NULL
-        MERGE (party:Entity {name: $entity})
+    // 4b. TRANSACTION ENTITY (The Counterparty - Send)
+    CALL {
+      WITH t
+      WITH t WHERE $trans_id IS NOT NULL AND $entity IS NOT NULL AND $direction = 'send'
+      MATCH (t)-[:HAS_TRANSACTION]->(tx:Transaction {id: $trans_id})
+      MERGE (party:Entity {name: $entity})
+      MERGE (tx)-[:SENT_TO]->(party)
+    }
 
-        WITH tx, party
-        
-        // Conditional relationship based on money/asset flow direction
-        CALL {
-          WITH tx, party
-          WITH tx, party WHERE $direction = 'receive'
-          MERGE (tx)-[:RECEIVED_FROM]->(party)
-        }
-        CALL {
-          WITH tx, party
-          WITH tx, party WHERE $direction = 'send'
-          MERGE (tx)-[:SENT_TO]->(party)
-        }
-      }
-
-      // 5. EXCEPTION DATA (The Error)
-      CALL {
-        WITH tx
-        WITH tx WHERE $excep_id IS NOT NULL
-        MERGE (e:Exception {id: $excep_id})
-        SET e.priority = $priority, 
-            e.status = $excep_status, 
-            e.msg = $msg,
-            e.comment = $comment,
-            e.created_at = datetime($excep_created_at)
-        MERGE (tx)-[:GENERATED_EXCEPTION]->(e)
-      }
+    // 5. EXCEPTION DATA (The Error)
+    CALL {
+      WITH t
+      WITH t WHERE $trans_id IS NOT NULL AND $excep_id IS NOT NULL
+      MATCH (t)-[:HAS_TRANSACTION]->(tx:Transaction {id: $trans_id})
+      MERGE (e:Exception {id: $excep_id})
+      SET e.priority = $priority, 
+          e.status = $excep_status, 
+          e.msg = $msg,
+          e.comment = $comment,
+          e.created_at = datetime($excep_created_at)
+      MERGE (tx)-[:GENERATED_EXCEPTION]->(e)
     }
   `;
 
