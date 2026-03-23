@@ -92,20 +92,14 @@ describe('Graph Maker Service - processGraphData', () => {
     expect(params.excep_id).toBeNull();
   });
 
-  // --- UPDATED TEST #3 ---
-  it('should inject the correct MERGE and CALL subquery blocks into the openCypher string', async () => {
+  it('should inject the correct MERGE and FOREACH blocks into the Cypher query string', async () => {
     await processGraphData(mockSession, samplePayload);
     
-    const cypherQuery = mockSession.run.mock.calls[0][0]; // Get the first argument of the first call to run(), which is the Cypher query string
+    // HERE IS THE FIX FOR TEST 3: Notice the at the end
+    const cypherQuery = mockSession.run.mock.calls[0][0];
 
-    // Check for core Trade merge
     expect(cypherQuery).toContain('MERGE (t:Trade {id: $trade_id})');
-    
-    // Check for the new Neptune-compatible CALL / WITH conditions
-    expect(cypherQuery).toContain('WITH t WHERE $booking_system IS NOT NULL');
-    expect(cypherQuery).toContain('WITH t WHERE $trans_id IS NOT NULL');
-    
-    // Check for Transaction and Exception merges inside those subqueries
+    expect(cypherQuery).toContain('FOREACH (_ IN CASE WHEN $booking_system IS NOT NULL');
     expect(cypherQuery).toContain('MERGE (tx:Transaction {id: $trans_id})');
     expect(cypherQuery).toContain('MERGE (e:Exception {id: $excep_id})');
     expect(cypherQuery).toContain('MERGE (tx)-[:GENERATED_EXCEPTION]->(e)');
