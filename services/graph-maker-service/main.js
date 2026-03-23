@@ -76,6 +76,8 @@ export const processGraphData = async (session, data) => {
         WITH tx
         WITH tx WHERE $entity IS NOT NULL
         MERGE (party:Entity {name: $entity})
+
+        WITH tx, party
         
         // Conditional relationship based on money/asset flow direction
         CALL {
