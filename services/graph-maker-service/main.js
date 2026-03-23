@@ -24,40 +24,33 @@ const sqsClient = new SQSClient({
 export const processGraphData = async (session, data) => {
   const cypherQuery = `
     // 1. CORE TRADE DATA
+    // This part should always run. It creates the 'Anchor' for everything else.
     MERGE (t:Trade {id: $trade_id})
     SET t.account = $account, 
         t.asset_type = $asset_type, 
         t.status = $trade_status,
         t.created_at = datetime($created_at)
-    
-    WITH t
 
     // 2. TRADE-LEVEL ENTITIES (Static Meta-data)
-    CALL {
-      WITH t
-      WITH t WHERE $booking_system IS NOT NULL
+    // We wrap these in FOREACH so if $booking_system is null, it doesn't crash.
+    FOREACH (_ IN CASE WHEN $booking_system IS NOT NULL THEN [1] ELSE [] END |
       MERGE (b:Entity {name: $booking_system})
       MERGE (t)-[:BOOKED_ON]->(b)
-    }
+    )
 
-    CALL {
-      WITH t
-      WITH t WHERE $affirmation_system IS NOT NULL
+    FOREACH (_ IN CASE WHEN $affirmation_system IS NOT NULL THEN [1] ELSE [] END |
       MERGE (a:Entity {name: $affirmation_system})
       MERGE (t)-[:AFFIRMED_BY]->(a)
-    }
+    )
 
-    CALL {
-      WITH t
-      WITH t WHERE $clearing_house IS NOT NULL
+    FOREACH (_ IN CASE WHEN $clearing_house IS NOT NULL THEN [1] ELSE [] END |
       MERGE (c:Entity {name: $clearing_house})
       MERGE (t)-[:CLEARED_BY]->(c)
-    }
+    )
 
     // 3. TRANSACTION DATA (The 'Event' Step)
-    CALL {
-      WITH t
-      WITH t WHERE $trans_id IS NOT NULL
+    // Only run this if we actually have a transaction ID (prevents issues during initial Trade creation)
+    FOREACH (_ IN CASE WHEN $trans_id IS NOT NULL THEN [1] ELSE [] END |
       MERGE (tx:Transaction {id: $trans_id})
       SET tx.step = toInteger($step), 
           tx.type = $type, 
@@ -65,40 +58,31 @@ export const processGraphData = async (session, data) => {
           tx.direction = $direction,
           tx.created_at = datetime($trans_created_at)
       
+      // Link the transaction to the parent trade
       MERGE (t)-[:HAS_TRANSACTION]->(tx)
-    }
 
-    // 4a. TRANSACTION ENTITY (The Counterparty - Receive)
-    CALL {
-      WITH t
-      WITH t WHERE $trans_id IS NOT NULL AND $entity IS NOT NULL AND $direction = 'receive'
-      MATCH (t)-[:HAS_TRANSACTION]->(tx:Transaction {id: $trans_id})
-      MERGE (party:Entity {name: $entity})
-      MERGE (tx)-[:RECEIVED_FROM]->(party)
-    }
+      // 4. TRANSACTION ENTITY (The Counterparty)
+      // Only link the party if $entity (counterparty name) is present
+      FOREACH (__ IN CASE WHEN $entity IS NOT NULL THEN [1] ELSE [] END |
+        MERGE (party:Entity {name: $entity})
+        
+        // Create relationship based on money/asset flow direction
+        FOREACH (___ IN CASE WHEN $direction = 'receive' THEN [1] ELSE [] END | MERGE (tx)-[:RECEIVED_FROM]->(party))
+        FOREACH (___ IN CASE WHEN $direction = 'send' THEN [1] ELSE [] END | MERGE (tx)-[:SENT_TO]->(party))
+      )
 
-    // 4b. TRANSACTION ENTITY (The Counterparty - Send)
-    CALL {
-      WITH t
-      WITH t WHERE $trans_id IS NOT NULL AND $entity IS NOT NULL AND $direction = 'send'
-      MATCH (t)-[:HAS_TRANSACTION]->(tx:Transaction {id: $trans_id})
-      MERGE (party:Entity {name: $entity})
-      MERGE (tx)-[:SENT_TO]->(party)
-    }
-
-    // 5. EXCEPTION DATA (The Error)
-    CALL {
-      WITH t
-      WITH t WHERE $trans_id IS NOT NULL AND $excep_id IS NOT NULL
-      MATCH (t)-[:HAS_TRANSACTION]->(tx:Transaction {id: $trans_id})
-      MERGE (e:Exception {id: $excep_id})
-      SET e.priority = $priority, 
-          e.status = $excep_status, 
-          e.msg = $msg,
-          e.comment = $comment,
-          e.created_at = datetime($excep_created_at)
-      MERGE (tx)-[:GENERATED_EXCEPTION]->(e)
-    }
+      // 5. EXCEPTION DATA (The Error)
+      // Only run if an exception actually occurred in this step
+      FOREACH (__ IN CASE WHEN $excep_id IS NOT NULL THEN [1] ELSE [] END |
+        MERGE (e:Exception {id: $excep_id})
+        SET e.priority = $priority, 
+            e.status = $excep_status, 
+            e.msg = $msg,
+            e.comment = $comment,
+            e.created_at = datetime($excep_created_at)
+        MERGE (tx)-[:GENERATED_EXCEPTION]->(e)
+      )
+    )
   `;
 
   await session.run(cypherQuery, {
