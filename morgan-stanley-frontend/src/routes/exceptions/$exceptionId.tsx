@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { AlertCircle, AlertTriangle, RefreshCw, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,10 +11,11 @@ import { ExceptionDetailSidebar } from '@/components/exceptions-individual/Excep
 import { AISuggestionsTab } from '@/components/exceptions-individual/AISuggestionsTab';
 import { NewSolutionForm } from '@/components/exceptions-individual/NewSolutionForm';
 import { AIGeneratorPanel } from '@/components/exceptions-individual/AIGeneratorPanel';
+import { ResolvedSolutionDetails } from '@/components/exceptions-individual/ResolvedSolutionDetails';
 
 // Hook and API imports
 import { useExceptionResolver } from '../../hooks/useExceptionResolver';
-import { exceptionService } from '@/lib/api/exceptionService';
+import { exceptionService, type RetrievedSolution } from '@/lib/api/exceptionService';
 import { requireAuth } from '@/lib/utils';
 
 export const Route = createFileRoute('/exceptions/$exceptionId')({
@@ -28,6 +29,9 @@ function ResolveExceptionPage() {
   const [isApplying, setIsApplying] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [resolvedSolution, setResolvedSolution] = useState<RetrievedSolution | null>(null);
+  const [loadingResolvedSolution, setLoadingResolvedSolution] = useState(false);
+  const [resolvedSolutionError, setResolvedSolutionError] = useState<string | null>(null);
   const [resolutionDetails, setResolutionDetails] = useState<{
     type: 'existing' | 'new';
     solutionTitle: string;
@@ -63,6 +67,43 @@ function ResolveExceptionPage() {
     retryAISearch, // ✅ Get retry function
     loadingSolutionId
   } = useExceptionResolver(exceptionId);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadResolvedSolution = async () => {
+      if (!exception || exception.status !== 'CLOSED') {
+        setResolvedSolution(null);
+        setResolvedSolutionError(null);
+        setLoadingResolvedSolution(false);
+        return;
+      }
+
+      setLoadingResolvedSolution(true);
+      setResolvedSolutionError(null);
+
+      try {
+        const solution = await exceptionService.getSolution(exception.id.toString());
+        if (!isActive) return;
+        setResolvedSolution(solution);
+      } catch (fetchError) {
+        if (!isActive) return;
+        setResolvedSolution(null);
+        setResolvedSolutionError('This exception is closed, but its applied solution could not be loaded.');
+        console.error('❌ Failed to fetch resolved solution details:', fetchError);
+      } finally {
+        if (isActive) {
+          setLoadingResolvedSolution(false);
+        }
+      }
+    };
+
+    loadResolvedSolution();
+
+    return () => {
+      isActive = false;
+    };
+  }, [exception]);
 
   const handleApplySolution = async () => {
     if (!exception) return;
@@ -187,12 +228,72 @@ function ResolveExceptionPage() {
     );
   }
 
+  if (exception.status === 'CLOSED') {
+    return (
+      <div className="p-6 max-w-400 mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBack}
+            className="border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
+          >
+            Back
+          </Button>
+          <div>
+            <h1 className="text-2xl font-semibold text-black">
+              Exception {exception.id} Already Resolved
+            </h1>
+            <p className="text-sm text-black/75 mt-1">
+              Showing the applied solution details for this exception
+            </p>
+          </div>
+        </div>
+
+        <div className="flex gap-6">
+          <ExceptionDetailSidebar
+            exception={exception}
+            getPriorityColor={getPriorityColor}
+          />
+
+          <div className="flex-1 space-y-6">
+            {loadingResolvedSolution ? (
+              <Card>
+                <CardContent className="py-12">
+                  <div className="text-center text-black/50">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+                    <p className="text-lg">Loading applied solution details...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {!loadingResolvedSolution && resolvedSolutionError ? (
+              <Card className="border-red-200 bg-red-50">
+                <CardContent className="py-4">
+                  <div className="flex items-center gap-2 text-red-700">
+                    <AlertTriangle className="size-4" />
+                    <p className="text-sm">{resolvedSolutionError}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {!loadingResolvedSolution && resolvedSolution ? (
+              <ResolvedSolutionDetails solution={resolvedSolution} />
+            ) : null}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const canApplySolution = selectedTab === 'existing' 
     ? !!selectedSuggestion
     : !!(newSolutionTitle && newSolutionDescription);
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto space-y-6">
+    <div className="p-6 max-w-400 mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button 

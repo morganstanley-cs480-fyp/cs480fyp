@@ -130,21 +130,23 @@ export function ExceptionDetailPanel({
               >
                 View Associated Trade
               </Button>
-              <Button
-                className="w-full"
-                onClick={() =>
-                  navigate({
-                    to: "/exceptions/$exceptionId",
-                    params: { exceptionId: exception.id.toString() },
-                  })
-                }
-              >
-                View Exception
-              </Button>
+
             </>
           )}
 
-          {exception.status === "CLOSED" && (
+            <Button
+              className="w-full"
+              onClick={() =>
+                navigate({
+                  to: "/exceptions/$exceptionId",
+                  params: { exceptionId: exception.id.toString() },
+                })
+              }
+            >
+              {exception.status === "PENDING" ? `View or Resolve Exception` : 'View Solution'}
+            </Button>
+
+          {/* {exception.status === "CLOSED" && (
             <Badge
               className="w-full justify-center py-2"
               variant="default"
@@ -152,7 +154,7 @@ export function ExceptionDetailPanel({
               <CheckCircle className="size-4 mr-2" />
               Closed
             </Badge>
-          )}
+          )} */}
         </div>
       </CardContent>
     </Card>
