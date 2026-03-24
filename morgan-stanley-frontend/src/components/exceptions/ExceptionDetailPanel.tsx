@@ -1,6 +1,6 @@
 // Side panel details when you click on an Exception from the table
 
-import { CheckCircle, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Card,
@@ -143,7 +143,7 @@ export function ExceptionDetailPanel({
                 })
               }
             >
-              {exception.status === "PENDING" ? `View or Resolve Exception` : 'View Solution'}
+              {exception.status === "PENDING" ? 'View Exception' : 'View Solution'}
             </Button>
 
           {/* {exception.status === "CLOSED" && (

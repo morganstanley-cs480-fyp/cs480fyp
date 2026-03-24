@@ -61,7 +61,7 @@ function TradeDetailPage() {
     const latestTransactionStatus = getLatestTransactionStatus();
 
     // Params are strings.
-    const handleResolveException = (exceptionId: string) => {
+    const handleViewException = (exceptionId: string) => {
         navigate({
             to: "/exceptions/$exceptionId",
             params: {exceptionId},
@@ -241,7 +241,7 @@ function TradeDetailPage() {
                         lastSelectedType={lastSelectedType}
                         transactions={mergedTransactions}
                         relatedExceptions={selectedTransaction ? getRelatedExceptions(selectedTransaction.id, mergedExceptions) : []}
-                        onResolveException={handleResolveException}
+                        onViewException={handleViewException}
                     />
 
                 </div>
