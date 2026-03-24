@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
 import { Clock, Network } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
 import type { Transaction, Exception } from "@/lib/api/types";
@@ -326,6 +327,22 @@ function WorkflowEdge(props: EdgeProps) {
     }
   };
 
+  const handleEdgeMouseEnter = () => {
+    if (!data?.onEdgeHoverChange || !data?.transaction) return;
+
+    data.onEdgeHoverChange({
+      transaction: data.transaction,
+      pendingExceptionCount: data.pendingExceptionCount ?? 0,
+      step: Number(data.transaction.step ?? data.step ?? 0),
+      sourceId: source,
+      targetId: target,
+    });
+  };
+
+  const handleEdgeMouseLeave = () => {
+    data?.onEdgeHoverChange?.(null);
+  };
+
   // Determine color based on transaction status and exceptions
   const hasExceptions = data?.hasExceptions ?? false;
   const transaction = data?.transaction;
@@ -382,6 +399,8 @@ function WorkflowEdge(props: EdgeProps) {
         style={{ stroke: EDGE_COLOR, strokeWidth: 2.25, strokeLinecap: 'round', cursor:'pointer' }}
         markerEnd={markerEnd}
         onClick={handleEdgeClick}
+        onMouseEnter={handleEdgeMouseEnter}
+        onMouseLeave={handleEdgeMouseLeave}
       />
       <EdgeLabelRenderer>
         <div
@@ -391,6 +410,8 @@ function WorkflowEdge(props: EdgeProps) {
             pointerEvents: 'auto',
           }}
           onClick={handleEdgeClick}
+          onMouseEnter={handleEdgeMouseEnter}
+          onMouseLeave={handleEdgeMouseLeave}
         >
           <div
             style={{
@@ -506,6 +527,14 @@ interface TransactionFlow {
   to: string;
 }
 
+interface EdgeHoverState {
+  transaction: Transaction;
+  pendingExceptionCount: number;
+  step: number;
+  sourceId: string;
+  targetId: string;
+}
+
 async function generateElkLayout(
   participants: string[], 
   transactionFlows: TransactionFlow[], 
@@ -514,7 +543,9 @@ async function generateElkLayout(
   allTransactions: Transaction[],
   sortedTransactions: Transaction[],
   _exceptions: Exception[],
-  onTransactionSelect: (transaction: Transaction) => void,  getRelatedExceptions: (trans_id: number) => Exception[]
+  onTransactionSelect: (transaction: Transaction) => void,
+  getRelatedExceptions: (trans_id: number) => Exception[],
+  onEdgeHoverChange: (hoverState: EdgeHoverState | null) => void
 ) {
   try {
     console.log('📐 generateElkLayout function called');
@@ -661,17 +692,16 @@ async function generateElkLayout(
     const correspondingTransaction = sortedTransactions[idx] || null;
     
     // Check if this transaction has exceptions (only count PENDING exceptions for non-CLEARED transactions)
-    const hasExceptions = correspondingTransaction 
+    const pendingExceptionCount = correspondingTransaction
       ? (() => {
-          // If transaction is CLEARED, don't show any exceptions
           if (correspondingTransaction.status === 'CLEARED') {
-            return false;
+            return 0;
           }
-          // Otherwise, only count PENDING exceptions
           const relatedExceptions = getRelatedExceptions(correspondingTransaction.id);
-          return relatedExceptions.filter(exc => exc.status === 'PENDING').length > 0;
+          return relatedExceptions.filter(exc => exc.status === 'PENDING').length;
         })()
-      : false;
+      : 0;
+    const hasExceptions = pendingExceptionCount > 0;
 
     edges.push({
       id: e.id!,
@@ -688,7 +718,9 @@ async function generateElkLayout(
         targetWidth: targetNode.width ?? NODE_WIDTH,
         transaction: correspondingTransaction,
         hasExceptions,
+        pendingExceptionCount,
         onEdgeClick: onTransactionSelect,
+        onEdgeHoverChange,
       },
       markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 },
     });
@@ -739,6 +771,8 @@ export function FlowVisualization({
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(!transactions || transactions.length === 0 ? false : true);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<Node, Edge> | null>(null);
+  const [hoveredEdge, setHoveredEdge] = useState<EdgeHoverState | null>(null);
+  const [playbackStep, setPlaybackStep] = useState<number>(Number.MAX_SAFE_INTEGER);
 
   // ✅ Enhanced function to get related exceptions with transaction status check
   const getFilteredRelatedExceptions = useCallback((transaction: Transaction): Exception[] => {
@@ -754,6 +788,50 @@ export function FlowVisualization({
 
   // Use mergedTransactions for all rendering (combines API + WebSocket data)
   const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
+  const maxPlaybackStep = useMemo(
+    () => sortedTransactions.reduce((max, transaction) => Math.max(max, transaction.step), 0),
+    [sortedTransactions],
+  );
+  const effectivePlaybackStep = maxPlaybackStep === 0 ? 0 : Math.min(playbackStep, maxPlaybackStep);
+
+  useEffect(() => {
+    if (maxPlaybackStep === 0) {
+      setPlaybackStep(0);
+      return;
+    }
+
+    setPlaybackStep((current) => {
+      if (current === Number.MAX_SAFE_INTEGER || current === 0) {
+        return maxPlaybackStep;
+      }
+      return Math.min(current, maxPlaybackStep);
+    });
+  }, [maxPlaybackStep]);
+
+  const renderedLayoutData = useMemo(() => {
+    if (maxPlaybackStep === 0 || effectivePlaybackStep >= maxPlaybackStep) {
+      return layoutData;
+    }
+
+    const visibleEdges = layoutData.edges.filter((edge) => {
+      const transactionStep = Number(edge.data?.transaction?.step ?? edge.data?.step ?? 0);
+      return transactionStep <= effectivePlaybackStep;
+    });
+
+    const visibleNodeIds = new Set<string>();
+    visibleEdges.forEach((edge) => {
+      visibleNodeIds.add(edge.source);
+      visibleNodeIds.add(edge.target);
+    });
+    visibleNodeIds.add(HUB_ID);
+
+    const visibleNodes = layoutData.nodes.filter((node) => visibleNodeIds.has(node.id));
+
+    return {
+      nodes: visibleNodes,
+      edges: visibleEdges,
+    };
+  }, [effectivePlaybackStep, layoutData, maxPlaybackStep]);
 
     // Generate dynamic flow visualization based on actual transaction data
   useEffect(() => {
@@ -808,7 +886,7 @@ export function FlowVisualization({
 
     console.log('🚀 Calling generateElkLayout with updated transactions:', { entityCount: entities.length, flowCount: validFlows.length, transactionCount: transactions.length });
     
-    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect, getRelatedExceptions)
+    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect, getRelatedExceptions, setHoveredEdge)
       .then((result) => {
         console.log('✅ ELK layout regenerated with updated entity statuses:', { nodeCount: result.nodes.length, edgeCount: result.edges.length });
         setLayoutData(result);
@@ -827,31 +905,32 @@ export function FlowVisualization({
       ...prev,
       nodes: applyNodeChanges(changes, prev.nodes),
     }));
+    setHoveredEdge(null);
   }, []);
 
   const nodeTypes = useMemo(() => ({ entity: EntityNode }), []);
   const edgeTypes = useMemo(() => ({ workflow: WorkflowEdge }), []);
 
   const fitToTopBottomNodes = useCallback(() => {
-    if (!reactFlowInstance || layoutData.nodes.length === 0) return;
+    if (!reactFlowInstance || renderedLayoutData.nodes.length === 0) return;
 
     const getNodeWidth = (node: Node): number => {
       const data = node.data as { width?: number } | undefined;
       return typeof data?.width === 'number' ? data.width : NODE_WIDTH;
     };
 
-    const topNode = layoutData.nodes.reduce((currentTop, node) =>
+    const topNode = renderedLayoutData.nodes.reduce((currentTop, node) =>
       node.position.y < currentTop.position.y ? node : currentTop
     );
 
-    const bottomNode = layoutData.nodes.reduce((currentBottom, node) =>
+    const bottomNode = renderedLayoutData.nodes.reduce((currentBottom, node) =>
       node.position.y > currentBottom.position.y ? node : currentBottom
     );
 
     let minX = Number.POSITIVE_INFINITY;
     let maxX = Number.NEGATIVE_INFINITY;
 
-    layoutData.nodes.forEach((node) => {
+    renderedLayoutData.nodes.forEach((node) => {
       const nodeWidth = getNodeWidth(node);
       minX = Math.min(minX, node.position.x);
       maxX = Math.max(maxX, node.position.x + nodeWidth);
@@ -879,10 +958,10 @@ export function FlowVisualization({
         maxZoom: 1.8,
       }
     );
-  }, [layoutData.nodes, reactFlowInstance]);
+  }, [renderedLayoutData.nodes, reactFlowInstance]);
 
   useEffect(() => {
-    if (activeTab !== 'system' || isLoading || layoutData.nodes.length === 0 || !reactFlowInstance) {
+    if (activeTab !== 'system' || isLoading || renderedLayoutData.nodes.length === 0 || !reactFlowInstance) {
       return;
     }
 
@@ -891,7 +970,7 @@ export function FlowVisualization({
     });
 
     return () => cancelAnimationFrame(frameId);
-  }, [activeTab, isLoading, layoutData.nodes, reactFlowInstance, fitToTopBottomNodes]);
+  }, [activeTab, isLoading, renderedLayoutData.nodes, reactFlowInstance, fitToTopBottomNodes]);
 
   return (
     <Card>
@@ -947,33 +1026,72 @@ export function FlowVisualization({
         ) : (
           <>
             <CardDescription className="mb-4">
-              System architecture and data flow visualization
+              System architecture and data flow visualization. Hover an edge marker for details.
             </CardDescription>
+            {maxPlaybackStep > 0 && (
+              <div className="mb-4 rounded-md border border-black/10 bg-white px-4 py-3">
+                <div className="mb-2 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-black/70 uppercase tracking-wide">Playback Step</span>
+                  <span className="font-mono text-black/60">
+                    Step {Math.max(1, effectivePlaybackStep)} / {maxPlaybackStep}
+                  </span>
+                </div>
+                <Slider
+                  value={[Math.max(1, effectivePlaybackStep)]}
+                  min={1}
+                  max={Math.max(1, maxPlaybackStep)}
+                  step={1}
+                  onValueChange={(values) => setPlaybackStep(values[0] ?? 1)}
+                  disabled={maxPlaybackStep <= 1}
+                />
+              </div>
+            )}
             <div className="h-[800px] border rounded-lg bg-black/[0.02] relative">
               {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-black/75 font-bold">Computing ELK Layout...</div>
                 </div>
               ) : (
-                <ReactFlow
-                  nodes={layoutData.nodes}
-                  edges={layoutData.edges}
-                  nodeTypes={nodeTypes}
-                  edgeTypes={edgeTypes}
-                  onInit={setReactFlowInstance}
-                  onNodesChange={onNodesChange}
-                  nodesDraggable
-                  nodesConnectable={false}
-                  elementsSelectable
-                  panOnDrag={true}
-                  selectionOnDrag={false}
-                  zoomOnScroll
-                  minZoom={0.1}
-                  maxZoom={2}
-                >
-                  <Background color="#e2e8f0" gap={20} />
-                  <Controls />
-                </ReactFlow>
+                <>
+                  <ReactFlow
+                    nodes={renderedLayoutData.nodes}
+                    edges={renderedLayoutData.edges}
+                    nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
+                    onInit={setReactFlowInstance}
+                    onNodesChange={onNodesChange}
+                    onPaneClick={() => setHoveredEdge(null)}
+                    nodesDraggable
+                    nodesConnectable={false}
+                    elementsSelectable
+                    panOnDrag={true}
+                    selectionOnDrag={false}
+                    zoomOnScroll
+                    minZoom={0.1}
+                    maxZoom={2}
+                  >
+                    <Background color="#e2e8f0" gap={20} />
+                    <Controls />
+                  </ReactFlow>
+
+                  {hoveredEdge && (
+                    <div className="pointer-events-none absolute left-3 top-3 z-20 w-72 rounded-md border border-black/10 bg-white/95 p-3 shadow-sm backdrop-blur-sm">
+                      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-black/50">Transaction Hover</div>
+                      <div className="grid grid-cols-2 gap-y-1 text-xs text-black/80">
+                        <span className="text-black/50">ID</span>
+                        <span className="font-mono">{hoveredEdge.transaction.id}</span>
+                        <span className="text-black/50">Step</span>
+                        <span className="font-mono">{hoveredEdge.step}</span>
+                        <span className="text-black/50">Path</span>
+                        <span className="truncate">{hoveredEdge.sourceId} → {hoveredEdge.targetId}</span>
+                        <span className="text-black/50">Status</span>
+                        <span className="font-semibold">{hoveredEdge.transaction.status}</span>
+                        <span className="text-black/50">Pending Exceptions</span>
+                        <span className="font-mono">{hoveredEdge.pendingExceptionCount}</span>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </>
