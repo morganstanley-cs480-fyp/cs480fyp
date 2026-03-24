@@ -194,23 +194,12 @@ async def _fetch_solution_by_exception_id(exception_id: str) -> SolutionData | N
         SolutionData if found, None otherwise
     """
     try:
-        # Fetch all solutions and filter by exception_id
-        # Note: This is inefficient - ideally solution service should have GET /solutions/exception/{exception_id}
         async with httpx.AsyncClient(base_url=settings.SOLUTION_SERVICE_URL) as client:
-            solutions_response = await client.get("/api/solutions/")
-            solutions_response.raise_for_status()
-            all_solutions = solutions_response.json()
-            
-            # Filter by exception_id (convert to int for comparison)
-            exception_id_int = int(exception_id)
-            matching_solutions = [s for s in all_solutions if s.get("exception_id") == exception_id_int]
-            
-            if matching_solutions:
-                # Return the first matching solution
-                solution_data = matching_solutions[0]
-                return SolutionData(**solution_data)
-            
-            return None
+            response = await client.get(f"/api/solutions/{exception_id}")
+            if response.status_code == status.HTTP_404_NOT_FOUND:
+                return None
+            response.raise_for_status()
+            return SolutionData(**response.json())
             
     except HTTPStatusError as e:
         logging.warning(f"Failed to fetch solution for exception {exception_id}: {e.response.text}")
