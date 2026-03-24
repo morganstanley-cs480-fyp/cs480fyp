@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 from app.schemas.exception import ExceptionCreate, ExceptionUpdate, ExceptionResponse
 from app.models import Exception
-from app.models.exception import ExceptionStatus
 
 # Sample CRUD Routers. Might add pagination in the future
 
@@ -47,17 +46,17 @@ async def update_exception(exception_id: int, exception_data: ExceptionUpdate):
     return exception
 
 
-# DISABLED: Exception resolution endpoint - users can only generate and view solutions
-# @router.post("/{exception_id}/resolve", response_model=ExceptionResponse)
-# async def resolve_exception(exception_id: int):
-#     """Resolve an exception by updating its status to CLOSED"""
-#     exception = await Exception.get_or_none(id=exception_id)
-#     if not exception:
-#         raise HTTPException(status_code=404, detail="Exception not found")
-#
-#     exception.status = ExceptionStatus.CLOSED
-#     await exception.save()
-#     return exception
+@router.post("/{exception_id}/resolve")
+async def resolve_exception(exception_id: int):
+    """Resolution is disabled. Users can only view exceptions and manage solutions."""
+    exception = await Exception.get_or_none(id=exception_id)
+    if not exception:
+        raise HTTPException(status_code=404, detail="Exception not found")
+
+    raise HTTPException(
+        status_code=403,
+        detail="Exception resolution is disabled",
+    )
 
 
 @router.delete("/{exception_id}", status_code=204)
