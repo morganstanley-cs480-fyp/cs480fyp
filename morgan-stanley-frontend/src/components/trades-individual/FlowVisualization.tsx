@@ -966,8 +966,8 @@ export function FlowVisualization({
     const verticalSpan = Math.max(1, bottomY - topY);
     const horizontalSpan = Math.max(1, maxX - minX);
 
-    const verticalPadding = Math.max(80, verticalSpan * 0.12);
-    const horizontalPadding = Math.max(120, horizontalSpan * 0.08);
+    const verticalPadding = Math.max(36, verticalSpan * 0.06);
+    const horizontalPadding = Math.max(56, horizontalSpan * 0.045);
 
     reactFlowInstance.fitBounds(
       {
@@ -978,10 +978,15 @@ export function FlowVisualization({
       },
       {
         duration: 320,
-        minZoom: 0.35,
-        maxZoom: 1.8,
+        minZoom: 0.5,
+        maxZoom: 2,
       }
     );
+
+    window.setTimeout(() => {
+      const boostedZoom = Math.min(2, reactFlowInstance.getZoom() * 1.12);
+      reactFlowInstance.zoomTo(boostedZoom, { duration: 180 });
+    }, 340);
   }, [renderedLayoutData.nodes, reactFlowInstance]);
 
   useEffect(() => {
