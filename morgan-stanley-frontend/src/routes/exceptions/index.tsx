@@ -18,7 +18,7 @@ import type {
 import type { Exception } from "@/lib/api/types";
 
 // Component imports
-import { StatsOverview } from "@/components/exceptions/StatsOverview";
+import { StatsOverview, type StatsCardKey } from "@/components/exceptions/StatsOverview";
 import { ExceptionResultsTable } from "@/components/exceptions/ExceptionResultsTable";
 import { ExceptionDetailPanel } from "@/components/exceptions/ExceptionDetailPanel";
 import { useExceptionColumns } from "@/components/exceptions/useExceptionColumns";
@@ -223,6 +223,68 @@ function ExceptionsPage() {
 
   const filteredResultsCount = table.getFilteredRowModel().rows.length;
 
+  const activeStatsCard: StatsCardKey | null =
+    statusFilter === "CLOSED"
+      ? "closed"
+      : statusFilter === "PENDING" && priorityFilter === "ALL"
+        ? "pending"
+        : statusFilter === "PENDING" && priorityFilter === "CRITICAL"
+          ? "critical"
+          : statusFilter === "PENDING" && priorityFilter === "HIGH"
+            ? "high"
+            : statusFilter === "PENDING" && priorityFilter === "MEDIUM"
+              ? "medium"
+              : statusFilter === "PENDING" && priorityFilter === "LOW"
+                ? "low"
+                : null;
+
+  const handleStatsCardClick = (card: StatsCardKey) => {
+    if (activeStatsCard === card) {
+      setStatusFilter("ALL");
+      setPriorityFilter("ALL");
+      table.getColumn("status")?.setFilterValue(undefined);
+      table.getColumn("priority")?.setFilterValue(undefined);
+      table.setPageIndex(0);
+      setSelectedException(null);
+      return;
+    }
+
+    if (card === "pending") {
+      setStatusFilter("PENDING");
+      setPriorityFilter("ALL");
+    }
+
+    if (card === "critical") {
+      setStatusFilter("PENDING");
+      setPriorityFilter("CRITICAL");
+    }
+
+    if (card === "high") {
+      setStatusFilter("PENDING");
+      setPriorityFilter("HIGH");
+    }
+
+    if (card === "medium") {
+      setStatusFilter("PENDING");
+      setPriorityFilter("MEDIUM");
+    }
+
+    if (card === "low") {
+      setStatusFilter("PENDING");
+      setPriorityFilter("LOW");
+    }
+
+    if (card === "closed") {
+      setStatusFilter("CLOSED");
+      setPriorityFilter("ALL");
+    }
+
+    table.getColumn("status")?.setFilterValue(undefined);
+    table.getColumn("priority")?.setFilterValue(undefined);
+    table.setPageIndex(0);
+    setSelectedException(null);
+  };
+
   useEffect(() => {
     const maxPageIndex = Math.max(
       0,
@@ -342,7 +404,11 @@ function ExceptionsPage() {
       {/* Content */}
       {!loading && (
         <>
-          <StatsOverview stats={stats} />
+          <StatsOverview
+            stats={stats}
+            activeCard={activeStatsCard}
+            onCardClick={handleStatsCardClick}
+          />
 
           {allExceptions.length > 0 && (
             <div className={selectedException ? "grid grid-cols-3 gap-6" : ""}>
