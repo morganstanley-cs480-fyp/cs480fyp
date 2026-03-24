@@ -1,6 +1,7 @@
 """
 Document routes for storing and retrieving embeddings.
 """
+import asyncio
 from typing import List, Dict, Any
 
 from fastapi import APIRouter, Request, HTTPException, status
@@ -21,6 +22,7 @@ from app.schemas.document import (
     SimilarException,
     SimilarExceptionsResponse,
     IngestException,
+    SolutionData,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -316,9 +318,16 @@ async def find_similar_exceptions(
             # Explanations not requested or LLM provider doesn't support batch
             explanations = [None] * len(similar_docs)
         
-        # Step 4: Combine similar docs with explanations
+        # Step 4: Fetch solutions for similar exceptions in parallel
+        solution_tasks = [
+            _fetch_solution_by_exception_id(str(doc["exception_id"]))
+            for doc in similar_docs
+        ]
+        solutions = await asyncio.gather(*solution_tasks)
+
+        # Step 5: Combine similar docs with explanations and solutions
         similar_exceptions = []
-        for doc, explanation in zip(similar_docs, explanations):
+        for doc, explanation, solution in zip(similar_docs, explanations, solutions):
             similar_exceptions.append(
                 SimilarException(
                     exception_id=doc["exception_id"],
@@ -330,7 +339,8 @@ async def find_similar_exceptions(
                     clearing_house=doc["clearing_house"],
                     exception_msg=doc["exception_msg"],
                     text=doc["text"],
-                    explanation=explanation
+                    explanation=explanation,
+                    solution=solution,
                 )
             )
         
@@ -355,6 +365,24 @@ async def find_similar_exceptions(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error finding similar exceptions: {str(e)}"
         )
+
+
+async def _fetch_solution_by_exception_id(exception_id: str) -> SolutionData | None:
+    """Fetch solution for a given exception_id from solution service."""
+    try:
+        async with httpx.AsyncClient(base_url=settings.SOLUTION_SERVICE_URL) as client:
+            response = await client.get(f"/api/solutions/{exception_id}")
+            if response.status_code == status.HTTP_404_NOT_FOUND:
+                return None
+            response.raise_for_status()
+            return SolutionData(**response.json())
+
+    except (ValueError, HTTPStatusError) as e:
+        logging.warning(f"Failed to fetch solution for exception {exception_id}: {str(e)}")
+        return None
+    except Exception as e:
+        logging.warning(f"Error fetching solution for exception {exception_id}: {str(e)}")
+        return None
 
 
 @router.post("/ingest-exception", response_model=IngestResponse, status_code=status.HTTP_201_CREATED)
