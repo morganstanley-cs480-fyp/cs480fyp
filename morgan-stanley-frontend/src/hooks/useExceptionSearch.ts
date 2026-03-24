@@ -1,42 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
 import { exceptionService } from '@/lib/api/exceptionService';
 
-export interface ExceptionSearchParams {
-  statusFilter: 'ALL' | 'PENDING' | 'CLOSED';
-  priorityFilter: 'ALL' | 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-}
-
-export function useExceptionSearch(searchParams: ExceptionSearchParams) {
+export function useExceptionSearch() {
   return useQuery({
-    queryKey: ['exceptions', 'search', searchParams],
+    queryKey: ['exceptions', 'search'],
     queryFn: async () => {
-      console.log('🚀 TanStack Query: Loading all exceptions with filters', {
+      console.log('🚀 TanStack Query: Loading all exceptions', {
         time: new Date().toISOString(),
-        searchParams
       });
       
       // Always get all exceptions from the single endpoint
       const allExceptions = await exceptionService.getExceptions();
-      let filtered = [...allExceptions];
-
-      // Apply status filter
-      if (searchParams.statusFilter !== "ALL") {
-        filtered = filtered.filter((exc) => exc.status === searchParams.statusFilter);
-      }
-
-      // Apply priority filter
-      if (searchParams.priorityFilter !== "ALL") {
-        filtered = filtered.filter((exc) => exc.priority === searchParams.priorityFilter);
-      }
 
       console.log('✅ TanStack Query: Exceptions loaded and filtered', {
         time: new Date().toISOString(),
         totalCount: allExceptions.length,
-        filteredCount: filtered.length
+        filteredCount: allExceptions.length
       });
       
       return {
-        results: filtered,
+        results: allExceptions,
         total: allExceptions.length,
         allExceptions: allExceptions // Return all for stats calculation
       };

@@ -50,12 +50,9 @@ interface ExceptionResultsTableProps {
   table: TableType<Exception>;
   resultsCount: number;
   selectedExceptionId: number | null;
-  statusFilter: "ALL" | "PENDING" | "CLOSED";
-  priorityFilter: "ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-  onStatusFilterChange: (value: "ALL" | "PENDING" | "CLOSED") => void;
-  onPriorityFilterChange: (value: "ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW") => void;
   onRowClick: (exception: Exception) => void;
   onRefresh?: () => void; // Add this prop
+  onClearStatsFilters?: () => void;
   filterOptions?: ExceptionFilterOptions
 }
 
@@ -63,12 +60,9 @@ export function ExceptionResultsTable({
   table,
   resultsCount,
   selectedExceptionId,
-  statusFilter: _statusFilter,
-  priorityFilter: _priorityFilter,
-  onStatusFilterChange: _onStatusFilterChange,
-  onPriorityFilterChange: _onPriorityFilterChange,
   onRowClick,
   onRefresh,
+  onClearStatsFilters,
   filterOptions
 }: ExceptionResultsTableProps) {
   const [openFilter, setOpenFilter] = useState<string | null>(null);
@@ -102,6 +96,7 @@ export function ExceptionResultsTable({
     
     // Close any open dropdown filters
     setOpenFilter(null);
+    onClearStatsFilters?.();
   };
 
   const handleDownloadCSV = () => {

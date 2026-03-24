@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, AlertCircle, Clock } from "lucide-react";
 import {
@@ -24,7 +24,7 @@ import { ExceptionDetailPanel } from "@/components/exceptions/ExceptionDetailPan
 import { useExceptionColumns } from "@/components/exceptions/useExceptionColumns";
 import { EmptyState } from "@/components/exceptions/EmptyState";
 import { requireAuth } from "@/lib/utils";
-import { useExceptionSearch, type ExceptionSearchParams } from "@/hooks/useExceptionSearch";
+import { useExceptionSearch } from "@/hooks/useExceptionSearch";
 import { APIError } from "@/lib/api/client";
 
 export const Route = createFileRoute("/exceptions/")({
@@ -64,7 +64,7 @@ function ExceptionHeader() {
 function ExceptionsPage() {
   const queryClient = useQueryClient();
   const TABLE_STATE_KEY = "exceptionTableState:v1";
-  const FILTER_STATE_KEY = "exceptionFilters:v1";
+  const FILTER_STATE_KEY = "exceptionStatsCardFilters:v1";
   
   // TanStack Table state
   const [sorting, setSorting] = useState<SortingState>(() => {
@@ -114,34 +114,17 @@ function ExceptionsPage() {
   
   // Exception-specific state - no search query needed
   const [selectedException, setSelectedException] = useState<Exception | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "CLOSED">(() => {
-    if (typeof window === "undefined") return "ALL";
+  const [selectedStatsCards, setSelectedStatsCards] = useState<StatsCardKey[]>(() => {
+    if (typeof window === "undefined") return [];
     const saved = sessionStorage.getItem(FILTER_STATE_KEY);
-    if (!saved) return "ALL";
+    if (!saved) return [];
     try {
-      const parsed = JSON.parse(saved) as { statusFilter?: "ALL" | "PENDING" | "CLOSED" };
-      return parsed.statusFilter ?? "ALL";
+      const parsed = JSON.parse(saved) as { selectedStatsCards?: StatsCardKey[] };
+      return parsed.selectedStatsCards ?? [];
     } catch {
-      return "ALL";
+      return [];
     }
   });
-  const [priorityFilter, setPriorityFilter] = useState<"ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW">(() => {
-    if (typeof window === "undefined") return "ALL";
-    const saved = sessionStorage.getItem(FILTER_STATE_KEY);
-    if (!saved) return "ALL";
-    try {
-      const parsed = JSON.parse(saved) as { priorityFilter?: "ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" };
-      return parsed.priorityFilter ?? "ALL";
-    } catch {
-      return "ALL";
-    }
-  });
-
-  // Search params for TanStack Query - always active since we load all data
-  const searchParams: ExceptionSearchParams = {
-    statusFilter,
-    priorityFilter
-  };
 
   // TanStack Query - Use the search hook (always enabled)
   const {
@@ -149,11 +132,27 @@ function ExceptionsPage() {
     isLoading: loading, // Renamed from searching to loading since it's initial load
     error: searchError,
     refetch: refetchSearch,
-  } = useExceptionSearch(searchParams);
+  } = useExceptionSearch();
 
   // Extract results from query response
-  const results = searchResponse?.results ?? [];
-  const allExceptions = searchResponse?.allExceptions ?? [];
+  const allExceptions = searchResponse?.allExceptions ?? searchResponse?.results ?? [];
+
+  const statsFilteredExceptions = useMemo(() => {
+    if (selectedStatsCards.length === 0) return allExceptions;
+
+    const matchesCard = (exception: Exception, card: StatsCardKey) => {
+      if (card === "pending") return exception.status === "PENDING";
+      if (card === "closed") return exception.status === "CLOSED";
+      if (card === "critical") return exception.status === "PENDING" && exception.priority === "CRITICAL";
+      if (card === "high") return exception.status === "PENDING" && exception.priority === "HIGH";
+      if (card === "medium") return exception.status === "PENDING" && exception.priority === "MEDIUM";
+      return exception.status === "PENDING" && exception.priority === "LOW";
+    };
+
+    return allExceptions.filter((exception) =>
+      selectedStatsCards.some((card) => matchesCard(exception, card)),
+    );
+  }, [allExceptions, selectedStatsCards]);
 
   // Handle refresh functionality
   const handleRefresh = async () => {
@@ -162,6 +161,7 @@ function ExceptionsPage() {
       table.resetColumnFilters();
       table.resetSorting();
       table.resetPageIndex();
+      setSelectedStatsCards([]);
       
       // Clear query cache to force fresh data fetch
       queryClient.removeQueries({ queryKey: ['exceptions', 'search'] });
@@ -202,7 +202,7 @@ function ExceptionsPage() {
   // TanStack Table returns function values by design; React Compiler warning is expected here
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: results,
+    data: statsFilteredExceptions,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -223,61 +223,12 @@ function ExceptionsPage() {
 
   const filteredResultsCount = table.getFilteredRowModel().rows.length;
 
-  const activeStatsCard: StatsCardKey | null =
-    statusFilter === "CLOSED"
-      ? "closed"
-      : statusFilter === "PENDING" && priorityFilter === "ALL"
-        ? "pending"
-        : statusFilter === "PENDING" && priorityFilter === "CRITICAL"
-          ? "critical"
-          : statusFilter === "PENDING" && priorityFilter === "HIGH"
-            ? "high"
-            : statusFilter === "PENDING" && priorityFilter === "MEDIUM"
-              ? "medium"
-              : statusFilter === "PENDING" && priorityFilter === "LOW"
-                ? "low"
-                : null;
-
   const handleStatsCardClick = (card: StatsCardKey) => {
-    if (activeStatsCard === card) {
-      setStatusFilter("ALL");
-      setPriorityFilter("ALL");
-      table.getColumn("status")?.setFilterValue(undefined);
-      table.getColumn("priority")?.setFilterValue(undefined);
-      table.setPageIndex(0);
-      setSelectedException(null);
-      return;
-    }
-
-    if (card === "pending") {
-      setStatusFilter("PENDING");
-      setPriorityFilter("ALL");
-    }
-
-    if (card === "critical") {
-      setStatusFilter("PENDING");
-      setPriorityFilter("CRITICAL");
-    }
-
-    if (card === "high") {
-      setStatusFilter("PENDING");
-      setPriorityFilter("HIGH");
-    }
-
-    if (card === "medium") {
-      setStatusFilter("PENDING");
-      setPriorityFilter("MEDIUM");
-    }
-
-    if (card === "low") {
-      setStatusFilter("PENDING");
-      setPriorityFilter("LOW");
-    }
-
-    if (card === "closed") {
-      setStatusFilter("CLOSED");
-      setPriorityFilter("ALL");
-    }
+    setSelectedStatsCards((prev) =>
+      prev.includes(card)
+        ? prev.filter((item) => item !== card)
+        : [...prev, card],
+    );
 
     table.getColumn("status")?.setFilterValue(undefined);
     table.getColumn("priority")?.setFilterValue(undefined);
@@ -317,11 +268,10 @@ function ExceptionsPage() {
     sessionStorage.setItem(
       FILTER_STATE_KEY,
       JSON.stringify({
-        statusFilter,
-        priorityFilter,
+        selectedStatsCards,
       }),
     );
-  }, [statusFilter, priorityFilter]);
+  }, [selectedStatsCards]);
 
   // Calculate stats from all exceptions (unfiltered)
   const stats = {
@@ -406,7 +356,7 @@ function ExceptionsPage() {
         <>
           <StatsOverview
             stats={stats}
-            activeCard={activeStatsCard}
+            activeCards={selectedStatsCards}
             onCardClick={handleStatsCardClick}
           />
 
@@ -417,12 +367,9 @@ function ExceptionsPage() {
                   table={table}
                   resultsCount={filteredResultsCount}
                   selectedExceptionId={selectedException?.id || null}
-                  statusFilter={statusFilter}
-                  priorityFilter={priorityFilter}
-                  onStatusFilterChange={setStatusFilter}
-                  onPriorityFilterChange={setPriorityFilter}
                   onRowClick={setSelectedException}
                   onRefresh={handleRefresh}
+                  onClearStatsFilters={() => setSelectedStatsCards([])}
                 />
               </div>
 

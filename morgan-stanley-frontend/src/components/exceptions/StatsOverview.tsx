@@ -15,11 +15,11 @@ export type StatsCardKey = "pending" | "critical" | "high" | "medium" | "low" | 
 
 interface StatsOverviewProps {
   stats: ExceptionStats;
-  activeCard?: StatsCardKey | null;
+  activeCards?: StatsCardKey[];
   onCardClick?: (card: StatsCardKey) => void;
 }
 
-export function StatsOverview({ stats, activeCard = null, onCardClick }: StatsOverviewProps) {
+export function StatsOverview({ stats, activeCards = [], onCardClick }: StatsOverviewProps) {
   const cards = [
     { key: "pending" as const, label: "Pending Exceptions", value: stats.total, valueColor: "text-black", dotColor: "bg-[#002B51]", sub: "Awaiting resolution" },
     { key: "critical" as const, label: "Critical Priority", value: stats.critical, valueColor: "text-red-600", dotColor: "bg-red-600", sub: "Requires urgent attention" },
@@ -40,7 +40,7 @@ export function StatsOverview({ stats, activeCard = null, onCardClick }: StatsOv
         >
           <Card
             className={`hover:shadow-md transition-shadow cursor-pointer ${
-              activeCard === card.key ? "ring-2 ring-[#002B51]/25 border-[#002B51]/35" : ""
+              activeCards.includes(card.key) ? "ring-2 ring-[#002B51]/25 border-[#002B51]/35" : ""
             }`}
           >
             <CardContent className="pt-4 pb-4 px-5">
