@@ -143,7 +143,7 @@ export function ExceptionDetailPanel({
                 })
               }
             >
-              {exception.status === "PENDING" ? `View or Resolve Exception` : 'View Solution'}
+              {exception.status === "PENDING" ? `View Exception` : 'View Solution'}
             </Button>
 
           {/* {exception.status === "CLOSED" && (
