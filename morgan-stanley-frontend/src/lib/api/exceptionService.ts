@@ -213,13 +213,6 @@ export const exceptionService = {
       solution_description: request.solution_description,
       scores: request.scores || Math.floor(Math.random() * 28) // Random 0-27 as specified
     });
-  },
-
-    // Resolve exception
-  async resolveException(exception_id: string): Promise<Exception> {
-    return exceptionClient.post(`/api/exceptions/${exception_id}/resolve`, {
-      exceptionId: parseInt(exception_id)
-    });
   }
 
 
