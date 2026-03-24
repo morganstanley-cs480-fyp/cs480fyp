@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Clock, Network, Pause, Play, Landmark, ShieldCheck } from "lucide-react";
+import { Clock, Network, Pause, Play, RotateCcw, Landmark, ShieldCheck } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
 import type { Transaction, Exception } from "@/lib/api/types";
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -770,11 +770,14 @@ export function FlowVisualization({
   console.log('🎨 FlowVisualization component mounted!', { transactionCount: transactions?.length, clearingHouse });
   
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
+  const [initialLayoutData, setInitialLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(!transactions || transactions.length === 0 ? false : true);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<Node, Edge> | null>(null);
   const [hoveredEdge, setHoveredEdge] = useState<EdgeHoverState | null>(null);
   const [playbackStep, setPlaybackStep] = useState<number>(Number.MAX_SAFE_INTEGER);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hasManualNodeInteraction, setHasManualNodeInteraction] = useState(false);
+  const fitBoostTimeoutRef = useRef<number | null>(null);
 
   // ✅ Enhanced function to get related exceptions with transaction status check
   const getFilteredRelatedExceptions = useCallback((transaction: Transaction): Exception[] => {
@@ -902,6 +905,8 @@ export function FlowVisualization({
       // Initialize empty state outside of effect to avoid cascading renders
       const initializeEmptyState = () => {
         setLayoutData({ nodes: [], edges: [] });
+        setInitialLayoutData({ nodes: [], edges: [] });
+        setHasManualNodeInteraction(false);
         setIsLoading(false);
       };
       initializeEmptyState();
@@ -913,7 +918,20 @@ export function FlowVisualization({
     generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect, getRelatedExceptions, setHoveredEdge)
       .then((result) => {
         console.log('✅ ELK layout regenerated with updated entity statuses:', { nodeCount: result.nodes.length, edgeCount: result.edges.length });
-        setLayoutData(result);
+        const clonedNodes = result.nodes.map((node) => ({
+          ...node,
+          position: { ...node.position },
+          data: { ...(node.data as Record<string, unknown>) },
+        }));
+        const clonedEdges = result.edges.map((edge) => ({
+          ...edge,
+          data: edge.data ? { ...(edge.data as Record<string, unknown>) } : edge.data,
+        }));
+
+        const clonedLayout = { nodes: clonedNodes, edges: clonedEdges };
+        setLayoutData(clonedLayout);
+        setInitialLayoutData(clonedLayout);
+        setHasManualNodeInteraction(false);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -929,14 +947,40 @@ export function FlowVisualization({
       ...prev,
       nodes: applyNodeChanges(changes, prev.nodes),
     }));
+
+    if (changes.length > 0) {
+      setHasManualNodeInteraction(true);
+    }
+
     setHoveredEdge(null);
   }, []);
+
+  const handleResetLayout = useCallback(() => {
+    if (initialLayoutData.nodes.length === 0) return;
+
+    const resetNodes = initialLayoutData.nodes.map((node) => ({
+      ...node,
+      position: { ...node.position },
+      data: { ...(node.data as Record<string, unknown>) },
+    }));
+
+    setLayoutData((prev) => ({
+      ...prev,
+      nodes: resetNodes,
+      edges: initialLayoutData.edges,
+    }));
+    setHasManualNodeInteraction(false);
+    setHoveredEdge(null);
+  }, [initialLayoutData]);
 
   const nodeTypes = useMemo(() => ({ entity: EntityNode }), []);
   const edgeTypes = useMemo(() => ({ workflow: WorkflowEdge }), []);
 
-  const fitToTopBottomNodes = useCallback(() => {
+  const fitToTopBottomNodes = useCallback((options?: { duration?: number; applyBoost?: boolean }) => {
     if (!reactFlowInstance || renderedLayoutData.nodes.length === 0) return;
+
+    const duration = options?.duration ?? 320;
+    const applyBoost = options?.applyBoost ?? true;
 
     const getNodeWidth = (node: Node): number => {
       const data = node.data as { width?: number } | undefined;
@@ -977,20 +1021,35 @@ export function FlowVisualization({
         height: verticalSpan + verticalPadding * 2,
       },
       {
-        duration: 320,
+        duration,
         minZoom: 0.5,
         maxZoom: 2,
       }
     );
 
-    window.setTimeout(() => {
-      const boostedZoom = Math.min(2, reactFlowInstance.getZoom() * 1.12);
-      reactFlowInstance.zoomTo(boostedZoom, { duration: 180 });
-    }, 340);
+    if (fitBoostTimeoutRef.current) {
+      window.clearTimeout(fitBoostTimeoutRef.current);
+      fitBoostTimeoutRef.current = null;
+    }
+
+    if (applyBoost) {
+      fitBoostTimeoutRef.current = window.setTimeout(() => {
+        const boostedZoom = Math.min(2, reactFlowInstance.getZoom() * 1.12);
+        reactFlowInstance.zoomTo(boostedZoom, { duration: 180 });
+      }, duration + 20);
+    }
   }, [renderedLayoutData.nodes, reactFlowInstance]);
 
   useEffect(() => {
-    if (activeTab !== 'system' || isLoading || renderedLayoutData.nodes.length === 0 || !reactFlowInstance) {
+    return () => {
+      if (fitBoostTimeoutRef.current) {
+        window.clearTimeout(fitBoostTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'system' || isLoading || renderedLayoutData.nodes.length === 0 || !reactFlowInstance || hasManualNodeInteraction) {
       return;
     }
 
@@ -999,7 +1058,7 @@ export function FlowVisualization({
     });
 
     return () => cancelAnimationFrame(frameId);
-  }, [activeTab, isLoading, renderedLayoutData.nodes, reactFlowInstance, fitToTopBottomNodes]);
+  }, [activeTab, hasManualNodeInteraction, isLoading, renderedLayoutData.nodes, reactFlowInstance, fitToTopBottomNodes]);
 
   return (
     <Card>
@@ -1066,33 +1125,47 @@ export function FlowVisualization({
                       Step {Math.max(1, effectivePlaybackStep)} / {maxPlaybackStep}
                     </span>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 min-w-[92px]"
-                    disabled={maxPlaybackStep <= 1}
-                    onClick={() => {
-                      if (effectivePlaybackStep >= maxPlaybackStep) {
-                        setPlaybackStep(1);
-                        setIsPlaying(true);
-                        return;
-                      }
-                      setIsPlaying((prev) => !prev);
-                    }}
-                  >
-                    {isPlaying ? (
-                      <>
-                        <Pause className="mr-1 size-3.5" />
-                        Pause
-                      </>
-                    ) : (
-                      <>
-                        <Play className="mr-1 size-3.5" />
-                        Play
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 min-w-[92px]"
+                      disabled={maxPlaybackStep <= 1}
+                      onClick={() => {
+                        if (effectivePlaybackStep >= maxPlaybackStep) {
+                          setPlaybackStep(1);
+                          setIsPlaying(true);
+                          return;
+                        }
+                        setIsPlaying((prev) => !prev);
+                      }}
+                    >
+                      {isPlaying ? (
+                        <>
+                          <Pause className="mr-1 size-3.5" />
+                          Pause
+                        </>
+                      ) : (
+                        <>
+                          <Play className="mr-1 size-3.5" />
+                          Play
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      disabled={initialLayoutData.nodes.length === 0}
+                      onClick={handleResetLayout}
+                    >
+                      <RotateCcw className="mr-1 size-3.5" />
+                      Reset Layout
+                    </Button>
+                  </div>
                 </div>
                 <Slider
                   value={[Math.max(1, effectivePlaybackStep)]}
@@ -1121,6 +1194,13 @@ export function FlowVisualization({
                     edgeTypes={edgeTypes}
                     onInit={setReactFlowInstance}
                     onNodesChange={onNodesChange}
+                    onNodeDragStop={() => {
+                      setHasManualNodeInteraction(true);
+                      setIsPlaying(false);
+                      requestAnimationFrame(() => {
+                        fitToTopBottomNodes({ duration: 220, applyBoost: false });
+                      });
+                    }}
                     onPaneClick={() => setHoveredEdge(null)}
                     nodesDraggable
                     nodesConnectable={false}
