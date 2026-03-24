@@ -72,6 +72,14 @@ export function ExceptionResultsTable({
   filterOptions
 }: ExceptionResultsTableProps) {
   const [openFilter, setOpenFilter] = useState<string | null>(null);
+  const pageIndex = table.getState().pagination.pageIndex;
+  const pageSize = table.getState().pagination.pageSize;
+  const hasResults = resultsCount > 0;
+  const visibleRowCount = table.getRowModel().rows.length;
+  const startResult = hasResults ? pageIndex * pageSize + 1 : 0;
+  const endResult = hasResults
+    ? Math.min(pageIndex * pageSize + visibleRowCount, resultsCount)
+    : 0;
 
   // Handle refresh functionality
   const handleRefresh = () => {
@@ -410,16 +418,7 @@ export function ExceptionResultsTable({
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-3 border-t border-black/6">
           <div className="text-xs text-black/40">
-            Showing{" "}
-            {table.getState().pagination.pageIndex *
-              table.getState().pagination.pageSize +
-              1}{" "}
-            to{" "}
-            {Math.min(
-              (table.getState().pagination.pageIndex + 1) *
-                table.getState().pagination.pageSize,
-              resultsCount
-            )}{" "}
+            Showing {startResult} to {endResult}{" "}
             of {resultsCount} results
           </div>
           <div className="flex gap-2">

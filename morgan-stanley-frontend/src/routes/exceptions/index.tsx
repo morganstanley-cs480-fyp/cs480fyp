@@ -221,6 +221,22 @@ function ExceptionsPage() {
     },
   });
 
+  const filteredResultsCount = table.getFilteredRowModel().rows.length;
+
+  useEffect(() => {
+    const maxPageIndex = Math.max(
+      0,
+      Math.ceil(filteredResultsCount / pagination.pageSize) - 1,
+    );
+
+    if (pagination.pageIndex > maxPageIndex) {
+      setPagination((prev) => ({
+        ...prev,
+        pageIndex: maxPageIndex,
+      }));
+    }
+  }, [filteredResultsCount, pagination.pageIndex, pagination.pageSize]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     sessionStorage.setItem(
@@ -333,7 +349,7 @@ function ExceptionsPage() {
               <div className={selectedException ? "col-span-2" : ""}>
                 <ExceptionResultsTable
                   table={table}
-                  resultsCount={results.length}
+                  resultsCount={filteredResultsCount}
                   selectedExceptionId={selectedException?.id || null}
                   statusFilter={statusFilter}
                   priorityFilter={priorityFilter}
