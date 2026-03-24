@@ -55,7 +55,7 @@ function ExceptionHeader() {
 
       <h2 className="text-xl font-semibold text-white mb-1.5">Exceptions Management Centre</h2>
       <p className="text-white/70 text-sm mb-7">
-        View and monitor exceptions from the table below.
+        View and solve exceptions from the table below.
       </p>
     </div>
   );

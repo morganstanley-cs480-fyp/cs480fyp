@@ -15,7 +15,7 @@ interface TransactionDetailPanelProps {
   getTransactionStatusColor: (status: string) => "default" | "destructive" | "secondary";
   getPriorityColor: (priority: string) => "default" | "destructive" | "secondary";
   getPriorityIcon: (priority: string) => React.ReactElement;
-  onViewException: (exceptionId: string) => void;
+  onResolveException: (exceptionId: string) => void;
 }
 
 export function TransactionDetailPanel({
@@ -24,7 +24,7 @@ export function TransactionDetailPanel({
   getTransactionStatusColor,
   getPriorityColor,
   getPriorityIcon,
-  onViewException,
+  onResolveException,
 }: TransactionDetailPanelProps) {
 
     // if (!selectedTransaction) {
@@ -178,7 +178,7 @@ export function TransactionDetailPanel({
                         <Separator />
                         <Button
                           className="w-full"
-                          onClick={() => onViewException(String(exception.id))}
+                          onClick={() => onResolveException(String(exception.id))}
                         >
                           View Exception
                         </Button>

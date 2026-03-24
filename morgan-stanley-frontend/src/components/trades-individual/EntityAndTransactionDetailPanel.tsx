@@ -19,7 +19,7 @@ interface EntityAndTransactionDetailPanelProps {
     lastSelectedType?: 'entity' | 'transaction' | null;
     transactions?: Transaction[];
     relatedExceptions?: Exception[];
-    onViewException: (exceptionId: string) => void;
+    onResolveException: (exceptionId: string) => void;
 
 }
 
@@ -29,7 +29,7 @@ export const EntityAndTransactionDetailPanel = ({
     lastSelectedType,
     transactions,
     relatedExceptions,
-    onViewException,
+    onResolveException,
 
 }: EntityAndTransactionDetailPanelProps) => {
 
@@ -96,7 +96,7 @@ export const EntityAndTransactionDetailPanel = ({
             getTransactionStatusColor={getTransactionStatusColor}
             getPriorityColor={getPriorityColor} 
             getPriorityIcon={getPriorityIcon}
-            onViewException={onViewException}
+            onResolveException={onResolveException}
         />
     } else {
         return (
