@@ -444,7 +444,7 @@ module "search_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 105
-  path_pattern     = ["/api/search*", "/api/history*", "/api/filter-options*"]
+  path_pattern     = ["/api/search*", "/api/history*", "/api/filter-options*", "/api/chat*"]
   target_group_arn = module.search_target_group.target_group_arn
 }
 
@@ -557,7 +557,7 @@ module "trade_flow_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 107
-  path_pattern     = ["/api/trades*", "/api/transactions*"]
+  path_pattern     = ["/api/trades*", "/api/transactions*", "/api/graph*"]
   target_group_arn = module.trade_flow_target_group.target_group_arn
 }
 
