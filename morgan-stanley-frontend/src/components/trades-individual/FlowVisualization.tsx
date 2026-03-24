@@ -3,7 +3,8 @@
 import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
-import { Clock, Network } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Clock, Network, Pause, Play, Landmark, ShieldCheck } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
 import type { Transaction, Exception } from "@/lib/api/types";
 import { useEffect, useState, useCallback, useMemo } from 'react';
@@ -25,17 +26,17 @@ import {
   type ReactFlowInstance,
 } from '@xyflow/react';
 import "@xyflow/react/dist/style.css";
-import { Landmark, ShieldCheck } from 'lucide-react';
 import ELK, { type ElkNode } from 'elkjs/lib/elk.bundled.js';
 
 const HUB_ID = 'CCP';
-const NODE_WIDTH = 140;
-const NODE_HEIGHT = 96;
-const HUB_MIN_WIDTH = NODE_WIDTH * 10;
+const NODE_WIDTH = 180;
+const NODE_HEIGHT = 120;
+const HUB_MIN_WIDTH = NODE_WIDTH * 8;
 const EDGE_COLOR = '#002B51';
 const EDGE_OFFSET = 22;
 const PARTICIPANT_MARGIN = 16;
 const HUB_MARGIN = 40;
+const PLAYBACK_INTERVAL_MS = 900;
 
 type Point = { x: number; y: number };
 type Size = { w: number; h: number };
@@ -495,7 +496,7 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
   return (
     <div
       onClick={handleClick}
-      className={`p-3 rounded-lg border-2 shadow-md flex flex-col justify-center cursor-pointer hover:shadow-lg transition-all text-center ${
+      className={`p-4 rounded-lg border-2 shadow-md flex flex-col justify-center cursor-pointer hover:shadow-lg transition-all text-center subpixel-antialiased ${
         isHub ? getHubBgColor() : getStatusBgColor(status)} ${
         isHub ? getHubBorderColor() : getStatusBorderColor(status)} ${
         isHub ? 'hover:border-[#002B51]' : 'hover:border-black/15'
@@ -504,15 +505,15 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
     >
       <div className="flex items-center gap-2 mb-1 justify-center">
         {isHub ? (
-          <ShieldCheck className="text-[#002B51]" size={14} />
+          <ShieldCheck className="text-[#002B51]" size={16} />
         ) : (
-          <Landmark className="text-black/50" size={14} />
+          <Landmark className="text-black/50" size={16} />
         )}
-        <span className="text-[8px] font-bold uppercase tracking-tight text-black/50">
+        <span className="text-[10px] font-bold uppercase tracking-wide text-black/60">
           {isHub ? 'Central Clearing' : 'Participant'}
         </span>
       </div>
-      <div className="text-xs font-bold text-black uppercase truncate">{data.label}</div>
+      <div className="text-sm font-bold text-black uppercase truncate tracking-wide">{data.label}</div>
 
       <Handle type="target" position={Position.Top} id="in-top" className="opacity-0" />
       <Handle type="source" position={Position.Top} id="out-top" className="opacity-0" />
@@ -773,6 +774,7 @@ export function FlowVisualization({
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<Node, Edge> | null>(null);
   const [hoveredEdge, setHoveredEdge] = useState<EdgeHoverState | null>(null);
   const [playbackStep, setPlaybackStep] = useState<number>(Number.MAX_SAFE_INTEGER);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // ✅ Enhanced function to get related exceptions with transaction status check
   const getFilteredRelatedExceptions = useCallback((transaction: Transaction): Exception[] => {
@@ -797,6 +799,7 @@ export function FlowVisualization({
   useEffect(() => {
     if (maxPlaybackStep === 0) {
       setPlaybackStep(0);
+      setIsPlaying(false);
       return;
     }
 
@@ -807,6 +810,27 @@ export function FlowVisualization({
       return Math.min(current, maxPlaybackStep);
     });
   }, [maxPlaybackStep]);
+
+  useEffect(() => {
+    if (!isPlaying || maxPlaybackStep <= 1) {
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setPlaybackStep((current) => {
+        const normalized = current === Number.MAX_SAFE_INTEGER ? 1 : Math.max(1, current);
+        return Math.min(normalized + 1, maxPlaybackStep);
+      });
+    }, PLAYBACK_INTERVAL_MS);
+
+    return () => window.clearInterval(timerId);
+  }, [isPlaying, maxPlaybackStep]);
+
+  useEffect(() => {
+    if (isPlaying && maxPlaybackStep > 0 && effectivePlaybackStep >= maxPlaybackStep) {
+      setIsPlaying(false);
+    }
+  }, [effectivePlaybackStep, isPlaying, maxPlaybackStep]);
 
   const renderedLayoutData = useMemo(() => {
     if (maxPlaybackStep === 0 || effectivePlaybackStep >= maxPlaybackStep) {
@@ -1030,18 +1054,50 @@ export function FlowVisualization({
             </CardDescription>
             {maxPlaybackStep > 0 && (
               <div className="mb-4 rounded-md border border-black/10 bg-white px-4 py-3">
-                <div className="mb-2 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-black/70 uppercase tracking-wide">Playback Step</span>
-                  <span className="font-mono text-black/60">
-                    Step {Math.max(1, effectivePlaybackStep)} / {maxPlaybackStep}
-                  </span>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="text-xs">
+                    <span className="font-semibold text-black/70 uppercase tracking-wide">Playback Step</span>
+                    <span className="ml-3 font-mono text-black/60">
+                      Step {Math.max(1, effectivePlaybackStep)} / {maxPlaybackStep}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 min-w-[92px]"
+                    disabled={maxPlaybackStep <= 1}
+                    onClick={() => {
+                      if (effectivePlaybackStep >= maxPlaybackStep) {
+                        setPlaybackStep(1);
+                        setIsPlaying(true);
+                        return;
+                      }
+                      setIsPlaying((prev) => !prev);
+                    }}
+                  >
+                    {isPlaying ? (
+                      <>
+                        <Pause className="mr-1 size-3.5" />
+                        Pause
+                      </>
+                    ) : (
+                      <>
+                        <Play className="mr-1 size-3.5" />
+                        Play
+                      </>
+                    )}
+                  </Button>
                 </div>
                 <Slider
                   value={[Math.max(1, effectivePlaybackStep)]}
                   min={1}
                   max={Math.max(1, maxPlaybackStep)}
                   step={1}
-                  onValueChange={(values) => setPlaybackStep(values[0] ?? 1)}
+                  onValueChange={(values) => {
+                    setPlaybackStep(values[0] ?? 1);
+                    setIsPlaying(false);
+                  }}
                   disabled={maxPlaybackStep <= 1}
                 />
               </div>
