@@ -53,6 +53,12 @@ export function useExceptionResolver(exceptionId: string) {
   const handleAISearch = useCallback(async (exc?: Exception, forceRetry: boolean = false) => {
     const targetException = exc || exception;
     if (!targetException) return;
+
+    // Don't run similar-exceptions search for exceptions that are already closed.
+    if ((targetException as Exception).status === 'CLOSED') {
+      console.log('Skipping similar-exceptions search for CLOSED exception:', targetException.id);
+      return;
+    }
     
     // ✅ Check hasTriedAISearch inside the function, not in dependencies
     if (hasTriedAISearch && !forceRetry) return;
@@ -116,7 +122,12 @@ export function useExceptionResolver(exceptionId: string) {
         setHasTriedAISearch(false);
         console.log('✅ Exception loaded:', exc);
         
-        handleAISearch(exc);
+          // If the exception is already CLOSED, skip the similar-exceptions search.
+          if (exc && exc.status === 'CLOSED') {
+            console.log('Skipping AI search after load because exception is CLOSED:', exc.id);
+          } else {
+            handleAISearch(exc);
+          }
       } catch (error) {
         if (!isActive) return;
         console.error('❌ Failed to load exception:', error);
