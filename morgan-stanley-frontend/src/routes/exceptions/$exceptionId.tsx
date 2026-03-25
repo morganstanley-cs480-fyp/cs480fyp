@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { AlertCircle, AlertTriangle, RefreshCw } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,9 +10,11 @@ import { ExceptionDetailSidebar } from '@/components/exceptions-individual/Excep
 import { AISuggestionsTab } from '@/components/exceptions-individual/AISuggestionsTab';
 import { NewSolutionForm } from '@/components/exceptions-individual/NewSolutionForm';
 import { AIGeneratorPanel } from '@/components/exceptions-individual/AIGeneratorPanel';
+import { ResolvedSolutionDetails } from '@/components/exceptions-individual/ResolvedSolutionDetails';
 
 // Hook and API imports
 import { useExceptionResolver } from '../../hooks/useExceptionResolver';
+import { exceptionService, type RetrievedSolution } from '@/lib/api/exceptionService';
 import { requireAuth } from '@/lib/utils';
 
 export const Route = createFileRoute('/exceptions/$exceptionId')({
@@ -53,10 +55,51 @@ function ViewExceptionPage() {
     loadingSolutionId
   } = useExceptionResolver(exceptionId);
 
+  const [resolvedSolution, setResolvedSolution] = useState<RetrievedSolution | null>(null);
+  const [loadingResolvedSolution, setLoadingResolvedSolution] = useState(false);
+  const [resolvedSolutionError, setResolvedSolutionError] = useState<string | null>(null);
+
 
   useEffect(() => {
-    // Cleanup effect - no resolved solution loading needed
-    return () => {};
+    let isActive = true;
+
+    const loadResolvedSolution = async () => {
+      if (!exception || exception.status !== 'CLOSED') {
+        setResolvedSolution(null);
+        setResolvedSolutionError(null);
+        setLoadingResolvedSolution(false);
+        return;
+      }
+
+      setLoadingResolvedSolution(true);
+      setResolvedSolutionError(null);
+
+      try {
+        console.log('📥 Loading applied solution for exception id:', exception.id);
+        const solution = await exceptionService.getSolution(exception.id.toString());
+        console.log('📥 Applied solution response:', solution);
+        if (!isActive) return;
+        setResolvedSolution(solution);
+      } catch (fetchError) {
+        if (!isActive) return;
+        setResolvedSolution(null);
+        const msg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+        setResolvedSolutionError(
+          `This exception is closed, but its applied solution could not be loaded. ${msg}`
+        );
+        console.error('❌ Failed to fetch resolved solution details:', fetchError);
+      } finally {
+        if (isActive) {
+          setLoadingResolvedSolution(false);
+        }
+      }
+    };
+
+    loadResolvedSolution();
+
+    return () => {
+      isActive = false;
+    };
   }, [exception]);
 
 
@@ -125,24 +168,45 @@ function ViewExceptionPage() {
               Exception {exception.id} Already Resolved
             </h1>
             <p className="text-sm text-black/75 mt-1">
-              This exception has been resolved and cannot be modified
+              Showing the applied solution details for this exception
             </p>
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Resolution Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-black/75">This exception was previously resolved. You may browse other exceptions to continue working.</p>
-            <div className="mt-4">
-              <Button onClick={() => navigate({ to: '/exceptions' })}>
-                Back to Exceptions
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex gap-6">
+          <ExceptionDetailSidebar
+            exception={exception}
+            getPriorityColor={getPriorityColor}
+          />
+
+          <div className="flex-1 space-y-6">
+            {loadingResolvedSolution ? (
+              <Card>
+                <CardContent className="py-12">
+                  <div className="text-center text-black/50">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+                    <p className="text-lg">Loading applied solution details...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {!loadingResolvedSolution && resolvedSolutionError ? (
+              <Card className="border-red-200 bg-red-50">
+                <CardContent className="py-4">
+                  <div className="flex items-center gap-2 text-red-700">
+                    <AlertTriangle className="size-4" />
+                    <p className="text-sm">{resolvedSolutionError}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {!loadingResolvedSolution && resolvedSolution ? (
+              <ResolvedSolutionDetails solution={resolvedSolution} />
+            ) : null}
+          </div>
+        </div>
       </div>
     );
   }
