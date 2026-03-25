@@ -660,8 +660,6 @@ async function generateElkLayout(
         status,
         onEntitySelect 
       },
-      draggable: true,
-      selectable: true,
     });
   });
 
@@ -776,7 +774,6 @@ export function FlowVisualization({
   const [hoveredEdge, setHoveredEdge] = useState<EdgeHoverState | null>(null);
   const [playbackStep, setPlaybackStep] = useState<number>(Number.MAX_SAFE_INTEGER);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isFlowInteractive, setIsFlowInteractive] = useState(true);
   const [hasManualNodeInteraction, setHasManualNodeInteraction] = useState(false);
   const fitBoostTimeoutRef = useRef<number | null>(null);
 
@@ -1203,19 +1200,13 @@ export function FlowVisualization({
                       });
                     }}
                     onPaneClick={() => setHoveredEdge(null)}
-                    nodesDraggable={isFlowInteractive}
                     nodesConnectable={false}
-                    elementsSelectable={isFlowInteractive}
-                    panOnDrag={isFlowInteractive}
                     selectionOnDrag={false}
-                    zoomOnScroll={isFlowInteractive}
-                    zoomOnPinch={isFlowInteractive}
-                    zoomOnDoubleClick={isFlowInteractive}
                     minZoom={0.1}
                     maxZoom={2}
                   >
                     <Background color="#e2e8f0" gap={20} />
-                    <Controls onInteractiveChange={setIsFlowInteractive} />
+                    <Controls />
                   </ReactFlow>
 
                   {hoveredEdge && (
