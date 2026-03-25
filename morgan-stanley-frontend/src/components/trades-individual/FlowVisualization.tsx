@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Clock, Network, Pause, Play, RotateCcw, Landmark, ShieldCheck } from "lucide-react";
+import { Clock, Network, Pause, Play, RotateCcw, Landmark, ShieldCheck, Lock, Unlock, Maximize2, Minimize2 } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
 import type { Transaction, Exception } from "@/lib/api/types";
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -12,6 +12,7 @@ import {
   ReactFlow,
   Background,
   Controls,
+  ControlButton,
   Handle,
   Position,
   MarkerType,
@@ -776,7 +777,10 @@ export function FlowVisualization({
   const [hoveredEdge, setHoveredEdge] = useState<EdgeHoverState | null>(null);
   const [playbackStep, setPlaybackStep] = useState<number>(Number.MAX_SAFE_INTEGER);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLayoutLocked, setIsLayoutLocked] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasManualNodeInteraction, setHasManualNodeInteraction] = useState(false);
+  const flowContainerRef = useRef<HTMLDivElement | null>(null);
   const fitBoostTimeoutRef = useRef<number | null>(null);
 
   // ✅ Enhanced function to get related exceptions with transaction status check
@@ -1049,6 +1053,36 @@ export function FlowVisualization({
   }, []);
 
   useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === flowContainerRef.current);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const handleToggleFullscreen = useCallback(async () => {
+    const flowContainer = flowContainerRef.current;
+    if (!flowContainer) return;
+
+    try {
+      if (document.fullscreenElement === flowContainer) {
+        await document.exitFullscreen();
+      } else {
+        await flowContainer.requestFullscreen();
+      }
+    } catch (error) {
+      console.error('Failed to toggle fullscreen for flow visualization', error);
+    }
+  }, []);
+
+  const handleToggleLayoutLock = useCallback(() => {
+    setIsLayoutLocked((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
     if (activeTab !== 'system' || isLoading || renderedLayoutData.nodes.length === 0 || !reactFlowInstance || hasManualNodeInteraction) {
       return;
     }
@@ -1180,7 +1214,12 @@ export function FlowVisualization({
                 />
               </div>
             )}
-            <div className="h-[800px] border rounded-lg bg-black/[0.02] relative">
+            <div
+              ref={flowContainerRef}
+              className={`border bg-black/[0.02] relative ${
+                isFullscreen ? 'h-screen w-screen rounded-none border-0' : 'h-[800px] rounded-lg'
+              }`}
+            >
               {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-black/75 font-bold">Computing ELK Layout...</div>
@@ -1202,7 +1241,7 @@ export function FlowVisualization({
                       });
                     }}
                     onPaneClick={() => setHoveredEdge(null)}
-                    nodesDraggable
+                    nodesDraggable={!isLayoutLocked}
                     nodesConnectable={false}
                     elementsSelectable
                     panOnDrag={true}
@@ -1212,7 +1251,22 @@ export function FlowVisualization({
                     maxZoom={2}
                   >
                     <Background color="#e2e8f0" gap={20} />
-                    <Controls />
+                    <Controls showInteractive={false}>
+                      <ControlButton
+                        onClick={handleToggleFullscreen}
+                        title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                        aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                      >
+                        {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                      </ControlButton>
+                      <ControlButton
+                        onClick={handleToggleLayoutLock}
+                        title={isLayoutLocked ? 'Unlock layout' : 'Lock layout'}
+                        aria-label={isLayoutLocked ? 'Unlock layout' : 'Lock layout'}
+                      >
+                        {isLayoutLocked ? <Lock size={16} /> : <Unlock size={16} />}
+                      </ControlButton>
+                    </Controls>
                   </ReactFlow>
 
                   {hoveredEdge && (
