@@ -1223,7 +1223,7 @@ export function FlowVisualization({
             )}
             <div
               ref={flowContainerRef}
-              className={`border rounded-lg bg-black/[0.02] relative ${isFullscreen ? 'h-full' : 'h-[800px]'}`}
+              className={`border rounded-lg relative w-full ${isFullscreen ? 'h-full bg-white' : 'h-[800px] bg-black/[0.02]'}`}
             >
               {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
