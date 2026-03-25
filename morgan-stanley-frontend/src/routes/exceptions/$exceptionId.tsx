@@ -1,43 +1,28 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { AlertCircle, AlertTriangle, RefreshCw, CheckCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { AlertCircle, AlertTriangle, RefreshCw } from 'lucide-react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Component imports
 import { ExceptionDetailSidebar } from '@/components/exceptions-individual/ExceptionDetailSidebar';
 import { AISuggestionsTab } from '@/components/exceptions-individual/AISuggestionsTab';
 import { NewSolutionForm } from '@/components/exceptions-individual/NewSolutionForm';
 import { AIGeneratorPanel } from '@/components/exceptions-individual/AIGeneratorPanel';
-import { ResolvedSolutionDetails } from '@/components/exceptions-individual/ResolvedSolutionDetails';
 
 // Hook and API imports
 import { useExceptionResolver } from '../../hooks/useExceptionResolver';
-import { exceptionService, type RetrievedSolution } from '@/lib/api/exceptionService';
 import { requireAuth } from '@/lib/utils';
 
 export const Route = createFileRoute('/exceptions/$exceptionId')({
   beforeLoad: requireAuth,
-  component: ResolveExceptionPage,
+  component: ViewExceptionPage,
 });
 
-function ResolveExceptionPage() {
+function ViewExceptionPage() {
   const { exceptionId } = Route.useParams();
   const navigate = useNavigate();
-  const [isApplying, setIsApplying] = useState(false);
-  const [applyError, setApplyError] = useState<string | null>(null);
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [resolvedSolution, setResolvedSolution] = useState<RetrievedSolution | null>(null);
-  const [loadingResolvedSolution, setLoadingResolvedSolution] = useState(false);
-  const [resolvedSolutionError, setResolvedSolutionError] = useState<string | null>(null);
-  const [resolutionDetails, setResolutionDetails] = useState<{
-    type: 'existing' | 'new';
-    solutionTitle: string;
-    exceptionId: number;
-    solutionId?: number | string;
-  } | null>(null);
   
   const {
     exception,
@@ -68,117 +53,12 @@ function ResolveExceptionPage() {
     loadingSolutionId
   } = useExceptionResolver(exceptionId);
 
+
   useEffect(() => {
-    let isActive = true;
-
-    const loadResolvedSolution = async () => {
-      if (!exception || exception.status !== 'CLOSED') {
-        setResolvedSolution(null);
-        setResolvedSolutionError(null);
-        setLoadingResolvedSolution(false);
-        return;
-      }
-
-      setLoadingResolvedSolution(true);
-      setResolvedSolutionError(null);
-
-      try {
-        const solution = await exceptionService.getSolution(exception.id.toString());
-        if (!isActive) return;
-        setResolvedSolution(solution);
-      } catch (fetchError) {
-        if (!isActive) return;
-        setResolvedSolution(null);
-        setResolvedSolutionError('This exception is closed, but its applied solution could not be loaded.');
-        console.error('❌ Failed to fetch resolved solution details:', fetchError);
-      } finally {
-        if (isActive) {
-          setLoadingResolvedSolution(false);
-        }
-      }
-    };
-
-    loadResolvedSolution();
-
-    return () => {
-      isActive = false;
-    };
+    // Cleanup effect - no resolved solution loading needed
+    return () => {};
   }, [exception]);
 
-  const handleApplySolution = async () => {
-    if (!exception) return;
-
-    setIsApplying(true);
-    setApplyError(null);
-
-    try {
-      if (selectedTab === 'existing' && selectedSuggestion) {
-        // Apply existing solution - create a solution record using the selected suggestion's details
-        console.log('✅ Applying existing solution:', selectedSuggestion.title);
-        console.log('Exception ID:', exception.id);
-        console.log('Selected suggestion:', selectedSuggestion);
-        
-        // Create solution record using selected suggestion's details
-        const solutionResponse = await exceptionService.createSolution({
-          exception_id: exception.id,
-          title: selectedSuggestion.title,
-          exception_description: selectedSuggestion.exception_description || selectedSuggestion.description,
-          reference_event: '',
-          solution_description: selectedSuggestion.solution_description,
-          scores: selectedSuggestion.solution_score || Math.round(selectedSuggestion.similarity_score)
-        });
-
-        console.log('✅ Solution record created:', solutionResponse);
-
-        // Resolve the exception
-        await exceptionService.resolveException(exception.id.toString());
-
-        console.log('✅ Exception resolved with existing solution');
-        
-        // Show success dialog with existing solution details
-        setResolutionDetails({
-          type: 'existing',
-          solutionTitle: selectedSuggestion.title,
-          exceptionId: exception.id,
-          solutionId: solutionResponse.id
-        });
-      } else if (selectedTab === 'new' && newSolutionTitle && newSolutionDescription) {
-        // Create and save new solution using real API
-        console.log('💾 Saving new solution to database...');
-        
-        const solutionResponse = await exceptionService.createSolution({
-          exception_id: exception.id,
-          title: newSolutionTitle,
-          exception_description: newExceptionDescription,
-          reference_event: '',
-          solution_description: newSolutionDescription,
-          scores: Math.floor(Math.random() * 28) // Random score 0-37 as per API spec
-        });
-
-        console.log('✅ Solution saved successfully:', solutionResponse);
-
-        await exceptionService.resolveException(exception.id.toString());
-
-        console.log('✅ Exception resolved with new solution');
-        
-        // Show success dialog with new solution details
-        setResolutionDetails({
-          type: 'new',
-          solutionTitle: newSolutionTitle,
-          exceptionId: exception.id,
-          solutionId: solutionResponse.id
-        });
-      }
-      
-      // Show visual confirmation dialog
-      setShowSuccessDialog(true);
-    } catch (error) {
-      console.error('❌ Failed to apply solution:', error);
-      setApplyError('Failed to apply solution. Please try again.');
-    } finally {
-      setIsApplying(false);
-    }
-  };
 
   const getPriorityColor = (priority: string): "default" | "destructive" | "secondary" => {
     if (priority === 'HIGH') return 'destructive';
@@ -245,52 +125,27 @@ function ResolveExceptionPage() {
               Exception {exception.id} Already Resolved
             </h1>
             <p className="text-sm text-black/75 mt-1">
-              Showing the applied solution details for this exception
+              This exception has been resolved and cannot be modified
             </p>
           </div>
         </div>
 
-        <div className="flex gap-6">
-          <ExceptionDetailSidebar
-            exception={exception}
-            getPriorityColor={getPriorityColor}
-          />
-
-          <div className="flex-1 space-y-6">
-            {loadingResolvedSolution ? (
-              <Card>
-                <CardContent className="py-12">
-                  <div className="text-center text-black/50">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-                    <p className="text-lg">Loading applied solution details...</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null}
-
-            {!loadingResolvedSolution && resolvedSolutionError ? (
-              <Card className="border-red-200 bg-red-50">
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-2 text-red-700">
-                    <AlertTriangle className="size-4" />
-                    <p className="text-sm">{resolvedSolutionError}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null}
-
-            {!loadingResolvedSolution && resolvedSolution ? (
-              <ResolvedSolutionDetails solution={resolvedSolution} />
-            ) : null}
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Resolution Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-black/75">This exception was previously resolved. You may browse other exceptions to continue working.</p>
+            <div className="mt-4">
+              <Button onClick={() => navigate({ to: '/exceptions' })}>
+                Back to Exceptions
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
-
-  const canApplySolution = selectedTab === 'existing' 
-    ? !!selectedSuggestion
-    : !!(newSolutionTitle && newSolutionDescription);
 
   return (
     <div className="p-6 max-w-400 mx-auto space-y-6">
@@ -306,22 +161,22 @@ function ResolveExceptionPage() {
         </Button>
         <div>
           <h1 className="text-2xl font-semibold text-black">
-            Resolve Exception {exception.id}
+            View Exception {exception.id}
           </h1>
           <p className="text-sm text-black/75 mt-1">
-            Choose a solution method to resolve this exception
+            View exception details and generate or select solutions
           </p>
         </div>
       </div>
 
       {/* Error Display */}
-      {(error || applyError) && (
+      {error && (
         <Card className="border-red-200 bg-red-50">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-red-700">
                 <AlertTriangle className="size-4" />
-                <p className="text-sm">{error || applyError}</p>
+                <p className="text-sm">{error}</p>
               </div>
               {/* ✅ Add retry button for similar exceptions errors */}
               {error && error.includes('similar exceptions') && (
@@ -437,95 +292,8 @@ function ResolveExceptionPage() {
               </Tabs>
             </CardContent>
           </Card>
-
-          {/* Apply Button */}
-          <Button 
-            className="w-full h-12 bg-[#002B51] hover:bg-[#003a6b] text-white text-sm font-semibold disabled:opacity-50"
-            onClick={handleApplySolution}
-            disabled={!canApplySolution || isApplying}
-          >
-            {isApplying ? (
-              <div className="flex items-center gap-2">
-                <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                {selectedTab === 'existing' ? 'Applying Solution...' : 'Saving Solution...'}
-              </div>
-            ) : (
-              <>
-                {selectedTab === 'existing' 
-                  ? 'Use Selected Solution and Resolve Exception' 
-                  : 'Create Solution and Resolve Exception'}
-              </>
-            )}
-          </Button>
         </div>
       </div>
-
-      {/* Success Dialog */}
-      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="rounded-full bg-green-100 p-2">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <DialogTitle className="text-lg font-semibold text-green-800">
-                  Exception Resolved Successfully!
-                </DialogTitle>
-                <DialogDescription className="text-sm text-gray-600 mt-1">
-                  {resolutionDetails?.type === 'existing' 
-                    ? `Applied existing solution "${resolutionDetails.solutionTitle}"`
-                    : `Created and applied new solution "${resolutionDetails?.solutionTitle}"`
-                  }
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Exception ID:</span>
-                <span className="text-sm text-gray-900">#{resolutionDetails?.exceptionId}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Solution ID:</span>
-                <span className="text-sm text-gray-900">#{resolutionDetails?.solutionId || 'N/A'}</span>
-              </div>              
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Resolution Method:</span>
-                <span className="text-sm text-gray-900">
-                  {resolutionDetails?.type === 'existing' ? 'Existing Solution' : 'New Solution'}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Status:</span>
-                <span className="text-sm font-semibold text-green-600">RESOLVED</span>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="flex gap-2">
-            {/* <Button 
-              variant="outline" 
-              onClick={() => setShowSuccessDialog(false)}
-              className="flex-1"
-            >
-              Stay Here
-            </Button> */}
-            <Button 
-              onClick={() => {
-                setShowSuccessDialog(false);
-                window.location.href = '/exceptions';
-              }}
-              className="flex-1 bg-[#002B51] hover:bg-[#003a6b] text-white"
-            >
-              Back to Exceptions
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

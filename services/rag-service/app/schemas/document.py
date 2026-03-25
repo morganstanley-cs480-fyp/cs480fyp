@@ -35,6 +35,17 @@ class IngestResponse(BaseModel):
     message: str
 
 
+class SolutionData(BaseModel):
+    """Solution data from solution service."""
+    id: int
+    exception_id: int
+    title: str
+    exception_description: Optional[str] = None
+    reference_event: Optional[str] = None
+    solution_description: Optional[str] = None
+    scores: Optional[int] = None
+
+
 class SimilarException(BaseModel):
     """Similar exception result with similarity score."""
     exception_id: str
@@ -46,6 +57,7 @@ class SimilarException(BaseModel):
     exception_msg: str
     text: str = Field(..., description="Exception narrative text")
     explanation: Optional[str] = Field(None, description="LLM-generated explanation of similarity")
+    solution: Optional[SolutionData] = Field(None, description="Mapped solution for the similar exception, if available")
 
 
 class SimilarExceptionsResponse(BaseModel):
@@ -60,17 +72,6 @@ class IngestException(BaseModel):
     """Request to ingest an exception with trade context."""
     trade_id: str
     exception_id: str
-
-
-class SolutionData(BaseModel):
-    """Solution data from solution service."""
-    id: int
-    exception_id: int
-    title: str
-    exception_description: Optional[str] = None
-    reference_event: Optional[str] = None
-    solution_description: Optional[str] = None
-    scores: Optional[int] = None
 
 
 class HistoricalCase(BaseModel):

@@ -114,11 +114,12 @@ module "milvus_db" {
   public_key_path = "~/.ssh/milvus_ec2_key.pub" 
 }
 
-module "neptune_db" {
-  source             = "./modules/neptune"
-  vpc_id             = module.networking.vpc_id
-  public_subnet_ids = module.networking.public_subnet_ids
-  ecs_sg_id          = module.ecs_security_group.ecs_service_sg_id
+module "neo4j_database" {
+  source = "./modules/neo4j_ec2"
+  vpc_id                = module.networking.vpc_id
+  subnet_id             = module.networking.public_subnet_ids[0]
+  vpc_cidr_block        = var.vpc_cidr_block 
+  my_ip                 = "117.20.154.53/32" 
 }
 
 # ECS-SG
@@ -590,7 +591,7 @@ module "trade_flow_service" {
     { name = "DB_USER", value = var.db_username },
     { name = "DB_PASSWORD", value = var.db_password },
     { name = "DB_NAME", value = module.main_rds.db_name },
-    { name = "NEPTUNE_ENDPOINT", value = "bolt://${module.neptune_db.neptune_endpoint}:8182" }
+    { name = "NEPTUNE_ENDPOINT", value = module.neo4j_database.bolt_url }
   ]
   secrets = []
 }
@@ -601,7 +602,6 @@ module "graph_maker_task_role" {
   source        = "./modules/graph_maker_task_role"
   service_name  = var.graph_maker_service_name
   graph_ingestion_queue_arn = module.graph_ingestion_queue.sqs_queue_arn
-  neptune_cluster_arn = module.neptune_db.neptune_cluster_arn
 }
 
 # graph_maker_cloudwatch
@@ -630,7 +630,7 @@ module "graph_maker_service" {
   assign_public_ip        = true
   environments = [
     { name = "GRAPH_INGESTION_QUEUE_URL", value = module.graph_ingestion_queue.sqs_queue_url },
-    { name = "NEPTUNE_ENDPOINT", value = "bolt://${module.neptune_db.neptune_endpoint}:8182" }
+    { name = "NEPTUNE_ENDPOINT", value = module.neo4j_database.bolt_url }
   ]
   secrets =[]
 }
