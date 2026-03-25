@@ -1050,12 +1050,28 @@ export function FlowVisualization({
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(document.fullscreenElement === flowContainerRef.current);
+      const isContainerFullscreen = document.fullscreenElement === flowContainerRef.current;
+      setIsFullscreen(isContainerFullscreen);
+
+      if (
+        activeTab !== 'system' ||
+        isLoading ||
+        renderedLayoutData.nodes.length === 0 ||
+        !reactFlowInstance
+      ) {
+        return;
+      }
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          fitToTopBottomNodes({ duration: 240, applyBoost: false });
+        });
+      });
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
+  }, [activeTab, fitToTopBottomNodes, isLoading, reactFlowInstance, renderedLayoutData.nodes.length]);
 
   const handleToggleFullscreen = useCallback(async () => {
     const container = flowContainerRef.current;
