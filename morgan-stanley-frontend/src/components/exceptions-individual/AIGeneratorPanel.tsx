@@ -41,6 +41,74 @@ export function AIGeneratorPanel({
 }: AIGeneratorPanelProps) {
   const [expandedCases, setExpandedCases] = useState<Set<string>>(new Set());
 
+  function renderSolutionText(text: string) {
+    // Treat numbered headings (e.g. "1. ") as section boundaries
+    const normalized = text.replace(/(^|\n)(\d+\.\s+)/g, '$1\n$2');
+    const blocks = normalized.split(/\n\s*\n/).filter((b) => b.trim().length > 0);
+
+    return blocks.map((blk, i) => {
+      const lines = blk.split('\n').map((l) => l.trim()).filter(Boolean);
+
+      if (lines.every((l) => l.startsWith('- ') || l.startsWith('* '))) {
+        return (
+          <div key={i} className="mb-4">
+            <ul className="list-disc pl-5 space-y-1 text-xs text-black/75">
+              {lines.map((l, idx) => (
+                <li key={idx}>{formatInline(l.replace(/^[-*]\s*/, ''))}</li>
+              ))}
+            </ul>
+          </div>
+        );
+      }
+
+      if (lines.every((l) => l.startsWith('→ ') || l.startsWith('->'))) {
+        return (
+          <div key={i} className="space-y-1 text-xs text-black/75 mb-4">
+            {lines.map((l, idx) => (
+              <div key={idx} className="flex items-start gap-2">
+                <span className="text-[#002B51]">→</span>
+                <span>{formatInline(l.replace(/^→\s*|^->\s*/,'') as string)}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      if (lines.length > 1 && lines[0].includes(':')) {
+        const [heading, ...rest] = lines;
+        return (
+          <div key={i} className="mb-4">
+            <div className="text-xs font-semibold text-black">{formatInline(heading)}</div>
+            <div className="text-xs whitespace-pre-wrap text-black/75">{formatInline(rest.join('\n'))}</div>
+          </div>
+        );
+      }
+
+      return (
+        <p key={i} className="text-xs whitespace-pre-wrap mb-4 text-black/75">
+          {formatInline(blk)}
+        </p>
+      );
+    });
+  }
+
+  function formatInline(text: string) {
+    const parts: Array<string | JSX.Element> = [];
+    const boldRe = /\*\*([^*]+)\*\*/g;
+    let lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = boldRe.exec(text)) !== null) {
+      if (m.index > lastIndex) parts.push(text.slice(lastIndex, m.index));
+      parts.push(<strong key={lastIndex}>{m[1]}</strong>);
+      lastIndex = m.index + m[0].length;
+    }
+    if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+
+    return parts.map((p, idx) => (
+      typeof p === 'string' ? <span key={idx}>{p}</span> : <span key={idx}>{p}</span>
+    ));
+  }
+
   const toggleExpanded = (caseId: string) => {
     setExpandedCases(prev => {
       const newSet = new Set(prev);
@@ -120,8 +188,8 @@ export function AIGeneratorPanel({
                   <div className="flex items-start gap-2 mb-3">
                     <Lightbulb className="size-5 text-[#002B51] mt-0.5" />
                     <div className="flex-1">
-                      <div className="text-sm text-black/75 bg-white border border-black/10 rounded p-3 whitespace-pre-wrap max-h-64 overflow-y-auto">
-                        {aiGeneratedSolution}
+                      <div className="text-sm text-black/75 bg-white border border-black/10 rounded p-3 max-h-64 overflow-y-auto">
+                        {renderSolutionText(aiGeneratedSolution)}
                       </div>
                     </div>
                   </div>
@@ -188,8 +256,8 @@ export function AIGeneratorPanel({
                     <CardTitle className="pb-2 text-sm"> Exception Narrative</CardTitle>
 
                     <div className="text-xs text-black/75">
-                      {isExpanded || !shouldTruncate 
-                        ? case_item.exception_narrative 
+                      {isExpanded || !shouldTruncate
+                        ? renderSolutionText(case_item.exception_narrative)
                         : `${case_item.exception_narrative.slice(0, 200)}...`
                       }
                     </div>
