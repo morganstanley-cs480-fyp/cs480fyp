@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Clock, Network, Pause, Play, RotateCcw, Landmark, ShieldCheck } from "lucide-react";
+import { Clock, Network, Pause, Play, RotateCcw, Landmark, ShieldCheck, Maximize2, Minimize2 } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
 import type { Transaction, Exception } from "@/lib/api/types";
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -774,7 +774,9 @@ export function FlowVisualization({
   const [hoveredEdge, setHoveredEdge] = useState<EdgeHoverState | null>(null);
   const [playbackStep, setPlaybackStep] = useState<number>(Number.MAX_SAFE_INTEGER);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasManualNodeInteraction, setHasManualNodeInteraction] = useState(false);
+  const flowContainerRef = useRef<HTMLDivElement | null>(null);
   const fitBoostTimeoutRef = useRef<number | null>(null);
 
   // ✅ Enhanced function to get related exceptions with transaction status check
@@ -1047,6 +1049,27 @@ export function FlowVisualization({
   }, []);
 
   useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === flowContainerRef.current);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const handleToggleFullscreen = useCallback(async () => {
+    const container = flowContainerRef.current;
+    if (!container) return;
+
+    if (document.fullscreenElement === container) {
+      await document.exitFullscreen();
+      return;
+    }
+
+    await container.requestFullscreen();
+  }, []);
+
+  useEffect(() => {
     if (activeTab !== 'system' || isLoading || renderedLayoutData.nodes.length === 0 || !reactFlowInstance || hasManualNodeInteraction) {
       return;
     }
@@ -1163,6 +1186,26 @@ export function FlowVisualization({
                       <RotateCcw className="mr-1 size-3.5" />
                       Reset Layout
                     </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      onClick={handleToggleFullscreen}
+                    >
+                      {isFullscreen ? (
+                        <>
+                          <Minimize2 className="mr-1 size-3.5" />
+                          Exit Full Screen
+                        </>
+                      ) : (
+                        <>
+                          <Maximize2 className="mr-1 size-3.5" />
+                          Full Screen
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
                 <Slider
@@ -1178,7 +1221,10 @@ export function FlowVisualization({
                 />
               </div>
             )}
-            <div className="h-[800px] border rounded-lg bg-black/[0.02] relative">
+            <div
+              ref={flowContainerRef}
+              className={`border rounded-lg bg-black/[0.02] relative ${isFullscreen ? 'h-full' : 'h-[800px]'}`}
+            >
               {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-black/75 font-bold">Computing ELK Layout...</div>
