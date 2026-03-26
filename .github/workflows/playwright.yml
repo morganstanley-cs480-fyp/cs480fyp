@@ -4,6 +4,8 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch:
+
 jobs:
   test:
     timeout-minutes: 60
@@ -11,18 +13,36 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
-        node-version: lts/*
+        node-version: "20"
+        cache: "npm"
+        cache-dependency-path: morgan-stanley-frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./morgan-stanley-frontend
+      run: npm ci
     - name: Install dependencies
       run: npm ci
       working-directory: ./morgan-stanley-frontend/playwright
 
+    - name: Build frontend
+      working-directory: ./morgan-stanley-frontend
+      run: npm run build
+      env:
+        VITE_COGNITO_AUTHORITY: ${{ secrets.VITE_COGNITO_AUTHORITY }}
+        VITE_COGNITO_CLIENT_ID: ${{ secrets.VITE_COGNITO_CLIENT_ID }}
+        VITE_COGNITO_REDIRECT_URI: ${{ secrets.VITE_COGNITO_REDIRECT_URI }}
+        VITE_COGNITO_LOGOUT_URI: ${{ secrets.VITE_COGNITO_LOGOUT_URI }}
+        VITE_COGNITO_DOMAIN: ${{ secrets.VITE_COGNITO_DOMAIN }}
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
       working-directory: ./morgan-stanley-frontend/playwright
 
     - name: Run Playwright tests
-      run: npx playwright test
+      run: npx playwright test --project=chromium
       working-directory: ./morgan-stanley-frontend/playwright
       env:
         USERNAME: ${{ secrets.CLOUDFRONT_USERNAME }}

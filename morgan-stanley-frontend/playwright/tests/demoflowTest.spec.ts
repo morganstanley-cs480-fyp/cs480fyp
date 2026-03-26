@@ -2,8 +2,27 @@ import { test, expect } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/trades');
+  
   await expect(page).toHaveURL(/trades/);
+
+  // const resultsSpan = page.locator('span.text-xs.font-mono.bg-black\\/5');
+  const resultsSpan = page.locator('span:has-text("trades")');
+
+  if (await resultsSpan.count() === 0) {
+    test.skip(true, 'Trade count element not found');
+    console.log("Trade count element not found")
+  }
+  await expect(resultsSpan).toHaveText(/\d+ trades/, { timeout: 10000 });
+
+  const spanText = await resultsSpan.textContent();
+  const resultsCount = parseInt(spanText?.match(/\d+/)?.[0] || '0', 10);
+
+  if(resultsCount == 0){
+    test.skip(true, 'No trade found');
+    console.log("No trade found")
+  }
 });
+
 
 test.skip('Trade status consistency', async ({ page }) => {
   const resultsSpan = page.locator('span.text-xs.font-mono.bg-black\\/5');

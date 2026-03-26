@@ -25,11 +25,15 @@ export default defineConfig({
   reporter: 'html',
 
   use: {
-    // baseURL: 'http://localhost:5173',
-    baseURL: 'https://d10aqqj0011qw9.cloudfront.net/',
+    baseURL: 'http://localhost:5173',
     // headless: false,
     headless: true,
     trace: 'on-first-retry',
+  },
+  webServer: {
+    command: "npm run preview -- --port 5173",
+    port: 5173,
+    cwd: "../",
   },
 
   projects: [
