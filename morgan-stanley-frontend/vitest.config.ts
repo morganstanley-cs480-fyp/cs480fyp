@@ -20,6 +20,12 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    exclude: [
+      "node_modules/",
+      "dist/",
+      "**/playwright/**",
+    ],
+
     coverage: {
       reporter: ["text", "html", "json", "lcov"],
       reportsDirectory: "./coverage",
@@ -48,6 +54,8 @@ export default defineConfig({
         "src/lib/api/types.ts",
         // Test utilities
         "src/test/**",
+         "**/playwright/**", 
+          "**/*.spec.ts",
       ],
       thresholds: {
         global: {

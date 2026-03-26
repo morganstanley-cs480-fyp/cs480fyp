@@ -35,7 +35,7 @@ export default defineConfig({
   projects: [
     {
       name: 'setup',
-      testMatch: /.*authsetup\.spec\.ts/,
+      testMatch: /.*authsetup\.ts/,
       use: {
         storageState: undefined, 
       },
@@ -43,8 +43,8 @@ export default defineConfig({
 
     {
       name: 'chromium',
-      dependencies: ['setup'], // 👈 run setup first
-      testIgnore: /.*authsetup\.spec\.ts/,
+      dependencies: ['setup'],
+      testIgnore: /.*authsetup\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: {
