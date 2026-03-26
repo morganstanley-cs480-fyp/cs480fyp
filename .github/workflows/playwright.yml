@@ -38,7 +38,7 @@ jobs:
         VITE_COGNITO_LOGOUT_URI: ${{ secrets.VITE_COGNITO_LOGOUT_URI }}
         VITE_COGNITO_DOMAIN: ${{ secrets.VITE_COGNITO_DOMAIN }}
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install chromium --with-deps
       working-directory: ./morgan-stanley-frontend/playwright
 
     - name: Run Playwright tests
