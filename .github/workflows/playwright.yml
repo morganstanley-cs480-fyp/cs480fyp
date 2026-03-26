@@ -15,10 +15,20 @@ jobs:
         node-version: lts/*
     - name: Install dependencies
       run: npm ci
+      working-directory: ./morgan-stanley-frontend/playwright
+
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
+      working-directory: ./morgan-stanley-frontend/playwright
+
     - name: Run Playwright tests
       run: npx playwright test
+      working-directory: ./morgan-stanley-frontend/playwright
+      env:
+        USERNAME: ${{ secrets.CLOUDFRONT.USERNAME }}
+        PASSWORD: ${{ secrets.CLOUDFRONT.PASSWORD }}
+        HOMEPAGE: ${{ secrets.CLOUDFRONT.HOMEPAGE }}
+
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
