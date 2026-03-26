@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Exception } from "@/lib/api/types";
 import { getPriorityBadgeClassName } from "@/lib/tradeDetailUtils";
+import { formatDateShort } from "@/lib/utils";
 
 interface UseExceptionColumnsOptions {
   getPriorityColor: (priority: string) => "destructive" | "default" | "secondary";
@@ -18,6 +19,25 @@ export function useExceptionColumns({
   getPriorityIcon,
   getStatusBadgeVariant,
 }: UseExceptionColumnsOptions): ColumnDef<Exception>[] {
+  const matchesDateRange = (
+    value: string,
+    filterValue: string | { from?: string; to?: string } | undefined
+  ) => {
+    if (!filterValue) return true;
+    if (typeof filterValue === "string") {
+      const formatted = formatDateShort(value);
+      return formatted.toLowerCase().includes(filterValue.toLowerCase());
+    }
+    const { from, to } = filterValue;
+    if (!from && !to) return true;
+    const timestamp = new Date(value).getTime();
+    if (Number.isNaN(timestamp)) return false;
+    const fromTime = from ? new Date(`${from}T00:00:00`).getTime() : null;
+    const toTime = to ? new Date(`${to}T23:59:59.999`).getTime() : null;
+    if (fromTime && timestamp < fromTime) return false;
+    if (toTime && timestamp > toTime) return false;
+    return true;
+  };
   const SortHeader = ({ column, label }: { column: Column<Exception>; label: string }) => (
     <Button
       variant="ghost"
@@ -100,9 +120,11 @@ export function useExceptionColumns({
       header: ({ column }) => <SortHeader column={column} label="Create Time" />,
       cell: ({ row }) => (
         <span className="text-sm text-black">
-          {row.getValue("create_time")}
+          {formatDateShort(row.getValue("create_time") as string)}
         </span>
       ),
+      filterFn: (row, columnId, filterValue) =>
+        matchesDateRange(row.getValue(columnId) as string, filterValue),
       enableColumnFilter: true,
     },
     {
@@ -110,9 +132,11 @@ export function useExceptionColumns({
       header: ({ column }) => <SortHeader column={column} label="Update Time" />,
       cell: ({ row }) => (
         <span className="text-sm text-black">
-          {row.getValue("update_time")}
+          {formatDateShort(row.getValue("update_time") as string)}
         </span>
       ),
+      filterFn: (row, columnId, filterValue) =>
+        matchesDateRange(row.getValue(columnId) as string, filterValue),
       enableColumnFilter: true,
     },
   ];
