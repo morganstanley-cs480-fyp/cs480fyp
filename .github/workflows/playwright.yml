@@ -25,9 +25,9 @@ jobs:
       run: npx playwright test
       working-directory: ./morgan-stanley-frontend/playwright
       env:
-        USERNAME: ${{ secrets.CLOUDFRONT.USERNAME }}
-        PASSWORD: ${{ secrets.CLOUDFRONT.PASSWORD }}
-        HOMEPAGE: ${{ secrets.CLOUDFRONT.HOMEPAGE }}
+        USERNAME: ${{ secrets.CLOUDFRONT_USERNAME }}
+        PASSWORD: ${{ secrets.CLOUDFRONT_PASSWORD }}
+        HOMEPAGE: ${{ secrets.CLOUDFRONT_HOMEPAGE }}
 
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
