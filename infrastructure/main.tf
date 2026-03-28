@@ -481,7 +481,8 @@ module "search_service" {
     { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" },
     { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
     { name = "GOOGLE_MODEL_ID", value = "gemini-2.5-flash-lite" },
-    { name = "CORS_ORIGINS", value = "[\"*\"]" }
+    { name = "CORS_ORIGINS", value = "[\"*\"]" },
+    { name = "NEPTUNE_ENDPOINT", value = module.neo4j_database.bolt_url }
   ]
   secrets = [
     { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn }
