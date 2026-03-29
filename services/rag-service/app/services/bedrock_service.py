@@ -89,6 +89,11 @@ class BedrockService:
         if not text:
             raise ValueError("Text for embedding cannot be empty.")
 
+        # Truncate text to 2048 characters (Bedrock Cohere embedding limit)
+        max_length = 2048
+        if len(text) > max_length:
+            text = text[:max_length]
+
         # Cohere format
         payload = {
             "texts": [text],
