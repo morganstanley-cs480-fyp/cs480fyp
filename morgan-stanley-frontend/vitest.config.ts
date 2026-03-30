@@ -33,6 +33,9 @@ export default defineConfig({
         "src/hooks/**",
         "src/lib/**",
         "src/components/trades/**",
+        "src/components/trades-individual/**",
+        "src/components/exceptions/**",
+        "src/components/exceptions-individual/**",
         "src/utils/**",
       ],
       exclude: [
@@ -54,8 +57,13 @@ export default defineConfig({
         "src/lib/api/types.ts",
         // Test utilities
         "src/test/**",
-         "**/playwright/**", 
-          "**/*.spec.ts",
+        "**/playwright/**", 
+        "**/*.spec.ts",
+        "**/use-mobile.ts",  
+        "**/client.ts",  
+        "**/mockData.ts",  
+
+
       ],
       thresholds: {
         global: {
