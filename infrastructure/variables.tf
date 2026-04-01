@@ -90,7 +90,7 @@ variable "data_processing_queue_name" {
 }
 
 variable "graph_ingestion_queue_name" {
-  type = string
+  type    = string
   default = "graph_ingestion_queue.fifo"
 }
 

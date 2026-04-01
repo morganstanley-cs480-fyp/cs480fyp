@@ -18,9 +18,7 @@ export const Header = () => {
     const handleLogout = async () => {
         try {
             await auth.removeUser();
-        } catch (error) {
-            console.log('Logout failed:', error);
-        } finally {
+        } catch { /* removeUser may throw if session already cleared; finally handles redirect regardless */ } finally {
             const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID;
             const logoutUri = import.meta.env.VITE_COGNITO_LOGOUT_URI;
             const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN;

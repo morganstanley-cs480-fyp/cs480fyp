@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from app.cache.redis_client import redis_manager
 from app.config.settings import settings
 from app.database.connection import db_manager
+from app.database.neo4j_client import neo4j_client
 from app.utils.exceptions import (
     BedrockAPIError,
     BedrockResponseError,
@@ -84,6 +85,9 @@ async def lifespan(app: FastAPI):
         await redis_manager.connect()
         logger.info("Redis cache connection initialized successfully")
 
+        # Initialize Neo4j connection (optional — skipped when NEO4J_URI is absent)
+        await neo4j_client.connect()
+
         # Verify connections with health checks
         db_healthy = await db_manager.health_check()
         redis_healthy = await redis_manager.health_check()
@@ -109,6 +113,8 @@ async def lifespan(app: FastAPI):
     try:
         await redis_manager.disconnect()
         logger.info("Redis cache connection closed")
+
+        await neo4j_client.close()
 
         await db_manager.disconnect()
         logger.info("Database connection pool closed")

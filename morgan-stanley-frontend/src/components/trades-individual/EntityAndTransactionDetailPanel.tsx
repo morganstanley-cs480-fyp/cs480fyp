@@ -52,14 +52,12 @@ export const EntityAndTransactionDetailPanel = ({
 
         // If transaction is CLEARED, don't show any exceptions
         if (currentTransaction.status === 'CLEARED') {
-            console.log(`🎯 Transaction ${currentTransaction.id} is CLEARED - hiding all exceptions`);
             return [];
         }
         
         // Otherwise, only show PENDING exceptions
         const pendingExceptions = relatedExceptions.filter(exc => exc.status === 'PENDING');
         
-        console.log(`📊 Transaction ${currentTransaction.id} (${currentTransaction.status}) - showing ${pendingExceptions.length}/${relatedExceptions.length} exceptions`);
         return pendingExceptions;
     }, [currentTransaction, relatedExceptions]);
 

@@ -48,6 +48,10 @@ class Settings(BaseSettings):
 
     # Google Gemini Configuration (temporary local dev alternative to Bedrock)
     GOOGLE_API_KEY: Optional[str] = None
+
+    # Neo4j / Knowledge Graph (optional — KG features disabled when absent)
+    # Same env var name used by trade-flow-service and graph-maker-service.
+    NEO4J_URI: Optional[str] = None
     GOOGLE_MODEL_ID: str = "gemini-2.5-flash-lite"
 
     # Cache TTL (Time To Live) in seconds

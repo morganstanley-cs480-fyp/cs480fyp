@@ -2,10 +2,12 @@
 
 import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Network } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Clock, Network, Pause, Play, RotateCcw, Landmark, ShieldCheck, Maximize2, Minimize2 } from "lucide-react";
 import { TimelineTransactionCard } from "./TimelineTransactionCard";
 import type { Transaction, Exception } from "@/lib/api/types";
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -24,17 +26,17 @@ import {
   type ReactFlowInstance,
 } from '@xyflow/react';
 import "@xyflow/react/dist/style.css";
-import { Landmark, ShieldCheck } from 'lucide-react';
 import ELK, { type ElkNode } from 'elkjs/lib/elk.bundled.js';
 
 const HUB_ID = 'CCP';
-const NODE_WIDTH = 140;
-const NODE_HEIGHT = 96;
-const HUB_MIN_WIDTH = NODE_WIDTH * 10;
+const NODE_WIDTH = 180;
+const NODE_HEIGHT = 120;
+const HUB_MIN_WIDTH = NODE_WIDTH * 8;
 const EDGE_COLOR = '#002B51';
 const EDGE_OFFSET = 22;
 const PARTICIPANT_MARGIN = 16;
 const HUB_MARGIN = 40;
+const PLAYBACK_INTERVAL_MS = 900;
 
 type Point = { x: number; y: number };
 type Size = { w: number; h: number };
@@ -326,6 +328,22 @@ function WorkflowEdge(props: EdgeProps) {
     }
   };
 
+  const handleEdgeMouseEnter = () => {
+    if (!data?.onEdgeHoverChange || !data?.transaction) return;
+
+    data.onEdgeHoverChange({
+      transaction: data.transaction,
+      pendingExceptionCount: data.pendingExceptionCount ?? 0,
+      step: Number(data.transaction.step ?? data.step ?? 0),
+      sourceId: source,
+      targetId: target,
+    });
+  };
+
+  const handleEdgeMouseLeave = () => {
+    data?.onEdgeHoverChange?.(null);
+  };
+
   // Determine color based on transaction status and exceptions
   const hasExceptions = data?.hasExceptions ?? false;
   const transaction = data?.transaction;
@@ -382,6 +400,8 @@ function WorkflowEdge(props: EdgeProps) {
         style={{ stroke: EDGE_COLOR, strokeWidth: 2.25, strokeLinecap: 'round', cursor:'pointer' }}
         markerEnd={markerEnd}
         onClick={handleEdgeClick}
+        onMouseEnter={handleEdgeMouseEnter}
+        onMouseLeave={handleEdgeMouseLeave}
       />
       <EdgeLabelRenderer>
         <div
@@ -391,6 +411,8 @@ function WorkflowEdge(props: EdgeProps) {
             pointerEvents: 'auto',
           }}
           onClick={handleEdgeClick}
+          onMouseEnter={handleEdgeMouseEnter}
+          onMouseLeave={handleEdgeMouseLeave}
         >
           <div
             style={{
@@ -474,7 +496,7 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
   return (
     <div
       onClick={handleClick}
-      className={`p-3 rounded-lg border-2 shadow-md flex flex-col justify-center cursor-pointer hover:shadow-lg transition-all text-center ${
+      className={`p-4 rounded-lg border-2 shadow-md flex flex-col justify-center cursor-pointer hover:shadow-lg transition-all text-center subpixel-antialiased ${
         isHub ? getHubBgColor() : getStatusBgColor(status)} ${
         isHub ? getHubBorderColor() : getStatusBorderColor(status)} ${
         isHub ? 'hover:border-[#002B51]' : 'hover:border-black/15'
@@ -483,15 +505,15 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
     >
       <div className="flex items-center gap-2 mb-1 justify-center">
         {isHub ? (
-          <ShieldCheck className="text-[#002B51]" size={14} />
+          <ShieldCheck className="text-[#002B51]" size={16} />
         ) : (
-          <Landmark className="text-black/50" size={14} />
+          <Landmark className="text-black/50" size={16} />
         )}
-        <span className="text-[8px] font-bold uppercase tracking-tight text-black/50">
+        <span className="text-[10px] font-bold uppercase tracking-wide text-black/60">
           {isHub ? 'Central Clearing' : 'Participant'}
         </span>
       </div>
-      <div className="text-xs font-bold text-black uppercase truncate">{data.label}</div>
+      <div className="text-sm font-bold text-black uppercase truncate tracking-wide">{data.label}</div>
 
       <Handle type="target" position={Position.Top} id="in-top" className="opacity-0" />
       <Handle type="source" position={Position.Top} id="out-top" className="opacity-0" />
@@ -506,6 +528,14 @@ interface TransactionFlow {
   to: string;
 }
 
+interface EdgeHoverState {
+  transaction: Transaction;
+  pendingExceptionCount: number;
+  step: number;
+  sourceId: string;
+  targetId: string;
+}
+
 async function generateElkLayout(
   participants: string[], 
   transactionFlows: TransactionFlow[], 
@@ -514,12 +544,12 @@ async function generateElkLayout(
   allTransactions: Transaction[],
   sortedTransactions: Transaction[],
   _exceptions: Exception[],
-  onTransactionSelect: (transaction: Transaction) => void,  getRelatedExceptions: (trans_id: number) => Exception[]
+  onTransactionSelect: (transaction: Transaction) => void,
+  getRelatedExceptions: (trans_id: number) => Exception[],
+  onEdgeHoverChange: (hoverState: EdgeHoverState | null) => void
 ) {
   try {
-    console.log('📐 generateElkLayout function called');
     const elk = new ELK();
-    console.log('✓ ELK instance created successfully');
     
     const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
   const bottomCount = participants.length - topCount;
@@ -604,7 +634,6 @@ async function generateElkLayout(
     // Use the actual transaction status directly
     entityStatusMap[entity] = latestTransaction.status;
     
-    console.log(`📊 Entity ${entity} status: ${entityStatusMap[entity]} (from transaction ${latestTransaction.id} step ${latestTransaction.step} with status ${latestTransaction.status})`);
   });
 
   const nodeLookup: Record<string, { x: number; y: number; width: number }> = {};
@@ -628,8 +657,6 @@ async function generateElkLayout(
         status,
         onEntitySelect 
       },
-      draggable: true,
-      selectable: true,
     });
   });
 
@@ -661,17 +688,16 @@ async function generateElkLayout(
     const correspondingTransaction = sortedTransactions[idx] || null;
     
     // Check if this transaction has exceptions (only count PENDING exceptions for non-CLEARED transactions)
-    const hasExceptions = correspondingTransaction 
+    const pendingExceptionCount = correspondingTransaction
       ? (() => {
-          // If transaction is CLEARED, don't show any exceptions
           if (correspondingTransaction.status === 'CLEARED') {
-            return false;
+            return 0;
           }
-          // Otherwise, only count PENDING exceptions
           const relatedExceptions = getRelatedExceptions(correspondingTransaction.id);
-          return relatedExceptions.filter(exc => exc.status === 'PENDING').length > 0;
+          return relatedExceptions.filter(exc => exc.status === 'PENDING').length;
         })()
-      : false;
+      : 0;
+    const hasExceptions = pendingExceptionCount > 0;
 
     edges.push({
       id: e.id!,
@@ -688,17 +714,14 @@ async function generateElkLayout(
         targetWidth: targetNode.width ?? NODE_WIDTH,
         transaction: correspondingTransaction,
         hasExceptions,
+        pendingExceptionCount,
         onEdgeClick: onTransactionSelect,
+        onEdgeHoverChange,
       },
       markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_COLOR, width: 18, height: 18 },
     });
   });
 
-  console.log('📊 Layout generated with updated entity statuses - returning nodes and edges', { 
-    nodeCount: nodes.length, 
-    edgeCount: edges.length,
-    entityStatuses: Object.entries(entityStatusMap).map(([entity, status]) => `${entity}:${status}`)
-  });
   return { nodes, edges };
   } catch (error) {
     console.error('💥 Error in generateElkLayout:', error);
@@ -734,11 +757,18 @@ export function FlowVisualization({
   getTransactionBackgroundColor,
   getTransactionStatusColor,
 }: FlowVisualizationProps) {
-  console.log('🎨 FlowVisualization component mounted!', { transactionCount: transactions?.length, clearingHouse });
   
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
+  const [initialLayoutData, setInitialLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [isLoading, setIsLoading] = useState(!transactions || transactions.length === 0 ? false : true);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<Node, Edge> | null>(null);
+  const [hoveredEdge, setHoveredEdge] = useState<EdgeHoverState | null>(null);
+  const [playbackStep, setPlaybackStep] = useState<number>(Number.MAX_SAFE_INTEGER);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [hasManualNodeInteraction, setHasManualNodeInteraction] = useState(false);
+  const flowContainerRef = useRef<HTMLDivElement | null>(null);
+  const fitBoostTimeoutRef = useRef<number | null>(null);
 
   // ✅ Enhanced function to get related exceptions with transaction status check
   const getFilteredRelatedExceptions = useCallback((transaction: Transaction): Exception[] => {
@@ -754,13 +784,77 @@ export function FlowVisualization({
 
   // Use mergedTransactions for all rendering (combines API + WebSocket data)
   const sortedTransactions = [...transactions].sort((a, b) => a.step - b.step);
+  const maxPlaybackStep = useMemo(
+    () => sortedTransactions.reduce((max, transaction) => Math.max(max, transaction.step), 0),
+    [sortedTransactions],
+  );
+  const effectivePlaybackStep = maxPlaybackStep === 0 ? 0 : Math.min(playbackStep, maxPlaybackStep);
+
+  useEffect(() => {
+    if (maxPlaybackStep === 0) {
+      setPlaybackStep(0);
+      setIsPlaying(false);
+      return;
+    }
+
+    setPlaybackStep((current) => {
+      if (current === Number.MAX_SAFE_INTEGER || current === 0) {
+        return maxPlaybackStep;
+      }
+      return Math.min(current, maxPlaybackStep);
+    });
+  }, [maxPlaybackStep]);
+
+  useEffect(() => {
+    if (!isPlaying || maxPlaybackStep <= 1) {
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setPlaybackStep((current) => {
+        const normalized = current === Number.MAX_SAFE_INTEGER ? 1 : Math.max(1, current);
+        return Math.min(normalized + 1, maxPlaybackStep);
+      });
+    }, PLAYBACK_INTERVAL_MS);
+
+    return () => window.clearInterval(timerId);
+  }, [isPlaying, maxPlaybackStep]);
+
+  useEffect(() => {
+    if (isPlaying && maxPlaybackStep > 0 && effectivePlaybackStep >= maxPlaybackStep) {
+      setIsPlaying(false);
+    }
+  }, [effectivePlaybackStep, isPlaying, maxPlaybackStep]);
+
+  const renderedLayoutData = useMemo(() => {
+    if (maxPlaybackStep === 0 || effectivePlaybackStep >= maxPlaybackStep) {
+      return layoutData;
+    }
+
+    const visibleEdges = layoutData.edges.filter((edge) => {
+      const transactionStep = Number(edge.data?.transaction?.step ?? edge.data?.step ?? 0);
+      return transactionStep <= effectivePlaybackStep;
+    });
+
+    const visibleNodeIds = new Set<string>();
+    visibleEdges.forEach((edge) => {
+      visibleNodeIds.add(edge.source);
+      visibleNodeIds.add(edge.target);
+    });
+    visibleNodeIds.add(HUB_ID);
+
+    const visibleNodes = layoutData.nodes.filter((node) => visibleNodeIds.has(node.id));
+
+    return {
+      nodes: visibleNodes,
+      edges: visibleEdges,
+    };
+  }, [effectivePlaybackStep, layoutData, maxPlaybackStep]);
 
     // Generate dynamic flow visualization based on actual transaction data
   useEffect(() => {
-    console.log('🔄 FlowVisualization useEffect triggered', { transactionCount: transactions?.length });
     
     if (!transactions || transactions.length === 0) {
-      console.log('⚠️ No transactions provided');
       return;
     }
 
@@ -796,22 +890,34 @@ export function FlowVisualization({
 
     if (entities.length === 0 && validFlows.length === 0) {
       // No valid data to display
-      console.log('ℹ️ No entities or flows to display');
       // Initialize empty state outside of effect to avoid cascading renders
       const initializeEmptyState = () => {
         setLayoutData({ nodes: [], edges: [] });
+        setInitialLayoutData({ nodes: [], edges: [] });
+        setHasManualNodeInteraction(false);
         setIsLoading(false);
       };
       initializeEmptyState();
       return;
     }
 
-    console.log('🚀 Calling generateElkLayout with updated transactions:', { entityCount: entities.length, flowCount: validFlows.length, transactionCount: transactions.length });
     
-    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect, getRelatedExceptions)
+    generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect, getRelatedExceptions, setHoveredEdge)
       .then((result) => {
-        console.log('✅ ELK layout regenerated with updated entity statuses:', { nodeCount: result.nodes.length, edgeCount: result.edges.length });
-        setLayoutData(result);
+        const clonedNodes = result.nodes.map((node) => ({
+          ...node,
+          position: { ...node.position },
+          data: { ...(node.data as Record<string, unknown>) },
+        }));
+        const clonedEdges = result.edges.map((edge) => ({
+          ...edge,
+          data: edge.data ? { ...(edge.data as Record<string, unknown>) } : edge.data,
+        }));
+
+        const clonedLayout = { nodes: clonedNodes, edges: clonedEdges };
+        setLayoutData(clonedLayout);
+        setInitialLayoutData(clonedLayout);
+        setHasManualNodeInteraction(false);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -827,31 +933,58 @@ export function FlowVisualization({
       ...prev,
       nodes: applyNodeChanges(changes, prev.nodes),
     }));
+
+    if (changes.length > 0) {
+      setHasManualNodeInteraction(true);
+    }
+
+    setHoveredEdge(null);
   }, []);
+
+  const handleResetLayout = useCallback(() => {
+    if (initialLayoutData.nodes.length === 0) return;
+
+    const resetNodes = initialLayoutData.nodes.map((node) => ({
+      ...node,
+      position: { ...node.position },
+      data: { ...(node.data as Record<string, unknown>) },
+    }));
+
+    setLayoutData((prev) => ({
+      ...prev,
+      nodes: resetNodes,
+      edges: initialLayoutData.edges,
+    }));
+    setHasManualNodeInteraction(false);
+    setHoveredEdge(null);
+  }, [initialLayoutData]);
 
   const nodeTypes = useMemo(() => ({ entity: EntityNode }), []);
   const edgeTypes = useMemo(() => ({ workflow: WorkflowEdge }), []);
 
-  const fitToTopBottomNodes = useCallback(() => {
-    if (!reactFlowInstance || layoutData.nodes.length === 0) return;
+  const fitToTopBottomNodes = useCallback((options?: { duration?: number; applyBoost?: boolean }) => {
+    if (!reactFlowInstance || renderedLayoutData.nodes.length === 0) return;
+
+    const duration = options?.duration ?? 320;
+    const applyBoost = options?.applyBoost ?? true;
 
     const getNodeWidth = (node: Node): number => {
       const data = node.data as { width?: number } | undefined;
       return typeof data?.width === 'number' ? data.width : NODE_WIDTH;
     };
 
-    const topNode = layoutData.nodes.reduce((currentTop, node) =>
+    const topNode = renderedLayoutData.nodes.reduce((currentTop, node) =>
       node.position.y < currentTop.position.y ? node : currentTop
     );
 
-    const bottomNode = layoutData.nodes.reduce((currentBottom, node) =>
+    const bottomNode = renderedLayoutData.nodes.reduce((currentBottom, node) =>
       node.position.y > currentBottom.position.y ? node : currentBottom
     );
 
     let minX = Number.POSITIVE_INFINITY;
     let maxX = Number.NEGATIVE_INFINITY;
 
-    layoutData.nodes.forEach((node) => {
+    renderedLayoutData.nodes.forEach((node) => {
       const nodeWidth = getNodeWidth(node);
       minX = Math.min(minX, node.position.x);
       maxX = Math.max(maxX, node.position.x + nodeWidth);
@@ -863,8 +996,8 @@ export function FlowVisualization({
     const verticalSpan = Math.max(1, bottomY - topY);
     const horizontalSpan = Math.max(1, maxX - minX);
 
-    const verticalPadding = Math.max(80, verticalSpan * 0.12);
-    const horizontalPadding = Math.max(120, horizontalSpan * 0.08);
+    const verticalPadding = Math.max(36, verticalSpan * 0.06);
+    const horizontalPadding = Math.max(56, horizontalSpan * 0.045);
 
     reactFlowInstance.fitBounds(
       {
@@ -874,15 +1007,72 @@ export function FlowVisualization({
         height: verticalSpan + verticalPadding * 2,
       },
       {
-        duration: 320,
-        minZoom: 0.35,
-        maxZoom: 1.8,
+        duration,
+        minZoom: 0.5,
+        maxZoom: 2,
       }
     );
-  }, [layoutData.nodes, reactFlowInstance]);
+
+    if (fitBoostTimeoutRef.current) {
+      window.clearTimeout(fitBoostTimeoutRef.current);
+      fitBoostTimeoutRef.current = null;
+    }
+
+    if (applyBoost) {
+      fitBoostTimeoutRef.current = window.setTimeout(() => {
+        const boostedZoom = Math.min(2, reactFlowInstance.getZoom() * 1.12);
+        reactFlowInstance.zoomTo(boostedZoom, { duration: 180 });
+      }, duration + 20);
+    }
+  }, [renderedLayoutData.nodes, reactFlowInstance]);
 
   useEffect(() => {
-    if (activeTab !== 'system' || isLoading || layoutData.nodes.length === 0 || !reactFlowInstance) {
+    return () => {
+      if (fitBoostTimeoutRef.current) {
+        window.clearTimeout(fitBoostTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isContainerFullscreen = document.fullscreenElement === flowContainerRef.current;
+      setIsFullscreen(isContainerFullscreen);
+
+      if (
+        activeTab !== 'system' ||
+        isLoading ||
+        renderedLayoutData.nodes.length === 0 ||
+        !reactFlowInstance
+      ) {
+        return;
+      }
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          fitToTopBottomNodes({ duration: 240, applyBoost: false });
+        });
+      });
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [activeTab, fitToTopBottomNodes, isLoading, reactFlowInstance, renderedLayoutData.nodes.length]);
+
+  const handleToggleFullscreen = useCallback(async () => {
+    const container = flowContainerRef.current;
+    if (!container) return;
+
+    if (document.fullscreenElement === container) {
+      await document.exitFullscreen();
+      return;
+    }
+
+    await container.requestFullscreen();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'system' || isLoading || renderedLayoutData.nodes.length === 0 || !reactFlowInstance || hasManualNodeInteraction) {
       return;
     }
 
@@ -891,7 +1081,7 @@ export function FlowVisualization({
     });
 
     return () => cancelAnimationFrame(frameId);
-  }, [activeTab, isLoading, layoutData.nodes, reactFlowInstance, fitToTopBottomNodes]);
+  }, [activeTab, hasManualNodeInteraction, isLoading, renderedLayoutData.nodes, reactFlowInstance, fitToTopBottomNodes]);
 
   return (
     <Card>
@@ -947,33 +1137,144 @@ export function FlowVisualization({
         ) : (
           <>
             <CardDescription className="mb-4">
-              System architecture and data flow visualization
+              System architecture and data flow visualization. Hover an edge marker for details.
             </CardDescription>
-            <div className="h-[800px] border rounded-lg bg-black/[0.02] relative">
+            {maxPlaybackStep > 0 && (
+              <div className="mb-4 rounded-md border border-black/10 bg-white px-4 py-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="text-xs">
+                    <span className="font-semibold text-black/70 uppercase tracking-wide">Playback Step</span>
+                    <span className="ml-3 font-mono text-black/60">
+                      Step {Math.max(1, effectivePlaybackStep)} / {maxPlaybackStep}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 min-w-[92px]"
+                      disabled={maxPlaybackStep <= 1}
+                      onClick={() => {
+                        if (effectivePlaybackStep >= maxPlaybackStep) {
+                          setPlaybackStep(1);
+                          setIsPlaying(true);
+                          return;
+                        }
+                        setIsPlaying((prev) => !prev);
+                      }}
+                    >
+                      {isPlaying ? (
+                        <>
+                          <Pause className="mr-1 size-3.5" />
+                          Pause
+                        </>
+                      ) : (
+                        <>
+                          <Play className="mr-1 size-3.5" />
+                          Play
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      disabled={initialLayoutData.nodes.length === 0}
+                      onClick={handleResetLayout}
+                    >
+                      <RotateCcw className="mr-1 size-3.5" />
+                      Reset Layout
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      onClick={handleToggleFullscreen}
+                    >
+                      {isFullscreen ? (
+                        <>
+                          <Minimize2 className="mr-1 size-3.5" />
+                          Exit Full Screen
+                        </>
+                      ) : (
+                        <>
+                          <Maximize2 className="mr-1 size-3.5" />
+                          Full Screen
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                <Slider
+                  value={[Math.max(1, effectivePlaybackStep)]}
+                  min={1}
+                  max={Math.max(1, maxPlaybackStep)}
+                  step={1}
+                  onValueChange={(values) => {
+                    setPlaybackStep(values[0] ?? 1);
+                    setIsPlaying(false);
+                  }}
+                  disabled={maxPlaybackStep <= 1}
+                />
+              </div>
+            )}
+            <div
+              ref={flowContainerRef}
+              className={`border rounded-lg relative w-full ${isFullscreen ? 'h-full bg-white' : 'h-[800px] bg-black/[0.02]'}`}
+            >
               {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-black/75 font-bold">Computing ELK Layout...</div>
                 </div>
               ) : (
-                <ReactFlow
-                  nodes={layoutData.nodes}
-                  edges={layoutData.edges}
-                  nodeTypes={nodeTypes}
-                  edgeTypes={edgeTypes}
-                  onInit={setReactFlowInstance}
-                  onNodesChange={onNodesChange}
-                  nodesDraggable
-                  nodesConnectable={false}
-                  elementsSelectable
-                  panOnDrag={true}
-                  selectionOnDrag={false}
-                  zoomOnScroll
-                  minZoom={0.1}
-                  maxZoom={2}
-                >
-                  <Background color="#e2e8f0" gap={20} />
-                  <Controls />
-                </ReactFlow>
+                <>
+                  <ReactFlow
+                    nodes={renderedLayoutData.nodes}
+                    edges={renderedLayoutData.edges}
+                    nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
+                    onInit={setReactFlowInstance}
+                    onNodesChange={onNodesChange}
+                    onNodeDragStop={() => {
+                      setHasManualNodeInteraction(true);
+                      setIsPlaying(false);
+                      requestAnimationFrame(() => {
+                        fitToTopBottomNodes({ duration: 220, applyBoost: false });
+                      });
+                    }}
+                    onPaneClick={() => setHoveredEdge(null)}
+                    nodesConnectable={false}
+                    selectionOnDrag={false}
+                    minZoom={0.1}
+                    maxZoom={2}
+                  >
+                    <Background color="#e2e8f0" gap={20} />
+                    <Controls />
+                  </ReactFlow>
+
+                  {hoveredEdge && (
+                    <div className="pointer-events-none absolute left-3 top-3 z-20 w-72 rounded-md border border-black/10 bg-white/95 p-3 shadow-sm backdrop-blur-sm">
+                      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-black/50">Transaction Hover</div>
+                      <div className="grid grid-cols-2 gap-y-1 text-xs text-black/80">
+                        <span className="text-black/50">ID</span>
+                        <span className="font-mono">{hoveredEdge.transaction.id}</span>
+                        <span className="text-black/50">Step</span>
+                        <span className="font-mono">{hoveredEdge.step}</span>
+                        <span className="text-black/50">Path</span>
+                        <span className="truncate">{hoveredEdge.sourceId} → {hoveredEdge.targetId}</span>
+                        <span className="text-black/50">Status</span>
+                        <span className="font-semibold">{hoveredEdge.transaction.status}</span>
+                        <span className="text-black/50">Pending Exceptions</span>
+                        <span className="font-mono">{hoveredEdge.pendingExceptionCount}</span>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </>

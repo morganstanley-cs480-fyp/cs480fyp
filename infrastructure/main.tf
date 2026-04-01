@@ -30,10 +30,10 @@ data "aws_s3_bucket" "existing_frontend" {
 
 # S3 for XML File
 module "s3_data" {
-  source           = "./modules/s3_data"
-  bucket_name      = var.s3_data_bucket_name
-  file_key         = var.s3_data_file_key
-  file_source      = "${path.root}/${var.s3_data_file_source}"
+  source      = "./modules/s3_data"
+  bucket_name = var.s3_data_bucket_name
+  file_key    = var.s3_data_file_key
+  file_source = "${path.root}/${var.s3_data_file_source}"
 }
 
 # SSM Parameter Store
@@ -110,16 +110,16 @@ module "milvus_db" {
   source          = "./modules/milvus_ec2"
   vpc_id          = module.networking.vpc_id
   subnet_id       = module.networking.public_subnet_ids[0]
-  vpc_cidr_block  = var.vpc_cidr_block 
-  public_key_path = "~/.ssh/milvus_ec2_key.pub" 
+  vpc_cidr_block  = var.vpc_cidr_block
+  public_key_path = "~/.ssh/milvus_ec2_key.pub"
 }
 
 module "neo4j_database" {
-  source = "./modules/neo4j_ec2"
-  vpc_id                = module.networking.vpc_id
-  subnet_id             = module.networking.public_subnet_ids[0]
-  vpc_cidr_block        = var.vpc_cidr_block 
-  my_ip                 = "117.20.154.53/32" 
+  source         = "./modules/neo4j_ec2"
+  vpc_id         = module.networking.vpc_id
+  subnet_id      = module.networking.public_subnet_ids[0]
+  vpc_cidr_block = var.vpc_cidr_block
+  my_ip          = "117.20.154.53/32"
 }
 
 # ECS-SG
@@ -144,8 +144,8 @@ module "ecs_cluster" {
 # DATA PROCESSING SERVICE (To add elasticache pub sub)
 # data_processing_task_role
 module "data_processing_task_role" {
-  source        = "./modules/data_processing_task_role"
-  service_name  = var.data_processing_service_name
+  source                    = "./modules/data_processing_task_role"
+  service_name              = var.data_processing_service_name
   data_processing_queue_arn = module.data_processing_queue.sqs_queue_arn
   graph_ingestion_queue_arn = module.graph_ingestion_queue.sqs_queue_arn
 }
@@ -159,21 +159,21 @@ module "data_processing_log_group" {
 
 # data_processing_ecs
 module "data_processing_service" {
-  source                  = "./modules/ecs"
-  family                  = var.data_processing_family
-  container_name          = var.data_processing_container_name
-  container_image         = var.data_processing_container_image
-  container_port          = 0
-  log_group               = module.data_processing_log_group.log_group_name
-  region                  = var.region
-  execution_role_arn      = module.ecs_execution_role.role_arn
-  task_role_arn           = module.data_processing_task_role.role_arn
-  service_name            = var.data_processing_service_name
-  cluster_id              = module.ecs_cluster.cluster_id
-  desired_count           = 1
-  subnets                 = module.networking.public_subnet_ids
-  security_groups         = [module.ecs_security_group.ecs_service_sg_id]
-  assign_public_ip        = true
+  source             = "./modules/ecs"
+  family             = var.data_processing_family
+  container_name     = var.data_processing_container_name
+  container_image    = var.data_processing_container_image
+  container_port     = 0
+  log_group          = module.data_processing_log_group.log_group_name
+  region             = var.region
+  execution_role_arn = module.ecs_execution_role.role_arn
+  task_role_arn      = module.data_processing_task_role.role_arn
+  service_name       = var.data_processing_service_name
+  cluster_id         = module.ecs_cluster.cluster_id
+  desired_count      = 1
+  subnets            = module.networking.public_subnet_ids
+  security_groups    = [module.ecs_security_group.ecs_service_sg_id]
+  assign_public_ip   = true
   environments = [
     { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
     { name = "DB_USER", value = var.db_username },
@@ -181,9 +181,9 @@ module "data_processing_service" {
     { name = "DB_NAME", value = module.main_rds.db_name },
     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
     { name = "GRAPH_INGESTION_QUEUE_URL", value = module.graph_ingestion_queue.sqs_queue_url },
-    { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
+    { name = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
   ]
-  secrets =[]
+  secrets = []
 }
 
 # EXCEPTION SERVICE (Change Port Group)
@@ -268,26 +268,26 @@ module "gateway_log_group" {
 
 # gateway_ecs
 module "gateway_service" {
-  source                  = "./modules/ecs"
-  family                  = var.gateway_family
-  container_name          = var.gateway_container_name
-  container_image         = var.gateway_container_image
-  container_port          = 3002
-  log_group               = module.gateway_log_group.log_group_name 
-  region                  = var.region
-  execution_role_arn      = module.ecs_execution_role.role_arn
-  task_role_arn           = ""
-  service_name            = var.gateway_service_name
-  cluster_id              = module.ecs_cluster.cluster_id 
-  desired_count           = 1
-  subnets                 = module.networking.public_subnet_ids
-  security_groups         = [module.ecs_security_group.ecs_service_sg_id]
-  assign_public_ip        = true
-  target_group_arn        = module.gateway_target_group.target_group_arn
+  source             = "./modules/ecs"
+  family             = var.gateway_family
+  container_name     = var.gateway_container_name
+  container_image    = var.gateway_container_image
+  container_port     = 3002
+  log_group          = module.gateway_log_group.log_group_name
+  region             = var.region
+  execution_role_arn = module.ecs_execution_role.role_arn
+  task_role_arn      = ""
+  service_name       = var.gateway_service_name
+  cluster_id         = module.ecs_cluster.cluster_id
+  desired_count      = 1
+  subnets            = module.networking.public_subnet_ids
+  security_groups    = [module.ecs_security_group.ecs_service_sg_id]
+  assign_public_ip   = true
+  target_group_arn   = module.gateway_target_group.target_group_arn
   environments = [
-    { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
+    { name = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address }
   ]
-  secrets =[]
+  secrets = []
 }
 
 # INGESTION SERVICE
@@ -344,15 +344,15 @@ module "ingestion_service" {
   assign_public_ip   = true
   target_group_arn   = module.ingestion_target_group.target_group_arn
   environments = [
-    { name = "MIGRATE", value = "true"},
+    { name = "MIGRATE", value = "true" },
     { name = "S3_BUCKET_NAME", value = module.s3_data.bucket_name },
-    { name = "S3_FILE_KEY",    value = module.s3_data.file_key },
+    { name = "S3_FILE_KEY", value = module.s3_data.file_key },
     { name = "SSM_PARAM_NAME", value = module.xml_pointer.parameter_name },
     { name = "AWS_REGION", value = var.region },
     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
     { name = "BATCH_SIZE", value = "300" },
   ]
-  secrets =[]
+  secrets = []
 }
 
 # RAG SERVICE
@@ -389,22 +389,22 @@ module "rag_task_role" {
 
 # rag_ecs
 module "rag_service" {
-  source                  = "./modules/ecs"
-  family                  = var.rag_family
-  container_name          = var.rag_container_name
-  container_image         = var.rag_container_image
-  container_port          = 3004
-  log_group               = module.rag_log_group.log_group_name 
-  region                  = var.region
-  execution_role_arn      = module.ecs_execution_role.role_arn
-  task_role_arn           = module.rag_task_role.role_arn
-  service_name            = var.rag_service_name
-  cluster_id              = module.ecs_cluster.cluster_id 
-  desired_count           = 1
-  subnets                 = module.networking.public_subnet_ids
-  security_groups         = [module.ecs_security_group.ecs_service_sg_id]
-  assign_public_ip        = true
-  target_group_arn        = module.rag_target_group.target_group_arn 
+  source             = "./modules/ecs"
+  family             = var.rag_family
+  container_name     = var.rag_container_name
+  container_image    = var.rag_container_image
+  container_port     = 3004
+  log_group          = module.rag_log_group.log_group_name
+  region             = var.region
+  execution_role_arn = module.ecs_execution_role.role_arn
+  task_role_arn      = module.rag_task_role.role_arn
+  service_name       = var.rag_service_name
+  cluster_id         = module.ecs_cluster.cluster_id
+  desired_count      = 1
+  subnets            = module.networking.public_subnet_ids
+  security_groups    = [module.ecs_security_group.ecs_service_sg_id]
+  assign_public_ip   = true
+  target_group_arn   = module.rag_target_group.target_group_arn
   environments = [
     { name = "DB_HOST", value = split(":", module.main_rds.db_endpoint)[0] },
     { name = "DB_USER", value = var.db_username },
@@ -416,15 +416,15 @@ module "rag_service" {
     { name = "MILVUS_COLLECTION", value = "document" },
     { name = "AWS_REGION", value = "ap-southeast-1" },
     { name = "BEDROCK_EMBED_MODEL_ID", value = "cohere.embed-english-v3" },
-    { name = "BEDROCK_CHAT_MODEL_ID",  value = "us.amazon.nova-lite-v1:0" },
-    { name = "GOOGLE_MODEL_ID",        value = "gemini-2.5-flash-lite" },
+    { name = "BEDROCK_CHAT_MODEL_ID", value = "us.amazon.nova-lite-v1:0" },
+    { name = "GOOGLE_MODEL_ID", value = "gemini-2.5-flash-lite" },
     { name = "EXCEPTION_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net" },
-    { name = "TRADE_FLOW_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net"},
-    { name = "SOLUTION_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net"}
+    { name = "TRADE_FLOW_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net" },
+    { name = "SOLUTION_SERVICE_URL", value = "https://d10aqqj0011qw9.cloudfront.net" }
   ]
   secrets = [
     { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn },
-    { name = "AWS_ACCESS_KEY_ID",     valueFrom = data.aws_ssm_parameter.bedrock_aws_access_key_id.arn },
+    { name = "AWS_ACCESS_KEY_ID", valueFrom = data.aws_ssm_parameter.bedrock_aws_access_key_id.arn },
     { name = "AWS_SECRET_ACCESS_KEY", valueFrom = data.aws_ssm_parameter.bedrock_aws_secret_access_key.arn }
   ]
 }
@@ -479,10 +479,11 @@ module "search_service" {
     { name = "RDS_PASSWORD", value = var.db_password },
     { name = "RDS_DB", value = module.main_rds.db_name },
     { name = "DATABASE_URL", value = "postgres://${var.db_username}:${var.db_password}@${split(":", module.main_rds.db_endpoint)[0]}:5432/${module.main_rds.db_name}" },
-    { name  = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
+    { name = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
     { name = "GOOGLE_MODEL_ID", value = "gemini-2.5-flash-lite" },
     { name = "CORS_ORIGINS", value = "[\"*\"]" },
     { name = "NEPTUNE_ENDPOINT", value = module.neo4j_database.bolt_url }
+    { name = "NEO4J_URI", value = module.neo4j_database.bolt_url }
   ]
   secrets = [
     { name = "GOOGLE_API_KEY", valueFrom = data.aws_ssm_parameter.google_api_key.arn }
@@ -600,8 +601,8 @@ module "trade_flow_service" {
 # GRAPH MAKER SERVICE
 # graph_maker_task_role
 module "graph_maker_task_role" {
-  source        = "./modules/graph_maker_task_role"
-  service_name  = var.graph_maker_service_name
+  source                    = "./modules/graph_maker_task_role"
+  service_name              = var.graph_maker_service_name
   graph_ingestion_queue_arn = module.graph_ingestion_queue.sqs_queue_arn
 }
 
@@ -614,24 +615,24 @@ module "graph_maker_log_group" {
 
 # graph_maker_ecs
 module "graph_maker_service" {
-  source                  = "./modules/ecs"
-  family                  = var.graph_maker_family
-  container_name          = var.graph_maker_container_name
-  container_image         = var.graph_maker_container_image
-  container_port          = 0
-  log_group               = module.graph_maker_log_group.log_group_name
-  region                  = var.region
-  execution_role_arn      = module.ecs_execution_role.role_arn
-  task_role_arn           = module.graph_maker_task_role.role_arn
-  service_name            = var.graph_maker_service_name
-  cluster_id              = module.ecs_cluster.cluster_id
-  desired_count           = 1
-  subnets                 = module.networking.public_subnet_ids
-  security_groups         = [module.ecs_security_group.ecs_service_sg_id]
-  assign_public_ip        = true
+  source             = "./modules/ecs"
+  family             = var.graph_maker_family
+  container_name     = var.graph_maker_container_name
+  container_image    = var.graph_maker_container_image
+  container_port     = 0
+  log_group          = module.graph_maker_log_group.log_group_name
+  region             = var.region
+  execution_role_arn = module.ecs_execution_role.role_arn
+  task_role_arn      = module.graph_maker_task_role.role_arn
+  service_name       = var.graph_maker_service_name
+  cluster_id         = module.ecs_cluster.cluster_id
+  desired_count      = 1
+  subnets            = module.networking.public_subnet_ids
+  security_groups    = [module.ecs_security_group.ecs_service_sg_id]
+  assign_public_ip   = true
   environments = [
     { name = "GRAPH_INGESTION_QUEUE_URL", value = module.graph_ingestion_queue.sqs_queue_url },
     { name = "NEPTUNE_ENDPOINT", value = module.neo4j_database.bolt_url }
   ]
-  secrets =[]
+  secrets = []
 }

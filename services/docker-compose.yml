@@ -61,6 +61,27 @@ services:
       - fyp-network
     restart: unless-stopped
 
+  # Neo4j Knowledge Graph (local dev instance — no auth, mirrors EC2 setup)
+  neo4j:
+    image: neo4j:5.13.0
+    container_name: fyp-neo4j
+    ports:
+      - "7474:7474"   # Browser UI
+      - "7687:7687"   # Bolt
+    environment:
+      NEO4J_AUTH: none
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 30s
+    networks:
+      - fyp-network
+    restart: unless-stopped
+
   # Search Service
   search-service:
     build:
@@ -81,10 +102,13 @@ services:
       REDIS_PASSWORD: ""
       LOG_LEVEL: DEBUG
       MAX_SEARCH_RESULTS: 50
+      NEO4J_URI: bolt://neo4j:7687
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      neo4j:
         condition: service_healthy
     networks:
       - fyp-network
@@ -242,6 +266,8 @@ volumes:
   redis_data:
     driver: local
   pgadmin_data:
+    driver: local
+  neo4j_data:
     driver: local
   milvus_data:
     driver: local

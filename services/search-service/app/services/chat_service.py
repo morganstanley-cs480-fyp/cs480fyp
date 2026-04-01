@@ -10,7 +10,6 @@ Flow:
 
 import asyncio
 import json
-import re
 import time
 from datetime import datetime
 from typing import Any
@@ -22,6 +21,7 @@ from app.database.connection import db_manager
 from app.models.chat import ChatRequest, ChatResponse
 from app.models.domain import ExtractedParams, Trade
 from app.services.gemini_service import gemini_service as extraction_service
+from app.services.kg_service import kg_service
 from app.services.query_builder import query_builder
 from app.services.query_history_service import query_history_service
 from app.utils.logger import logger
@@ -42,31 +42,66 @@ class ChatService:
     }
 
     ALLOWED_PRIORITIES = {"CRITICAL", "HIGH", "MEDIUM", "LOW"}
-    TIME_SERIES_KEYWORDS = {
-        "graph",
-        "chart",
-        "time series",
-        "timeseries",
-        "trend",
-        "monthly",
-        "month",
-        "weekly",
-        "week",
-        "over time",
-    }
+
+    _SYSTEM_INSTRUCTION = (
+        "You are an analytics assistant for a financial trade operations platform. "
+        "Always call tools to fetch data before answering — never guess or fabricate numbers.\n\n"
+        "MULTI-TOOL AND MULTI-CALL RULES — follow these strictly:\n"
+        "- You MAY call the same tool more than once in the SAME turn with DIFFERENT arguments.\n"
+        "- When a question asks to compare two dimensions (e.g. exception types AND asset types), "
+        "call get_exception_analytics TWICE in the same turn: once with dimensions=['exception_message'] "
+        "and again with dimensions=['asset_type'], then synthesise both results in your answer.\n"
+        "- When a question asks for BOTH listing AND analysis, call get_trade_rows AND "
+        "get_exception_analytics simultaneously in the same turn.\n"
+        "- When a question asks for a breakdown AND a trend, call get_exception_analytics AND "
+        "get_trade_timeseries simultaneously in the same turn.\n\n"
+        "DIMENSION SELECTION RULES for get_exception_analytics:\n"
+        "- User mentions 'booking system', 'trading platform', 'system' → dimensions: ['booking_system']\n"
+        "- User mentions 'clearing house', 'cleared by', 'CCP' → dimensions: ['clearing_house']\n"
+        "- User mentions 'asset type', 'asset class', 'CDS/IRS/FX/MBS' → dimensions: ['asset_type']\n"
+        "- User mentions 'affirmation system' → dimensions: ['affirmation_system']\n"
+        "- User mentions 'account' → dimensions: ['account']\n"
+        "- User mentions 'status' → dimensions: ['status']\n"
+        "- User mentions 'exception message', 'error message', 'error type' → dimensions: ['exception_message']\n"
+        "- User mentions 'priority' → dimensions: ['priority']\n"
+        "- When in doubt about a single grouping, default to ['booking_system']\n\n"
+        "TOOL SELECTION RULES:\n"
+        "- 'show', 'list', 'find', 'display', 'give me' → get_trade_rows\n"
+        "- 'how many', 'which has most', 'breakdown', 'compare', 'top N', 'worst', 'rate' → get_exception_analytics\n"
+        "- 'trend', 'chart', 'over time', 'monthly', 'weekly', 'by month' → get_trade_timeseries\n"
+        "- 'counterparty', 'sent to', 'received from', 'transaction direction' → get_kg_analytics\n\n"
+        "get_kg_analytics queries Neo4j for relationship-aware analytics across "
+        "BookingSystem → Trade → Transaction → Exception paths.\n"
+        "After receiving ALL tool results, synthesise them into one concise factual answer. "
+        "If a specific filter returned no data, say so explicitly. Do not hallucinate data."
+    )
 
     def __init__(self):
         self.query_builder = query_builder
         self.history = query_history_service
         self._chat_model = None
+        self._fc_model = None
 
         if settings.GOOGLE_API_KEY:
             genai.configure(api_key=settings.GOOGLE_API_KEY)
+            # Basic model kept for the synthesis step in _generate_analysis_answer
             self._chat_model = genai.GenerativeModel(settings.GOOGLE_MODEL_ID)
-            logger.info(
-                "ChatService initialized with Gemini",
-                extra={"model": settings.GOOGLE_MODEL_ID},
-            )
+            # Function-calling model drives the tool loop
+            try:
+                self._fc_model = genai.GenerativeModel(
+                    model_name=settings.GOOGLE_MODEL_ID,
+                    tools=[self._build_tool_declarations()],
+                    system_instruction=self._SYSTEM_INSTRUCTION,
+                )
+                logger.info(
+                    "ChatService initialised with native Gemini function calling",
+                    extra={"model": settings.GOOGLE_MODEL_ID, "kg_enabled": bool(settings.NEO4J_URI)},
+                )
+            except Exception as exc:
+                logger.warning(
+                    "FC model init failed – tool loop will fall back to heuristics",
+                    extra={"error": str(exc)},
+                )
         else:
             logger.warning("GOOGLE_API_KEY missing - ChatService will use heuristic fallback")
 
@@ -101,54 +136,37 @@ class ChatService:
             )
             extracted_params = ExtractedParams()
 
-        try:
-            loop_result = await self._run_tool_calling_loop(
-                request=request,
-                extracted_params=extracted_params,
-            )
-        except Exception as exc:
-            logger.warning(
-                "Tool-calling loop failed, falling back to heuristic flow",
-                extra={"error": str(exc)},
-            )
-            loop_result = await self._fallback_non_tool_flow(request, extracted_params)
+        loop_result = await self._run_tool_calling_loop(
+            request=request,
+            extracted_params=extracted_params,
+        )
 
         mode = loop_result.get("mode", "both")
         table_results: list[Trade] = loop_result.get("table_results", [])
         evidence: dict[str, Any] = loop_result.get("evidence", {})
         ai_answer: str | None = loop_result.get("ai_answer")
+        kg_evidence: dict[str, Any] = loop_result.get("kg_evidence", {})
 
-        pre_context_table_count = len(table_results)
-        pre_context_evidence_count = len(evidence.get("rows", [])) if evidence else 0
+        # Merge KG evidence into the evidence structure so it flows to the response
+        if kg_evidence:
+            evidence = {**evidence, "graph": kg_evidence} if isinstance(evidence, dict) else {"graph": kg_evidence}
 
-        if self._is_time_series_query(request.message) and mode == "table":
-            mode = "both"
-
-        table_results, evidence = await self._ensure_dual_data_context(
-            request=request,
-            extracted_params=extracted_params,
-            table_results=table_results,
-            evidence=evidence,
-        )
-
-        has_more_context = (
-            len(table_results) > pre_context_table_count
-            or (len(evidence.get("rows", [])) if evidence else 0) > pre_context_evidence_count
-        )
-
-        if mode in ("analysis", "both") and (not ai_answer or has_more_context):
+        # The FC model produces ai_answer from the tool preview data directly.
+        # Only invoke _generate_analysis_answer when the FC loop produced no text.
+        if mode in ("analysis", "both") and not ai_answer:
             try:
                 ai_answer = await self._generate_analysis_answer(
                     question=request.message,
                     evidence=evidence,
                     trades=table_results,
+                    kg_evidence=kg_evidence,
                 )
             except Exception as exc:
                 logger.warning(
-                    "AI answer generation failed, using heuristic summary",
+                    "AI answer generation failed",
                     extra={"error": str(exc)},
                 )
-                ai_answer = self._heuristic_summary(evidence, table_results)
+                ai_answer = None
 
         follow_up_prompts = self._build_follow_up_prompts(
             mode=mode,
@@ -169,94 +187,235 @@ class ChatService:
             execution_time_ms=execution_time_ms,
         )
 
+    def _infer_mode_from_tools(self, tools_called: set[str]) -> str:
+        """Infer the response mode based on which tools were invoked."""
+        has_table = "get_trade_rows" in tools_called
+        has_analysis = bool(
+            {"get_exception_analytics", "get_trade_timeseries", "get_kg_analytics"} & tools_called
+        )
+        if has_table and has_analysis:
+            return "both"
+        if has_analysis:
+            return "analysis"
+        if has_table:
+            return "table"
+        return "both"
+
+    def _accumulate_tool_result(
+        self,
+        fc_name: str,
+        tool_result: dict[str, Any],
+        table_results: list,
+        analytics_evidence_list: list[dict[str, Any]],
+        kg_evidence: dict[str, Any],
+    ) -> tuple[list, list[dict[str, Any]], dict[str, Any]]:
+        """Update accumulation state from a single tool call result."""
+        if fc_name == "get_trade_rows":
+            table_results = tool_result.get("table_results", table_results)
+        elif fc_name in ("get_exception_analytics", "get_trade_timeseries"):
+            ev = tool_result.get("evidence", {})
+            if ev:
+                analytics_evidence_list.append(ev)
+        elif fc_name == "get_kg_analytics":
+            kg_evidence = tool_result.get("kg_evidence", kg_evidence)
+        return table_results, analytics_evidence_list, kg_evidence
+
     async def _run_tool_calling_loop(
         self,
         request: ChatRequest,
         extracted_params: ExtractedParams,
     ) -> dict[str, Any]:
-        """Run iterative LLM tool-calling loop with strict cap and logging."""
-        if not self._chat_model:
-            return await self._fallback_non_tool_flow(request, extracted_params)
+        """
+        Run the native Gemini function-calling loop.
 
-        tool_outputs: list[dict[str, Any]] = []
+        Gemini receives all tool definitions up-front and decides which to invoke
+        (including in parallel within a single turn).  We execute every function
+        call concurrently with asyncio.gather, send all results back in one turn,
+        and repeat until Gemini emits a plain-text final answer.
+        """
+        if not self._fc_model:
+            raise RuntimeError("ChatService: GOOGLE_API_KEY is not configured")
+
         table_results: list[Trade] = []
-        evidence: dict[str, Any] = {}
-        final_mode = "both"
-        final_answer: str | None = None
+        analytics_evidence_list: list[dict[str, Any]] = []
+        kg_evidence: dict[str, Any] = {}
+        tools_called: set[str] = set()
 
-        for iteration in range(1, settings.CHAT_MAX_TOOL_ITERATIONS + 1):
-            prompt = self._build_tool_loop_prompt(
-                request=request,
-                extracted_params=extracted_params,
-                tool_outputs=tool_outputs,
-                iteration=iteration,
-                max_iterations=settings.CHAT_MAX_TOOL_ITERATIONS,
+        # Build the first user message: question + conversation history + SQL filters
+        conversation_text = "\n".join(
+            f"{m.role}: {m.content}" for m in request.conversation[-6:]
+        )
+        # Map extracted dimension hints so Gemini picks correct analytics grouping
+        dimension_hint = self._infer_dimension_hint(request.message)
+
+        initial_message = (
+            f"INSTRUCTION: If you call get_exception_analytics, you MUST set "
+            f"dimensions to {dimension_hint} because the user's question is about "
+            f"{'and '.join(eval(dimension_hint))} — do not default to booking_system unless the user specifically asked about booking systems.\n\n"
+            f"User question: {request.message}\n\n"
+            f"Conversation history:\n{conversation_text or '(none)'}\n\n"
+            f"Pre-extracted SQL filters (use these when calling SQL tools):\n"
+            f"{extracted_params.model_dump_json()}\n\n"
+            f"Today: {datetime.now().strftime('%Y-%m-%d')}"
+        )
+
+        chat = self._fc_model.start_chat(history=[])
+        loop = asyncio.get_event_loop()
+
+        def _send(content):
+            return chat.send_message(
+                content,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.1,
+                    max_output_tokens=1000,
+                ),
             )
 
-            try:
-                response_text = await self._call_model(prompt)
-            except Exception as exc:
-                logger.warning(
-                    "LLM call failed inside tool loop iteration",
-                    extra={"iteration": iteration, "error": str(exc)},
-                )
+        try:
+            response = await loop.run_in_executor(None, _send, initial_message)
+        except Exception as exc:
+            logger.warning(
+                "FC model initial call failed",
+                extra={"error": str(exc)},
+            )
+            raise
+
+        for iteration in range(settings.CHAT_MAX_TOOL_ITERATIONS):
+            # Collect every function call Gemini emitted in this turn
+            function_calls = [
+                part.function_call
+                for part in response.parts
+                if getattr(part, "function_call", None) and getattr(part.function_call, "name", None)
+            ]
+
+            if not function_calls:
+                # No more tool calls — Gemini produced the final text answer
                 break
-            parsed = self._safe_json_parse(response_text)
-            response_type = parsed.get("type")
 
             logger.info(
-                "Chat tool loop iteration",
-                extra={
-                    "iteration": iteration,
-                    "response_type": response_type,
-                    "has_tool_outputs": bool(tool_outputs),
-                },
+                "FC tool calls - iteration %d: %s",
+                iteration + 1,
+                [{
+                    "name": fc.name,
+                    "args": dict(fc.args)
+                } for fc in function_calls],
             )
 
-            if response_type == "final":
-                mode = parsed.get("mode", "both")
-                if mode in {"table", "analysis", "both"}:
-                    final_mode = mode
-                final_answer = parsed.get("ai_answer")
+            # Pass args as a plain Python dict. Values that are proto ListComposite
+            # (e.g. dimensions=[...]) are handled by the list() guard inside
+            # _execute_tool_call rather than a broken deep-conversion here.
+            converted_args_list = [dict(fc.args) for fc in function_calls]
+
+            # Execute all tool calls for this turn concurrently
+            tool_tasks = [
+                self._execute_tool_call(
+                    tool_name=fc.name,
+                    args=args,
+                    extracted_params=extracted_params,
+                )
+                for fc, args in zip(function_calls, converted_args_list, strict=False)
+            ]
+            tool_results_list = await asyncio.gather(*tool_tasks, return_exceptions=True)
+
+            # Build function-response parts to send back
+            fn_response_parts = []
+            for fc, tool_result in zip(function_calls, tool_results_list, strict=False):
+                tools_called.add(fc.name)
+
+                if isinstance(tool_result, Exception):
+                    logger.warning(
+                        "Tool call %s raised an exception: %s", fc.name, str(tool_result)
+                    )
+                    result_payload: dict[str, Any] = {"error": str(tool_result)}
+                else:
+                    table_results, analytics_evidence_list, kg_evidence = (
+                        self._accumulate_tool_result(
+                            fc.name, tool_result,
+                            table_results, analytics_evidence_list, kg_evidence,
+                        )
+                    )
+                    result_payload = tool_result.get("result_preview", {})
+
+                fn_response_parts.append(
+                    genai.protos.Part(
+                        function_response=genai.protos.FunctionResponse(
+                            name=fc.name,
+                            response={"result": json.dumps(result_payload, default=str)},
+                        )
+                    )
+                )
+
+            # Send all function results back to Gemini in a single turn
+            try:
+                response = await loop.run_in_executor(
+                    None,
+                    _send,
+                    genai.protos.Content(role="user", parts=fn_response_parts),
+                )
+            except Exception as exc:
+                logger.warning(
+                    "FC model tool-response call failed", extra={"error": str(exc)}
+                )
                 break
 
-            if response_type != "tool_call":
-                continue
+        # Extract final answer text safely (response may not have .text if something went wrong)
+        final_answer: str | None = None
+        try:
+            if response.text:
+                final_answer = response.text.strip()
+        except (ValueError, AttributeError):
+            pass
 
-            tool_name = parsed.get("tool")
-            tool_args = parsed.get("args") or {}
+        # Merge all analytics evidence collected across (possibly multiple) tool calls
+        evidence = self._merge_analytics_evidence(analytics_evidence_list)
 
-            tool_result = await self._execute_tool_call(
-                tool_name=tool_name,
-                args=tool_args,
-                extracted_params=extracted_params,
-            )
-
-            if tool_name == "get_trade_rows":
-                table_results = tool_result.get("table_results", table_results)
-            if tool_name == "get_exception_analytics":
-                evidence = tool_result.get("evidence", evidence)
-
-            tool_outputs.append(
-                {
-                    "tool": tool_name,
-                    "args": tool_args,
-                    "result": tool_result.get("result_preview", {}),
-                }
-            )
-
-        if not final_answer and final_mode in ("analysis", "both"):
-            final_answer = await self._generate_analysis_answer(
-                question=request.message,
-                evidence=evidence,
-                trades=table_results,
-            )
+        # Infer mode from which tools were called rather than asking the LLM to declare it
+        mode = self._infer_mode_from_tools(tools_called)
 
         return {
-            "mode": final_mode,
+            "mode": mode,
             "ai_answer": final_answer,
             "table_results": table_results,
             "evidence": evidence,
+            "kg_evidence": kg_evidence,
+        }
+
+    def _merge_analytics_evidence(self, evidence_list: list[dict[str, Any]]) -> dict[str, Any]:
+        """Merge analytics evidence from multiple tool calls into one response dict.
+
+        When Gemini calls get_exception_analytics twice in one turn (cross-dimensional
+        analysis), this collects both results rather than letting the second overwrite
+        the first.
+        """
+        if not evidence_list:
+            return {}
+        if len(evidence_list) == 1:
+            return evidence_list[0]
+        # Multiple calls — tag each row with its dimension group and merge into one list
+        merged_rows: list[dict[str, Any]] = []
+        all_dimensions: list[str] = []
+        for ev in evidence_list:
+            dim = ev.get("dimensions", ["unknown"])[0]
+            if dim not in all_dimensions:
+                all_dimensions.append(dim)
+            for row in ev.get("rows", []):
+                merged_rows.append({**row, "_dim_group": dim})
+        return {
+            "dimensions": all_dimensions,
+            "rows": merged_rows,
+            "chart": evidence_list[0].get("chart", {}),
+            "metadata": {
+                "sections": len(evidence_list),
+                "row_count": len(merged_rows),
+            },
+            "sections": [
+                {
+                    "dimension": ev.get("dimensions", ["unknown"])[0],
+                    "rows": ev.get("rows", []),
+                    "chart": ev.get("chart", {}),
+                }
+                for ev in evidence_list
+            ],
         }
 
     async def _execute_tool_call(
@@ -285,7 +444,14 @@ class ChatService:
 
         if tool_name == "get_exception_analytics":
             dimensions = args.get("dimensions") or ["booking_system"]
+            # Guard: proto ListComposite passes isinstance(list) after MessageToJson
+            # conversion, but keep this as a fallback for any unexpected type
             if not isinstance(dimensions, list):
+                try:
+                    dimensions = list(dimensions)
+                except TypeError:
+                    dimensions = ["booking_system"]
+            if not dimensions:
                 dimensions = ["booking_system"]
 
             priority_filter = args.get("priority_filter")
@@ -349,104 +515,171 @@ class ChatService:
                 },
             }
 
+        if tool_name == "get_kg_analytics":
+            if not settings.NEO4J_URI:
+                return {"result_preview": {"error": "Knowledge graph not configured (NEO4J_URI missing)"}}
+            kg_result = await kg_service.query(args)
+            return {
+                "kg_evidence": kg_result,
+                "result_preview": {
+                    "source": "knowledge_graph",
+                    "dimension": kg_result.get("dimension"),
+                    "row_count": kg_result.get("metadata", {}).get("row_count", 0),
+                    "sample": kg_result.get("rows", [])[:5],
+                },
+            }
+
         return {"result_preview": {"error": f"Unsupported tool: {tool_name}"}}
 
-    def _build_tool_loop_prompt(
-        self,
-        request: ChatRequest,
-        extracted_params: ExtractedParams,
-        tool_outputs: list[dict[str, Any]],
-        iteration: int,
-        max_iterations: int,
-    ) -> str:
-        """Build strict JSON tool-loop prompt for Gemini."""
-        conversation_lines = [f"{msg.role}: {msg.content}" for msg in request.conversation[-6:]]
-        conversation_text = "\n".join(conversation_lines) if conversation_lines else "(none)"
+    def _build_tool_declarations(self) -> "genai.protos.Tool":
+        """Build native Gemini function declarations for all available tools."""
+        S = genai.protos.Schema
+        T = genai.protos.Type
 
-        return f"""
-You are an assistant that must decide one next action for analytics chat.
+        declarations = [
+            genai.protos.FunctionDeclaration(
+                name="get_trade_rows",
+                description=(
+                    "Fetch individual trade rows from the SQL database. "
+                    "Use for 'show me', 'list', 'find', 'display' style requests."
+                ),
+                parameters=S(
+                    type=T.OBJECT,
+                    properties={
+                        "limit": S(type=T.INTEGER, description="Max rows to return (1-100)"),
+                    },
+                ),
+            ),
+            genai.protos.FunctionDeclaration(
+                name="get_exception_analytics",
+                description=(
+                    "Aggregate exception counts from SQL grouped by one or two dimensions. "
+                    "Use for 'which has most exceptions', 'breakdown by X', 'compare X vs Y', 'top N' questions. "
+                    "IMPORTANT: always set dimensions to match what the user asked about — "
+                    "e.g. clearing house questions → ['clearing_house'], asset type questions → ['asset_type'], "
+                    "exception message questions → ['exception_message'], two dimensions → ['clearing_house', 'asset_type']."
+                ),
+                parameters=S(
+                    type=T.OBJECT,
+                    properties={
+                        "dimensions": S(
+                            type=T.ARRAY,
+                            items=S(type=T.STRING),
+                            description=(
+                                "One or two dimensions to group by. "
+                                "Must match the user's question topic exactly. "
+                                "Allowed values: booking_system, asset_type, affirmation_system, "
+                                "clearing_house, account, status, exception_message, priority. "
+                                "Examples: user asks about clearing houses → ['clearing_house']; "
+                                "user asks about asset types → ['asset_type']; "
+                                "user asks to compare two things → ['clearing_house', 'asset_type']."
+                            ),
+                        ),
+                        "priority_filter": S(
+                            type=T.ARRAY,
+                            items=S(type=T.STRING),
+                            description="Filter by priorities: CRITICAL, HIGH, MEDIUM, LOW",
+                        ),
+                        "top_k": S(type=T.INTEGER, description="Number of top results to return (1-25)"),
+                    },
+                ),
+            ),
+            genai.protos.FunctionDeclaration(
+                name="get_trade_timeseries",
+                description=(
+                    "Get time-series trade counts bucketed by month or week from SQL. "
+                    "Use for 'trend', 'chart', 'over time', 'monthly', 'weekly' requests."
+                ),
+                parameters=S(
+                    type=T.OBJECT,
+                    properties={
+                        "year": S(type=T.INTEGER, description="Optional year filter"),
+                        "status": S(type=T.STRING, description="Trade status e.g. REJECTED, CLEARED"),
+                        "bucket": S(type=T.STRING, description="Time bucket: 'month' or 'week'"),
+                        "query": S(type=T.STRING, description="Original user query for context"),
+                    },
+                ),
+            ),
+        ]
 
-Available tools:
-1) get_trade_rows(args: {{"limit": number}})
-2) get_exception_analytics(args: {{"dimensions": string[], "priority_filter": string[] | null, "top_k": number}})
-3) get_trade_timeseries(args: {{"year": number | null, "status": string | null, "bucket": "month" | "week", "query": string | null}})
-
-Allowed dimensions: booking_system, asset_type, affirmation_system, clearing_house, account, status, exception_message, priority.
-Allowed priorities: CRITICAL, HIGH, MEDIUM, LOW.
-
-Current iteration: {iteration} / {max_iterations}
-User query: {request.message}
-Conversation context:
-{conversation_text}
-
-Extracted trade filters JSON:
-{extracted_params.model_dump_json()}
-
-Tool outputs so far:
-{json.dumps(tool_outputs, default=str)}
-
-Respond ONLY valid JSON in one of these forms:
-
-Tool call:
-{{
-  "type": "tool_call",
-    "tool": "get_trade_rows" | "get_exception_analytics" | "get_trade_timeseries",
-  "args": {{...}}
-}}
-
-Final answer:
-{{
-  "type": "final",
-  "mode": "table" | "analysis" | "both",
-  "ai_answer": "string"
-}}
-
-Rules:
-- Prefer tool_call when you need data.
-- For graph/trend/time-series requests, prefer get_trade_timeseries.
-- Use final only when confident.
-- Keep ai_answer concise and factual.
-""".strip()
-
-    async def _fallback_non_tool_flow(
-        self,
-        request: ChatRequest,
-        extracted_params: ExtractedParams,
-    ) -> dict[str, Any]:
-        """Fallback non-tool path when Gemini chat model is unavailable."""
-        mode_info = self._heuristic_mode(request.message)
-        mode = mode_info.get("mode", "both")
-        dimensions = mode_info.get("analysis_dimensions", ["booking_system"])
-        priority_filter = mode_info.get("priority_filter")
-        top_k = mode_info.get("top_k", 10)
-
-        table_results: list[Trade] = []
-        evidence: dict[str, Any] = {}
-
-        if mode in ("table", "both"):
-            sql_query, params = self.query_builder.build_from_extracted_params(extracted_params)
-            self._validate_sql_or_raise(sql_query, params)
-            records = await db_manager.fetch(sql_query, *params)
-            table_results = [Trade.from_db_record(record) for record in records]
-
-        if mode in ("analysis", "both"):
-            evidence = await self._build_analytics_evidence(
-                extracted_params=extracted_params,
-                dimensions=dimensions,
-                priority_filter=priority_filter,
-                top_k=top_k,
+        # Only advertise the KG tool when Neo4j is configured
+        if settings.NEO4J_URI:
+            declarations.append(
+                genai.protos.FunctionDeclaration(
+                    name="get_kg_analytics",
+                    description=(
+                        "Query the knowledge graph (Neo4j) for relationship-aware analytics. "
+                        "Use for counterparty analysis, transaction directions (sent/received), "
+                        "or when graph traversal across BookingSystem \u2192 Trade \u2192 Transaction \u2192 Exception is needed."
+                    ),
+                    parameters=S(
+                        type=T.OBJECT,
+                        properties={
+                            "dimension": S(
+                                type=T.STRING,
+                                description=(
+                                    "Dimension to group by: BookingSystem, ClearingHouse, "
+                                    "AffirmationSystem, Counterparty, Account, AssetType, TradeStatus, TransactionStatus. "
+                                    "Use Counterparty to group by the entity transactions are sent to or received from."
+                                ),
+                            ),
+                            "metric_target": S(
+                                type=T.STRING,
+                                description="What to count: Trade, Transaction, Exception",
+                            ),
+                            "asset_type_filter": S(type=T.STRING, description="CDS, IRS, FX, MBS, ABS"),
+                            "trade_status_filter": S(
+                                type=T.STRING, description="CLEARED, REJECTED, ALLEGED, CANCELLED"
+                            ),
+                            "exception_priority_filter": S(
+                                type=T.STRING, description="CRITICAL, HIGH, MEDIUM, LOW"
+                            ),
+                            "exception_msg_filter": S(
+                                type=T.STRING,
+                                description="TIME OUT OF RANGE, INSUFFICIENT MARGIN, MAPPING ISSUE, MISSING BIC",
+                            ),
+                            "direction_filter": S(type=T.STRING, description="send or receive"),
+                            "start_date": S(type=T.STRING, description="YYYY-MM-DD"),
+                            "end_date": S(type=T.STRING, description="YYYY-MM-DD"),
+                            "sort_order": S(type=T.STRING, description="ASC or DESC"),
+                        },
+                        required=["dimension", "metric_target"],
+                    ),
+                )
             )
 
-        ai_answer = None
-        if mode in ("analysis", "both"):
-            ai_answer = self._heuristic_summary(evidence, table_results)
+        return genai.protos.Tool(function_declarations=declarations)
 
-        return {
-            "mode": mode,
-            "ai_answer": ai_answer,
-            "table_results": table_results,
-            "evidence": evidence,
-        }
+    def _infer_dimension_hint(self, message: str) -> str:
+        """
+        Map free-text keywords to the correct get_exception_analytics dimension value.
+        Returns a comma-separated string hint passed to Gemini in the initial message.
+        """
+        lowered = message.lower()
+        dims: list[str] = []
+
+        if any(k in lowered for k in ("clearing house", "clearing_house", "ccp", "cleared by", "cms", "cme", "lch", "jscc", "otcchk")):
+            dims.append("clearing_house")
+        if any(k in lowered for k in ("asset type", "asset class", "cds", "irs", " fx ", "mbs", "abs")):
+            dims.append("asset_type")
+        if any(k in lowered for k in ("affirmation", "affirmed")):
+            dims.append("affirmation_system")
+        if any(k in lowered for k in ("booking system", "booking_system", "trading platform", "booked on")):
+            dims.append("booking_system")
+        if "account" in lowered:
+            dims.append("account")
+        if any(k in lowered for k in ("exception message", "error message", "error type", "exception msg", "missing bic", "mapping issue", "time out", "insufficient margin")):
+            dims.append("exception_message")
+        if "priority" in lowered:
+            dims.append("priority")
+        if any(k in lowered for k in ("status", "rejected", "cleared", "alleged", "cancelled")):
+            dims.append("status")
+
+        if not dims:
+            dims = ["booking_system"]
+
+        # Return at most two (the tool caps at 2 dimensions)
+        return str(dims[:2])
 
     def _build_follow_up_prompts(
         self,
@@ -470,101 +703,6 @@ Rules:
 
         prompts.append("What trends do you see over time?")
         return prompts[:4]
-
-    async def _determine_mode(self, request: ChatRequest) -> dict[str, Any]:
-        """Use LLM to decide mode and analysis intent, with strict JSON response."""
-        if not self._chat_model:
-            return self._heuristic_mode(request.message)
-
-        history_lines = [f"{msg.role}: {msg.content}" for msg in request.conversation[-6:]]
-        history_text = "\n".join(history_lines) if history_lines else "(none)"
-
-        prompt = f"""
-You are a routing assistant for a trade analytics chatbot.
-Return ONLY valid JSON with this schema:
-{{
-  "mode": "table" | "analysis" | "both",
-  "analysis_dimensions": ["booking_system"|"asset_type"|"affirmation_system"|"clearing_house"|"account"|"status"|"exception_message"|"priority"],
-  "priority_filter": ["CRITICAL"|"HIGH"|"MEDIUM"|"LOW"] | null,
-  "top_k": integer
-}}
-
-Routing guidance:
-- "table": user is asking to list/show/find trades.
-- "analysis": user asks why/pattern/trend/common/highest/risk/comparison.
-- "both": user asks for listing plus explanation.
-
-Conversation:
-{history_text}
-
-Latest user query:
-{request.message}
-""".strip()
-
-        response_text = await self._call_model(prompt)
-        parsed = self._safe_json_parse(response_text)
-
-        mode = parsed.get("mode", "both")
-        if mode not in {"table", "analysis", "both"}:
-            mode = "both"
-
-        dimensions = parsed.get("analysis_dimensions") or ["booking_system"]
-        cleaned_dimensions = [dim for dim in dimensions if dim in self.ALLOWED_DIMENSIONS]
-        if not cleaned_dimensions:
-            cleaned_dimensions = ["booking_system"]
-
-        priority_filter = parsed.get("priority_filter")
-        if priority_filter:
-            priority_filter = [value for value in priority_filter if value in self.ALLOWED_PRIORITIES]
-        else:
-            priority_filter = None
-
-        top_k = parsed.get("top_k", 10)
-        try:
-            top_k = int(top_k)
-        except (TypeError, ValueError):
-            top_k = 10
-        top_k = max(1, min(top_k, 25))
-
-        return {
-            "mode": mode,
-            "analysis_dimensions": cleaned_dimensions[:2],
-            "priority_filter": priority_filter,
-            "top_k": top_k,
-        }
-
-    def _heuristic_mode(self, message: str) -> dict[str, Any]:
-        """Fallback mode routing if chat model is unavailable."""
-        lowered = message.lower()
-        analysis_words = [
-            "highest",
-            "common",
-            "why",
-            "trend",
-            "risk",
-            "compare",
-            "summary",
-            "analyze",
-            "analysis",
-        ]
-        table_words = ["show", "list", "find", "get", "display"]
-
-        has_analysis = any(word in lowered for word in analysis_words)
-        has_table = any(word in lowered for word in table_words)
-
-        if has_analysis and has_table:
-            mode = "both"
-        elif has_analysis:
-            mode = "analysis"
-        else:
-            mode = "table"
-
-        return {
-            "mode": mode,
-            "analysis_dimensions": ["booking_system"],
-            "priority_filter": None,
-            "top_k": 10,
-        }
 
     async def _build_analytics_evidence(
         self,
@@ -699,27 +837,45 @@ Latest user query:
         question: str,
         evidence: dict[str, Any],
         trades: list[Trade],
+        kg_evidence: dict[str, Any] | None = None,
     ) -> str:
-        """Generate narrative answer based on SQL evidence and optional table rows."""
+        """Generate narrative answer from SQL evidence, KG evidence, and trade rows."""
         if not self._chat_model:
-            return self._heuristic_summary(evidence, trades)
+            raise RuntimeError("ChatService: GOOGLE_API_KEY is not configured")
 
         limited_trades = [trade.model_dump() for trade in trades[:30]]
-        evidence_rows = evidence.get("rows", []) if isinstance(evidence, dict) else []
-        evidence_preview = evidence_rows[:50]
+        kg_rows = kg_evidence.get("rows", [])[:25] if kg_evidence else []
+
+        # Multi-section evidence (cross-dimensional): render each section separately
+        sections = evidence.get("sections", []) if isinstance(evidence, dict) else []
+        if sections:
+            sql_evidence_text = "\n".join(
+                f"Section '{sec['dimension']}' rows:\n{json.dumps(sec['rows'][:20], default=str)}"
+                for sec in sections
+            )
+        else:
+            sql_rows = evidence.get("rows", []) if isinstance(evidence, dict) else []
+            sql_evidence_text = json.dumps(sql_rows[:50], default=str)
+
+        kg_section = (
+            f"\nKnowledge graph evidence (relationship-aware analytics):\n"
+            f"{json.dumps(kg_rows, default=str)}"
+            if kg_rows
+            else ""
+        )
 
         prompt = f"""
 You are a trade operations analytics assistant.
-Answer the user question using ONLY the evidence and trade rows provided.
+Answer the user question using ONLY the evidence provided below.
 If evidence is sparse, explicitly say so.
-Keep response concise and factual.
+Keep the response concise and factual.
 
 User question:
 {question}
 
-Evidence rows:
-{json.dumps(evidence_preview, default=str)}
-
+SQL evidence rows (aggregated counts):
+{sql_evidence_text}
+{kg_section}
 Trade sample rows:
 {json.dumps(limited_trades, default=str)}
 """.strip()
@@ -834,114 +990,6 @@ Trade sample rows:
             },
         }
 
-    async def _ensure_dual_data_context(
-        self,
-        request: ChatRequest,
-        extracted_params: ExtractedParams,
-        table_results: list[Trade],
-        evidence: dict[str, Any],
-    ) -> tuple[list[Trade], dict[str, Any]]:
-        """Ensure chat answer is grounded with both table rows and analytics evidence."""
-        if not table_results:
-            try:
-                trade_result = await self._execute_tool_call(
-                    tool_name="get_trade_rows",
-                    args={"limit": 100},
-                    extracted_params=extracted_params,
-                )
-                table_results = trade_result.get("table_results", table_results)
-            except Exception as exc:
-                logger.warning("Dual-context trade fetch failed", extra={"error": str(exc)})
-
-        if not evidence or not evidence.get("rows"):
-            try:
-                if self._is_time_series_query(request.message):
-                    evidence_result = await self._execute_tool_call(
-                        tool_name="get_trade_timeseries",
-                        args={
-                            "year": self._infer_year_from_context(request),
-                            "status": self._infer_status_from_context(request),
-                            "bucket": "month",
-                            "query": request.message,
-                        },
-                        extracted_params=extracted_params,
-                    )
-                else:
-                    evidence_result = await self._execute_tool_call(
-                        tool_name="get_exception_analytics",
-                        args={
-                            "dimensions": ["booking_system", "asset_type"],
-                            "priority_filter": None,
-                            "top_k": 10,
-                        },
-                        extracted_params=extracted_params,
-                    )
-
-                evidence = evidence_result.get("evidence", evidence)
-            except Exception as exc:
-                logger.warning("Dual-context evidence fetch failed", extra={"error": str(exc)})
-
-        return table_results, evidence
-
-    def _is_time_series_query(self, message: str) -> bool:
-        """Detect if user asks for graph/trend/time-series style output."""
-        lowered = message.lower()
-        return any(keyword in lowered for keyword in self.TIME_SERIES_KEYWORDS)
-
-    def _infer_year_from_query(self, message: str) -> int | None:
-        """Extract likely year from query text (e.g., 2025)."""
-        match = re.search(r"\b(20\d{2})\b", message)
-        if not match:
-            return None
-
-        try:
-            year = int(match.group(1))
-        except ValueError:
-            return None
-
-        if 2000 <= year <= 2100:
-            return year
-        return None
-
-    def _infer_year_from_context(self, request: ChatRequest) -> int | None:
-        """Infer likely year from latest message, then recent conversation context."""
-        year = self._infer_year_from_query(request.message)
-        if year is not None:
-            return year
-
-        for message in reversed(request.conversation[-8:]):
-            year = self._infer_year_from_query(message.content)
-            if year is not None:
-                return year
-
-        return None
-
-    def _infer_status_from_context(self, request: ChatRequest) -> str | None:
-        """Infer likely status token from current message and recent conversation."""
-
-        def _extract_status(text: str) -> str | None:
-            lowered = text.lower()
-            if "reject" in lowered:
-                return "REJECTED"
-            if "alleged" in lowered:
-                return "ALLEGED"
-            if "cancel" in lowered:
-                return "CANCELLED"
-            if "clear" in lowered:
-                return "CLEARED"
-            return None
-
-        status = _extract_status(request.message)
-        if status:
-            return status
-
-        for message in reversed(request.conversation[-8:]):
-            status = _extract_status(message.content)
-            if status:
-                return status
-
-        return None
-
     async def _call_model(self, prompt: str) -> str:
         """Invoke Gemini model in executor to avoid blocking event loop."""
 
@@ -960,47 +1008,10 @@ Trade sample rows:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, _sync_call)
 
-    def _safe_json_parse(self, text: str) -> dict[str, Any]:
-        """Parse JSON with defensive cleanup for markdown wrappers."""
-        cleaned = text.strip()
-        if cleaned.startswith("```json"):
-            cleaned = cleaned[7:]
-        if cleaned.startswith("```"):
-            cleaned = cleaned[3:]
-        if cleaned.endswith("```"):
-            cleaned = cleaned[:-3]
-        cleaned = cleaned.strip()
-
-        try:
-            return json.loads(cleaned)
-        except json.JSONDecodeError:
-            match = re.search(r"\{[\s\S]*\}", cleaned)
-            if not match:
-                return {}
-            try:
-                return json.loads(match.group(0))
-            except json.JSONDecodeError:
-                return {}
-
     def _validate_sql_or_raise(self, query: str, values: list[Any]) -> None:
         """Ensure all chat SQL uses same safety validator as search flow."""
         if not self.query_builder.validate_query_safety(query, values):
             raise ValueError("Generated chat SQL failed safety validation")
-
-    def _heuristic_summary(self, evidence: dict[str, Any], trades: list[Trade]) -> str:
-        """Fallback summary when model is unavailable."""
-        if evidence and evidence.get("rows"):
-            top = evidence["rows"][0]
-            return (
-                "I analyzed exception evidence and found the top pattern as "
-                f"{top}. Results are based on current filters and available data."
-            )
-        if trades:
-            return (
-                f"I found {len(trades)} matching trades. "
-                "Use a follow-up question for pattern analysis by system, priority, or asset type."
-            )
-        return "I could not find enough data to produce an analysis for this question."
 
 
 chat_service = ChatService()

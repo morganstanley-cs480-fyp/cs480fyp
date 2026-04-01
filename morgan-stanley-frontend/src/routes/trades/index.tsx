@@ -198,12 +198,6 @@ function TradeSearchPage() {
     [chatTableResults, searchResponse?.results]
   );
 
-  // ✅ TANSTACK QUERY - Log results when they change (works the same as before)
-  useEffect(() => {
-    console.log("📊 Trade results:", results);
-    console.log("📊 Results count:", results.length);
-  }, [results]);
-
   // ✅ TANSTACK QUERY - Update current query ID when search response changes
   // Also refresh history here — the backend saves the query during /api/search,
   // so this is the earliest point we can reliably fetch the updated list.
@@ -234,7 +228,6 @@ function TradeSearchPage() {
       // Refresh filter options in case new values were added
       await fetchFilterOptions();
       
-      console.log('Data refreshed successfully');
     } catch (error) {
       console.error('Failed to refresh data:', error);
     }
@@ -618,6 +611,16 @@ function TradeSearchPage() {
     }
   };
 
+  const handleClearAllSearches = async () => {
+    setRecentSearches([]);
+    try {
+      await searchService.clearSearchHistory(userId);
+    } catch (error) {
+      console.error("Failed to clear search history:", error);
+      await fetchSearchHistory();
+    }
+  };
+
   const handleDeleteSavedQuery = async (queryId: number) => {
     // Optimistically remove from UI
     setSavedQueries((prev) => prev.filter((q) => q.query_id !== queryId));
@@ -660,6 +663,7 @@ function TradeSearchPage() {
         onToggleFilters={() => setShowFilters(!showFilters)}
         onRecentSearchClick={handleRecentSearchClick}
         onDeleteSearch={handleDeleteRecentSearch}
+        onClearAllSearches={handleClearAllSearches}
         onSaveCurrentQuery={handleSaveCurrentQuery}
         onClearSearch={handleClearSearch}
         onSuggestionClick={handleSuggestionClick}

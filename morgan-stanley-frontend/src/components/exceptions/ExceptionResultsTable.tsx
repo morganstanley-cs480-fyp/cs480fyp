@@ -50,12 +50,9 @@ interface ExceptionResultsTableProps {
   table: TableType<Exception>;
   resultsCount: number;
   selectedExceptionId: number | null;
-  statusFilter: "ALL" | "PENDING" | "CLOSED";
-  priorityFilter: "ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-  onStatusFilterChange: (value: "ALL" | "PENDING" | "CLOSED") => void;
-  onPriorityFilterChange: (value: "ALL" | "CRITICAL" | "HIGH" | "MEDIUM" | "LOW") => void;
   onRowClick: (exception: Exception) => void;
   onRefresh?: () => void; // Add this prop
+  onClearStatsFilters?: () => void;
   filterOptions?: ExceptionFilterOptions
 }
 
@@ -63,15 +60,22 @@ export function ExceptionResultsTable({
   table,
   resultsCount,
   selectedExceptionId,
-  statusFilter: _statusFilter,
-  priorityFilter: _priorityFilter,
-  onStatusFilterChange: _onStatusFilterChange,
-  onPriorityFilterChange: _onPriorityFilterChange,
   onRowClick,
   onRefresh,
+  onClearStatsFilters,
   filterOptions
 }: ExceptionResultsTableProps) {
   const [openFilter, setOpenFilter] = useState<string | null>(null);
+  const isDateFilterColumn = (columnId: string) =>
+    columnId === "create_time" || columnId === "update_time";
+  const pageIndex = table.getState().pagination.pageIndex;
+  const pageSize = table.getState().pagination.pageSize;
+  const hasResults = resultsCount > 0;
+  const visibleRowCount = table.getRowModel().rows.length;
+  const startResult = hasResults ? pageIndex * pageSize + 1 : 0;
+  const endResult = hasResults
+    ? Math.min(pageIndex * pageSize + visibleRowCount, resultsCount)
+    : 0;
 
   // Handle refresh functionality
   const handleRefresh = () => {
@@ -94,6 +98,7 @@ export function ExceptionResultsTable({
     
     // Close any open dropdown filters
     setOpenFilter(null);
+    onClearStatsFilters?.();
   };
 
   const handleDownloadCSV = () => {
@@ -307,64 +312,107 @@ export function ExceptionResultsTable({
                       </Select>
                     )}
 
-                    {/* Other Columns - Searchable Dropdown Input */}
+                    {/* Other Columns - Date range OR Searchable Dropdown Input */}
                     {header.column.id !== "status" &&
                       header.column.id !== "priority" &&
                       header.column.getCanFilter() && (
-                        <div className="relative">
-                          <Input
-                            placeholder={
-                              header.column.id === "id" ? "Filter by Exception ID..." :
-                              header.column.id === "trade_id" ? "Filter by Trade ID..." :
-                              header.column.id === "msg" ? "Filter by Message..." :
-                              header.column.id === "comment" ? "Filter by Comment..." :
-                              "Filter..."
-                            }
-                            value={
-                              (header.column.getFilterValue() as string) ?? ""
-                            }
-                            onChange={(event) => {
-                              header.column.setFilterValue(event.target.value);
-                              if (optionMap[header.column.id as keyof typeof optionMap]?.length) {
-                                setOpenFilter(header.column.id);
-                              }
-                            }}
-                            onClick={() => {
-                              if (optionMap[header.column.id as keyof typeof optionMap]?.length) {
-                                setOpenFilter(openFilter === header.column.id ? null : header.column.id);
-                              }
-                            }}
-                            onBlur={() => {
-                              // Delay to allow option selection
-                              setTimeout(() => setOpenFilter(null), 200);
-                            }}
-                            className="h-8 text-xs"
-                          />
-                          
-                          {/* Dropdown Options */}
-                          {openFilter === header.column.id && optionMap[header.column.id as keyof typeof optionMap]?.length ? (
-                            <div className="absolute left-0 right-auto top-full z-30 mt-1 max-h-64 min-w-48 overflow-y-auto rounded-md border bg-white shadow-md">
-                              {optionMap[header.column.id as keyof typeof optionMap]
-                                .filter((option) => {
-                                  const typed = ((header.column.getFilterValue() as string) ?? "").toLowerCase();
-                                  return !typed || option.toLowerCase().includes(typed);
-                                })
-                                .slice(0, 10) // Limit to 10 options for performance
-                                .map((option) => (
-                                  <button
-                                    key={option}
-                                    className="block w-full px-3 py-2 text-left text-xs hover:bg-gray-100 transition-colors"
-                                    onMouseDown={() => {
-                                      header.column.setFilterValue(option);
-                                      setOpenFilter(null);
-                                    }}
-                                  >
-                                    {option}
-                                  </button>
-                                ))}
+                        isDateFilterColumn(header.column.id) ? (
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] font-semibold text-black w-6 shrink-0">From</span>
+                              <Input
+                                type="date"
+                                value={
+                                  (header.column.getFilterValue() as { from?: string; to?: string } | undefined)?.from ?? ""
+                                }
+                                onChange={(event) => {
+                                  const current =
+                                    (header.column.getFilterValue() as { from?: string; to?: string } | undefined) ?? {};
+                                  const next = { ...current, from: event.target.value };
+                                  if (!next.from && !next.to) {
+                                    header.column.setFilterValue(undefined);
+                                    return;
+                                  }
+                                  header.column.setFilterValue(next);
+                                }}
+                                className="h-7 text-xs min-w-0 flex-1 px-1"
+                              />
                             </div>
-                          ) : null}
-                        </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] font-semibold text-black w-6 shrink-0">To</span>
+                              <Input
+                                type="date"
+                                value={
+                                  (header.column.getFilterValue() as { from?: string; to?: string } | undefined)?.to ?? ""
+                                }
+                                onChange={(event) => {
+                                  const current =
+                                    (header.column.getFilterValue() as { from?: string; to?: string } | undefined) ?? {};
+                                  const next = { ...current, to: event.target.value };
+                                  if (!next.from && !next.to) {
+                                    header.column.setFilterValue(undefined);
+                                    return;
+                                  }
+                                  header.column.setFilterValue(next);
+                                }}
+                                className="h-7 text-xs min-w-0 flex-1 px-1"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative">
+                            <Input
+                              placeholder={
+                                header.column.id === "id" ? "Filter by Exception ID..." :
+                                header.column.id === "trade_id" ? "Filter by Trade ID..." :
+                                header.column.id === "msg" ? "Filter by Message..." :
+                                header.column.id === "comment" ? "Filter by Comment..." :
+                                "Filter..."
+                              }
+                              value={
+                                (header.column.getFilterValue() as string) ?? ""
+                              }
+                              onChange={(event) => {
+                                header.column.setFilterValue(event.target.value);
+                                if (optionMap[header.column.id as keyof typeof optionMap]?.length) {
+                                  setOpenFilter(header.column.id);
+                                }
+                              }}
+                              onClick={() => {
+                                if (optionMap[header.column.id as keyof typeof optionMap]?.length) {
+                                  setOpenFilter(openFilter === header.column.id ? null : header.column.id);
+                                }
+                              }}
+                              onBlur={() => {
+                                // Delay to allow option selection
+                                setTimeout(() => setOpenFilter(null), 200);
+                              }}
+                              className="h-8 text-xs"
+                            />
+                            {openFilter === header.column.id && optionMap[header.column.id as keyof typeof optionMap]?.length ? (
+                              <div className="absolute left-0 right-auto top-full z-30 mt-1 max-h-64 min-w-48 overflow-y-auto rounded-md border bg-white shadow-md">
+                                {optionMap[header.column.id as keyof typeof optionMap]
+                                  .filter((option) => {
+                                    const typed = ((header.column.getFilterValue() as string) ?? "").toLowerCase();
+                                    return !typed || option.toLowerCase().includes(typed);
+                                  })
+                                  .slice(0, 10) // Limit to 10 options for performance
+                                  .map((option) => (
+                                    <button
+                                      key={option}
+                                      className="block w-full px-3 py-2 text-left text-xs hover:bg-gray-100 transition-colors"
+                                      onMouseDown={() => {
+                                        header.column.setFilterValue(option);
+                                        setOpenFilter(null);
+                                      }}
+                                    >
+                                      {option}
+                                    </button>
+                                  ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        )
                       )}
                   </TableHead>
                 ))}
@@ -410,16 +458,7 @@ export function ExceptionResultsTable({
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-3 border-t border-black/6">
           <div className="text-xs text-black/40">
-            Showing{" "}
-            {table.getState().pagination.pageIndex *
-              table.getState().pagination.pageSize +
-              1}{" "}
-            to{" "}
-            {Math.min(
-              (table.getState().pagination.pageIndex + 1) *
-                table.getState().pagination.pageSize,
-              resultsCount
-            )}{" "}
+            Showing {startResult} to {endResult}{" "}
             of {resultsCount} results
           </div>
           <div className="flex gap-2">

@@ -34,6 +34,81 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
   
   const hasSolutionDetails = suggestion.solution_description && suggestion.exception_description;
 
+  function renderSolutionText(text: string) {
+    // Treat numbered headings (e.g. "1. ") as section boundaries
+    // Insert a blank line before any numbered heading, then split on blank lines
+    const normalized = text.replace(/(^|\n)(\d+\.\s+)/g, '$1\n$2');
+    const blocks = normalized.split(/\n\s*\n/).filter((b) => b.trim().length > 0);
+
+    return blocks.map((blk, i) => {
+      const lines = blk.split('\n').map((l) => l.trim()).filter(Boolean);
+
+      // Bullet list
+      // Support single-asterisk list items (e.g. '* item') and hyphen lists
+      if (lines.every((l) => l.startsWith('- ') || l.startsWith('* '))) {
+        return (
+          <div key={i} className="mb-4">
+            <ul className="list-disc pl-5 space-y-1">
+              {lines.map((l, idx) => (
+                <li key={idx}>{formatInline(l.replace(/^[-*]\s*/, ''))}</li>
+              ))}
+            </ul>
+          </div>
+        );
+      }
+
+      // Arrow sequence (transaction steps)
+      if (lines.every((l) => l.startsWith('→ ') || l.startsWith('->'))) {
+        return (
+          <div key={i} className="space-y-1 mb-4">
+            {lines.map((l, idx) => (
+              <div key={idx} className="flex items-start gap-2">
+                <span className="text-green-800">→</span>
+                <span>{formatInline(l.replace(/^→\s*|^->\s*/,'') as string)}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      // Heading + body: if first line looks like a heading (contains ':'), bold it
+      if (lines.length > 1 && lines[0].includes(':')) {
+        const [heading, ...rest] = lines;
+        return (
+          <div key={i} className="mb-4">
+            <div className="text-xs font-semibold text-green-800">{formatInline(heading)}</div>
+            <div className="text-xs whitespace-pre-wrap text-green-700">{formatInline(rest.join('\n'))}</div>
+          </div>
+        );
+      }
+
+      // Fallback: preserve line breaks
+      return (
+        <p key={i} className="text-xs whitespace-pre-wrap mb-4">
+          {formatInline(blk)}
+        </p>
+      );
+    });
+  }
+
+  function formatInline(text: string) {
+    // Replace **bold** with <strong>
+    const parts: Array<string | JSX.Element> = [];
+    const boldRe = /\*\*([^*]+)\*\*/g;
+    let lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = boldRe.exec(text)) !== null) {
+      if (m.index > lastIndex) parts.push(text.slice(lastIndex, m.index));
+      parts.push(<strong key={lastIndex}>{m[1]}</strong>);
+      lastIndex = m.index + m[0].length;
+    }
+    if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+
+    return parts.map((p, idx) => (
+      typeof p === 'string' ? <span key={idx}>{p}</span> : <span key={idx}>{p}</span>
+    ));
+  }
+
 
   return (
     <Card 
@@ -102,6 +177,45 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
           </Badge>
         </div>
 
+
+        {/* AI Explanation */}
+        {suggestion.explanation && (
+          <div className="bg-black/[0.02] border border-black/10 rounded p-3 mb-3">
+            <p className="text-xs font-semibold text-black/75 mb-1">
+              AI Analysis:
+            </p>
+            <p className="text-xs text-black/75">
+              {suggestion.explanation}
+            </p>
+          </div>
+        )}
+
+        {/* Solution Text */}
+        {suggestion.text && (
+          <div className="bg-green-50 border border-green-200 rounded p-3 mb-3">
+            <p className="text-xs font-semibold text-green-800 mb-2 flex items-center gap-1">
+              Solution Text:
+            </p>
+
+            <div className="text-xs text-green-700">
+              {renderSolutionText(suggestion.text)}
+            </div>
+          </div>
+        )}        
+
+          {/* Solution Description */}
+        {suggestion.solution_description && (
+          <div className="bg-green-50 border border-green-200 rounded p-3 mb-3">
+            <p className="text-xs font-semibold text-green-800 mb-1 flex items-center gap-1">
+              <Clock className="size-3" />
+              Solution Explanation:
+            </p>
+            <p className="text-xs text-green-700">
+              {suggestion.solution_description}
+            </p>
+          </div>
+        )}    
+
         {/* Exception Description */}
         {suggestion.exception_description && (
           <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-3">
@@ -115,30 +229,7 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
           </div>
         )}
 
-        {/* Solution Description */}
-        {suggestion.solution_description && (
-          <div className="bg-green-50 border border-green-200 rounded p-3 mb-3">
-            <p className="text-xs font-semibold text-green-800 mb-1 flex items-center gap-1">
-              <Clock className="size-3" />
-              Proven Solution:
-            </p>
-            <p className="text-xs text-green-700">
-              {suggestion.solution_description}
-            </p>
-          </div>
-        )}
-
-        {/* AI Explanation */}
-        {suggestion.explanation && (
-          <div className="bg-black/[0.02] border border-black/10 rounded p-3">
-            <p className="text-xs font-semibold text-black/75 mb-1">
-              AI Analysis:
-            </p>
-            <p className="text-xs text-black/75">
-              {suggestion.explanation}
-            </p>
-          </div>
-        )}
+    
 
         {/* ✅ Loading state for solution details */}
         {!hasSolutionDetails && (
@@ -146,11 +237,11 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
             {isLoadingSolution ? (
               <div className="flex items-center justify-center gap-2">
                 <Loader2 className="size-3 animate-spin text-gray-600" />
-                <p className="text-xs text-gray-600">Loading solution details...</p>
+                <p className="text-xs text-gray-600">Loading additional context...</p>
               </div>
             ) : (
               <p className="text-xs text-gray-600 text-center">
-                Click to load solution details...
+                Click to load additional context...
               </p>
             )}
           </div>

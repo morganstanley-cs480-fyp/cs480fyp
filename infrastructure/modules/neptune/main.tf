@@ -26,7 +26,7 @@ resource "aws_neptune_cluster" "this" {
   cluster_identifier                  = var.cluster_identifier
   engine                              = "neptune"
   neptune_subnet_group_name           = aws_neptune_subnet_group.this.name
-  vpc_security_group_ids             = [aws_security_group.neptune_sg.id]
+  vpc_security_group_ids              = [aws_security_group.neptune_sg.id]
   iam_database_authentication_enabled = false
   skip_final_snapshot                 = true
 }

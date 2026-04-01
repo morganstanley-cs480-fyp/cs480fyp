@@ -1,6 +1,8 @@
 """
 Document routes for storing and retrieving embeddings.
 """
+import asyncio
+import json
 from typing import List, Dict, Any
 
 from fastapi import APIRouter, Request, HTTPException, status
@@ -21,6 +23,7 @@ from app.schemas.document import (
     SimilarException,
     SimilarExceptionsResponse,
     IngestException,
+    SolutionData,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -316,9 +319,16 @@ async def find_similar_exceptions(
             # Explanations not requested or LLM provider doesn't support batch
             explanations = [None] * len(similar_docs)
         
-        # Step 4: Combine similar docs with explanations
+        # Step 4: Fetch solutions for similar exceptions in parallel
+        solution_tasks = [
+            _fetch_solution_by_exception_id(str(doc["exception_id"]))
+            for doc in similar_docs
+        ]
+        solutions = await asyncio.gather(*solution_tasks)
+
+        # Step 5: Combine similar docs with explanations and solutions
         similar_exceptions = []
-        for doc, explanation in zip(similar_docs, explanations):
+        for doc, explanation, solution in zip(similar_docs, explanations, solutions):
             similar_exceptions.append(
                 SimilarException(
                     exception_id=doc["exception_id"],
@@ -330,7 +340,8 @@ async def find_similar_exceptions(
                     clearing_house=doc["clearing_house"],
                     exception_msg=doc["exception_msg"],
                     text=doc["text"],
-                    explanation=explanation
+                    explanation=explanation,
+                    solution=solution,
                 )
             )
         
@@ -355,6 +366,24 @@ async def find_similar_exceptions(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error finding similar exceptions: {str(e)}"
         )
+
+
+async def _fetch_solution_by_exception_id(exception_id: str) -> SolutionData | None:
+    """Fetch solution for a given exception_id from solution service."""
+    try:
+        async with httpx.AsyncClient(base_url=settings.SOLUTION_SERVICE_URL) as client:
+            response = await client.get(f"/api/solutions/{exception_id}")
+            if response.status_code == status.HTTP_404_NOT_FOUND:
+                return None
+            response.raise_for_status()
+            return SolutionData(**response.json())
+
+    except (ValueError, HTTPStatusError) as e:
+        logging.warning(f"Failed to fetch solution for exception {exception_id}: {str(e)}")
+        return None
+    except Exception as e:
+        logging.warning(f"Error fetching solution for exception {exception_id}: {str(e)}")
+        return None
 
 
 @router.post("/ingest-exception", response_model=IngestResponse, status_code=status.HTTP_201_CREATED)
@@ -434,6 +463,99 @@ async def ingest_exception(request: Request, payload: IngestException) -> Ingest
             document_ids=document_ids,
             count=1,
             message=f"Successfully ingested exception document for trade {payload.trade_id} and exception {payload.exception_id}"
+        )
+
+    except HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=f"Service error: {e.response.text}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unexpected error during ingestion: {str(e)}"
+        )
+
+
+@router.post("/ingest-exception-without-narrative", response_model=IngestResponse, status_code=status.HTTP_201_CREATED)
+async def ingest_exception_without_narrative(request: Request, payload: IngestException) -> IngestResponse:
+    """
+    Ingest exception document with raw JSON data without formatting narrative.
+    
+    This endpoint:
+    1. Fetches exception, trade, and transaction history
+    2. Combines raw JSONs into text without formatting
+    3. Generates embedding and stores in Milvus
+    
+    Args:
+        payload: trade_id and exception_id
+        
+    Returns:
+        IngestResponse
+    """
+    try:
+        # Check if exception already exists in Milvus
+        if request.app.state.vector_store.exists_by_exception_id(payload.exception_id):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Exception {payload.exception_id} already exists in the vector store"
+            )
+
+        # Fetch exception data
+        async with httpx.AsyncClient(base_url=settings.EXCEPTION_SERVICE_URL) as client:
+            resp = await client.get(f"/api/exceptions/{payload.exception_id}")
+            resp.raise_for_status()
+            exception_data = resp.json()
+
+        # Fetch trade details (clearing house, asset type, etc.)
+        async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
+            resp = await client.get(f"/api/trades/{payload.trade_id}")
+            resp.raise_for_status()
+            trade_data = resp.json()
+
+        # Fetch transaction history
+        async with httpx.AsyncClient(base_url=settings.TRADE_FLOW_SERVICE_URL) as client:
+            resp = await client.get(f"/api/trades/{payload.trade_id}/transactions")
+            resp.raise_for_status()
+            history_data = resp.json()
+
+        # Combine raw JSONs into text (no narrative formatting)
+        raw_json_text = json.dumps({
+            "exception": exception_data,
+            "trade": trade_data,
+            "transaction_history": history_data
+        }, indent=2)
+
+        # Create enriched metadata using the NarrativeFormatter service
+        formatter = NarrativeFormatter()
+        metadata = formatter.create_metadata(
+            history_data,
+            exception_data,
+            trade_data,
+            payload.trade_id,
+            payload.exception_id
+        )
+
+        # Generate embedding
+        bedrock = BedrockService(
+            region_name=settings.AWS_REGION,
+            embed_model_id=settings.BEDROCK_EMBED_MODEL_ID,
+            chat_model_id=settings.BEDROCK_CHAT_MODEL_ID,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+        embedding = bedrock.get_embedding(raw_json_text)
+
+        # Store in Milvus
+        document_ids = request.app.state.vector_store.add_documents(
+            texts=[raw_json_text],
+            embeddings=[embedding],
+            metadata=[metadata]
+        )
+
+        return IngestResponse(
+            document_ids=document_ids,
+            count=1,
+            message=f"Successfully ingested raw JSON exception document for trade {payload.trade_id} and exception {payload.exception_id}"
         )
 
     except HTTPStatusError as e:
