@@ -444,7 +444,7 @@ module "search_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 105
-  path_pattern     = ["/api/search*", "/api/history*", "/api/filter-options*"]
+  path_pattern     = ["/api/search*", "/api/history*", "/api/filter-options*", "/api/chat*"]
   target_group_arn = module.search_target_group.target_group_arn
 }
 
@@ -482,6 +482,7 @@ module "search_service" {
     { name = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
     { name = "GOOGLE_MODEL_ID", value = "gemini-2.5-flash-lite" },
     { name = "CORS_ORIGINS", value = "[\"*\"]" },
+    { name = "NEPTUNE_ENDPOINT", value = module.neo4j_database.bolt_url }
     { name = "NEO4J_URI", value = module.neo4j_database.bolt_url }
   ]
   secrets = [
@@ -558,7 +559,7 @@ module "trade_flow_listener_rule" {
   source           = "./modules/alb_rule"
   listener_arn     = module.alb.http_listener_arn
   priority         = 107
-  path_pattern     = ["/api/trades*", "/api/transactions*"]
+  path_pattern     = ["/api/trades*", "/api/transactions*", "/api/graph*"]
   target_group_arn = module.trade_flow_target_group.target_group_arn
 }
 
