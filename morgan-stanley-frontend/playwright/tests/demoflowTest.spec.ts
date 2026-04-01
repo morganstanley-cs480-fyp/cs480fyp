@@ -5,12 +5,14 @@ test.beforeEach(async ({ page }) => {
   
   await expect(page).toHaveURL(/trades/);
 
+  // could optimize this but 3000 or below is too low for github workflow
+  await page.waitForTimeout(8000)
   // const resultsSpan = page.locator('span.text-xs.font-mono.bg-black\\/5');
   const resultsSpan = page.locator('span:has-text("trades")');
 
   if (await resultsSpan.count() === 0) {
-    test.skip(true, 'Trade count element not found');
     console.log("Trade count element not found")
+    test.skip(true, 'Trade count element not found');
   }
   await expect(resultsSpan).toHaveText(/\d+ trades/, { timeout: 10000 });
 
@@ -18,13 +20,13 @@ test.beforeEach(async ({ page }) => {
   const resultsCount = parseInt(spanText?.match(/\d+/)?.[0] || '0', 10);
 
   if(resultsCount == 0){
-    test.skip(true, 'No trade found');
     console.log("No trade found")
+    test.skip(true, 'No trade found');
   }
 });
 
 
-test.skip('Trade status consistency', async ({ page }) => {
+test('Trade status consistency', async ({ page }) => {
   const resultsSpan = page.locator('span.text-xs.font-mono.bg-black\\/5');
 
   await expect(resultsSpan).toHaveText(/\d+ trades/, { timeout: 10000 });

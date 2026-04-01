@@ -28,15 +28,6 @@ jobs:
       run: npm ci
       working-directory: ./morgan-stanley-frontend/playwright
 
-    - name: Build frontend
-      working-directory: ./morgan-stanley-frontend
-      run: npm run build
-      env:
-        VITE_COGNITO_AUTHORITY: ${{ secrets.VITE_COGNITO_AUTHORITY }}
-        VITE_COGNITO_CLIENT_ID: ${{ secrets.VITE_COGNITO_CLIENT_ID }}
-        VITE_COGNITO_REDIRECT_URI: ${{ secrets.VITE_COGNITO_REDIRECT_URI }}
-        VITE_COGNITO_LOGOUT_URI: ${{ secrets.VITE_COGNITO_LOGOUT_URI }}
-        VITE_COGNITO_DOMAIN: ${{ secrets.VITE_COGNITO_DOMAIN }}
     - name: Install Playwright Browsers
       run: npx playwright install chromium --with-deps
       working-directory: ./morgan-stanley-frontend/playwright
@@ -48,10 +39,19 @@ jobs:
         USERNAME: ${{ secrets.CLOUDFRONT_USERNAME }}
         PASSWORD: ${{ secrets.CLOUDFRONT_PASSWORD }}
         HOMEPAGE: ${{ secrets.CLOUDFRONT_HOMEPAGE }}
+        VITE_COGNITO_AUTHORITY: ${{ secrets.VITE_COGNITO_AUTHORITY }}
+        VITE_COGNITO_CLIENT_ID: ${{ secrets.VITE_COGNITO_CLIENT_ID }}
+        VITE_COGNITO_REDIRECT_URI: ${{ secrets.VITE_COGNITO_REDIRECT_URI }}
+        VITE_COGNITO_LOGOUT_URI: ${{ secrets.VITE_COGNITO_LOGOUT_URI }}
+        VITE_COGNITO_DOMAIN: ${{ secrets.VITE_COGNITO_DOMAIN }}
+        VITE_API_BASE_URL: ${{ secrets.CLOUDFRONT_HOMEPAGE_BASE }}
+        VITE_TRADE_FLOW_API_BASE_URL: ${{ secrets.CLOUDFRONT_HOMEPAGE_BASE }}
+        VITE_EXCEPTION_API_BASE_URL: ${{ secrets.CLOUDFRONT_HOMEPAGE_BASE }}
+
 
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
         name: playwright-report
-        path: playwright-report/
+        path: ./morgan-stanley-frontend/playwright/playwright-report/
         retention-days: 30

@@ -18,6 +18,18 @@ dotenv.config({
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+const frontendenv = {
+  ...process.env,
+  VITE_COGNITO_AUTHORITY: process.env.VITE_COGNITO_AUTHORITY,
+  VITE_COGNITO_CLIENT_ID: process.env.VITE_COGNITO_CLIENT_ID,
+  VITE_COGNITO_REDIRECT_URI: process.env.VITE_COGNITO_REDIRECT_URI,
+  VITE_COGNITO_LOGOUT_URI: process.env.VITE_COGNITO_LOGOUT_URI,
+  VITE_COGNITO_DOMAIN: process.env.VITE_COGNITO_DOMAIN,
+  VITE_API_BASE_URL: process.env.VITE_API_BASE_URL,
+  VITE_TRADE_FLOW_API_BASE_URL: process.env.VITE_TRADE_FLOW_API_BASE_URL,
+  VITE_EXCEPTION_API_BASE_URL: process.env.VITE_EXCEPTION_API_BASE_URL,
+};
+
 export default defineConfig({
   testDir: './tests',
   timeout: 30000,
@@ -31,9 +43,11 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: "npm run preview -- --port 5173",
+    command: "npm run dev",
     port: 5173,
     cwd: "../",
+    env: frontendenv
+
   },
 
   projects: [
