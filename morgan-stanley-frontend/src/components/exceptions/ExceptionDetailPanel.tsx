@@ -1,6 +1,6 @@
 // Side panel details when you click on an Exception from the table
 
-import { CheckCircle, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Card,

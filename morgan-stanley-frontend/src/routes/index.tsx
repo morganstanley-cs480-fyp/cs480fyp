@@ -23,15 +23,12 @@ function LoginComponent() {
 
     // If Cognito is configured, handle authentication properly
     if (auth.isLoading) {
-      console.log('⏳ Auth loading...');
       return; // Wait for auth to load
     }
 
     if (auth.isAuthenticated) {
-      console.log('✅ User authenticated, redirecting to trades');
       navigate({ to: "/trades" });
     } else {
-      console.log('🔐 User not authenticated, starting signin');
       if (!auth.activeNavigator) {
         void auth.signinRedirect();
       }

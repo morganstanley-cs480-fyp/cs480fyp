@@ -28,9 +28,9 @@ resource "aws_iam_policy" "processing_policy" {
       {
         Effect = "Allow"
         Action = [
-          "sqs:ReceiveMessage",      # Pull message
-          "sqs:DeleteMessage",       # Remove after processing (ACK)
-          "sqs:GetQueueAttributes",  # Check queue status
+          "sqs:ReceiveMessage",         # Pull message
+          "sqs:DeleteMessage",          # Remove after processing (ACK)
+          "sqs:GetQueueAttributes",     # Check queue status
           "sqs:ChangeMessageVisibility" # Recommended for long-running tasks
         ]
         Resource = var.data_processing_queue_arn
@@ -40,8 +40,8 @@ resource "aws_iam_policy" "processing_policy" {
       {
         Effect = "Allow"
         Action = [
-          "sqs:SendMessage",         # Send the transformed data to the next step
-          "sqs:GetQueueAttributes"   # Often needed by SDKs to verify queue existence
+          "sqs:SendMessage",       # Send the transformed data to the next step
+          "sqs:GetQueueAttributes" # Often needed by SDKs to verify queue existence
         ]
         Resource = var.graph_ingestion_queue_arn
       }

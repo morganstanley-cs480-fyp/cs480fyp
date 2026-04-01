@@ -17,9 +17,9 @@ resource "aws_security_group" "neo4j_sg" {
 
   # 1. Bolt Port for your ECS microservices
   ingress {
-    from_port       = 7687
-    to_port         = 7687
-    protocol        = "tcp"
+    from_port   = 7687
+    to_port     = 7687
+    protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr_block]
   }
 
@@ -37,7 +37,7 @@ resource "aws_security_group" "neo4j_sg" {
     from_port   = 7687
     to_port     = 7687
     protocol    = "tcp"
-    cidr_blocks = [var.my_ip] 
+    cidr_blocks = [var.my_ip]
   }
 
   egress {
@@ -54,7 +54,7 @@ resource "aws_instance" "neo4j_server" {
   instance_type = var.instance_type
   subnet_id     = var.subnet_id
 
-  vpc_security_group_ids = [aws_security_group.neo4j_sg.id]
+  vpc_security_group_ids      = [aws_security_group.neo4j_sg.id]
   associate_public_ip_address = true
 
   # User Data script to install Docker and run Neo4j automatically on boot

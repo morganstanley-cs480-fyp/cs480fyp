@@ -44,23 +44,18 @@ export const requireAuth = ({ context }: { context: RouterContext }) => {
 
   // If Cognito is not even used (local dev), skip auth entirely (return truthy object)
   if (!isCognitoConfigured) {
-
-      console.log('🔓 Cognito not configured, skipping auth');
     return true;
-
   }
   // 1. THE ANTI-FLICKER CHECK:
   // If the library is still initializing, DO NOTHING.
   // The Router will wait. Once loading is false, this function runs again.
   if (authentication.isLoading) {
-    console.log('⏳ Auth initialization in progress... holding route.');
-    return; 
+    return;
   }
 
   // 2. THE ACTUAL CHECK:
   // Now that we know loading is done, if they aren't authenticated, kick them out.
   if (!authentication.isAuthenticated) {
-    console.log('🚫 Not authenticated. Redirecting to login.');
     throw redirect({ 
       to: "/",
       search: {
@@ -70,7 +65,6 @@ export const requireAuth = ({ context }: { context: RouterContext }) => {
     });
   }
 
-  console.log('✅ Auth verified, allowing access.');
   return true;
 };
 

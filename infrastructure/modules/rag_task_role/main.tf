@@ -25,9 +25,9 @@ resource "aws_iam_policy" "bedrock" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid      = "BedrockInvoke"
-        Effect   = "Allow"
-        Action   = [
+        Sid    = "BedrockInvoke"
+        Effect = "Allow"
+        Action = [
           "bedrock:InvokeModel",
           "bedrock:InvokeModelWithResponseStream"
         ]

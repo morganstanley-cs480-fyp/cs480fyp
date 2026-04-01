@@ -5,18 +5,10 @@ export function useExceptionSearch() {
   return useQuery({
     queryKey: ['exceptions', 'search'],
     queryFn: async () => {
-      console.log('🚀 TanStack Query: Loading all exceptions', {
-        time: new Date().toISOString(),
-      });
       
       // Always get all exceptions from the single endpoint
       const allExceptions = await exceptionService.getExceptions();
 
-      console.log('✅ TanStack Query: Exceptions loaded and filtered', {
-        time: new Date().toISOString(),
-        totalCount: allExceptions.length,
-        filteredCount: allExceptions.length
-      });
       
       return {
         results: allExceptions,

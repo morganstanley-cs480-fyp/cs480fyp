@@ -8,17 +8,9 @@ export function useTradeSearch(searchParams: SearchRequest | null) {
     queryFn: async () => {
       if (!searchParams) return null;
       
-      console.log('🚀 TanStack Query: Making API call', {
-        time: new Date().toISOString(),
-        searchParams
-      });
       
       const result = await searchService.searchTrades(searchParams);
       
-      console.log('✅ TanStack Query: API call completed', {
-        time: new Date().toISOString(),
-        resultCount: result?.results?.length
-      });
       
       return result;
     },

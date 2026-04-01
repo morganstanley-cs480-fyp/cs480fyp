@@ -75,9 +75,7 @@ function ViewExceptionPage() {
       setResolvedSolutionError(null);
 
       try {
-        console.log('📥 Loading applied solution for exception id:', exception.id);
         const solution = await exceptionService.getSolution(exception.id.toString());
-        console.log('📥 Applied solution response:', solution);
         if (!isActive) return;
         setResolvedSolution(solution);
       } catch (fetchError) {

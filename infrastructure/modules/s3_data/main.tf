@@ -23,7 +23,7 @@ resource "random_id" "bucket_id" {
 
 resource "aws_s3_object" "data_file" {
   bucket = aws_s3_bucket.this.id
-  key    = var.file_key 
+  key    = var.file_key
   source = var.file_source
-  etag   = filemd5(var.file_source) 
+  etag   = filemd5(var.file_source)
 }

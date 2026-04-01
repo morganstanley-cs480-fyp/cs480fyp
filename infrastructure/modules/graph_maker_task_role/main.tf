@@ -27,9 +27,9 @@ resource "aws_iam_policy" "processing_policy" {
       {
         Effect = "Allow"
         Action = [
-          "sqs:ReceiveMessage",      # Pull message
-          "sqs:DeleteMessage",       # Remove after processing (ACK)
-          "sqs:GetQueueAttributes"   # Check queue status
+          "sqs:ReceiveMessage",    # Pull message
+          "sqs:DeleteMessage",     # Remove after processing (ACK)
+          "sqs:GetQueueAttributes" # Check queue status
         ]
         Resource = var.graph_ingestion_queue_arn
       },

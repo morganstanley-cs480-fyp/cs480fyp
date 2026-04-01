@@ -2,6 +2,7 @@
 
 import { Search, Filter, Sparkles, Star, X as XIcon, Eraser, AlertCircle, Bot } from "lucide-react";
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -64,6 +65,7 @@ interface SearchHeaderProps {
   onToggleFilters: () => void;
   onRecentSearchClick: (query: string) => void;
   onDeleteSearch: (id: string) => void;
+  onClearAllSearches: () => void;
   onSaveCurrentQuery: () => void;
   onClearSearch: () => void;
   onSuggestionClick: (query: string) => void;
@@ -91,6 +93,7 @@ export function SearchHeader({
   onToggleFilters,
   onRecentSearchClick,
   onDeleteSearch,
+  onClearAllSearches,
   onSaveCurrentQuery,
   onClearSearch,
   onSuggestionClick,
@@ -328,7 +331,23 @@ export function SearchHeader({
               AI Response {chatMode ? `(${chatMode})` : ""}
             </span>
           </div>
-          <p className="text-sm text-black whitespace-pre-wrap">{chatAnswer}</p>
+          <div className="text-sm text-black">
+          <ReactMarkdown
+            components={{
+              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+              em: ({ children }) => <em className="italic">{children}</em>,
+              ul: ({ children }) => <ul className="list-disc pl-5 mb-2 space-y-0.5">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal pl-5 mb-2 space-y-0.5">{children}</ol>,
+              li: ({ children }) => <li className="text-sm">{children}</li>,
+              h1: ({ children }) => <h1 className="font-semibold text-base mb-1">{children}</h1>,
+              h2: ({ children }) => <h2 className="font-semibold text-sm mb-1">{children}</h2>,
+              h3: ({ children }) => <h3 className="font-medium text-sm mb-1">{children}</h3>,
+            }}
+          >
+            {chatAnswer}
+          </ReactMarkdown>
+          </div>
           {chatMode && (chatMode === "table" || chatMode === "both") && (
             <p className="mt-2 text-xs text-black">
               Table results have been applied to the main results table below.
@@ -480,6 +499,14 @@ export function SearchHeader({
                   </button>
                 </div>
               ))}
+              <button
+                onClick={onClearAllSearches}
+                className="ml-auto text-white/50 hover:text-white text-xs uppercase tracking-wider font-medium flex items-center gap-1 transition-colors"
+                title="Clear all recent searches"
+              >
+                <Eraser className="size-3" />
+                Clear All
+              </button>
             </div>
           )}
 

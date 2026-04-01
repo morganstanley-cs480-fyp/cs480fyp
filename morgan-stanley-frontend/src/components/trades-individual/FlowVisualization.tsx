@@ -549,9 +549,7 @@ async function generateElkLayout(
   onEdgeHoverChange: (hoverState: EdgeHoverState | null) => void
 ) {
   try {
-    console.log('📐 generateElkLayout function called');
     const elk = new ELK();
-    console.log('✓ ELK instance created successfully');
     
     const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
   const bottomCount = participants.length - topCount;
@@ -636,7 +634,6 @@ async function generateElkLayout(
     // Use the actual transaction status directly
     entityStatusMap[entity] = latestTransaction.status;
     
-    console.log(`📊 Entity ${entity} status: ${entityStatusMap[entity]} (from transaction ${latestTransaction.id} step ${latestTransaction.step} with status ${latestTransaction.status})`);
   });
 
   const nodeLookup: Record<string, { x: number; y: number; width: number }> = {};
@@ -725,11 +722,6 @@ async function generateElkLayout(
     });
   });
 
-  console.log('📊 Layout generated with updated entity statuses - returning nodes and edges', { 
-    nodeCount: nodes.length, 
-    edgeCount: edges.length,
-    entityStatuses: Object.entries(entityStatusMap).map(([entity, status]) => `${entity}:${status}`)
-  });
   return { nodes, edges };
   } catch (error) {
     console.error('💥 Error in generateElkLayout:', error);
@@ -765,7 +757,6 @@ export function FlowVisualization({
   getTransactionBackgroundColor,
   getTransactionStatusColor,
 }: FlowVisualizationProps) {
-  console.log('🎨 FlowVisualization component mounted!', { transactionCount: transactions?.length, clearingHouse });
   
   const [layoutData, setLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [initialLayoutData, setInitialLayoutData] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
@@ -862,10 +853,8 @@ export function FlowVisualization({
 
     // Generate dynamic flow visualization based on actual transaction data
   useEffect(() => {
-    console.log('🔄 FlowVisualization useEffect triggered', { transactionCount: transactions?.length });
     
     if (!transactions || transactions.length === 0) {
-      console.log('⚠️ No transactions provided');
       return;
     }
 
@@ -901,7 +890,6 @@ export function FlowVisualization({
 
     if (entities.length === 0 && validFlows.length === 0) {
       // No valid data to display
-      console.log('ℹ️ No entities or flows to display');
       // Initialize empty state outside of effect to avoid cascading renders
       const initializeEmptyState = () => {
         setLayoutData({ nodes: [], edges: [] });
@@ -913,11 +901,9 @@ export function FlowVisualization({
       return;
     }
 
-    console.log('🚀 Calling generateElkLayout with updated transactions:', { entityCount: entities.length, flowCount: validFlows.length, transactionCount: transactions.length });
     
     generateElkLayout(entities, validFlows, clearingHouse, onEntitySelect, transactions, sortedTransactions, exceptions, onTransactionSelect, getRelatedExceptions, setHoveredEdge)
       .then((result) => {
-        console.log('✅ ELK layout regenerated with updated entity statuses:', { nodeCount: result.nodes.length, edgeCount: result.edges.length });
         const clonedNodes = result.nodes.map((node) => ({
           ...node,
           position: { ...node.position },

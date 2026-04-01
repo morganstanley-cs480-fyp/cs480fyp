@@ -31,10 +31,10 @@ resource "aws_elasticache_replication_group" "this" {
   parameter_group_name       = "default.redis7"
   automatic_failover_enabled = false # False = Cheaper (Single Node)
   num_cache_clusters         = 1     # 1 Node
-  
-  subnet_group_name          = aws_elasticache_subnet_group.this.name
-  security_group_ids         = [aws_security_group.redis_sg.id]
-  
-  engine                     = "redis"
-  engine_version             = "7.1"
+
+  subnet_group_name  = aws_elasticache_subnet_group.this.name
+  security_group_ids = [aws_security_group.redis_sg.id]
+
+  engine         = "redis"
+  engine_version = "7.1"
 }
