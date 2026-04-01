@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
-import { useTradeSearch } from '../hooks/useTradeSearch'
-import { searchService } from '../lib/api/searchService'
-import type { SearchRequest, ManualSearchFilters, SearchResponse } from '../lib/api/types'
+import { useTradeSearch } from '../../hooks/useTradeSearch'
+import { searchService } from '../../lib/api/searchService'
+import type { SearchRequest, ManualSearchFilters, SearchResponse } from '../../lib/api/types'
 
 // Mock the search service
-vi.mock('../lib/api/searchService', () => ({
+vi.mock('../../lib/api/searchService', () => ({
   searchService: {
     searchTrades: vi.fn()
   }

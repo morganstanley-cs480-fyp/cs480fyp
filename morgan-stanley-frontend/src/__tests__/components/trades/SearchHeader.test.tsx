@@ -4,9 +4,9 @@ import userEvent from "@testing-library/user-event";
 import {
   SearchHeader,
   type TypeaheadSuggestion,
-} from "../components/trades/SearchHeader";
-import type { QueryHistory } from "../lib/api/types";
-import type { RecentSearch } from "../components/trades/SearchHeader";
+} from "../../../components/trades/SearchHeader";
+import type { QueryHistory } from "../../../lib/api/types";
+import type { RecentSearch } from "../../../components/trades/SearchHeader";
 
 const defaultProps = {
   searchQuery: "",

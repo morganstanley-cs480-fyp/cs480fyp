@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import { useTradeWebSocket } from '../hooks/useTradeWebSocket'
-import type { Transaction, Exception } from '../lib/api/types'
+import { useTradeWebSocket } from '../../hooks/useTradeWebSocket'
+import type { Transaction, Exception } from '../../lib/api/types'
 
 // Mock toast
 vi.mock('sonner', () => ({
