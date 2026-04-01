@@ -33,14 +33,14 @@ resource "aws_iam_policy" "ingestion_policy" {
       },
       # SSM: Read & Update Bookmark
       {
-        Effect = "Allow"
-        Action = ["ssm:GetParameter", "ssm:PutParameter"]
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameter", "ssm:PutParameter"]
         Resource = var.ssm_parameter_arn
       },
       # SQS: Send Data to Queue
       {
-        Effect = "Allow"
-        Action = ["sqs:SendMessage"]
+        Effect   = "Allow"
+        Action   = ["sqs:SendMessage"]
         Resource = var.sqs_queue_arn
       }
     ]

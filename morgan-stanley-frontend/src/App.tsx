@@ -29,10 +29,9 @@ export default function App() {
 
   useEffect(() => {
     if (!authentication.isLoading) {
-      console.log('🔄 Auth finished loading. Re-validating route guards...');
       router.invalidate();
     }
-  }, [authentication.isLoading]);  
+  }, [authentication.isLoading]);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -13,15 +13,15 @@ resource "aws_ecs_task_definition" "this" {
       memory    = 512
       essential = true
       portMappings = var.container_port > 0 ? [
-      {
-        containerPort = var.container_port
-        hostPort      = var.container_port
-        protocol      = "tcp"
-      }
+        {
+          containerPort = var.container_port
+          hostPort      = var.container_port
+          protocol      = "tcp"
+        }
       ] : []
 
       environment = var.environments
-      secrets = var.secrets
+      secrets     = var.secrets
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -39,11 +39,11 @@ resource "aws_ecs_task_definition" "this" {
 }
 
 resource "aws_ecs_service" "this" {
-  name            = var.service_name
-  cluster         = var.cluster_id
-  task_definition = aws_ecs_task_definition.this.arn
-  desired_count   = var.desired_count
-  launch_type     = "FARGATE"
+  name                 = var.service_name
+  cluster              = var.cluster_id
+  task_definition      = aws_ecs_task_definition.this.arn
+  desired_count        = var.desired_count
+  launch_type          = "FARGATE"
   force_new_deployment = true
 
   network_configuration {
@@ -60,7 +60,7 @@ resource "aws_ecs_service" "this" {
   dynamic "load_balancer" {
     # If variable is not null, create 1 block. Otherwise create 0 blocks.
     for_each = var.target_group_arn != null ? [1] : []
-    
+
     content {
       target_group_arn = var.target_group_arn
       container_name   = var.container_name

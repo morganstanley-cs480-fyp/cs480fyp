@@ -56,7 +56,6 @@ export function useExceptionResolver(exceptionId: string) {
 
     // Don't run similar-exceptions search for exceptions that are already closed.
     if ((targetException as Exception).status === 'CLOSED') {
-      console.log('Skipping similar-exceptions search for CLOSED exception:', targetException.id);
       return;
     }
     
@@ -68,8 +67,6 @@ export function useExceptionResolver(exceptionId: string) {
     setHasTriedAISearch(true);
 
     try {
-      console.log('🔍 Fetching similar exceptions for:', targetException.id);
-      
       const response = await exceptionService.getSimilarExceptions(
         targetException.id.toString(),
         5,
@@ -78,8 +75,6 @@ export function useExceptionResolver(exceptionId: string) {
 
       const suggestions = convertSimilarExceptionsToSuggestions(response.similar_exceptions);
       setAiSuggestions(suggestions);
-      
-      console.log('✅ Found', suggestions.length, 'similar exceptions');
     } catch (error: unknown) {
       console.error('❌ Failed to fetch similar exceptions:', error);
 
@@ -100,7 +95,6 @@ export function useExceptionResolver(exceptionId: string) {
 
   // ✅ Fix retry function to force a new search
   const retryAISearch = useCallback(() => {
-    console.log('🔄 Retrying AI search...');
     setHasTriedAISearch(false);
     setError(null);
     // ✅ Pass forceRetry: true to override the hasTriedAISearch check
@@ -112,19 +106,16 @@ export function useExceptionResolver(exceptionId: string) {
 
     const loadException = async () => {
       try {
-        console.log('📥 Loading exception:', exceptionId);
-        
         const exc = await exceptionService.getExceptionById(Number(exceptionId));
         
         if (!isActive) return;
         
         setException(exc);
         setHasTriedAISearch(false);
-        console.log('✅ Exception loaded:', exc);
-        
+
           // If the exception is already CLOSED, skip the similar-exceptions search.
           if (exc && exc.status === 'CLOSED') {
-            console.log('Skipping AI search after load because exception is CLOSED:', exc.id);
+            // exception is closed, no AI search needed
           } else {
             handleAISearch(exc);
           }
@@ -152,7 +143,6 @@ export function useExceptionResolver(exceptionId: string) {
     setError(null);
 
     try {
-      console.log('🤖 Generating AI solution for exception:', exception.id);
       
       const response = await exceptionService.generateSolution(exception.id.toString());
       
@@ -165,7 +155,6 @@ export function useExceptionResolver(exceptionId: string) {
       const cases: HistoricalCase[] = response.historical_cases || [];
       setHistoricalCases(cases);
       
-      console.log('✅ AI solution generated');
     } catch (error) {
       console.error('❌ Failed to generate AI solution:', error);
       setError('Failed to generate AI solution. Please try again.');
@@ -199,7 +188,6 @@ export function useExceptionResolver(exceptionId: string) {
       try {
         
         setLoadingSolutionId(suggestion.exception_id); // ✅ Set loading state
-        console.log('📥 Fetching solution details for exception:', suggestion.exception_id);
         
       
         const solutionDetails = await exceptionService.getSolution(suggestion.exception_id);
@@ -223,7 +211,6 @@ export function useExceptionResolver(exceptionId: string) {
           )
         );
         
-        console.log('✅ Solution details loaded for suggestion');
       } catch (error) {
         console.error('❌ Failed to fetch solution details:', error);
         // Keep the basic suggestion even if solution fetch fails

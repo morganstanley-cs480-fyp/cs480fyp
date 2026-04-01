@@ -135,7 +135,10 @@ function ExceptionsPage() {
   } = useExceptionSearch();
 
   // Extract results from query response
-  const allExceptions = searchResponse?.allExceptions ?? searchResponse?.results ?? [];
+  const allExceptions = useMemo(
+    () => searchResponse?.allExceptions ?? searchResponse?.results ?? [],
+    [searchResponse],
+  );
 
   const statsFilteredExceptions = useMemo(() => {
     if (selectedStatsCards.length === 0) return allExceptions;
@@ -169,7 +172,6 @@ function ExceptionsPage() {
       // Refetch current search
       await refetchSearch();
       
-      console.log('Exception data refreshed successfully');
     } catch (error) {
       console.error('Failed to refresh exception data:', error);
     }

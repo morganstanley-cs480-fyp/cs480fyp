@@ -45,7 +45,6 @@ export function useTradeWebSocket(
 const onMessage = useCallback((event: MessageEvent) => {
   try {
     const data = JSON.parse(event.data);
-    console.log("🎯 RAW WebSocket message received:", data);
 
     // Case 1 - Transaction
     if (data.trans_id == undefined) {
@@ -62,11 +61,9 @@ const onMessage = useCallback((event: MessageEvent) => {
           // Replace existing transaction completely
           updatedTransactions = [...prevTransactions];
           updatedTransactions[existingIndex] = transactionData;
-          console.log("🔄 Replaced existing transaction:", transactionData.id);
         } else {
           // Add new transaction
           updatedTransactions = [...prevTransactions, transactionData];
-          console.log("➕ Added new transaction:", transactionData.id);
         }
 
         // ✅ Show toast inside the state update to ensure it runs once
@@ -107,7 +104,6 @@ const onMessage = useCallback((event: MessageEvent) => {
           const relatedTransaction = currentTransactions.find(t => t.id === exceptionData.trans_id);
           if (!relatedTransaction) {
             console.warn(`⚠️ Exception ${exceptionData.id} references non-existent transaction ${exceptionData.trans_id}`);
-            console.log("📊 Available transactions:", currentTransactions.map(t => t.id));
           }
           return currentTransactions; // No change to transactions
         });
@@ -120,11 +116,9 @@ const onMessage = useCallback((event: MessageEvent) => {
             ...updatedExceptions[existingIndex],
             ...exceptionData,
           };
-          console.log("🔄 Updated existing exception:", exceptionData.id);
         } else {
           // Add new exception  
           updatedExceptions = [...prevExceptions, exceptionData];
-          console.log("➕ Added new exception:", exceptionData.id);
         }
 
         // ✅ Show toast inside state update
@@ -146,41 +140,27 @@ const onMessage = useCallback((event: MessageEvent) => {
 
   useEffect(() => {
     if (!tradeId) {
-      console.log("❌ No tradeId provided to WebSocket");
       return;
     }
 
-    console.log(`🔌 Connecting to WebSocket for trade: ${tradeId}`);
-    console.log(`🔗 WebSocket URL: ${GATEWAY_URL}`);
     setConnectionStatus("Connecting...");
 
     ws.current = new WebSocket(GATEWAY_URL);
 
-    ws.current.onopen = (event) => {
+    ws.current.onopen = () => {
       setIsConnected(true);
       setConnectionStatus("Connected");
 
-      const socket = event.target as WebSocket;
-
-      console.log("✅ WebSocket connected successfully", {
-        time: new Date().toISOString(),
-        tradeId,
-        url: socket.url,
-        protocol: socket.protocol,
-        readyState: socket.readyState, // 1 = OPEN
-      });
       const subscribeMessage = {
         action: "SUBSCRIBE",
         trade_id: tradeId,
       };
-      console.log("📤 Sending subscription message:", subscribeMessage);
       ws.current?.send(JSON.stringify(subscribeMessage));
     };
 
-    ws.current.onclose = (event) => {
+    ws.current.onclose = () => {
       setIsConnected(false);
       setConnectionStatus("Disconnected");
-      console.log("❌ WebSocket disconnected:", event.code, event.reason);
     };
 
     ws.current.onmessage = onMessage;
@@ -192,7 +172,6 @@ const onMessage = useCallback((event: MessageEvent) => {
 
     return () => {
       if (ws.current) {
-        console.log("🔌 Closing WebSocket connection");
         ws.current.close();
       }
     };
@@ -200,7 +179,6 @@ const onMessage = useCallback((event: MessageEvent) => {
 
   const disconnect = useCallback(() => {
     if (ws.current) {
-      console.log("🔌 Manually closing WebSocket connection");
       ws.current.close();
       ws.current = null;
       setIsConnected(false);
@@ -209,7 +187,6 @@ const onMessage = useCallback((event: MessageEvent) => {
   }, []);
 
   const forceRefresh = useCallback(() => {
-    console.log("🔄 Force refreshing WebSocket connection");
     if (ws.current) {
       ws.current.close();
     }

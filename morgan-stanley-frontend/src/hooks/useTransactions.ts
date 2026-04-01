@@ -9,7 +9,6 @@ export function useTransactions(tradeId: number | null) {
 
     useEffect(() => {
         if (!tradeId) {
-            console.log('❌ No tradeId provided to useTransactions');
             return;
         }
 
@@ -18,13 +17,11 @@ export function useTransactions(tradeId: number | null) {
             setError(null);
 
             try {
-                console.log(`🔄 Fetching transactions for trade ${tradeId}...`);
                 const data = await tradeFlowService.getTransactionsByTradeId(tradeId);
 
                 // Sort transactions by step to ensure consistent ordering
                 const sortedTransactions = data.sort((a, b) => a.step - b.step);
 
-                console.log('📊 Successfully fetched and sorted transactions:', sortedTransactions);
                 setTransactions(sortedTransactions);
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
