@@ -33,4 +33,28 @@ describe('ExceptionDetailSidebar', () => {
 
     expect(getPriorityColor).toHaveBeenCalledWith('HIGH');
   });
+
+  it('renders closed status branch and null comment fallback display', () => {
+    const getPriorityColor = vi.fn().mockReturnValue('secondary');
+
+    render(
+      <ExceptionDetailSidebar
+        exception={{
+          id: 99,
+          trade_id: 88,
+          trans_id: 77,
+          msg: 'Resolved issue',
+          priority: 'LOW',
+          comment: null,
+          create_time: '2023-02-01',
+          update_time: '2023-02-02',
+          status: 'CLOSED',
+        }}
+        getPriorityColor={getPriorityColor}
+      />
+    );
+
+    expect(screen.getByText('CLOSED')).toBeInTheDocument();
+    expect(getPriorityColor).toHaveBeenCalledWith('LOW');
+  });
 });

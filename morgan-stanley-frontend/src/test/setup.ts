@@ -23,24 +23,26 @@ type ObserverMockInstance = {
 };
 
 type GlobalObserverOverrides = typeof globalThis & {
-  ResizeObserver?: ReturnType<typeof vi.fn>;
-  IntersectionObserver?: ReturnType<typeof vi.fn>;
+  ResizeObserver?: typeof ResizeObserver;
+  IntersectionObserver?: typeof IntersectionObserver;
 };
 
-// Mock ResizeObserver
-(globalThis as GlobalObserverOverrides).ResizeObserver = vi
-  .fn()
-  .mockImplementation((): ObserverMockInstance => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  }));
+// Mock ResizeObserver with a real constructor shape (required by Radix/Floating UI)
+class MockResizeObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
 
-// Mock IntersectionObserver
-(globalThis as GlobalObserverOverrides).IntersectionObserver = vi
-  .fn()
-  .mockImplementation((): ObserverMockInstance => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  }));
+// Mock IntersectionObserver with a real constructor shape
+class MockIntersectionObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+
+(globalThis as GlobalObserverOverrides).ResizeObserver =
+  MockResizeObserver as unknown as typeof ResizeObserver;
+
+(globalThis as GlobalObserverOverrides).IntersectionObserver =
+  MockIntersectionObserver as unknown as typeof IntersectionObserver;

@@ -25,6 +25,7 @@ export default defineConfig({
       "dist/",
       "**/playwright/**",
     ],
+    css: false,
 
     coverage: {
       reporter: ["text", "html", "json", "lcov"],

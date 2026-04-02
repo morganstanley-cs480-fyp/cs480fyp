@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+
+// Mock react-markdown before importing components that use it
+vi.mock("react-markdown", () => ({
+  default: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+}));
+
 import {
   SearchHeader,
   type TypeaheadSuggestion,
@@ -11,6 +17,13 @@ import type { RecentSearch } from "../../../components/trades/SearchHeader";
 const defaultProps = {
   searchQuery: "",
   searching: false,
+  chatLoading: false,
+  chatMode: null,
+  chatAnswer: null,
+  chatEvidence: null,
+  chatThread: [],
+  followUpPrompts: [],
+  chatError: null,
   showFilters: false,
   recentSearches: [] as RecentSearch[],
   savedQueries: [] as QueryHistory[],
@@ -18,14 +31,32 @@ const defaultProps = {
   suggestions: [],
   onSearchQueryChange: vi.fn(),
   onSearch: vi.fn(),
+  onAskAI: vi.fn(),
   onToggleFilters: vi.fn(),
   onRecentSearchClick: vi.fn(),
   onDeleteSearch: vi.fn(),
+  onClearAllSearches: vi.fn(),
   onSaveCurrentQuery: vi.fn(),
   onClearSearch: vi.fn(),
   onSuggestionClick: vi.fn(),
+  onFollowUpPromptClick: vi.fn(),
   onDeleteSavedQuery: vi.fn(),
 };
+
+const recentSearches: RecentSearch[] = [
+  {
+    id: "1",
+    query: "FX trades",
+    timestamp: Date.now() - 1000000,
+    queryId: 1,
+  },
+  {
+    id: "2",
+    query: "cleared trades",
+    timestamp: Date.now() - 2000000,
+    queryId: 2,
+  },
+];
 
 // Mock window.prompt for save query tests
 Object.defineProperty(window, "prompt", {
@@ -137,6 +168,25 @@ describe("SearchHeader", () => {
       const searchButton = screen.getByText("Searching...");
       expect(searchButton).toBeInTheDocument();
     });
+
+    it("shows validation error for short queries when searching", async () => {
+      const user = userEvent.setup();
+      const onSearch = vi.fn();
+
+      render(<SearchHeader {...defaultProps} searchQuery="ab" onSearch={onSearch} />);
+
+      await user.click(screen.getByPlaceholderText(/Search by trade ID/i));
+      await user.keyboard("{Enter}");
+
+      expect(screen.getByText(/at least 3 characters/i)).toBeInTheDocument();
+      expect(onSearch).not.toHaveBeenCalled();
+    });
+
+    it("shows validation error for short queries when asking AI", async () => {
+      render(<SearchHeader {...defaultProps} searchQuery="ab" />);
+
+      expect(screen.getByRole("button", { name: /^ask ai$/i })).toBeDisabled();
+    });
   });
 
   describe("Filter Toggle", () => {
@@ -172,21 +222,6 @@ describe("SearchHeader", () => {
   });
 
   describe("Recent Searches", () => {
-    const recentSearches: RecentSearch[] = [
-      {
-        id: "1",
-        query: "FX trades",
-        timestamp: Date.now() - 1000000,
-        queryId: 1,
-      },
-      {
-        id: "2",
-        query: "cleared trades",
-        timestamp: Date.now() - 2000000,
-        queryId: 2,
-      },
-    ];
-
     it("should display recent searches when available", () => {
       render(
         <SearchHeader {...defaultProps} recentSearches={recentSearches} />,
@@ -380,6 +415,29 @@ describe("SearchHeader", () => {
 
       expect(onClearSearch).toHaveBeenCalled();
     });
+
+    it("clears validation error when the query becomes valid", async () => {
+      const user = userEvent.setup();
+      const onSearchQueryChange = vi.fn();
+
+      render(
+        <SearchHeader
+          {...defaultProps}
+          searchQuery="ab"
+          onSearchQueryChange={onSearchQueryChange}
+        />,
+      );
+
+      const input = screen.getByPlaceholderText(/Search by trade ID/i);
+      await user.click(input);
+      await user.keyboard("{Enter}");
+      expect(screen.getByText(/at least 3 characters/i)).toBeInTheDocument();
+
+      await user.clear(input);
+      await user.type(input, "abc");
+
+      expect(onSearchQueryChange).toHaveBeenLastCalledWith("abc");
+    });
   });
 
   describe("Suggestions", () => {
@@ -441,6 +499,26 @@ describe("SearchHeader", () => {
 
       // Should not have any suggestion items
       expect(screen.queryByText(/suggestions/i)).not.toBeInTheDocument();
+    });
+
+    it("clears validation error when selecting a recent search suggestion", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <SearchHeader
+          {...defaultProps}
+          searchQuery="ab"
+          recentSearches={recentSearches}
+        />,
+      );
+
+      const input = screen.getByPlaceholderText(/Search by trade ID/i);
+      await user.click(input);
+      await user.keyboard("{Enter}");
+      expect(screen.getByText(/at least 3 characters/i)).toBeInTheDocument();
+
+      await user.click(screen.getByText("FX trades"));
+      expect(screen.queryByText(/at least 3 characters/i)).not.toBeInTheDocument();
     });
   });
 
@@ -586,6 +664,48 @@ describe("SearchHeader", () => {
 
       const searchInput = screen.getByDisplayValue(specialQuery);
       expect(searchInput).toBeInTheDocument();
+    });
+
+    it("renders AI response, thread, follow-up prompts, and evidence grid", async () => {
+      const user = userEvent.setup();
+      const chatEvidence = {
+        dimensions: ['country'],
+        rows: [
+          { dimension_1: 'US', priority: 'HIGH', exception_count: 4, affected_trades: 2 },
+          { dimension_1: 'UK', priority: 'LOW', exception_count: 1, affected_trades: 1 },
+        ],
+        chart: {
+          title: 'Exceptions by Country',
+          x_key: 'country',
+          y_key: 'exception_count',
+          labels: ['US', 'UK'],
+          series: [{ name: 'Exception Count', data: [4, 1] }],
+        },
+        metadata: { top_k: 2, priority_filter: null, row_count: 2 },
+      } as const;
+
+      render(
+        <SearchHeader
+          {...defaultProps}
+          chatLoading={false}
+          chatMode="both"
+          chatAnswer="**Answer** with details"
+          chatEvidence={chatEvidence as any}
+          chatThread={[
+            { role: 'user', content: 'What happened?' },
+            { role: 'assistant', content: 'Here is the answer.' },
+          ]}
+          followUpPrompts={["Show me more", "Explain root cause"]}
+        />,
+      );
+
+      expect(screen.getByText(/AI Response \(both\)/i)).toBeInTheDocument();
+      expect(screen.getByText('What happened?')).toBeInTheDocument();
+      expect(screen.getByText('Exceptions by Country')).toBeInTheDocument();
+      expect(screen.getByText('Show me more')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /Sort: high → low/i }));
+      expect(screen.getByRole('button', { name: /Sort: low → high/i })).toBeInTheDocument();
     });
   });
 });

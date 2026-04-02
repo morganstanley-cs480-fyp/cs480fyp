@@ -61,4 +61,55 @@ describe('AISuggestionCard', () => {
     expect(screen.getByText('Exception Details:')).toBeInTheDocument();
     expect(screen.getByText('Mismatch between systems')).toBeInTheDocument();
   });
+
+  it('renders fallback loading prompt when not loading and details are missing', () => {
+    render(
+      <AISuggestionCard
+        suggestion={{ ...baseSuggestion, solution_description: undefined, exception_description: undefined }}
+        onClick={vi.fn()}
+        isLoadingSolution={false}
+      />
+    );
+
+    expect(screen.getByText('Click to load additional context...')).toBeInTheDocument();
+  });
+
+  it('renders arrow-format solution blocks', () => {
+    render(
+      <AISuggestionCard
+        suggestion={{
+          ...baseSuggestion,
+          text: '-> validate booking\n-> forward to CCP',
+          solution_description: 's',
+          exception_description: 'e',
+        }}
+        onClick={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('validate booking')).toBeInTheDocument();
+    expect(screen.getByText('forward to CCP')).toBeInTheDocument();
+  });
+
+  it('renders default status/priority branches and closed status', () => {
+    render(
+      <AISuggestionCard
+        suggestion={{
+          ...baseSuggestion,
+          priority: 'UNKNOWN',
+          status: 'CLOSED',
+          similarity_score: 79.9,
+          solution_description: 'resolved',
+          exception_description: 'details',
+          text: 'plain paragraph',
+        }}
+        onClick={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Status: CLOSED')).toBeInTheDocument();
+    expect(screen.getByText('Priority: UNKNOWN')).toBeInTheDocument();
+    expect(screen.getByText('79.9% Match')).toBeInTheDocument();
+    expect(screen.getByText('plain paragraph')).toBeInTheDocument();
+  });
 });

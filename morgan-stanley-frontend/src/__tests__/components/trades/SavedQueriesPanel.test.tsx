@@ -56,4 +56,39 @@ describe('SavedQueriesPanel', () => {
 
     nowSpy.mockRestore()
   })
+
+  test('formats timestamps across minute, hour, and day buckets', () => {
+    const now = Date.now()
+
+    render(
+      <SavedQueriesPanel
+        savedQueries={[
+          {
+            query_id: 1,
+            query_name: 'Minute',
+            query_text: 'select 1',
+            last_use_time: new Date(now - 30 * 1000).toISOString(),
+          },
+          {
+            query_id: 2,
+            query_name: 'Hour',
+            query_text: 'select 2',
+            last_use_time: new Date(now - 90 * 60000).toISOString(),
+          },
+          {
+            query_id: 3,
+            query_name: 'Day',
+            query_text: 'select 3',
+            last_use_time: new Date(now - 3 * 86400000).toISOString(),
+          },
+        ] as any}
+        onSelectQuery={vi.fn()}
+        onDeleteQuery={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText(/Just now/i)).toBeInTheDocument()
+    expect(screen.getByText(/1h ago/i)).toBeInTheDocument()
+    expect(screen.getByText(/3d ago/i)).toBeInTheDocument()
+  })
 })

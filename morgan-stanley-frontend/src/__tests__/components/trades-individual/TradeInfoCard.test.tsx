@@ -115,4 +115,80 @@ describe('TradeInfoCard', () => {
     fireEvent.click(screen.getByRole('button'));
     expect(onToggle).toHaveBeenCalledTimes(1);
   });
+
+  it('uses trade status when transactions list is empty', () => {
+    render(
+      <TradeInfoCard
+        trade={{ ...trade, status: 'REJECTED' }}
+        transactions={[]}
+        exceptions={[]}
+        showTradeInfo
+        onToggle={vi.fn()}
+        getStatusBadgeClassName={() => 'status-class'}
+      />
+    );
+
+    expect(screen.getByText('REJECTED')).toBeInTheDocument();
+  });
+
+  it('shows no exceptions message on exceptions tab when list is empty', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TradeInfoCard
+        trade={trade}
+        transactions={transactions}
+        exceptions={[]}
+        showTradeInfo
+        onToggle={vi.fn()}
+        getStatusBadgeClassName={() => 'status-class'}
+      />
+    );
+
+    await user.click(screen.getByRole('tab', { name: /Exceptions \(0\)/i }));
+    expect(screen.getByText('No exceptions for this trade.')).toBeInTheDocument();
+  });
+
+  it('does not show view-exception button for closed exceptions', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TradeInfoCard
+        trade={trade}
+        transactions={transactions}
+        exceptions={[{ ...exceptions[0], id: 101, status: 'CLOSED' }]}
+        showTradeInfo
+        onToggle={vi.fn()}
+        getStatusBadgeClassName={() => 'status-class'}
+      />
+    );
+
+    await user.click(screen.getByRole('tab', { name: /Exceptions \(1\)/i }));
+    expect(screen.queryByRole('button', { name: /View exception/i })).not.toBeInTheDocument();
+  });
+
+  it('navigates on keyboard Enter from exception card', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TradeInfoCard
+        trade={trade}
+        transactions={transactions}
+        exceptions={exceptions}
+        showTradeInfo
+        onToggle={vi.fn()}
+        getStatusBadgeClassName={() => 'status-class'}
+      />
+    );
+
+    await user.click(screen.getByRole('tab', { name: /Exceptions \(1\)/i }));
+    const cardButton = await screen.findByRole('button', { name: /Exception 100/i });
+    cardButton.focus();
+    fireEvent.keyDown(cardButton, { key: 'Enter' });
+
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: '/exceptions/$exceptionId',
+      params: { exceptionId: '100' },
+    });
+  });
 });

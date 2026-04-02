@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { renderHook, act } from '@testing-library/react'
 import { useTradeWebSocket } from '../../hooks/useTradeWebSocket'
 import type { Transaction, Exception } from '../../lib/api/types'
+import { toast } from 'sonner'
 
 // Mock toast
 vi.mock('sonner', () => ({
@@ -30,18 +31,40 @@ class MockWebSocket {
   onmessage: ((event: MessageEvent<string>) => void) | null = null
   onclose: ((event: CloseEvent) => void) | null = null
   onerror: ((event: Event) => void) | null = null
+  static instances: MockWebSocket[] = []
 
   constructor(url: string) {
-    // Simple constructor that doesn't trigger any events
     this.url = url
+    MockWebSocket.instances.push(this)
   }
 
   url: string = ''
+
+  emitOpen() {
+    this.readyState = MockWebSocket.OPEN
+    this.onopen?.(new Event('open'))
+  }
+
+  emitClose() {
+    this.readyState = MockWebSocket.CLOSED
+    this.onclose?.(new CloseEvent('close'))
+  }
+
+  emitMessage(payload: unknown) {
+    this.onmessage?.({ data: typeof payload === 'string' ? payload : JSON.stringify(payload) } as MessageEvent<string>)
+  }
+
+  emitError() {
+    this.onerror?.(new Event('error'))
+  }
 }
 
 vi.stubGlobal('WebSocket', MockWebSocket)
 
 describe('useTradeWebSocket', () => {
+  const EMPTY_TRANSACTIONS: Transaction[] = []
+  const EMPTY_EXCEPTIONS: Exception[] = []
+
   const mockTransaction: Transaction = {
     id: 1,
     trade_id: 123,
@@ -59,14 +82,25 @@ describe('useTradeWebSocket', () => {
     status: 'ACTIVE'
   }
 
+  const ONE_TRANSACTION: Transaction[] = [mockTransaction]
+  const ONE_EXCEPTION: Exception[] = [mockException]
+
   beforeEach(() => {
     vi.clearAllMocks()
+    MockWebSocket.instances = []
+  })
+
+  afterEach(() => {
+    for (const socket of MockWebSocket.instances) {
+      socket.close()
+    }
+    vi.restoreAllMocks()
   })
 
   describe('Basic Functionality', () => {
     it('should not connect when tradeId is null', () => {
       const { result } = renderHook(() => 
-        useTradeWebSocket(null, [], [])
+        useTradeWebSocket(null, EMPTY_TRANSACTIONS, EMPTY_EXCEPTIONS)
       )
 
       expect(result.current.isConnected).toBe(false)
@@ -76,7 +110,7 @@ describe('useTradeWebSocket', () => {
     it('should initialize with provided initial transactions', () => {
       const initialTransactions = [mockTransaction]
       const { result } = renderHook(() => 
-        useTradeWebSocket(null, initialTransactions, [])  // Use null tradeId to avoid connection
+        useTradeWebSocket(null, initialTransactions, EMPTY_EXCEPTIONS)  // Use null tradeId to avoid connection
       )
 
       expect(result.current.mergedTransactions).toEqual(initialTransactions)
@@ -85,7 +119,7 @@ describe('useTradeWebSocket', () => {
     it('should initialize with provided initial exceptions', () => {
       const initialExceptions = [mockException]
       const { result } = renderHook(() => 
-        useTradeWebSocket(null, [], initialExceptions)  // Use null tradeId to avoid connection
+        useTradeWebSocket(null, EMPTY_TRANSACTIONS, initialExceptions)  // Use null tradeId to avoid connection
       )
 
       expect(result.current.mergedExceptions).toEqual(initialExceptions)
@@ -93,7 +127,7 @@ describe('useTradeWebSocket', () => {
 
     it('should provide required functions', () => {
       const { result } = renderHook(() => 
-        useTradeWebSocket(null, [], [])  // Use null tradeId to avoid connection
+        useTradeWebSocket(null, EMPTY_TRANSACTIONS, EMPTY_EXCEPTIONS)  // Use null tradeId to avoid connection
       )
 
       expect(typeof result.current.disconnect).toBe('function')
@@ -102,7 +136,7 @@ describe('useTradeWebSocket', () => {
 
     it('should provide complete interface', () => {
       const { result } = renderHook(() => 
-        useTradeWebSocket(null, [mockTransaction], [mockException])  // Use null tradeId
+        useTradeWebSocket(null, ONE_TRANSACTION, ONE_EXCEPTION)  // Use null tradeId
       )
 
       const expectedProperties = [
@@ -123,7 +157,7 @@ describe('useTradeWebSocket', () => {
 
     it('should have correct initial state', () => {
       const { result } = renderHook(() => 
-        useTradeWebSocket(null, [], [])
+        useTradeWebSocket(null, EMPTY_TRANSACTIONS, EMPTY_EXCEPTIONS)
       )
 
       expect(result.current.isConnected).toBe(false)
@@ -136,7 +170,7 @@ describe('useTradeWebSocket', () => {
 
     it('should handle both transactions and exceptions together', () => {
       const { result } = renderHook(() => 
-        useTradeWebSocket(null, [mockTransaction], [mockException])
+        useTradeWebSocket(null, ONE_TRANSACTION, ONE_EXCEPTION)
       )
 
       expect(result.current.mergedTransactions).toEqual([mockTransaction])
@@ -145,7 +179,7 @@ describe('useTradeWebSocket', () => {
 
     it('should handle empty arrays gracefully', () => {
       const { result } = renderHook(() => 
-        useTradeWebSocket(null, [], [])
+        useTradeWebSocket(null, EMPTY_TRANSACTIONS, EMPTY_EXCEPTIONS)
       )
 
       expect(result.current.mergedTransactions).toEqual([])
@@ -159,7 +193,7 @@ describe('useTradeWebSocket', () => {
       ]
       
       const { result } = renderHook(() => 
-        useTradeWebSocket(null, transactions, [])
+        useTradeWebSocket(null, transactions, EMPTY_EXCEPTIONS)
       )
 
       expect(result.current.mergedTransactions).toHaveLength(2)
@@ -172,10 +206,167 @@ describe('useTradeWebSocket', () => {
       ]
       
       const { result } = renderHook(() => 
-        useTradeWebSocket(null, [], exceptions)
+        useTradeWebSocket(null, EMPTY_TRANSACTIONS, exceptions)
       )
 
       expect(result.current.mergedExceptions).toHaveLength(2)
+    })
+  })
+
+  describe('WebSocket lifecycle and updates', () => {
+    it('connects and sends SUBSCRIBE when tradeId is provided', () => {
+      renderHook(() => useTradeWebSocket(123, EMPTY_TRANSACTIONS, EMPTY_EXCEPTIONS))
+
+      const socket = MockWebSocket.instances[0]
+      expect(socket).toBeDefined()
+
+      act(() => {
+        socket.emitOpen()
+      })
+
+      expect(socket.send).toHaveBeenCalledWith(
+        JSON.stringify({ action: 'SUBSCRIBE', trade_id: 123 })
+      )
+    })
+
+    it('updates connection status on open/error/close', () => {
+      const { result } = renderHook(() => useTradeWebSocket(123, EMPTY_TRANSACTIONS, EMPTY_EXCEPTIONS))
+      const socket = MockWebSocket.instances[0]
+
+      expect(result.current.connectionStatus).toBe('Connecting...')
+
+      act(() => {
+        socket.emitOpen()
+      })
+      expect(result.current.connectionStatus).toBe('Connected')
+      expect(result.current.isConnected).toBe(true)
+
+      act(() => {
+        socket.emitError()
+      })
+      expect(result.current.connectionStatus).toBe('Error')
+
+      act(() => {
+        socket.emitClose()
+      })
+      expect(result.current.connectionStatus).toBe('Disconnected')
+      expect(result.current.isConnected).toBe(false)
+    })
+
+    it('adds new transaction and sorts by step', () => {
+      const initial = [
+        { ...mockTransaction, id: 10, step: 2 },
+      ] as Transaction[]
+      const { result } = renderHook(() => useTradeWebSocket(123, initial, EMPTY_EXCEPTIONS))
+      const socket = MockWebSocket.instances[0]
+
+      act(() => {
+        socket.emitMessage({ ...mockTransaction, id: 11, step: 1, trans_id: undefined })
+      })
+
+      expect(result.current.lastUpdate?.id).toBe(11)
+      expect(result.current.mergedTransactions.map((t) => t.id)).toEqual([11, 10])
+    })
+
+    it('updates existing transaction when id already exists', () => {
+      const initial = [{ ...mockTransaction, id: 1, status: 'PENDING', step: 1 }] as Transaction[]
+      const { result } = renderHook(() => useTradeWebSocket(123, initial, EMPTY_EXCEPTIONS))
+      const socket = MockWebSocket.instances[0]
+
+      act(() => {
+        socket.emitMessage({ ...mockTransaction, id: 1, status: 'ALLEGED', step: 1, trans_id: undefined })
+      })
+
+      expect(result.current.mergedTransactions[0].status).toBe('ALLEGED')
+    })
+
+    it('marks related exceptions CLOSED when transaction status is CLEARED', () => {
+      const exceptions = [
+        { ...mockException, id: 201, trans_id: 1, status: 'PENDING' },
+        { ...mockException, id: 202, trans_id: 999, status: 'PENDING' },
+      ] as Exception[]
+      const { result } = renderHook(() => useTradeWebSocket(123, ONE_TRANSACTION, exceptions))
+      const socket = MockWebSocket.instances[0]
+
+      act(() => {
+        socket.emitMessage({ ...mockTransaction, id: 1, status: 'CLEARED', trans_id: undefined })
+      })
+
+      expect(result.current.mergedExceptions.find((e) => e.id === 201)?.status).toBe('CLOSED')
+      expect(result.current.mergedExceptions.find((e) => e.id === 202)?.status).toBe('PENDING')
+    })
+
+    it('adds and updates exceptions from incoming exception messages', () => {
+      const { result } = renderHook(() => useTradeWebSocket(123, ONE_TRANSACTION, EMPTY_EXCEPTIONS))
+      const socket = MockWebSocket.instances[0]
+
+      act(() => {
+        socket.emitMessage({ ...mockException, id: 300, trans_id: 1 })
+      })
+      expect(result.current.lastExceptionUpdate?.id).toBe(300)
+      expect(result.current.mergedExceptions).toHaveLength(1)
+
+      act(() => {
+        socket.emitMessage({ ...mockException, id: 300, trans_id: 1, status: 'CLOSED' })
+      })
+      expect(result.current.mergedExceptions[0].status).toBe('CLOSED')
+    })
+
+    it('handles invalid JSON payload safely', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      renderHook(() => useTradeWebSocket(123, EMPTY_TRANSACTIONS, EMPTY_EXCEPTIONS))
+      const socket = MockWebSocket.instances[0]
+
+      act(() => {
+        socket.emitMessage('{not-valid-json')
+      })
+
+      expect(consoleSpy).toHaveBeenCalledWith('Invalid JSON received:', expect.anything())
+      consoleSpy.mockRestore()
+    })
+
+    it('disconnect closes websocket and resets status', () => {
+      const { result } = renderHook(() => useTradeWebSocket(123, EMPTY_TRANSACTIONS, EMPTY_EXCEPTIONS))
+      const socket = MockWebSocket.instances[0]
+
+      act(() => {
+        result.current.disconnect()
+      })
+
+      expect(socket.close).toHaveBeenCalled()
+      expect(result.current.connectionStatus).toBe('Disconnected')
+      expect(result.current.isConnected).toBe(false)
+    })
+
+    it('forceRefresh closes active websocket', () => {
+      const { result } = renderHook(() => useTradeWebSocket(123, EMPTY_TRANSACTIONS, EMPTY_EXCEPTIONS))
+      const socket = MockWebSocket.instances[0]
+
+      act(() => {
+        result.current.forceRefresh()
+      })
+
+      expect(socket.close).toHaveBeenCalled()
+    })
+
+    it('emits toasts for transaction and exception updates', () => {
+      vi.useFakeTimers()
+
+      renderHook(() => useTradeWebSocket(123, ONE_TRANSACTION, ONE_EXCEPTION))
+      const socket = MockWebSocket.instances[0]
+
+      act(() => {
+        socket.emitMessage({ ...mockTransaction, id: 1, status: 'ALLEGED', trans_id: undefined })
+        socket.emitMessage({ ...mockException, id: 1, trans_id: 1, status: 'CLOSED' })
+      })
+
+      act(() => {
+        vi.runAllTimers()
+      })
+
+      expect(toast).toHaveBeenCalled()
+
+      vi.useRealTimers()
     })
   })
 })

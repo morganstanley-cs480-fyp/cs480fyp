@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { ExceptionResultsTable } from '@/components/exceptions/ExceptionResultsTable';
 import type { Exception } from '@/lib/api/types';
 import type { Table as TableType } from '@tanstack/react-table';
 
 describe('ExceptionResultsTable', () => {
   const mockExceptions: Exception[] = [
-    { id: 1, trade_id: 'T1', trans_id: 'TX1', msg: 'Err 1', priority: 'HIGH', comment: '', create_time: '2023-01-01', update_time: '2023-01-01', status: 'PENDING' },
-    { id: 2, trade_id: 'T2', trans_id: 'TX2', msg: 'Err 2', priority: 'LOW', comment: '', create_time: '2023-01-02', update_time: '2023-01-02', status: 'CLOSED' },
+    { id: 1, trade_id: 1001, trans_id: 2001, msg: 'Err 1', priority: 'HIGH', comment: '', create_time: '2023-01-01', update_time: '2023-01-01', status: 'PENDING' },
+    { id: 2, trade_id: 1002, trans_id: 2002, msg: 'Err 2', priority: 'LOW', comment: '', create_time: '2023-01-02', update_time: '2023-01-02', status: 'CLOSED' },
   ];
 
   const mockTable = {
@@ -164,71 +164,82 @@ describe('ExceptionResultsTable', () => {
     expect(mockOnRefresh).toHaveBeenCalled();
   });
 
+  it('downloads CSV when rows exist', () => {
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {});
 
-  // it('handles CSV download', async () => {
-  //   // Keep reference to real values we mock
-  //   const createElementOriginal = document.createElement;
-    
-  //   // Mock URL and document.createElement specifically for 'a' tag
-  //   window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-    
-  //   const mockAnchor = {
-  //       setAttribute: vi.fn(),
-  //       style: { visibility: '' },
-  //       click: vi.fn(),
-  //   };
+    render(
+      <ExceptionResultsTable
+        table={mockTable}
+        resultsCount={2}
+        selectedExceptionId={null}
+        onRowClick={mockOnRowClick}
+      />
+    );
 
-  //   const appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
-  //   const removeChildSpy = vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
+    fireEvent.click(screen.getByTitle('Download as CSV'));
+    expect(clickSpy).toHaveBeenCalled();
+  });
 
-  //   const { container } = render(
-  //     <ExceptionResultsTable
-  //       table={mockTable}
-  //       resultsCount={2}
-  //       selectedExceptionId={null}
-  //       onRowClick={mockOnRowClick}
-  //     />
-  //   );
+  it('renders singular label and pagination text correctly', () => {
+    render(
+      <ExceptionResultsTable
+        table={mockTable}
+        resultsCount={1}
+        selectedExceptionId={null}
+        onRowClick={mockOnRowClick}
+      />
+    );
 
-  //   const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tagName: string, options?: ElementCreationOptions) => {
-  //     if (tagName === 'a') {
-  //       return mockAnchor as unknown as HTMLAnchorElement;
-  //     }
-  //     return createElementOriginal.call(document, tagName, options);
-  //   });
+    expect(screen.getByText('1 exception')).toBeInTheDocument();
+    expect(screen.getByText(/Showing 1 to 1 of 1 results/i)).toBeInTheDocument();
+  });
 
-  //   const downloadBtn = screen.getByTitle('Download as CSV');
-  //   fireEvent.click(downloadBtn);
-    
-  //   expect(createElementSpy).toHaveBeenCalledWith('a');
-  //   expect(mockAnchor.setAttribute).toHaveBeenCalledWith('href', 'blob:url');
-  //   expect(mockAnchor.click).toHaveBeenCalled();
+  it('renders empty state when no rows', () => {
+    const emptyTable = {
+      ...mockTable,
+      getRowModel: () => ({ rows: [] }),
+      getFilteredRowModel: () => ({ rows: [] }),
+    } as unknown as TableType<Exception>;
 
-  //   createElementSpy.mockRestore();
-  //   appendChildSpy.mockRestore();
-  //   removeChildSpy.mockRestore();
-  // });
+    render(
+      <ExceptionResultsTable
+        table={emptyTable}
+        resultsCount={0}
+        selectedExceptionId={null}
+        onRowClick={mockOnRowClick}
+      />
+    );
+
+    expect(screen.getByText('No results found.')).toBeInTheDocument();
+    expect(screen.getByText(/Showing 0 to 0 of 0 results/i)).toBeInTheDocument();
+  });
+
+  it('triggers pagination callbacks', () => {
+    const pagedTable = {
+      ...mockTable,
+      getCanPreviousPage: () => true,
+      getCanNextPage: () => true,
+    } as unknown as TableType<Exception>;
+
+    render(
+      <ExceptionResultsTable
+        table={pagedTable}
+        resultsCount={2}
+        selectedExceptionId={null}
+        onRowClick={mockOnRowClick}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Previous/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+    expect(pagedTable.previousPage).toHaveBeenCalled();
+    expect(pagedTable.nextPage).toHaveBeenCalled();
+  });
 
 
-  // it('renders empty state when no results', () => {
-  //   const emptyTable = {
-  //     ...mockTable,
-  //     getRowModel: () => ({ rows: [] }),
-  //   } as unknown as TableType<Exception>;
-
-  //   render(
-  //     <ExceptionResultsTable
-  //       table={emptyTable}
-  //       resultsCount={0}
-  //       selectedExceptionId={null}
-  //       onRowClick={mockOnRowClick}
-  //     />
-  //   );
-
-  //   const textElements = screen.getAllByText(/0 exception/);
-  //   expect(textElements.length).toBeGreaterThan(0);
-    
-  //   expect(screen.getByText('No results found.')).toBeInTheDocument();
-  // });
 });
 

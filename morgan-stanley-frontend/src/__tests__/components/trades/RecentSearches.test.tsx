@@ -66,4 +66,23 @@ describe('RecentSearches', () => {
 
     nowSpy.mockRestore()
   })
+
+  test('formats timestamp buckets for minutes and days', () => {
+    const now = Date.now()
+
+    render(
+      <RecentSearches
+        searches={[
+          { id: '1', query: 'minute', timestamp: now - 59 * 1000 },
+          { id: '2', query: 'day', timestamp: now - 3 * 86400000 },
+        ]}
+        onSearchClick={vi.fn()}
+        onDeleteSearch={vi.fn()}
+        onClearAll={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText(/Just now/i)).toBeInTheDocument()
+    expect(screen.getByText(/3d ago/i)).toBeInTheDocument()
+  })
 })

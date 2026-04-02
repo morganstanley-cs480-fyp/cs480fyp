@@ -74,4 +74,33 @@ describe('TransactionDetailPanel', () => {
     fireEvent.click(screen.getByText('View Exception Details'));
     expect(onResolveException).toHaveBeenCalledWith('7');
   });
+
+  it('renders receive direction and closed exception without resolve action', () => {
+    render(
+      <TransactionDetailPanel
+        selectedTransaction={{ ...selectedTransaction, direction: 'receive' }}
+        relatedExceptions={[
+          {
+            id: 8,
+            trade_id: 88,
+            trans_id: 55,
+            msg: 'Handled',
+            priority: 'LOW',
+            status: 'CLOSED',
+            comment: 'done',
+            create_time: '2024-02-05',
+            update_time: '2024-02-06',
+          },
+        ] as unknown as Exception[]}
+        getTransactionStatusColor={() => 'secondary'}
+        getPriorityColor={() => 'secondary'}
+        getPriorityIcon={() => <span>icon</span>}
+        onResolveException={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('RECEIVE')).toBeInTheDocument();
+    expect(screen.getByText('CLOSED')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /View Exception Details/i })).not.toBeInTheDocument();
+  });
 });

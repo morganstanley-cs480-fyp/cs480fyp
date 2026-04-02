@@ -457,13 +457,13 @@ const EntityNode = ({ data }: { data: { isHub?: boolean; width?: number; status?
       case 'CLEARED':
         return 'bg-green-50';
       case 'ALLEGED':
-        return 'bg-black/[0.02]';
+        return 'bg-slate-50';
       case 'REJECTED':
         return 'bg-red-50';
       case 'CANCELLED':
         return 'bg-yellow-50';
       default:
-        return 'bg-black/[0.02]';
+        return 'bg-slate-50';
     }
   };
 
@@ -1225,7 +1225,7 @@ export function FlowVisualization({
             )}
             <div
               ref={flowContainerRef}
-              className={`border rounded-lg relative w-full ${isFullscreen ? 'h-full bg-white' : 'h-[800px] bg-black/[0.02]'}`}
+              className={`border rounded-lg relative w-full ${isFullscreen ? 'h-full bg-white' : 'h-[800px] bg-slate-50'}`}
             >
               {isLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
