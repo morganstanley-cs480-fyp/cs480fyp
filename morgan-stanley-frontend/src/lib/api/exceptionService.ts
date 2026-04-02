@@ -70,6 +70,14 @@ export interface CreateSolutionRequest {
   scores?: number;
 }
 
+export interface UpdateSolutionRequest {
+  title?: string;
+  exception_description?: string;
+  reference_event?: string;
+  solution_description?: string;
+  scores?: number;
+}
+
 export interface CreateSolutionResponse {
   exception_id: number;
   title: string;
@@ -154,6 +162,13 @@ class ExceptionClient {
       body: body ? JSON.stringify(body) : undefined,
     });
   }
+
+  async put<T>(endpoint: string, body?: unknown): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PUT',
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  }
 }
 
 const exceptionClient = new ExceptionClient(EXCEPTION_API_BASE_URL);
@@ -213,6 +228,13 @@ export const exceptionService = {
       solution_description: request.solution_description,
       scores: request.scores || Math.floor(Math.random() * 28) // Random 0-27 as specified
     });
+  },
+
+  async updateSolution(
+    solutionId: number,
+    request: UpdateSolutionRequest
+  ): Promise<CreateSolutionResponse> {
+    return exceptionClient.put(`/api/solutions/${solutionId}`, request);
   }
 
 

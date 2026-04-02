@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { AlertCircle, AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertCircle, AlertTriangle, RefreshCw, CheckCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Component imports
 import { ExceptionDetailSidebar } from '@/components/exceptions-individual/ExceptionDetailSidebar';
@@ -11,6 +12,7 @@ import { AISuggestionsTab } from '@/components/exceptions-individual/AISuggestio
 import { NewSolutionForm } from '@/components/exceptions-individual/NewSolutionForm';
 import { AIGeneratorPanel } from '@/components/exceptions-individual/AIGeneratorPanel';
 import { ResolvedSolutionDetails } from '@/components/exceptions-individual/ResolvedSolutionDetails';
+import { ExceptionTradeFlow } from '@/components/exceptions-individual/ExceptionTradeFlow';
 
 // Hook and API imports
 import { useExceptionResolver } from '../../hooks/useExceptionResolver';
@@ -19,12 +21,27 @@ import { requireAuth } from '@/lib/utils';
 
 export const Route = createFileRoute('/exceptions/$exceptionId')({
   beforeLoad: requireAuth,
-  component: ViewExceptionPage,
+  component: ResolveExceptionPage,
 });
 
-function ViewExceptionPage() {
+function ResolveExceptionPage() {
   const { exceptionId } = Route.useParams();
   const navigate = useNavigate();
+  const [isApplying, setIsApplying] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [resolvedSolution, setResolvedSolution] = useState<RetrievedSolution | null>(null);
+  const [loadingResolvedSolution, setLoadingResolvedSolution] = useState(false);
+  const [resolvedSolutionError, setResolvedSolutionError] = useState<string | null>(null);
+  const [existingPendingSolution, setExistingPendingSolution] = useState<RetrievedSolution | null>(null);
+  const [loadingExistingPendingSolution, setLoadingExistingPendingSolution] = useState(false);
+  const [resolutionDetails, setResolutionDetails] = useState<{
+    type: 'existing' | 'new';
+    action?: 'created' | 'updated';
+    solutionTitle: string;
+    exceptionId: number;
+    solutionId?: number | string;
+  } | null>(null);
   
   const {
     exception,
@@ -55,11 +72,6 @@ function ViewExceptionPage() {
     loadingSolutionId
   } = useExceptionResolver(exceptionId);
 
-  const [resolvedSolution, setResolvedSolution] = useState<RetrievedSolution | null>(null);
-  const [loadingResolvedSolution, setLoadingResolvedSolution] = useState(false);
-  const [resolvedSolutionError, setResolvedSolutionError] = useState<string | null>(null);
-
-
   useEffect(() => {
     let isActive = true;
 
@@ -81,10 +93,7 @@ function ViewExceptionPage() {
       } catch (fetchError) {
         if (!isActive) return;
         setResolvedSolution(null);
-        const msg = fetchError instanceof Error ? fetchError.message : String(fetchError);
-        setResolvedSolutionError(
-          `This exception is closed, but its applied solution could not be loaded. ${msg}`
-        );
+        setResolvedSolutionError('This exception is closed, but its applied solution could not be loaded.');
         console.error('❌ Failed to fetch resolved solution details:', fetchError);
       } finally {
         if (isActive) {
@@ -100,6 +109,132 @@ function ViewExceptionPage() {
     };
   }, [exception]);
 
+  useEffect(() => {
+    let isActive = true;
+
+    const loadExistingPendingSolution = async () => {
+      if (!exception || exception.status !== 'PENDING') {
+        setExistingPendingSolution(null);
+        setLoadingExistingPendingSolution(false);
+        return;
+      }
+
+      setLoadingExistingPendingSolution(true);
+
+      try {
+        const solution = await exceptionService.getSolution(exception.id.toString());
+        if (!isActive) return;
+        setExistingPendingSolution(solution);
+        setNewSolutionTitle(solution.title || '');
+        setNewExceptionDescription(solution.exception_description || '');
+        setNewSolutionDescription(solution.solution_description || '');
+      } catch {
+        if (!isActive) return;
+        setExistingPendingSolution(null);
+      } finally {
+        if (isActive) {
+          setLoadingExistingPendingSolution(false);
+        }
+      }
+    };
+
+    void loadExistingPendingSolution();
+
+    return () => {
+      isActive = false;
+    };
+  }, [
+    exception,
+    setNewSolutionTitle,
+    setNewExceptionDescription,
+    setNewSolutionDescription,
+  ]);
+
+  const handleApplySolution = async () => {
+    if (!exception) return;
+
+    setIsApplying(true);
+    setApplyError(null);
+
+    try {
+      if (selectedTab === 'existing' && selectedSuggestion) {
+        // Save a solution record based on the selected suggestion without changing exception status.
+        console.log('✅ Saving existing solution template:', selectedSuggestion.title);
+        console.log('Exception ID:', exception.id);
+        console.log('Selected suggestion:', selectedSuggestion);
+        
+        // Create solution record using selected suggestion's details
+        const solutionResponse = await exceptionService.createSolution({
+          exception_id: exception.id,
+          title: selectedSuggestion.title,
+          exception_description: selectedSuggestion.exception_description || selectedSuggestion.description,
+          reference_event: '',
+          solution_description: selectedSuggestion.solution_description,
+          scores: selectedSuggestion.solution_score || Math.round(selectedSuggestion.similarity_score)
+        });
+
+        console.log('✅ Solution record created:', solutionResponse);
+
+        console.log('✅ Solution saved. Exception status unchanged.');
+        
+        // Show success dialog with existing solution details
+        setResolutionDetails({
+          type: 'existing',
+          solutionTitle: selectedSuggestion.title,
+          exceptionId: exception.id,
+          solutionId: solutionResponse.id
+        });
+      } else if (selectedTab === 'new' && newSolutionTitle && newSolutionDescription) {
+        const isUpdatingPendingSolution =
+          exception.status === 'PENDING' && !!existingPendingSolution;
+
+        console.log(
+          isUpdatingPendingSolution
+            ? '💾 Updating existing pending solution in database...'
+            : '💾 Saving new solution to database...'
+        );
+
+        const solutionPayload = {
+          title: newSolutionTitle,
+          exception_description: newExceptionDescription,
+          reference_event: '',
+          solution_description: newSolutionDescription,
+          scores: existingPendingSolution?.scores ?? Math.floor(Math.random() * 28),
+        };
+
+        const solutionResponse = isUpdatingPendingSolution
+          ? await exceptionService.updateSolution(existingPendingSolution.id, solutionPayload)
+          : await exceptionService.createSolution({
+              exception_id: exception.id,
+              ...solutionPayload,
+            });
+
+        console.log('✅ Solution saved successfully:', solutionResponse);
+        
+        console.log('✅ Solution saved. Exception status unchanged.');
+        if (isUpdatingPendingSolution) {
+          setExistingPendingSolution(solutionResponse as RetrievedSolution);
+        }
+        
+        // Show success dialog with new solution details
+        setResolutionDetails({
+          type: 'new',
+          action: isUpdatingPendingSolution ? 'updated' : 'created',
+          solutionTitle: newSolutionTitle,
+          exceptionId: exception.id,
+          solutionId: solutionResponse.id
+        });
+      }
+      
+      // Show visual confirmation dialog
+      setShowSuccessDialog(true);
+    } catch (error) {
+      console.error('❌ Failed to apply solution:', error);
+      setApplyError('Failed to apply solution. Please try again.');
+    } finally {
+      setIsApplying(false);
+    }
+  };
 
   const getPriorityColor = (priority: string): "default" | "destructive" | "secondary" => {
     if (priority === 'HIGH') return 'destructive';
@@ -171,13 +306,19 @@ function ViewExceptionPage() {
           </div>
         </div>
 
-        <div className="flex gap-6">
+        <div className="flex flex-col xl:flex-row gap-6">
           <ExceptionDetailSidebar
             exception={exception}
             getPriorityColor={getPriorityColor}
-          />
+          >
+            <ExceptionTradeFlow
+              transactionId={exception.trans_id}
+              fallbackTradeId={exception.trade_id}
+              embedded
+            />
+          </ExceptionDetailSidebar>
 
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 min-w-0 space-y-6">
             {loadingResolvedSolution ? (
               <Card>
                 <CardContent className="py-12">
@@ -209,6 +350,10 @@ function ViewExceptionPage() {
     );
   }
 
+  const canApplySolution = selectedTab === 'existing' 
+    ? !!selectedSuggestion
+    : !!(newSolutionTitle && newSolutionDescription);
+
   return (
     <div className="p-6 max-w-400 mx-auto space-y-6">
       {/* Header */}
@@ -223,22 +368,22 @@ function ViewExceptionPage() {
         </Button>
         <div>
           <h1 className="text-2xl font-semibold text-black">
-            View Exception {exception.id}
+            Resolve Exception {exception.id}
           </h1>
           <p className="text-sm text-black/75 mt-1">
-            View exception details and generate or select solutions
+            Choose a solution method to resolve this exception
           </p>
         </div>
       </div>
 
       {/* Error Display */}
-      {error && (
+      {(error || applyError) && (
         <Card className="border-red-200 bg-red-50">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-red-700">
                 <AlertTriangle className="size-4" />
-                <p className="text-sm">{error}</p>
+                <p className="text-sm">{error || applyError}</p>
               </div>
               {/* ✅ Add retry button for similar exceptions errors */}
               {error && error.includes('similar exceptions') && (
@@ -268,15 +413,21 @@ function ViewExceptionPage() {
       )}
 
       {/* Main Content - Flexbox Layout */}
-      <div className="flex gap-6">
+      <div className="flex flex-col xl:flex-row gap-6">
         {/* Left Sidebar - Exception Details */}
         <ExceptionDetailSidebar 
           exception={exception} 
           getPriorityColor={getPriorityColor} 
-        />
+        >
+          <ExceptionTradeFlow
+            transactionId={exception.trans_id}
+            fallbackTradeId={exception.trade_id}
+            embedded
+          />
+        </ExceptionDetailSidebar>
 
         {/* Right Content - Exception Management */}
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 min-w-0 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Exception Management</CardTitle>
@@ -285,6 +436,20 @@ function ViewExceptionPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {exception.status === 'PENDING' && existingPendingSolution && (
+                <Card className="mb-4 border-blue-200 bg-blue-50">
+                  <CardContent className="py-3">
+                    <div className="flex items-start gap-2 text-blue-800">
+                      <AlertCircle className="size-4 mt-0.5" />
+                      <p className="text-sm">
+                        A solution is already tied to this pending exception. You can edit it directly in
+                        the <span className='font-bold'>Create New Solution with AI</span> form below and save your updates.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <Tabs 
                 value={selectedTab} 
                 onValueChange={(v) => setSelectedTab(v as 'existing' | 'new')}
@@ -354,8 +519,101 @@ function ViewExceptionPage() {
               </Tabs>
             </CardContent>
           </Card>
+
+          {/* Apply Button */}
+          <Button 
+            className="w-full h-12 bg-[#002B51] hover:bg-[#003a6b] text-white text-sm font-semibold disabled:opacity-50"
+            onClick={handleApplySolution}
+            disabled={!canApplySolution || isApplying || loadingExistingPendingSolution}
+          >
+            {isApplying ? (
+              <div className="flex items-center gap-2">
+                <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                {selectedTab === 'existing' ? 'Applying Solution...' : 'Saving Solution...'}
+              </div>
+            ) : (
+              <>
+                {selectedTab === 'existing' 
+                  ? 'Use Selected Solution and Save Solution' 
+                  : exception.status === 'PENDING' && existingPendingSolution
+                    ? 'Update and Save Solution'
+                    : 'Create and Save Solution'}
+              </>
+            )}
+          </Button>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="rounded-full bg-green-100 p-2">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-semibold text-green-800">
+                  {resolutionDetails?.type === 'new' && resolutionDetails?.action === 'updated'
+                    ? 'Solution Updated Successfully!'
+                    : 'Solution Saved Successfully!'}
+                </DialogTitle>
+                <DialogDescription className="text-sm text-gray-600 mt-1">
+                  {resolutionDetails?.type === 'existing' 
+                    ? `Saved existing solution "${resolutionDetails.solutionTitle}"`
+                    : resolutionDetails?.action === 'updated'
+                      ? `Updated and saved solution "${resolutionDetails?.solutionTitle}"`
+                      : `Created and saved new solution "${resolutionDetails?.solutionTitle}"`
+                  }
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Exception ID:</span>
+                <span className="text-sm text-gray-900">#{resolutionDetails?.exceptionId}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Solution ID:</span>
+                <span className="text-sm text-gray-900">#{resolutionDetails?.solutionId || 'N/A'}</span>
+              </div>              
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Resolution Method:</span>
+                <span className="text-sm text-gray-900">
+                  {resolutionDetails?.type === 'existing'
+                    ? 'Saved Existing Solution'
+                    : resolutionDetails?.action === 'updated'
+                      ? 'Updated Existing Pending Solution'
+                      : 'Saved New Solution'}
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2">
+            {/* <Button 
+              variant="outline" 
+              onClick={() => setShowSuccessDialog(false)}
+              className="flex-1"
+            >
+              Stay Here
+            </Button> */}
+            <Button 
+              onClick={() => {
+                setShowSuccessDialog(false);
+                window.location.href = '/exceptions';
+              }}
+              className="flex-1 bg-[#002B51] hover:bg-[#003a6b] text-white"
+            >
+              Back to Exceptions
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

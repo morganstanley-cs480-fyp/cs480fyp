@@ -61,6 +61,10 @@ export const tradeFlowService = {
     return mapTrade(raw);
   },
 
+  async getTransactionById(transactionId: number): Promise<Transaction> {
+    return await request<Transaction>(`/api/transactions/${transactionId}`);
+  },
+
   // NOTE : TEMPORARILY NOT USE LIMIT AND OFFSET FOR NOW.
   // async getTrades(_limit: number = 1000, _offset: number = 0): Promise<Trade[]> {
   //   const response = await request<TradeTableResponse>(`/api/trades`);
