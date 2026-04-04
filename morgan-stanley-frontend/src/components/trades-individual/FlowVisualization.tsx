@@ -33,7 +33,6 @@ const NODE_WIDTH = 180;
 const NODE_HEIGHT = 120;
 const HUB_BASE_WIDTH = NODE_WIDTH * 2;
 const HUB_GROWTH_PER_CONNECTED_NODE = 48;
-const HUB_MAX_WIDTH = NODE_WIDTH * 8;
 const EDGE_COLOR = '#002B51';
 const EDGE_OFFSET = 22;
 const PARTICIPANT_MARGIN = 16;
@@ -564,11 +563,9 @@ async function generateElkLayout(
   });
 
   const connectedNodeCount = connectedNodes.size;
-  const dynamicHubWidth =
-    HUB_BASE_WIDTH + Math.max(0, connectedNodeCount - 2) * HUB_GROWTH_PER_CONNECTED_NODE;
-    
-    const topParticipants: string[] = [];
-    const bottomParticipants: string[] = [];
+
+  const topParticipants: string[] = [];
+  const bottomParticipants: string[] = [];
 
     participants.forEach((participant, index) => {
       if (index % 2 === 0) {
@@ -578,7 +575,21 @@ async function generateElkLayout(
       }
     });
 
-  const hubWidth = clamp(dynamicHubWidth, HUB_BASE_WIDTH, HUB_MAX_WIDTH);
+  const topRowWidth = topParticipants.length > 0
+    ? topParticipants.length * NODE_WIDTH + (topParticipants.length - 1) * 80
+    : 0;
+  const bottomRowWidth = bottomParticipants.length > 0
+    ? bottomParticipants.length * NODE_WIDTH + (bottomParticipants.length - 1) * 80
+    : 0;
+
+  const dynamicHubWidth = Math.max(
+    HUB_BASE_WIDTH,
+    topRowWidth,
+    bottomRowWidth,
+    HUB_BASE_WIDTH + Math.max(0, connectedNodeCount - 2) * HUB_GROWTH_PER_CONNECTED_NODE,
+  );
+
+  const hubWidth = Math.max(HUB_BASE_WIDTH, dynamicHubWidth);
 
   const elkNodes: { id: string; width: number; height: number; layoutOptions?: Record<string, string> }[] = [
     {
