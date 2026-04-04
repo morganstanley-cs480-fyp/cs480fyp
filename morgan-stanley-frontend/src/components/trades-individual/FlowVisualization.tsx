@@ -31,7 +31,9 @@ import ELK, { type ElkNode } from 'elkjs/lib/elk.bundled.js';
 const HUB_ID = 'CCP';
 const NODE_WIDTH = 180;
 const NODE_HEIGHT = 120;
-const HUB_MIN_WIDTH = NODE_WIDTH * 8;
+const HUB_BASE_WIDTH = NODE_WIDTH * 2;
+const HUB_GROWTH_PER_CONNECTED_NODE = 48;
+const HUB_MAX_WIDTH = NODE_WIDTH * 8;
 const EDGE_COLOR = '#002B51';
 const EDGE_OFFSET = 22;
 const PARTICIPANT_MARGIN = 16;
@@ -550,12 +552,25 @@ async function generateElkLayout(
 ) {
   try {
     const elk = new ELK();
+
+  const connectedNodes = new Set<string>();
+  transactionFlows.forEach((flow) => {
+    if (flow.from === HUB_ID && flow.to !== HUB_ID) {
+      connectedNodes.add(flow.to);
+    }
+    if (flow.to === HUB_ID && flow.from !== HUB_ID) {
+      connectedNodes.add(flow.from);
+    }
+  });
+
+  const connectedNodeCount = connectedNodes.size;
+  const dynamicHubWidth =
+    HUB_BASE_WIDTH + Math.max(0, connectedNodeCount - 2) * HUB_GROWTH_PER_CONNECTED_NODE;
     
     const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
   const bottomCount = participants.length - topCount;
 
-  const rowWidth = (count: number) => (count > 0 ? count * NODE_WIDTH + (count - 1) * 40 : 0);
-  const hubWidth = Math.max(HUB_MIN_WIDTH, rowWidth(topCount), rowWidth(bottomCount));
+  const hubWidth = clamp(dynamicHubWidth, HUB_BASE_WIDTH, HUB_MAX_WIDTH);
 
   const elkNodes: { id: string; width: number; height: number; layoutOptions?: Record<string, string> }[] = [
     {
