@@ -627,6 +627,37 @@ async function generateElkLayout(
 
   const layout = await elk.layout(graph);
 
+  const HORIZONTAL_GAP = 80;
+  const VERTICAL_LAYER_GAP = 180;
+  const hubY = NODE_HEIGHT + VERTICAL_LAYER_GAP;
+  const topY = 0;
+  const bottomY = hubY + NODE_HEIGHT + VERTICAL_LAYER_GAP;
+
+  const buildRowPositions = (ids: string[], y: number) => {
+    const positions: Record<string, { x: number; y: number }> = {};
+    if (ids.length === 0) return positions;
+
+    const rowWidth = ids.length * NODE_WIDTH + (ids.length - 1) * HORIZONTAL_GAP;
+    const startX = -rowWidth / 2;
+
+    ids.forEach((id, index) => {
+      positions[id] = {
+        x: startX + index * (NODE_WIDTH + HORIZONTAL_GAP),
+        y,
+      };
+    });
+
+    return positions;
+  };
+
+  const topRowPositions = buildRowPositions(topParticipants, topY);
+  const bottomRowPositions = buildRowPositions(bottomParticipants, bottomY);
+  const forcedNodePositions: Record<string, { x: number; y: number }> = {
+    [HUB_ID]: { x: -hubWidth / 2, y: hubY },
+    ...topRowPositions,
+    ...bottomRowPositions,
+  };
+
   const xs: number[] = [];
   layout.children?.forEach((n) => xs.push(n.x ?? 0));
   const xCenter = xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
@@ -662,8 +693,9 @@ async function generateElkLayout(
   const nodeLookup: Record<string, { x: number; y: number; width: number }> = {};
   layout.children?.forEach((n) => {
     const isHub = n.id === HUB_ID;
-    const x = (n.x ?? 0) - xCenter;
-    const y = n.y ?? 0;
+    const forcedPosition = forcedNodePositions[n.id!];
+    const x = forcedPosition?.x ?? ((n.x ?? 0) - xCenter);
+    const y = forcedPosition?.y ?? (n.y ?? 0);
     const width = isHub ? hubWidth : NODE_WIDTH;
     const status = isHub ? 'CLEARED' : (entityStatusMap[n.id!] || 'ALLEGED');
 
