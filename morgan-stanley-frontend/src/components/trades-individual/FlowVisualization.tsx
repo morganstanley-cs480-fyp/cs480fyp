@@ -567,8 +567,16 @@ async function generateElkLayout(
   const dynamicHubWidth =
     HUB_BASE_WIDTH + Math.max(0, connectedNodeCount - 2) * HUB_GROWTH_PER_CONNECTED_NODE;
     
-    const topCount = participants.length <= 3 ? participants.length : Math.ceil(participants.length / 2);
-  const bottomCount = participants.length - topCount;
+    const topParticipants: string[] = [];
+    const bottomParticipants: string[] = [];
+
+    participants.forEach((participant, index) => {
+      if (index % 2 === 0) {
+        topParticipants.push(participant);
+      } else {
+        bottomParticipants.push(participant);
+      }
+    });
 
   const hubWidth = clamp(dynamicHubWidth, HUB_BASE_WIDTH, HUB_MAX_WIDTH);
 
@@ -581,17 +589,17 @@ async function generateElkLayout(
     },
   ];
 
-  for (let i = 0; i < topCount; i++) {
+  for (let i = 0; i < topParticipants.length; i++) {
     elkNodes.push({
-      id: participants[i],
+      id: topParticipants[i],
       width: NODE_WIDTH,
       height: NODE_HEIGHT,
       layoutOptions: { 'layered.layering.layer': '0' },
     });
   }
-  for (let i = 0; i < bottomCount; i++) {
+  for (let i = 0; i < bottomParticipants.length; i++) {
     elkNodes.push({
-      id: participants[topCount + i],
+      id: bottomParticipants[i],
       width: NODE_WIDTH,
       height: NODE_HEIGHT,
       layoutOptions: { 'layered.layering.layer': '2' },
