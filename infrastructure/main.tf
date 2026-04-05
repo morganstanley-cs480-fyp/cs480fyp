@@ -482,7 +482,7 @@ module "search_service" {
     { name = "REDIS_HOST", value = module.redis_cache.primary_endpoint_address },
     { name = "GOOGLE_MODEL_ID", value = "gemini-2.5-flash-lite" },
     { name = "CORS_ORIGINS", value = "[\"*\"]" },
-    { name = "NEPTUNE_ENDPOINT", value = module.neo4j_database.bolt_url }
+    { name = "NEPTUNE_ENDPOINT", value = module.neo4j_database.bolt_url },
     { name = "NEO4J_URI", value = module.neo4j_database.bolt_url }
   ]
   secrets = [
