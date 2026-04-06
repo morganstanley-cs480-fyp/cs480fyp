@@ -99,6 +99,7 @@ export interface FilterOptions {
 }
 
 export interface ExtractedParams {
+  trade_id?: number | null;
   accounts?: string[] | null;
   asset_types?: string[] | null;
   booking_systems?: string[] | null;
@@ -192,6 +193,7 @@ export interface ChatResponse {
         name: string;
         data: number[];
       }>;
+      chart_type?: 'bar' | 'line' | 'pie';
     };
     metadata: {
       top_k: number;

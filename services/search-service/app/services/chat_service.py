@@ -18,7 +18,7 @@ import google.generativeai as genai
 
 from app.config.settings import settings
 from app.database.connection import db_manager
-from app.models.chat import ChatRequest, ChatResponse
+from app.models.chat import ChatRequest, ChatResponse, ToolDefinition, ToolParameter, ToolsManifestResponse
 from app.models.domain import ExtractedParams, Trade
 from app.services.gemini_service import gemini_service as extraction_service
 from app.services.kg_service import kg_service
@@ -190,9 +190,7 @@ class ChatService:
     def _infer_mode_from_tools(self, tools_called: set[str]) -> str:
         """Infer the response mode based on which tools were invoked."""
         has_table = "get_trade_rows" in tools_called
-        has_analysis = bool(
-            {"get_exception_analytics", "get_trade_timeseries", "get_kg_analytics"} & tools_called
-        )
+        has_analysis = bool({"get_exception_analytics", "get_trade_timeseries", "get_kg_analytics"} & tools_called)
         if has_table and has_analysis:
             return "both"
         if has_analysis:
@@ -242,9 +240,7 @@ class ChatService:
         tools_called: set[str] = set()
 
         # Build the first user message: question + conversation history + SQL filters
-        conversation_text = "\n".join(
-            f"{m.role}: {m.content}" for m in request.conversation[-6:]
-        )
+        conversation_text = "\n".join(f"{m.role}: {m.content}" for m in request.conversation[-6:])
         # Map extracted dimension hints so Gemini picks correct analytics grouping
         dimension_hint = self._infer_dimension_hint(request.message)
 
@@ -295,10 +291,7 @@ class ChatService:
             logger.info(
                 "FC tool calls - iteration %d: %s",
                 iteration + 1,
-                [{
-                    "name": fc.name,
-                    "args": dict(fc.args)
-                } for fc in function_calls],
+                [{"name": fc.name, "args": dict(fc.args)} for fc in function_calls],
             )
 
             # Pass args as a plain Python dict. Values that are proto ListComposite
@@ -323,16 +316,15 @@ class ChatService:
                 tools_called.add(fc.name)
 
                 if isinstance(tool_result, Exception):
-                    logger.warning(
-                        "Tool call %s raised an exception: %s", fc.name, str(tool_result)
-                    )
+                    logger.warning("Tool call %s raised an exception: %s", fc.name, str(tool_result))
                     result_payload: dict[str, Any] = {"error": str(tool_result)}
                 else:
-                    table_results, analytics_evidence_list, kg_evidence = (
-                        self._accumulate_tool_result(
-                            fc.name, tool_result,
-                            table_results, analytics_evidence_list, kg_evidence,
-                        )
+                    table_results, analytics_evidence_list, kg_evidence = self._accumulate_tool_result(
+                        fc.name,
+                        tool_result,
+                        table_results,
+                        analytics_evidence_list,
+                        kg_evidence,
                     )
                     result_payload = tool_result.get("result_preview", {})
 
@@ -353,9 +345,7 @@ class ChatService:
                     genai.protos.Content(role="user", parts=fn_response_parts),
                 )
             except Exception as exc:
-                logger.warning(
-                    "FC model tool-response call failed", extra={"error": str(exc)}
-                )
+                logger.warning("FC model tool-response call failed", extra={"error": str(exc)})
                 break
 
         # Extract final answer text safely (response may not have .text if something went wrong)
@@ -631,9 +621,7 @@ class ChatService:
                             "trade_status_filter": S(
                                 type=T.STRING, description="CLEARED, REJECTED, ALLEGED, CANCELLED"
                             ),
-                            "exception_priority_filter": S(
-                                type=T.STRING, description="CRITICAL, HIGH, MEDIUM, LOW"
-                            ),
+                            "exception_priority_filter": S(type=T.STRING, description="CRITICAL, HIGH, MEDIUM, LOW"),
                             "exception_msg_filter": S(
                                 type=T.STRING,
                                 description="TIME OUT OF RANGE, INSUFFICIENT MARGIN, MAPPING ISSUE, MISSING BIC",
@@ -658,7 +646,10 @@ class ChatService:
         lowered = message.lower()
         dims: list[str] = []
 
-        if any(k in lowered for k in ("clearing house", "clearing_house", "ccp", "cleared by", "cms", "cme", "lch", "jscc", "otcchk")):
+        if any(
+            k in lowered
+            for k in ("clearing house", "clearing_house", "ccp", "cleared by", "cms", "cme", "lch", "jscc", "otcchk")
+        ):
             dims.append("clearing_house")
         if any(k in lowered for k in ("asset type", "asset class", "cds", "irs", " fx ", "mbs", "abs")):
             dims.append("asset_type")
@@ -668,7 +659,19 @@ class ChatService:
             dims.append("booking_system")
         if "account" in lowered:
             dims.append("account")
-        if any(k in lowered for k in ("exception message", "error message", "error type", "exception msg", "missing bic", "mapping issue", "time out", "insufficient margin")):
+        if any(
+            k in lowered
+            for k in (
+                "exception message",
+                "error message",
+                "error type",
+                "exception msg",
+                "missing bic",
+                "mapping issue",
+                "time out",
+                "insufficient margin",
+            )
+        ):
             dims.append("exception_message")
         if "priority" in lowered:
             dims.append("priority")
@@ -704,6 +707,46 @@ class ChatService:
         prompts.append("What trends do you see over time?")
         return prompts[:4]
 
+    def _build_analytics_conditions(
+        self,
+        extracted_params: ExtractedParams,
+        priority_filter: list[str] | None,
+    ) -> tuple[list[str], list[Any]]:
+        """Build WHERE clause conditions and bound values for analytics queries."""
+        conditions: list[str] = []
+        values: list[Any] = []
+        param_index = 1
+
+        field_map = [
+            (extracted_params.accounts, "t.account"),
+            (extracted_params.asset_types, "t.asset_type"),
+            (extracted_params.booking_systems, "t.booking_system"),
+            (extracted_params.affirmation_systems, "t.affirmation_system"),
+            (extracted_params.clearing_houses, "t.clearing_house"),
+            (extracted_params.statuses, "t.status"),
+        ]
+        for field_values, col in field_map:
+            if field_values:
+                conditions.append(f"{col} = ANY(${param_index}::text[])")
+                values.append(field_values)
+                param_index += 1
+
+        if extracted_params.date_from:
+            conditions.append(f"t.update_time >= ${param_index}::timestamp")
+            values.append(datetime.strptime(extracted_params.date_from, "%Y-%m-%d").date())
+            param_index += 1
+
+        if extracted_params.date_to:
+            conditions.append(f"t.update_time < (${param_index}::timestamp + INTERVAL '1 day')")
+            values.append(datetime.strptime(extracted_params.date_to, "%Y-%m-%d").date())
+            param_index += 1
+
+        if priority_filter:
+            conditions.append(f"e.priority = ANY(${param_index}::text[])")
+            values.append(priority_filter)
+
+        return conditions, values
+
     async def _build_analytics_evidence(
         self,
         extracted_params: ExtractedParams,
@@ -735,54 +778,7 @@ class ChatService:
             WHERE 1=1
         """
 
-        conditions = []
-        values: list[Any] = []
-        param_index = 1
-
-        if extracted_params.accounts:
-            conditions.append(f"t.account = ANY(${param_index}::text[])")
-            values.append(extracted_params.accounts)
-            param_index += 1
-
-        if extracted_params.asset_types:
-            conditions.append(f"t.asset_type = ANY(${param_index}::text[])")
-            values.append(extracted_params.asset_types)
-            param_index += 1
-
-        if extracted_params.booking_systems:
-            conditions.append(f"t.booking_system = ANY(${param_index}::text[])")
-            values.append(extracted_params.booking_systems)
-            param_index += 1
-
-        if extracted_params.affirmation_systems:
-            conditions.append(f"t.affirmation_system = ANY(${param_index}::text[])")
-            values.append(extracted_params.affirmation_systems)
-            param_index += 1
-
-        if extracted_params.clearing_houses:
-            conditions.append(f"t.clearing_house = ANY(${param_index}::text[])")
-            values.append(extracted_params.clearing_houses)
-            param_index += 1
-
-        if extracted_params.statuses:
-            conditions.append(f"t.status = ANY(${param_index}::text[])")
-            values.append(extracted_params.statuses)
-            param_index += 1
-
-        if extracted_params.date_from:
-            conditions.append(f"t.update_time >= ${param_index}::timestamp")
-            values.append(datetime.strptime(extracted_params.date_from, "%Y-%m-%d").date())
-            param_index += 1
-
-        if extracted_params.date_to:
-            conditions.append(f"t.update_time < (${param_index}::timestamp + INTERVAL '1 day')")
-            values.append(datetime.strptime(extracted_params.date_to, "%Y-%m-%d").date())
-            param_index += 1
-
-        if priority_filter:
-            conditions.append(f"e.priority = ANY(${param_index}::text[])")
-            values.append(priority_filter)
-            param_index += 1
+        conditions, values = self._build_analytics_conditions(extracted_params, priority_filter)
 
         if conditions:
             query += " AND " + " AND ".join(conditions)
@@ -796,19 +792,51 @@ class ChatService:
         for record in records:
             evidence_rows.append(dict(record))
 
-        chart_labels: list[str] = []
-        chart_values: list[int] = []
+        if len(safe_dimensions) == 1:
+            # Multi-series pivot: X = unique dimension values, one series per priority.
+            # This lets the frontend render a grouped bar chart where each group is a
+            # dimension value (e.g. clearing house) and each bar within the group is
+            # a priority level (CRITICAL / HIGH / MEDIUM / LOW).
+            unique_dims: list[str] = []
+            seen_dims: set[str] = set()
+            for row in evidence_rows:
+                v = str(row.get("dimension_1", "UNKNOWN"))
+                if v not in seen_dims:
+                    seen_dims.add(v)
+                    unique_dims.append(v)
 
-        for row in evidence_rows:
-            first_dimension_value = str(row.get("dimension_1", "UNKNOWN"))
-            if len(safe_dimensions) > 1:
-                second_dimension_value = str(row.get("dimension_2", "UNKNOWN"))
-                label = f"{first_dimension_value} · {second_dimension_value}"
-            else:
-                label = first_dimension_value
+            unique_priorities: list[str] = []
+            seen_p: set[str] = set()
+            for row in evidence_rows:
+                p = str(row.get("priority", "N/A"))
+                if p not in seen_p:
+                    seen_p.add(p)
+                    unique_priorities.append(p)
 
-            chart_labels.append(label)
-            chart_values.append(int(row.get("exception_count", 0) or 0))
+            pivot: dict[str, dict[str, int]] = {d: {} for d in unique_dims}
+            for row in evidence_rows:
+                d = str(row.get("dimension_1", "UNKNOWN"))
+                p = str(row.get("priority", "N/A"))
+                pivot[d][p] = pivot[d].get(p, 0) + int(row.get("exception_count", 0) or 0)
+
+            chart_labels_out = unique_dims
+            chart_series_out: list[dict] = [
+                {
+                    "name": prio,
+                    "data": [pivot[d].get(prio, 0) for d in unique_dims],
+                }
+                for prio in unique_priorities
+            ]
+        else:
+            # Two dimensions: flatten into a single concatenated label, single series.
+            chart_labels_out = []
+            chart_values_out: list[int] = []
+            for row in evidence_rows:
+                dim1 = str(row.get("dimension_1", "UNKNOWN"))
+                dim2 = str(row.get("dimension_2", "UNKNOWN"))
+                chart_labels_out.append(f"{dim1} · {dim2}")
+                chart_values_out.append(int(row.get("exception_count", 0) or 0))
+            chart_series_out = [{"name": "exception_count", "data": chart_values_out}]
 
         return {
             "dimensions": safe_dimensions,
@@ -817,13 +845,9 @@ class ChatService:
                 "title": "Exception Count by Dimension",
                 "x_key": "label",
                 "y_key": "exception_count",
-                "labels": chart_labels,
-                "series": [
-                    {
-                        "name": "exception_count",
-                        "data": chart_values,
-                    }
-                ],
+                "labels": chart_labels_out,
+                "series": chart_series_out,
+                "chart_type": "bar",
             },
             "metadata": {
                 "top_k": top_k,
@@ -850,16 +874,14 @@ class ChatService:
         sections = evidence.get("sections", []) if isinstance(evidence, dict) else []
         if sections:
             sql_evidence_text = "\n".join(
-                f"Section '{sec['dimension']}' rows:\n{json.dumps(sec['rows'][:20], default=str)}"
-                for sec in sections
+                f"Section '{sec['dimension']}' rows:\n{json.dumps(sec['rows'][:20], default=str)}" for sec in sections
             )
         else:
             sql_rows = evidence.get("rows", []) if isinstance(evidence, dict) else []
             sql_evidence_text = json.dumps(sql_rows[:50], default=str)
 
         kg_section = (
-            f"\nKnowledge graph evidence (relationship-aware analytics):\n"
-            f"{json.dumps(kg_rows, default=str)}"
+            f"\nKnowledge graph evidence (relationship-aware analytics):\n" f"{json.dumps(kg_rows, default=str)}"
             if kg_rows
             else ""
         )
@@ -979,6 +1001,7 @@ Trade sample rows:
                         "data": chart_values,
                     }
                 ],
+                "chart_type": "line",
             },
             "metadata": {
                 "top_k": len(evidence_rows),
@@ -1012,6 +1035,149 @@ Trade sample rows:
         """Ensure all chat SQL uses same safety validator as search flow."""
         if not self.query_builder.validate_query_safety(query, values):
             raise ValueError("Generated chat SQL failed safety validation")
+
+    def build_tools_manifest(self) -> ToolsManifestResponse:
+        """Return a human- and machine-readable description of every available tool.
+
+        This powers GET /api/chat/tools so collaborators can discover what
+        the LLM can call without reading implementation code.
+        """
+        ALLOWED_DIMENSIONS = list(self.ALLOWED_DIMENSIONS.keys())
+
+        tools = [
+            ToolDefinition(
+                name="get_trade_rows",
+                description=(
+                    "Fetch individual trade rows from the SQL database. "
+                    "Use for 'show me', 'list', 'find', 'display' style requests."
+                ),
+                parameters={
+                    "limit": ToolParameter(
+                        type="integer",
+                        description="Maximum number of rows to return. Clamped to 1–100.",
+                    ),
+                },
+                operation_type="read",
+                data_source="PostgreSQL trades table",
+            ),
+            ToolDefinition(
+                name="get_exception_analytics",
+                description=(
+                    "Aggregate exception counts from SQL grouped by one or two dimensions. "
+                    "Use for 'which has most exceptions', 'breakdown by X', 'top N' questions."
+                ),
+                parameters={
+                    "dimensions": ToolParameter(
+                        type="array[string]",
+                        description="One or two dimensions to group by.",
+                        allowed_values=ALLOWED_DIMENSIONS,
+                    ),
+                    "priority_filter": ToolParameter(
+                        type="array[string]",
+                        description="Filter results to specific exception priorities.",
+                        allowed_values=list(self.ALLOWED_PRIORITIES),
+                    ),
+                    "top_k": ToolParameter(
+                        type="integer",
+                        description="Number of top results to return. Clamped to 1–25.",
+                    ),
+                },
+                operation_type="read",
+                data_source="PostgreSQL exceptions JOIN trades",
+            ),
+            ToolDefinition(
+                name="get_trade_timeseries",
+                description=(
+                    "Get time-series trade counts bucketed by month or week. "
+                    "Use for 'trend', 'over time', 'monthly', 'weekly' requests."
+                ),
+                parameters={
+                    "year": ToolParameter(type="integer", description="Optional year filter."),
+                    "status": ToolParameter(
+                        type="string",
+                        description="Trade status to filter by.",
+                        allowed_values=["CLEARED", "REJECTED", "ALLEGED", "CANCELLED"],
+                    ),
+                    "bucket": ToolParameter(
+                        type="string",
+                        description="Time bucket granularity.",
+                        allowed_values=["month", "week"],
+                    ),
+                },
+                operation_type="read",
+                data_source="PostgreSQL trades table",
+            ),
+        ]
+
+        if settings.NEO4J_URI:
+            tools.append(
+                ToolDefinition(
+                    name="get_kg_analytics",
+                    description=(
+                        "Query the knowledge graph (Neo4j) for relationship-aware analytics. "
+                        "Use for counterparty analysis or graph traversal across "
+                        "BookingSystem → Trade → Transaction → Exception paths."
+                    ),
+                    parameters={
+                        "dimension": ToolParameter(
+                            type="string",
+                            description="Dimension to group by.",
+                            allowed_values=[
+                                "BookingSystem",
+                                "ClearingHouse",
+                                "AffirmationSystem",
+                                "Counterparty",
+                                "Account",
+                                "AssetType",
+                                "TradeStatus",
+                                "TransactionStatus",
+                            ],
+                        ),
+                        "metric_target": ToolParameter(
+                            type="string",
+                            description="What to count.",
+                            allowed_values=["Trade", "Transaction", "Exception"],
+                        ),
+                        "asset_type_filter": ToolParameter(
+                            type="string",
+                            description="Filter by asset type.",
+                            allowed_values=["CDS", "IRS", "FX", "MBS", "ABS"],
+                        ),
+                        "trade_status_filter": ToolParameter(
+                            type="string",
+                            description="Filter by trade status.",
+                            allowed_values=["CLEARED", "REJECTED", "ALLEGED", "CANCELLED"],
+                        ),
+                        "exception_priority_filter": ToolParameter(
+                            type="string",
+                            description="Filter by exception priority.",
+                            allowed_values=["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+                        ),
+                        "direction_filter": ToolParameter(
+                            type="string",
+                            description="Transaction direction.",
+                            allowed_values=["send", "receive"],
+                        ),
+                        "start_date": ToolParameter(type="string", description="Start date (YYYY-MM-DD)."),
+                        "end_date": ToolParameter(type="string", description="End date (YYYY-MM-DD)."),
+                        "sort_order": ToolParameter(
+                            type="string",
+                            description="Sort order for results.",
+                            allowed_values=["ASC", "DESC"],
+                        ),
+                    },
+                    required_parameters=["dimension", "metric_target"],
+                    operation_type="read",
+                    data_source="Neo4j knowledge graph",
+                )
+            )
+
+        return ToolsManifestResponse(
+            tools=tools,
+            blocked_operations=sorted(self.query_builder._BLOCKED_SQL_KEYWORDS),
+            model=settings.GOOGLE_MODEL_ID,
+            kg_enabled=bool(settings.NEO4J_URI),
+        )
 
 
 chat_service = ChatService()

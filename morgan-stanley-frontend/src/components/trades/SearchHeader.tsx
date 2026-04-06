@@ -1,12 +1,12 @@
 // The gradient search header with natural language search input
 
-import { Search, Filter, Sparkles, Star, X as XIcon, Eraser, AlertCircle, Bot } from "lucide-react";
+import { Search, Filter, Sparkles, Star, X as XIcon, Eraser, AlertCircle, Bot, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis } from "recharts";
 import type { QueryHistory } from "@/lib/api/types";
 
 export interface RecentSearch {
@@ -44,6 +44,7 @@ interface SearchHeaderProps {
         name: string;
         data: number[];
       }>;
+      chart_type?: 'bar' | 'line' | 'pie';
     };
     metadata: {
       top_k: number;
@@ -103,6 +104,9 @@ export function SearchHeader({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [evidenceSortDirection, setEvidenceSortDirection] = useState<"desc" | "asc">("desc");
+  const [chartTypeOverride, setChartTypeOverride] = useState<'bar' | 'line' | 'pie' | null>(null);
+  const [chatResultsCollapsed, setChatResultsCollapsed] = useState(false);
+  const CHART_COLORS = ['#dc2626', '#f97316', '#eab308', '#22c55e', '#002B51', '#0ea5e9', '#8b5cf6'];
 
   const isQueryValid = searchQuery.trim().length >= 3;
 
@@ -158,10 +162,14 @@ export function SearchHeader({
     onClearSearch();
   };
 
-  const chartData = chatEvidence?.chart?.labels?.map((label, index) => ({
-    label,
-    exception_count: chatEvidence.chart.series[0]?.data[index] ?? 0,
-  })) ?? [];
+  const chartData = chatEvidence?.chart?.labels?.map((label, index) => {
+    const point: Record<string, string | number> = { label };
+    chatEvidence.chart.series.forEach((s) => {
+      point[s.name] = s.data[index] ?? 0;
+    });
+    return point;
+  }) ?? [];
+  const effectiveChartType: 'bar' | 'line' | 'pie' = chartTypeOverride ?? chatEvidence?.chart?.chart_type ?? 'bar';
 
   const evidenceRows = (() => {
     if (!chatEvidence?.rows?.length) return [];
@@ -330,7 +338,23 @@ export function SearchHeader({
             <span className="text-xs uppercase tracking-wider text-black font-medium">
               AI Response {chatMode ? `(${chatMode})` : ""}
             </span>
+            <button
+              type="button"
+              onClick={() => setChatResultsCollapsed((prev) => !prev)}
+              className="ml-auto flex items-center gap-1 text-xs text-black/50 hover:text-[#002B51] transition-colors"
+              title={chatResultsCollapsed ? "Expand AI response" : "Collapse AI response"}
+            >
+              <span>{chatResultsCollapsed ? "Show" : "Hide"}</span>
+              <ChevronDown
+                className={`size-3.5 transition-transform duration-200 ${
+                  chatResultsCollapsed ? "" : "rotate-180"
+                }`}
+              />
+            </button>
           </div>
+          <div className={`overflow-hidden transition-all duration-300 ${
+            chatResultsCollapsed ? "max-h-0 opacity-0 pointer-events-none" : "max-h-screen opacity-100"
+          }`}>
           <div className="text-sm text-black">
           <ReactMarkdown
             components={{
@@ -374,30 +398,94 @@ export function SearchHeader({
 
           {chatEvidence && chartData.length > 0 && (
             <div className="mt-4 pt-3 border-t border-black/15">
-              <p className="text-xs uppercase tracking-wider text-black font-medium mb-2">
-                {chatEvidence.chart.title}
-              </p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs uppercase tracking-wider text-black font-medium">
+                  {chatEvidence.chart.title}
+                </p>
+                {effectiveChartType !== 'line' && (
+                  <button
+                    type="button"
+                    className="text-xs text-black/50 hover:text-[#002B51] underline underline-offset-2"
+                    onClick={() => setChartTypeOverride(effectiveChartType === 'pie' ? 'bar' : 'pie')}
+                  >
+                    {effectiveChartType === 'pie' ? 'Switch to Bar' : 'Switch to Pie'}
+                  </button>
+                )}
+              </div>
               <ChartContainer
-                className="h-52 w-full"
-                config={{
-                  exception_count: {
-                    label: "Exception Count",
-                    color: "#002B51",
-                  },
-                }}
+                className={effectiveChartType === 'pie' ? 'h-64 w-full' : 'h-52 w-full'}
+                config={Object.fromEntries(
+                  chatEvidence.chart.series.map((s, i) => [
+                    s.name,
+                    { label: s.name, color: CHART_COLORS[i % CHART_COLORS.length] },
+                  ])
+                )}
               >
-                <BarChart accessibilityLayer data={chartData.slice(0, 8)} margin={{ left: 8, right: 8 }}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="label"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={6}
-                    tickFormatter={(value) => String(value).slice(0, 12)}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
-                  <Bar dataKey="exception_count" fill="var(--color-exception_count)" radius={4} />
-                </BarChart>
+                {effectiveChartType === 'line' ? (
+                  <AreaChart data={chartData} margin={{ left: 8, right: 8, top: 4 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      dataKey="label"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={6}
+                      tickFormatter={(value) => String(value).slice(0, 10)}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                    {chatEvidence.chart.series.map((s, i) => (
+                      <Area
+                        key={s.name}
+                        type="monotone"
+                        dataKey={s.name}
+                        stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                        fill={`${CHART_COLORS[i % CHART_COLORS.length]}22`}
+                        strokeWidth={2}
+                      />
+                    ))}
+                  </AreaChart>
+                ) : effectiveChartType === 'pie' ? (
+                  <PieChart>
+                    <Pie
+                      data={chatEvidence.chart.labels.map((label, i) => ({
+                        name: label,
+                        value: chatEvidence.chart.series[0]?.data[i] ?? 0,
+                      }))}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      label={({ name, percent }: { name: string; percent: number }) =>
+                        `${String(name).slice(0, 12)}: ${(percent * 100).toFixed(0)}%`
+                      }
+                    >
+                      {chatEvidence.chart.labels.map((_, i) => (
+                        <Cell key={`cell-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                  </PieChart>
+                ) : (
+                  <BarChart accessibilityLayer data={chartData.slice(0, 10)} margin={{ left: 8, right: 8 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      dataKey="label"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={6}
+                      tickFormatter={(value) => String(value).slice(0, 12)}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                    {chatEvidence.chart.series.map((s, i) => (
+                      <Bar
+                        key={s.name}
+                        dataKey={s.name}
+                        fill={CHART_COLORS[i % CHART_COLORS.length]}
+                        radius={4}
+                      />
+                    ))}
+                  </BarChart>
+                )}
               </ChartContainer>
 
               {chatEvidence.rows.length > 0 && (
@@ -466,6 +554,7 @@ export function SearchHeader({
               </div>
             </div>
           )}
+          </div>{/* end collapsible wrapper */}
         </div>
       )}
 

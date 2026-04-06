@@ -38,3 +38,31 @@ class ChatResponse(BaseModel):
     evidence: Optional[dict[str, Any]] = None
     follow_up_prompts: list[str] = Field(default_factory=list)
     execution_time_ms: Optional[float] = None
+
+
+class ToolParameter(BaseModel):
+    """Schema description for a single tool parameter."""
+
+    type: str
+    description: str
+    allowed_values: Optional[list[str]] = None
+
+
+class ToolDefinition(BaseModel):
+    """Human- and machine-readable description of one LLM tool."""
+
+    name: str
+    description: str
+    parameters: dict[str, ToolParameter]
+    required_parameters: list[str] = Field(default_factory=list)
+    operation_type: Literal["read", "write"] = "read"
+    data_source: str
+
+
+class ToolsManifestResponse(BaseModel):
+    """Response payload for GET /api/chat/tools."""
+
+    tools: list[ToolDefinition]
+    blocked_operations: list[str]
+    model: str
+    kg_enabled: bool

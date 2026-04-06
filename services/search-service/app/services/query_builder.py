@@ -255,11 +255,35 @@ class QueryBuilder:
 
         return query, values
 
+    # DML / DDL keywords that must never appear in a read-only query.
+    # Checked against a normalised (stripped, upper-cased) copy of the SQL so
+    # that mixed-case or leading-whitespace variants are also caught.
+    _BLOCKED_SQL_KEYWORDS = frozenset(
+        {
+            "INSERT",
+            "UPDATE",
+            "DELETE",
+            "DROP",
+            "TRUNCATE",
+            "ALTER",
+            "CREATE",
+            "REPLACE",
+            "MERGE",
+            "UPSERT",
+            "GRANT",
+            "REVOKE",
+            "EXECUTE",
+            "EXEC",
+            "CALL",
+        }
+    )
+
     def validate_query_safety(self, query: str, values: list[Any]) -> bool:
         """
         Validate that a query is safe and follows security best practices.
 
         Checks:
+        - Query does not start with a blocked DML/DDL keyword
         - No string concatenation/interpolation in query
         - All values are in the values list
         - Query uses parameterized placeholders ($1, $2, etc.)
@@ -271,7 +295,18 @@ class QueryBuilder:
         Returns:
             True if query is safe, False otherwise
         """
-        # Check for dangerous patterns
+        # Reject any query whose first meaningful token is a mutating keyword.
+        # Strip comments and leading whitespace before checking so that tricks
+        # like "-- comment\nDELETE …" are caught as well.
+        first_token = query.strip().split()[0].upper().rstrip(";") if query.strip() else ""
+        if first_token in self._BLOCKED_SQL_KEYWORDS:
+            logger.error(
+                "Blocked SQL keyword detected in query",
+                extra={"keyword": first_token, "query_preview": query[:200]},
+            )
+            return False
+
+        # Check for dangerous string-interpolation patterns
         dangerous_patterns = ["' + ", '" + ', "format(", ".format", "%s", "{}"]
 
         for pattern in dangerous_patterns:

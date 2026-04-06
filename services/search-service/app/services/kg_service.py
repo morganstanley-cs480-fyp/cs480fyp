@@ -22,21 +22,45 @@ class KGService:
     BLUEPRINTS: dict[tuple[str, str], str] = {
         ("BookingSystem", "Trade"): "(dim:Entity)<-[:BOOKED_ON]-(t:Trade)",
         ("BookingSystem", "Transaction"): "(dim:Entity)<-[:BOOKED_ON]-(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)",
-        ("BookingSystem", "Exception"): "(dim:Entity)<-[:BOOKED_ON]-(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:GENERATED_EXCEPTION]->(e:Exception)",
+        (
+            "BookingSystem",
+            "Exception",
+        ): "(dim:Entity)<-[:BOOKED_ON]-(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:GENERATED_EXCEPTION]->(e:Exception)",
         ("ClearingHouse", "Trade"): "(dim:Entity)<-[:CLEARED_BY]-(t:Trade)",
         ("ClearingHouse", "Transaction"): "(dim:Entity)<-[:CLEARED_BY]-(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)",
-        ("ClearingHouse", "Exception"): "(dim:Entity)<-[:CLEARED_BY]-(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:GENERATED_EXCEPTION]->(e:Exception)",
+        (
+            "ClearingHouse",
+            "Exception",
+        ): "(dim:Entity)<-[:CLEARED_BY]-(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:GENERATED_EXCEPTION]->(e:Exception)",
         ("AffirmationSystem", "Trade"): "(dim:Entity)<-[:AFFIRMED_BY]-(t:Trade)",
-        ("AffirmationSystem", "Transaction"): "(dim:Entity)<-[:AFFIRMED_BY]-(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)",
-        ("AffirmationSystem", "Exception"): "(dim:Entity)<-[:AFFIRMED_BY]-(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:GENERATED_EXCEPTION]->(e:Exception)",
+        (
+            "AffirmationSystem",
+            "Transaction",
+        ): "(dim:Entity)<-[:AFFIRMED_BY]-(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)",
+        (
+            "AffirmationSystem",
+            "Exception",
+        ): "(dim:Entity)<-[:AFFIRMED_BY]-(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:GENERATED_EXCEPTION]->(e:Exception)",
         # Counterparty dimension — groups by the entity on the other end of a transaction
-        ("Counterparty", "Trade"): "(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:SENT_TO|RECEIVED_FROM]->(dim:Entity)",
-        ("Counterparty", "Transaction"): "(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:SENT_TO|RECEIVED_FROM]->(dim:Entity)",
-        ("Counterparty", "Exception"): "(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:SENT_TO|RECEIVED_FROM]->(dim:Entity), (tr)-[:GENERATED_EXCEPTION]->(e:Exception)",
+        (
+            "Counterparty",
+            "Trade",
+        ): "(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:SENT_TO|RECEIVED_FROM]->(dim:Entity)",
+        (
+            "Counterparty",
+            "Transaction",
+        ): "(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:SENT_TO|RECEIVED_FROM]->(dim:Entity)",
+        (
+            "Counterparty",
+            "Exception",
+        ): "(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:SENT_TO|RECEIVED_FROM]->(dim:Entity), (tr)-[:GENERATED_EXCEPTION]->(e:Exception)",
         # Property-based fallback (Account, AssetType, TradeStatus, etc.)
         ("PROPERTY", "Trade"): "(t:Trade)",
         ("PROPERTY", "Transaction"): "(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)",
-        ("PROPERTY", "Exception"): "(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:GENERATED_EXCEPTION]->(e:Exception)",
+        (
+            "PROPERTY",
+            "Exception",
+        ): "(t:Trade)-[:HAS_TRANSACTION]->(tr:Transaction)-[:GENERATED_EXCEPTION]->(e:Exception)",
     }
 
     # Maps dimension name -> the Cypher property expression to GROUP BY
@@ -132,6 +156,7 @@ LIMIT 25
                 "title": f"{target} count by {dimension} (Knowledge Graph)",
                 "labels": labels,
                 "series": [{"name": "metric", "data": values}],
+                "chart_type": "bar",
             },
             "metadata": {
                 "row_count": len(rows),

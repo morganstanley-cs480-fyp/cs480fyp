@@ -4,7 +4,7 @@ Chat API route for LLM-led analytics and table retrieval.
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.models.chat import ChatRequest, ChatResponse
+from app.models.chat import ChatRequest, ChatResponse, ToolsManifestResponse
 from app.services.chat_service import chat_service
 from app.utils.logger import logger
 
@@ -35,3 +35,15 @@ async def chat(request: ChatRequest) -> ChatResponse:
                 "message": "Unable to process chat request at this time.",
             },
         ) from exc
+
+
+@router.get("/chat/tools", response_model=ToolsManifestResponse, status_code=status.HTTP_200_OK)
+async def get_chat_tools() -> ToolsManifestResponse:
+    """
+    Return the manifest of all tools available to the LLM.
+
+    Lists every tool the model can call, its parameters, allowed values,
+    data source, and operation type (all are read-only).  Also exposes the
+    SQL keyword blocklist so callers understand the safety guardrails.
+    """
+    return chat_service.build_tools_manifest()

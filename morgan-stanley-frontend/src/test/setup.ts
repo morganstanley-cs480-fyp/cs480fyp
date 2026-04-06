@@ -16,7 +16,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-type ObserverMockInstance = {
+type _ObserverMockInstance = {
   observe: ReturnType<typeof vi.fn>;
   unobserve: ReturnType<typeof vi.fn>;
   disconnect: ReturnType<typeof vi.fn>;
