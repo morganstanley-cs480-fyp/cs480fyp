@@ -4,12 +4,6 @@ import userEvent from '@testing-library/user-event';
 import { TradeInfoCard } from '@/components/trades-individual/TradeInfoCard';
 import type { Exception, Trade, Transaction } from '@/lib/api/types';
 
-const mockNavigate = vi.fn();
-
-vi.mock('@tanstack/react-router', () => ({
-  useNavigate: () => mockNavigate,
-}));
-
 vi.mock('@/lib/utils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/utils')>();
   return {
@@ -21,6 +15,7 @@ vi.mock('@/lib/utils', async (importOriginal) => {
 describe('TradeInfoCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.history.replaceState({}, '', '/');
   });
 
   const trade: Trade = {
@@ -75,7 +70,7 @@ describe('TradeInfoCard', () => {
     expect(screen.getByText('formatted:2024-02-01')).toBeInTheDocument();
   });
 
-  it('navigates to exception details on exception card click', async () => {
+  it('opens exception modal on exception card click', async () => {
     const user = userEvent.setup();
 
     render(
@@ -92,10 +87,7 @@ describe('TradeInfoCard', () => {
     await user.click(screen.getByRole('tab', { name: /Exceptions \(1\)/i }));
     await user.click(await screen.findByRole('button', { name: /Exception 100/i }));
 
-    expect(mockNavigate).toHaveBeenCalledWith({
-      to: '/exceptions/$exceptionId',
-      params: { exceptionId: '100' },
-    });
+    expect(await screen.findByTitle('Exception 100')).toBeInTheDocument();
   });
 
   it('calls onToggle when collapse button is clicked', () => {
@@ -167,7 +159,7 @@ describe('TradeInfoCard', () => {
     expect(screen.queryByRole('button', { name: /View exception/i })).not.toBeInTheDocument();
   });
 
-  it('navigates on keyboard Enter from exception card', async () => {
+  it('opens modal on keyboard Enter from exception card', async () => {
     const user = userEvent.setup();
 
     render(
@@ -186,9 +178,6 @@ describe('TradeInfoCard', () => {
     cardButton.focus();
     fireEvent.keyDown(cardButton, { key: 'Enter' });
 
-    expect(mockNavigate).toHaveBeenCalledWith({
-      to: '/exceptions/$exceptionId',
-      params: { exceptionId: '100' },
-    });
+    expect(await screen.findByTitle('Exception 100')).toBeInTheDocument();
   });
 });

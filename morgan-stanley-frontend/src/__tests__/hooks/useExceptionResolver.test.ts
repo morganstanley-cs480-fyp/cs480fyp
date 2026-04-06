@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useExceptionResolver } from '../../hooks/useExceptionResolver'
-import type { AISuggestion, Exception } from '../../lib/api/types'
+import type { Exception } from '../../lib/api/types'
 
 // Mock the exception service
 vi.mock('../../lib/api/exceptionService', () => ({
@@ -33,24 +33,6 @@ describe('useExceptionResolver', () => {
     comment: null,
     priority: 'LOW',
     update_time: '2024-01-01',
-    ...value,
-  })
-
-  const asSuggestion = (value: Partial<AISuggestion>): AISuggestion => ({
-    exception_id: '1',
-    title: 't',
-    description: 'd',
-    trade_id: '1',
-    similarity_score: 0,
-    priority: 'LOW',
-    status: 'PENDING',
-    asset_type: 'EQ',
-    clearing_house: 'CH',
-    explanation: 'e',
-    text: 'x',
-    solution_description: undefined,
-    exception_description: undefined,
-    solution_score: undefined,
     ...value,
   })
 
@@ -174,7 +156,7 @@ describe('useExceptionResolver', () => {
     await waitFor(() => expect(result.current.aiSuggestions).toHaveLength(1))
 
     await act(async () => {
-      await result.current.handleSuggestionClick(asSuggestion(initialSuggestion))
+      result.current.handleSuggestionClick(result.current.aiSuggestions[0])
     })
 
     expect(exceptionService.getSolution).toHaveBeenCalledWith(initialSuggestion.exception_id)
@@ -291,24 +273,34 @@ describe('useExceptionResolver', () => {
     expect(result.current.error).toMatch(/failed to generate ai solution/i)
   })
 
-  it('keeps the selected suggestion when solution lookup fails', async () => {
+  it('keeps the selected suggestion when preloaded solution lookup fails', async () => {
     const openException = asException({ id: 10, status: 'PENDING' })
     vi.mocked(exceptionService.getExceptionById).mockResolvedValue(openException)
-    vi.mocked(exceptionService.getSimilarExceptions).mockResolvedValue({ similar_exceptions: [] } as never)
+    vi.mocked(exceptionService.getSimilarExceptions).mockResolvedValue({
+      similar_exceptions: [
+        {
+          exception_id: 77,
+          exception_msg: 'Needs details',
+          similarity_score: 80,
+          trade_id: 22,
+          priority: 1,
+          status: 'OPEN',
+          asset_type: 'EQ',
+          clearing_house: 'CHX',
+          explanation: 'Explained',
+          text: 'details',
+        },
+      ],
+    } as never)
     vi.mocked(exceptionService.getSolution).mockRejectedValue(new Error('nope'))
 
     const { result } = renderHook(() => useExceptionResolver('10'))
     await waitFor(() => expect(result.current.exception).toEqual(openException))
 
-    const suggestion = asSuggestion({
-      exception_id: '77',
-      title: 'Needs details',
-      description: 'desc',
-      trade_id: '22',
-    })
+    await waitFor(() => expect(result.current.aiSuggestions).toHaveLength(1))
 
     await act(async () => {
-      await result.current.handleSuggestionClick(suggestion)
+      result.current.handleSuggestionClick(result.current.aiSuggestions[0])
     })
 
     expect(result.current.selectedSuggestion?.exception_id).toBe('77')

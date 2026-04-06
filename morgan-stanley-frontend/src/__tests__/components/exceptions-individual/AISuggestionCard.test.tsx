@@ -56,9 +56,9 @@ describe('AISuggestionCard', () => {
       />
     );
 
-    expect(screen.getByText('Solution Explanation:')).toBeInTheDocument();
+    expect(screen.getByText('Solution Description:')).toBeInTheDocument();
     expect(screen.getByText('Use retry memo flow')).toBeInTheDocument();
-    expect(screen.getByText('Exception Details:')).toBeInTheDocument();
+    expect(screen.getByText('Exception Description:')).toBeInTheDocument();
     expect(screen.getByText('Mismatch between systems')).toBeInTheDocument();
   });
 
@@ -71,7 +71,7 @@ describe('AISuggestionCard', () => {
       />
     );
 
-    expect(screen.getByText('Click to load additional context...')).toBeInTheDocument();
+    expect(screen.getByText('Additional context is currently unavailable.')).toBeInTheDocument();
   });
 
   it('renders arrow-format solution blocks', () => {
@@ -91,7 +91,7 @@ describe('AISuggestionCard', () => {
     expect(screen.getByText('forward to CCP')).toBeInTheDocument();
   });
 
-  it('renders default status/priority branches and closed status', () => {
+  it('renders default priority branch and similarity fallback branch', () => {
     render(
       <AISuggestionCard
         suggestion={{
@@ -107,7 +107,6 @@ describe('AISuggestionCard', () => {
       />
     );
 
-    expect(screen.getByText('Status: CLOSED')).toBeInTheDocument();
     expect(screen.getByText('Priority: UNKNOWN')).toBeInTheDocument();
     expect(screen.getByText('79.9% Match')).toBeInTheDocument();
     expect(screen.getByText('plain paragraph')).toBeInTheDocument();

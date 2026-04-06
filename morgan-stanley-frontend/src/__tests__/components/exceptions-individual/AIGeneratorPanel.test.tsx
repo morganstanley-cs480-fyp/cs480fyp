@@ -27,7 +27,7 @@ describe('AIGeneratorPanel', () => {
 
   it('renders correctly with default props', () => {
     render(<AIGeneratorPanel {...defaultProps} />);
-    expect(screen.getByText('Generate Solution Description')).toBeInTheDocument();
+    expect(screen.getByText('Generate Solution Text')).toBeInTheDocument();
   });
 
   it('shows generating state', () => {
@@ -38,7 +38,7 @@ describe('AIGeneratorPanel', () => {
 
   it('calls onGenerate when button is clicked', () => {
     render(<AIGeneratorPanel {...defaultProps} />);
-    fireEvent.click(screen.getByText('Generate Solution Description'));
+    fireEvent.click(screen.getByText('Generate Solution Text'));
     expect(mockOnGenerate).toHaveBeenCalled();
   });
 
