@@ -150,8 +150,8 @@ async def generate_solution(
             solution = await _fetch_solution_by_exception_id(similar_exception_id)
             
             historical_cases.append(HistoricalCase(
-                exception_id=similar_exception_id,
-                trade_id=similar_doc["trade_id"],
+                exception_id=str(similar_exception_id),
+                trade_id=str(similar_doc["trade_id"]),
                 similarity_score=similar_doc["similarity_score"],
                 exception_narrative=similar_doc["text"],
                 solution=solution
