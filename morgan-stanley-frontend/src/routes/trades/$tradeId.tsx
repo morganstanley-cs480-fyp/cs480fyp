@@ -28,6 +28,7 @@ export const Route = createFileRoute("/trades/$tradeId")({
 function TradeDetailPage() {
     const {tradeId} = Route.useParams();
     const navigate = useNavigate();
+    const isEmbedded = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1';
 
     const [trade, setTrade] = useState<Trade | null>(null);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -129,9 +130,9 @@ function TradeDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="p-6 w-full mx-auto">
-                <Card>
-                    <CardContent className="py-12">
+            <div className={isEmbedded ? "h-full w-full" : "p-6 w-full mx-auto"}>
+                <Card className={isEmbedded ? "h-full border-0 rounded-none shadow-none" : undefined}>
+                    <CardContent className={isEmbedded ? "h-full flex items-center justify-center py-8" : "py-12"}>
                         <div className="text-center text-black/50">
                             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                             <p className="mt-2 text-sm">Loading trade details...</p>
@@ -144,19 +145,21 @@ function TradeDetailPage() {
 
     if (loadError || !trade) {
         return (
-            <div className="p-6 w-full mx-auto">
-                <Card>
-                    <CardContent className="py-12">
+            <div className={isEmbedded ? "h-full w-full" : "p-6 w-full mx-auto"}>
+                <Card className={isEmbedded ? "h-full border-0 rounded-none shadow-none" : undefined}>
+                    <CardContent className={isEmbedded ? "h-full flex items-center justify-center py-8" : "py-12"}>
                         <div className="text-center text-black/50">
                             <AlertCircle className="size-12 mx-auto mb-3 opacity-50"/>
                             <p className="text-lg font-medium mb-2">Trade Not Found</p>
                             <p className="text-sm mb-4">
                                 {loadError ?? `The trade with ID "${tradeId}" could not be found.`}
                             </p>
-                            <Button onClick={() => navigate({to: "/trades"})}>
-                                <ArrowLeft className="size-4 mr-2"/>
-                                Back to Trades
-                            </Button>
+                            {!isEmbedded && (
+                                <Button onClick={() => navigate({to: "/trades"})}>
+                                    <ArrowLeft className="size-4 mr-2"/>
+                                    Back to Trades
+                                </Button>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -165,39 +168,69 @@ function TradeDetailPage() {
     }
 
     return (
-        <div className="p-6 max-w-[1800px] mx-auto space-y-6">
-            {/* Header with Trade Info */}
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => window.history.back()}
-                            >
-                                <ArrowLeft className="size-4 mr-2"/>
-                                Back
-                            </Button>
-                            <div>
-                                <CardTitle>Trade Clearing Flow Visualization</CardTitle>
-                                <CardDescription className="mt-2">
-                                    Interactive flow diagram and transaction timeline for{" "}
-                                    <span className="font-extrabold">Trade {trade.trade_id}</span>
-                                </CardDescription>
+        <div className={isEmbedded ? "h-full w-full overflow-hidden p-4" : "p-6 max-w-450 mx-auto space-y-6"}>
+            {!isEmbedded && (
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => window.history.back()}
+                                >
+                                    <ArrowLeft className="size-4 mr-2"/>
+                                    Back
+                                </Button>
+                                <div>
+                                    <CardTitle>Trade Clearing Flow Visualization</CardTitle>
+                                    <CardDescription className="mt-2">
+                                        Interactive flow diagram and transaction timeline for{" "}
+                                        <span className="font-extrabold">Trade {trade.trade_id}</span>
+                                    </CardDescription>
+                                </div>
                             </div>
+                            <Badge
+                                variant="secondary"
+                                className={`text-lg px-4 py-2 ${getStatusBadgeClassName(latestTransactionStatus)}`}
+                            >
+                                {latestTransactionStatus}
+                            </Badge>
+                        </div>
+                    </CardHeader>
+
+                    <CardContent className="pt-0">
+                        <TradeInfoCard
+                            trade={trade}
+                            transactions={mergedTransactions}
+                            exceptions={mergedExceptions}
+                            showTradeInfo={showTradeInfo}
+                            onToggle={() => setShowTradeInfo(!showTradeInfo)}
+                            getStatusBadgeClassName={getStatusBadgeClassName}
+                            isConnected={isConnected}
+                            connectionStatus={connectionStatus}
+                        />
+                    </CardContent>
+                </Card>
+            )}
+
+            {isEmbedded && (
+                <div className="space-y-4 h-full overflow-auto">
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <h2 className="text-lg font-semibold text-black">Trade {trade.trade_id}</h2>
+                            <p className="text-sm text-black/60">
+                                Embedded trade details and flow view
+                            </p>
                         </div>
                         <Badge
                             variant="secondary"
-                            className={`text-lg px-4 py-2 ${getStatusBadgeClassName(latestTransactionStatus)}`}
+                            className={`px-3 py-1 ${getStatusBadgeClassName(latestTransactionStatus)}`}
                         >
                             {latestTransactionStatus}
                         </Badge>
                     </div>
-                </CardHeader>
 
-                {/* Trade Information Card Content */}
-                <CardContent className="pt-0">
                     <TradeInfoCard
                         trade={trade}
                         transactions={mergedTransactions}
@@ -206,15 +239,16 @@ function TradeDetailPage() {
                         onToggle={() => setShowTradeInfo(!showTradeInfo)}
                         getStatusBadgeClassName={getStatusBadgeClassName}
                         isConnected={isConnected}
-                        connectionStatus={connectionStatus}                        
+                        connectionStatus={connectionStatus}
+                        embedded
                     />
-                </CardContent>
-            </Card>
+                </div>
+            )}
 
             {/* Main Content - Split View */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className={isEmbedded ? "grid grid-cols-1 gap-4 h-full min-h-0" : "grid grid-cols-2 gap-6"}>
                 {/* Left Side - Flow Visualization */}
-                <div className="space-y-6">
+                <div className={isEmbedded ? "space-y-4 min-h-0" : "space-y-6"}>
                     <FlowVisualization
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
@@ -232,7 +266,7 @@ function TradeDetailPage() {
                 </div>
 
                 {/* Right Side - Transaction & Entity Details */}
-                <div className="space-y-6">
+                <div className={isEmbedded ? "space-y-4 min-h-0" : "space-y-6"}>
                     {/* Entity Details */}
 
                     <EntityAndTransactionDetailPanel

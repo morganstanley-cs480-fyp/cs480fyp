@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
 import { ArrowRight, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import type { Trade, Transaction } from '@/lib/api/types';
 import { tradeFlowService } from '@/lib/api/tradeFlowService';
@@ -14,11 +14,11 @@ interface ExceptionTradeFlowProps {
 }
 
 export function ExceptionTradeFlow({ transactionId, fallbackTradeId, embedded = false }: ExceptionTradeFlowProps) {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [trade, setTrade] = useState<Trade | null>(null);
+  const [showTradeModal, setShowTradeModal] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -150,16 +150,28 @@ export function ExceptionTradeFlow({ transactionId, fallbackTradeId, embedded = 
         <Button
           variant="outline"
           className="w-full border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
-          onClick={() => {
-            navigate({
-              to: '/trades/$tradeId',
-              params: { tradeId: tradeId.toString() },
-            });
-          }}
+          onClick={() => setShowTradeModal(true)}
         >
-          Go to Trade Page
+          Open Trade Page
           <ArrowRight className="ml-2 size-4" />
         </Button>
+      )}
+
+      {tradeId && (
+        <Dialog open={showTradeModal} onOpenChange={setShowTradeModal}>
+          <DialogContent
+            className="flex flex-col overflow-hidden p-6"
+            style={{ width: '80vw', maxWidth: '80vw', height: '80vh' }}
+          >
+            <div className="flex-1 min-h-0 overflow-hidden rounded-md border border-black/10 bg-white">
+              <iframe
+                title={`Trade ${tradeId}`}
+                src={`/trades/${tradeId}?embedded=1`}
+                className="w-full h-full border-0 bg-white"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );

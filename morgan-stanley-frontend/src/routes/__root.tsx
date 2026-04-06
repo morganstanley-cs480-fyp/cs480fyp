@@ -11,6 +11,7 @@ export type RouterContext = {
 
 function RootComponent() {
   const auth = useAuth();
+  const isEmbedded = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1';
 
   // Show loading state while auth is initializing
   if (auth.isLoading) {
@@ -27,7 +28,7 @@ function RootComponent() {
   return (
     <>
       {/* Only show Header if authenticated (or in dev without Cognito) */}
-      {(auth.isAuthenticated || !import.meta.env.VITE_COGNITO_CLIENT_ID) && <Header />}
+      {!isEmbedded && (auth.isAuthenticated || !import.meta.env.VITE_COGNITO_CLIENT_ID) && <Header />}
       <Outlet />
     </>
   );

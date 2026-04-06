@@ -21,6 +21,7 @@ interface TradeInfoCardProps {
   getStatusBadgeClassName: (status: string) => string;
   isConnected?: boolean;
   connectionStatus?: string;
+  embedded?: boolean;
 }
 
 export function TradeInfoCard({
@@ -32,6 +33,7 @@ export function TradeInfoCard({
   getStatusBadgeClassName,
   isConnected = false,
   connectionStatus = "Disconnected",  
+  embedded = false,
 }: TradeInfoCardProps) {
   const navigate = useNavigate();
 
@@ -47,25 +49,36 @@ export function TradeInfoCard({
 
     const latestTransactionStatus = getLatestTransactionStatus();
 
+  const openExceptionPage = (exceptionId: number) => {
+    const exceptionPath = `/exceptions/${exceptionId}`;
+
+    if (embedded && typeof window !== 'undefined' && window.top && window.top !== window) {
+      window.top.location.assign(exceptionPath);
+      return;
+    }
+
+    navigate({ to: '/exceptions/$exceptionId', params: { exceptionId: `${exceptionId}` } });
+  };
+
   return (
     <>
       {/* Toggle Header */}
-      <div className="flex items-center justify-between py-3 border-t">
+      <div className={`flex items-center justify-between border-t ${embedded ? 'py-2' : 'py-3'}`}>
         <div className="flex items-center gap-2">
-          <Info className="size-5 text-[#002B51]" />
-          <h3 className="text-lg font-semibold">Trade Information</h3>
+          <Info className={`${embedded ? 'size-4' : 'size-5'} text-[#002B51]`} />
+          <h3 className={`${embedded ? 'text-base' : 'text-lg'} font-semibold`}>Trade Information</h3>
 
           {/* Live Update Status Indicator */}
           <div className="flex items-center gap-1 ml-2">
             {isConnected ? (
               <>
                 <Wifi className="size-4 text-green-600" />
-                <span className="text-xs text-green-600 font-medium">Connection status for live updates: {connectionStatus}</span>
+                <span className={`text-xs text-green-600 font-medium ${embedded ? 'hidden sm:inline' : ''}`}>Connection status for live updates: {connectionStatus}</span>
               </>
             ) : (
               <>
                 <WifiOff className="size-4 text-gray-400" />
-                <span className="text-xs text-gray-400">Connection status for live updates: {connectionStatus}</span>
+                <span className={`text-xs text-gray-400 ${embedded ? 'hidden sm:inline' : ''}`}>Connection status for live updates: {connectionStatus}</span>
               </>
             )}
           </div>          
@@ -85,7 +98,7 @@ export function TradeInfoCard({
       </div>
 
       {showTradeInfo && (
-        <Tabs defaultValue="summary" className="pb-4">
+        <Tabs defaultValue="summary" className={embedded ? 'pb-2' : 'pb-4'}>
           <TabsList className="w-full">
             <TabsTrigger value="summary">Trade Info</TabsTrigger>
             <TabsTrigger value="exceptions">Exceptions ({exceptions.length})</TabsTrigger>
@@ -180,13 +193,13 @@ export function TradeInfoCard({
                   <div
                     key={exception.id}
                     className="rounded-lg border border-red-200 bg-red-50/50 p-3 cursor-pointer"
-                    onClick={() => navigate({ to: "/exceptions/$exceptionId", params: { exceptionId: `${exception.id}` } })}
+                    onClick={() => openExceptionPage(exception.id)}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        navigate({ to: "/exceptions/$exceptionId", params: { exceptionId: `${exception.id}` } });
+                        openExceptionPage(exception.id);
                       }
                     }}
                   >
@@ -226,10 +239,7 @@ export function TradeInfoCard({
                         className="bg-[#002B51] text-white hover:bg-[#002B51]/90"
                         onClick={(event) => {
                           event.stopPropagation();
-                          navigate({
-                            to: "/exceptions/$exceptionId",
-                            params: { exceptionId: `${exception.id}` },
-                          });
+                          openExceptionPage(exception.id);
                         }}
                       >
                         View exception
