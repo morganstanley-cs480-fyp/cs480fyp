@@ -4,6 +4,7 @@ import {ArrowLeft, AlertCircle} from "lucide-react";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import type { Exception, Trade, Transaction } from "@/lib/api/types";
 import { tradeFlowService } from "@/lib/api/tradeFlowService";
 import { exceptionService } from "@/lib/api/exceptionService";
@@ -39,6 +40,8 @@ function TradeDetailPage() {
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [selectedEntity, setSelectedEntity] = useState<{ name: string; isHub: boolean } | null>(null);
     const [lastSelectedType, setLastSelectedType] = useState<'entity' | 'transaction' | null>(null);
+    const [showExceptionModal, setShowExceptionModal] = useState(false);
+    const [activeExceptionId, setActiveExceptionId] = useState<string | null>(null);
 
     const [showTradeInfo, setShowTradeInfo] = useState(true);
     const [activeTab, setActiveTab] = useState<"timeline" | "system">("system");
@@ -63,10 +66,13 @@ function TradeDetailPage() {
 
     // Params are strings.
     const handleResolveException = (exceptionId: string) => {
-        navigate({
-            to: "/exceptions/$exceptionId",
-            params: {exceptionId},
-        });
+        if (isEmbedded && typeof window !== 'undefined' && window.top && window.top !== window) {
+            window.top.location.assign(`/exceptions/${exceptionId}`);
+            return;
+        }
+
+        setActiveExceptionId(exceptionId);
+        setShowExceptionModal(true);
     };
 
     const handleEntitySelect = (entityName: string, isHub: boolean) => {
@@ -246,7 +252,7 @@ function TradeDetailPage() {
             )}
 
             {/* Main Content - Split View */}
-            <div className={isEmbedded ? "grid grid-cols-1 gap-4 h-full min-h-0" : "grid grid-cols-2 gap-6"}>
+            <div className={isEmbedded ? "grid grid-cols-2 gap-4 h-full min-h-0" : "grid grid-cols-2 gap-6"}>
                 {/* Left Side - Flow Visualization */}
                 <div className={isEmbedded ? "space-y-4 min-h-0" : "space-y-6"}>
                     <FlowVisualization
@@ -280,6 +286,21 @@ function TradeDetailPage() {
 
                 </div>
             </div>
+
+            <Dialog open={showExceptionModal} onOpenChange={setShowExceptionModal}>
+                <DialogContent
+                    className="flex flex-col overflow-hidden p-6"
+                    style={{ width: '80vw', maxWidth: '80vw', height: '80vh' }}
+                >
+                    <div className="flex-1 min-h-0 overflow-hidden rounded-md border border-black/10 bg-white">
+                        <iframe
+                            title={activeExceptionId ? `Exception ${activeExceptionId}` : 'Exception details'}
+                            src={activeExceptionId ? `/exceptions/${activeExceptionId}?embedded=1&returnToTrade=${trade.trade_id}` : undefined}
+                            className="w-full h-full border-0 bg-white"
+                        />
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

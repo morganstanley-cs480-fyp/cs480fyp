@@ -162,7 +162,7 @@ export function AIGeneratorPanel({
           </>
         ) : (
           <>
-            Generate Solution Description
+            Generate Solution Text
           </>
         )}
       </Button>

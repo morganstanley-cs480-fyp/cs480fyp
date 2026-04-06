@@ -11,9 +11,15 @@ interface ExceptionTradeFlowProps {
   transactionId: number;
   fallbackTradeId?: number;
   embedded?: boolean;
+  hideOpenTradeButton?: boolean;
 }
 
-export function ExceptionTradeFlow({ transactionId, fallbackTradeId, embedded = false }: ExceptionTradeFlowProps) {
+export function ExceptionTradeFlow({
+  transactionId,
+  fallbackTradeId,
+  embedded = false,
+  hideOpenTradeButton = false,
+}: ExceptionTradeFlowProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transaction, setTransaction] = useState<Transaction | null>(null);
@@ -146,7 +152,7 @@ export function ExceptionTradeFlow({ transactionId, fallbackTradeId, embedded = 
         </>
       )}
 
-      {tradeId && (
+      {tradeId && !hideOpenTradeButton && (
         <Button
           variant="outline"
           className="w-full border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
@@ -157,7 +163,7 @@ export function ExceptionTradeFlow({ transactionId, fallbackTradeId, embedded = 
         </Button>
       )}
 
-      {tradeId && (
+      {tradeId && !hideOpenTradeButton && (
         <Dialog open={showTradeModal} onOpenChange={setShowTradeModal}>
           <DialogContent
             className="flex flex-col overflow-hidden p-6"

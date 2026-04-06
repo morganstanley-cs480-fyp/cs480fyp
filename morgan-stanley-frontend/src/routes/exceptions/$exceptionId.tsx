@@ -27,6 +27,8 @@ export const Route = createFileRoute('/exceptions/$exceptionId')({
 function ResolveExceptionPage() {
   const { exceptionId } = Route.useParams();
   const navigate = useNavigate();
+  const isEmbedded = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1';
+  const returnToTradeId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('returnToTrade') : null;
   const [isApplying, setIsApplying] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -242,7 +244,23 @@ function ResolveExceptionPage() {
     return 'secondary';
   };
 
+  const navigateToTrade = (tradeId: string) => {
+    const tradePath = `/trades/${tradeId}`;
+
+    if (typeof window !== 'undefined' && window.top && window.top !== window) {
+      window.top.location.assign(tradePath);
+      return;
+    }
+
+    window.location.href = tradePath;
+  };
+
   const handleBack = () => {
+    if (returnToTradeId) {
+      navigateToTrade(returnToTradeId);
+      return;
+    }
+
     if (typeof window !== 'undefined' && window.history.length > 1) {
       window.history.back();
       return;
@@ -252,7 +270,7 @@ function ResolveExceptionPage() {
 
   if (error && !exception) {
     return (
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className={isEmbedded ? 'p-4 max-w-450 mx-auto' : 'p-6 max-w-7xl mx-auto'}>
         <Card>
           <CardContent className="py-12">
             <div className="text-center text-red-600">
@@ -271,7 +289,7 @@ function ResolveExceptionPage() {
 
   if (!exception) {
     return (
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className={isEmbedded ? 'p-4 max-w-450 mx-auto' : 'p-6 max-w-7xl mx-auto'}>
         <Card>
           <CardContent className="py-12">
             <div className="text-center text-black/50">
@@ -286,7 +304,7 @@ function ResolveExceptionPage() {
 
   if (exception.status === 'CLOSED') {
     return (
-      <div className="p-6 max-w-400 mx-auto space-y-6">
+      <div className={isEmbedded ? 'p-4 max-w-450 mx-auto space-y-4' : 'p-6 max-w-400 mx-auto space-y-6'}>
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
@@ -355,7 +373,7 @@ function ResolveExceptionPage() {
     : !!(newSolutionTitle && newSolutionDescription);
 
   return (
-    <div className="p-6 max-w-400 mx-auto space-y-6">
+    <div className={isEmbedded ? 'p-4 max-w-450 mx-auto space-y-4' : 'p-6 max-w-400 mx-auto space-y-6'}>
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button 
@@ -364,7 +382,7 @@ function ResolveExceptionPage() {
           onClick={handleBack}
           className="border-black/15 text-black/75 hover:border-[#002B51] hover:text-[#002B51]"
         >
-          Back
+          {returnToTradeId ? 'Back to Trade' : 'Back'}
         </Button>
         <div>
           <h1 className="text-2xl font-semibold text-black">
@@ -423,6 +441,7 @@ function ResolveExceptionPage() {
             transactionId={exception.trans_id}
             fallbackTradeId={exception.trade_id}
             embedded
+            hideOpenTradeButton={!!returnToTradeId}
           />
         </ExceptionDetailSidebar>
 
@@ -605,11 +624,16 @@ function ResolveExceptionPage() {
             <Button 
               onClick={() => {
                 setShowSuccessDialog(false);
+                if (returnToTradeId) {
+                  navigateToTrade(returnToTradeId);
+                  return;
+                }
+
                 window.location.href = '/exceptions';
               }}
               className="flex-1 bg-[#002B51] hover:bg-[#003a6b] text-white"
             >
-              Back to Exceptions
+              {returnToTradeId ? 'Back to Trade' : 'Back to Exceptions'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,5 @@
 // Individual AI suggestion card belonging to AISuggestionsTab
+import type { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, TrendingUp, AlertCircle, Activity, Loader2 } from "lucide-react";
@@ -22,19 +23,10 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
     }
   };
 
-  // Status color mapping
-  const getStatusColor = (status?: string) => {
-    switch (status?.toUpperCase()) {
-      case 'CLOSED': return 'bg-green-100 text-green-800 border-green-200';
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
   
   const hasSolutionDetails = suggestion.solution_description && suggestion.exception_description;
 
-  function renderSolutionText(text: string) {
+  function renderExceptionText(text: string) {
     // Treat numbered headings (e.g. "1. ") as section boundaries
     // Insert a blank line before any numbered heading, then split on blank lines
     const normalized = text.replace(/(^|\n)(\d+\.\s+)/g, '$1\n$2');
@@ -63,7 +55,7 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
           <div key={i} className="space-y-1 mb-4">
             {lines.map((l, idx) => (
               <div key={idx} className="flex items-start gap-2">
-                <span className="text-green-800">→</span>
+                <span className="text-red-800">→</span>
                 <span>{formatInline(l.replace(/^→\s*|^->\s*/,'') as string)}</span>
               </div>
             ))}
@@ -76,8 +68,8 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
         const [heading, ...rest] = lines;
         return (
           <div key={i} className="mb-4">
-            <div className="text-xs font-semibold text-green-800">{formatInline(heading)}</div>
-            <div className="text-xs whitespace-pre-wrap text-green-700">{formatInline(rest.join('\n'))}</div>
+            <div className="text-xs font-semibold text-red-800">{formatInline(heading)}</div>
+            <div className="text-xs whitespace-pre-wrap text-red-700">{formatInline(rest.join('\n'))}</div>
           </div>
         );
       }
@@ -93,7 +85,7 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
 
   function formatInline(text: string) {
     // Replace **bold** with <strong>
-    const parts: Array<string | JSX.Element> = [];
+    const parts: Array<string | ReactNode> = [];
     const boldRe = /\*\*([^*]+)\*\*/g;
     let lastIndex = 0;
     let m: RegExpExecArray | null;
@@ -172,17 +164,15 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
           <Badge className={`text-xs ${getPriorityColor(suggestion.priority)}`}>
             Priority: {suggestion.priority}
           </Badge>
-          <Badge className={`text-xs ${getStatusColor(suggestion.status)}`}>
-            Status: {suggestion.status}
-          </Badge>
+
         </div>
 
 
         {/* AI Explanation */}
         {suggestion.explanation && (
-          <div className="bg-black/[0.02] border border-black/10 rounded p-3 mb-3">
+          <div className="bg-black/2 border border-black/10 rounded p-3 mb-3">
             <p className="text-xs font-semibold text-black/75 mb-1">
-              AI Analysis:
+              AI Analysis Explanation:
             </p>
             <p className="text-xs text-black/75">
               {suggestion.explanation}
@@ -190,15 +180,15 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
           </div>
         )}
 
-        {/* Solution Text */}
+        {/* Exception Text */}
         {suggestion.text && (
-          <div className="bg-green-50 border border-green-200 rounded p-3 mb-3">
-            <p className="text-xs font-semibold text-green-800 mb-2 flex items-center gap-1">
-              Solution Text:
+          <div className="bg-red-50 border border-red-200 rounded p-3 mb-3">
+            <p className="text-xs font-semibold text-red-800 mb-2 flex items-center gap-1">
+              Exception Text:
             </p>
 
-            <div className="text-xs text-green-700">
-              {renderSolutionText(suggestion.text)}
+            <div className="text-xs text-red-700">
+              {renderExceptionText(suggestion.text)}
             </div>
           </div>
         )}        
@@ -208,7 +198,7 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
           <div className="bg-green-50 border border-green-200 rounded p-3 mb-3">
             <p className="text-xs font-semibold text-green-800 mb-1 flex items-center gap-1">
               <Clock className="size-3" />
-              Solution Explanation:
+              Solution Description:
             </p>
             <p className="text-xs text-green-700">
               {suggestion.solution_description}
@@ -221,7 +211,7 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
           <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-3">
             <p className="text-xs font-semibold text-blue-800 mb-1 flex items-center gap-1">
               <AlertCircle className="size-3" />
-              Exception Details:
+              Exception Description:
             </p>
             <p className="text-xs text-blue-700">
               {suggestion.exception_description}
@@ -241,7 +231,7 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
               </div>
             ) : (
               <p className="text-xs text-gray-600 text-center">
-                Click to load additional context...
+                Additional context is currently unavailable.
               </p>
             )}
           </div>

@@ -20,7 +20,7 @@ export function useExceptionResolver(exceptionId: string) {
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasTriedAISearch, setHasTriedAISearch] = useState(false);
-  const [loadingSolutionId, setLoadingSolutionId] = useState<string | null>(null);
+  const loadingSolutionId: string | null = null;
 
   // Clear selected suggestion when switching tabs
   useEffect(() => {
@@ -49,6 +49,28 @@ export function useExceptionResolver(exceptionId: string) {
     }));
   };
 
+  const hydrateSuggestionsWithSolutionDetails = useCallback(async (suggestions: AISuggestion[]): Promise<AISuggestion[]> => {
+    const hydrated = await Promise.all(
+      suggestions.map(async (suggestion) => {
+        try {
+          const solutionDetails = await exceptionService.getSolution(suggestion.exception_id);
+          return {
+            ...suggestion,
+            solution_description: solutionDetails.solution_description,
+            exception_description: solutionDetails.exception_description,
+            solution_score: solutionDetails.scores,
+          };
+        } catch (fetchError) {
+          // Keep base suggestion even if one detail call fails.
+          console.warn('Failed to preload solution details for suggestion:', suggestion.exception_id, fetchError);
+          return suggestion;
+        }
+      })
+    );
+
+    return hydrated;
+  }, []);
+
   // ✅ Remove hasTriedAISearch from dependencies and handle it inside the function
   const handleAISearch = useCallback(async (exc?: Exception, forceRetry: boolean = false) => {
     const targetException = exc || exception;
@@ -74,7 +96,8 @@ export function useExceptionResolver(exceptionId: string) {
       );
 
       const suggestions = convertSimilarExceptionsToSuggestions(response.similar_exceptions);
-      setAiSuggestions(suggestions);
+      const hydratedSuggestions = await hydrateSuggestionsWithSolutionDetails(suggestions);
+      setAiSuggestions(hydratedSuggestions);
     } catch (error: unknown) {
       console.error('❌ Failed to fetch similar exceptions:', error);
 
@@ -91,7 +114,7 @@ export function useExceptionResolver(exceptionId: string) {
     } finally {
       setAiSearching(false);
     }
-  }, [exception, hasTriedAISearch]); // ✅ Remove hasTriedAISearch from dependencies
+  }, [exception, hasTriedAISearch, hydrateSuggestionsWithSolutionDetails]); // ✅ Remove hasTriedAISearch from dependencies
 
   // ✅ Fix retry function to force a new search
   const retryAISearch = useCallback(() => {
@@ -179,45 +202,9 @@ export function useExceptionResolver(exceptionId: string) {
     }
   }, [aiGeneratedSolution]);
 
-  const handleSuggestionClick = useCallback(async (suggestion: AISuggestion) => {
-    // Set the basic suggestion first for immediate UI feedback
+  const handleSuggestionClick = useCallback((suggestion: AISuggestion) => {
+    // Suggestions are preloaded with solution context during AI search.
     setSelectedSuggestion(suggestion);
-    
-    // Fetch solution details if not already loaded
-    if (!suggestion.solution_description || !suggestion.exception_description) {
-      try {
-        
-        setLoadingSolutionId(suggestion.exception_id); // ✅ Set loading state
-        
-      
-        const solutionDetails = await exceptionService.getSolution(suggestion.exception_id);
-        
-        // Update the suggestion with solution details
-        const updatedSuggestion: AISuggestion = {
-          ...suggestion,
-          solution_description: solutionDetails.solution_description,
-          exception_description: solutionDetails.exception_description,
-          solution_score: solutionDetails.scores
-        };
-        
-        setSelectedSuggestion(updatedSuggestion);
-        
-        // Also update the suggestion in the aiSuggestions array to cache the result
-        setAiSuggestions(prev => 
-          prev.map(s => 
-            s.exception_id === suggestion.exception_id 
-              ? updatedSuggestion 
-              : s
-          )
-        );
-        
-      } catch (error) {
-        console.error('❌ Failed to fetch solution details:', error);
-        // Keep the basic suggestion even if solution fetch fails
-      } finally {
-      setLoadingSolutionId(null); // ✅ Clear loading state
-    }
-    }
   }, []);
 
   const filteredSuggestions = aiSuggestions.filter(

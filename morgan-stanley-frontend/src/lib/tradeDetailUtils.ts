@@ -72,7 +72,7 @@ export function getTransactionStatusColor(status: string): "default" | "destruct
   };
 
 export function getPriorityColor(priority: string): "default" | "destructive" | "secondary" {
-  if (priority === "HIGH") return "destructive";
+  if (priority === "HIGH" || priority === "CRITICAL") return "destructive";
   if (priority === "MEDIUM") return "default";
   return "secondary";
 }

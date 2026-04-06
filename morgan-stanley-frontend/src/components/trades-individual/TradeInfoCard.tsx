@@ -1,14 +1,15 @@
 //  Collapsible trade information card - now as inner content
 
+import { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronDown, ChevronUp, Info, Calendar, Clock, Activity, AlertTriangle, Wifi, WifiOff } from "lucide-react";
 import type { Trade, Transaction, Exception } from "@/lib/api/types";
 import { formatDateShort } from "@/lib/utils";
 import { getPriorityColor } from "@/lib/tradeDetailUtils";
-import { useNavigate } from "@tanstack/react-router";
 import { getExceptionStatusClassName } from "@/lib/tradeDetailUtils";
 import { getPriorityBadgeClassName } from "@/lib/tradeDetailUtils";
 
@@ -35,7 +36,8 @@ export function TradeInfoCard({
   connectionStatus = "Disconnected",  
   embedded = false,
 }: TradeInfoCardProps) {
-  const navigate = useNavigate();
+  const [showExceptionModal, setShowExceptionModal] = useState(false);
+  const [activeExceptionId, setActiveExceptionId] = useState<number | null>(null);
 
    const getLatestTransactionStatus = () => {
     if (transactions.length === 0) {
@@ -50,14 +52,13 @@ export function TradeInfoCard({
     const latestTransactionStatus = getLatestTransactionStatus();
 
   const openExceptionPage = (exceptionId: number) => {
-    const exceptionPath = `/exceptions/${exceptionId}`;
-
     if (embedded && typeof window !== 'undefined' && window.top && window.top !== window) {
-      window.top.location.assign(exceptionPath);
+      window.top.location.assign(`/exceptions/${exceptionId}`);
       return;
     }
 
-    navigate({ to: '/exceptions/$exceptionId', params: { exceptionId: `${exceptionId}` } });
+    setActiveExceptionId(exceptionId);
+    setShowExceptionModal(true);
   };
 
   return (
@@ -253,6 +254,23 @@ export function TradeInfoCard({
           </TabsContent>
         </Tabs>
       )}
+
+      <Dialog open={showExceptionModal} onOpenChange={setShowExceptionModal}>
+        <DialogContent
+          className="flex flex-col overflow-hidden p-6"
+          style={{ width: '80vw', maxWidth: '80vw', height: '80vh' }}
+        >
+          <div className="flex-1 min-h-0 overflow-hidden rounded-md border border-black/10 bg-white">
+            <iframe
+              title={activeExceptionId ? `Exception ${activeExceptionId}` : 'Exception details'}
+              src={activeExceptionId && trade?.trade_id
+                ? `/exceptions/${activeExceptionId}?embedded=1&returnToTrade=${trade.trade_id}`
+                : undefined}
+              className="w-full h-full border-0 bg-white"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
