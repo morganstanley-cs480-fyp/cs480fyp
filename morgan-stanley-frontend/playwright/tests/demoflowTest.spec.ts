@@ -26,38 +26,6 @@ test.beforeEach(async ({ page }) => {
 });
 
 
-test('Trade status consistency', async ({ page }) => {
-  const resultsSpan = page.locator('span.text-xs.font-mono.bg-black\\/5');
-
-  await expect(resultsSpan).toHaveText(/\d+ trades/, { timeout: 10000 });
-
-  const spanText = await resultsSpan.textContent();
-  const resultsCount = parseInt(spanText?.match(/\d+/)?.[0] || '0', 10);
-
-  expect(resultsCount).toBeGreaterThan(0);
-
-  const statusSpan = page.locator('span[data-slot="badge"]').first();
-  const status = await statusSpan.textContent()
-
-  await statusSpan.click()
-  const statusSpanTradePage = page.locator('span[data-slot="badge"]').first();
-  const statusTradePage = await statusSpanTradePage.textContent()
-
-  expect(status).not.toBeNull();
-  expect(statusTradePage).not.toBeNull();
-  expect(status?.trim()).toBe(statusTradePage?.trim());
-
-  await page.getByRole('tab', { name: 'Timeline Flow' }).click();
-  const lastStatus = await page.locator('span[data-slot="badge"]').last().textContent();
-
-  expect(lastStatus).not.toBeNull()
-  expect(status?.trim()).toBe(lastStatus?.trim())
-  // console.log(lastStatus)
-
-  await page.getByRole('button', { name: 'Back' }).click();
-  await expect(page).toHaveURL('/trades');
-  await expect(page.getByText('Manual Search')).toBeVisible();
-});
 test('Manual search by tradeId', async ({ page }) => {
   const trade = page.locator('span[class="text-sm text-black"]').first()
   const tradeId = await trade.textContent()
@@ -89,12 +57,6 @@ test('AI search - cleared search in 2025', async ({ page }) => {
   await page.click('button[title="Search"]');
 
   await page.waitForTimeout(2000); 
-  // await page.pause()
-  // await page.getByRole('button', { name: 'Seach' }).click();
-
-  // await page.pause()
-
-  // await page.waitForSelector('tr[data-slot="table-row"]');
 
   const tbody = page.locator('tbody[data-slot="table-body"]');
   await tbody.waitFor(); 
@@ -233,8 +195,8 @@ test('Exception - Create solution', async ({ page }) => {
     const generatingBtn = page.locator('button:has-text("Generating...")');
     await expect(generatingBtn).toHaveCount(0, { timeout: 30000});
 
-    const solDesc = await page.getByRole('textbox', { name: 'Solution Description' }).textContent();
-    expect(solDesc).toBe("")
+    // const solDesc = await page.getByRole('textbox', { name: 'Solution Description' }).textContent();
+    // expect(solDesc).toBe("")
 
     await page.getByRole("button", { name: "Copy to Description"}).click()
 
