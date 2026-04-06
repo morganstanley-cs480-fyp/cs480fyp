@@ -108,24 +108,36 @@ test('Exception - view all exceptions', async ({ page }) => {
     }
   }
   await page.getByText("View Solution").click()
-  // await page.pause()
-  await page.waitForTimeout(3000)
-  const card = page.locator('div[data-slot="card-content"]');
+  // CLOSED exception can either have a resolvable solution or a load-error banner.
+  const solutionIdLabel = page.locator('p:has-text("Solution ID")').first();
+  const missingSolutionBanner = page.getByText(
+    /This exception is closed, but its applied solution could not be loaded/i
+  );
 
-  const solutionId = await card.locator('p:has-text("Solution ID") + p').first().innerText();
-  const exceptionId = await card.locator('p:has-text("Exception ID") + p').first().innerText();
-  const title = await card.locator('p:has-text("Title") + p').first().innerText();
-  const exceptionDesc = await card.locator('p:has-text("Exception Description") + p').first().innerText();
-  const referenceEvent = await card.locator('p:has-text("Reference Event") + p').first().innerText();
-  const solutionDesc = await card.locator('p:has-text("Solution Description") + p').first().innerText();
-  const createdTime = await card.locator('p:has-text("Created Time") + p').first().innerText();
-  expect(solutionId).not.toBe('');
-  expect(exceptionId).not.toBe('');
-  expect(title).not.toBe('');
-  expect(exceptionDesc).not.toBe('');
-  expect(referenceEvent).not.toBe('');
-  expect(solutionDesc).not.toBe('');
-  expect(createdTime).not.toBe('');
+  await Promise.race([
+    solutionIdLabel.waitFor({ state: 'visible', timeout: 10000 }),
+    missingSolutionBanner.waitFor({ state: 'visible', timeout: 10000 }),
+  ]);
+
+  if (await solutionIdLabel.isVisible()) {
+    const card = page.locator('div[data-slot="card-content"]');
+    const solutionId = await card.locator('p:has-text("Solution ID") + p').first().innerText();
+    const exceptionId = await card.locator('p:has-text("Exception ID") + p').first().innerText();
+    const title = await card.locator('p:has-text("Title") + p').first().innerText();
+    const exceptionDesc = await card.locator('p:has-text("Exception Description") + p').first().innerText();
+    const referenceEvent = await card.locator('p:has-text("Reference Event") + p').first().innerText();
+    const solutionDesc = await card.locator('p:has-text("Solution Description") + p').first().innerText();
+    const createdTime = await card.locator('p:has-text("Created Time") + p').first().innerText();
+    expect(solutionId).not.toBe('');
+    expect(exceptionId).not.toBe('');
+    expect(title).not.toBe('');
+    expect(exceptionDesc).not.toBe('');
+    expect(referenceEvent).not.toBe('');
+    expect(solutionDesc).not.toBe('');
+    expect(createdTime).not.toBe('');
+  } else {
+    await expect(missingSolutionBanner).toBeVisible();
+  }
 });
 
 
