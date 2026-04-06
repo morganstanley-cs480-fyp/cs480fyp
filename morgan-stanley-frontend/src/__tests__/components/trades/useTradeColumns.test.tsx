@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from 'vitest'
+import { describe, test, expect } from 'vitest'
 import { useTradeColumns } from '../../../components/trades/useTradeColumns'
 
 describe('useTradeColumns matchesDateRange via column.filterFn', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { StatsOverview, StatsCardKey } from '@/components/exceptions/StatsOverview';
+import { StatsOverview } from '@/components/exceptions/StatsOverview';
 
 describe('StatsOverview', () => {
   const mockStats = {

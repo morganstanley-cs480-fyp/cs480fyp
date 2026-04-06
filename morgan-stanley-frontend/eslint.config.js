@@ -32,4 +32,14 @@ export default defineConfig([
       ],
     },
   },
+  // Relax rules for test files — explicit any and ts-comment suppression are
+  // common and acceptable in test code. This block must come after the general
+  // block so it takes precedence in ESLint flat config (last match wins).
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.test.ts', 'src/test/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+    },
+  },
 ])

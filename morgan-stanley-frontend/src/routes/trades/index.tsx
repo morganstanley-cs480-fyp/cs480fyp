@@ -109,6 +109,7 @@ function TradeSearchPage() {
       y_key: string;
       labels: string[];
       series: Array<{ name: string; data: number[] }>;
+      chart_type?: 'bar' | 'line' | 'pie';
     };
     metadata: {
       top_k: number;
@@ -207,6 +208,41 @@ function TradeSearchPage() {
       fetchSearchHistory();
     }
   // fetchSearchHistory is a stable async fn; adding it would require useCallback and cause re-renders
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchResponse?.query_id]);
+
+  // When a natural language search completes, reflect the LLM-extracted parameters
+  // in the manual filter panel so the user can see what was interpreted and
+  // optionally amend the values before running a manual search.
+  useEffect(() => {
+    if (
+      searchResponse?.search_type !== 'natural_language' ||
+      !searchResponse.extracted_params
+    ) return;
+
+    const p = searchResponse.extracted_params;
+
+    setFilters((prev) => ({
+      ...prev,
+      // trade_id: int on backend, string in the input field
+      trade_id: p.trade_id != null ? String(p.trade_id) : '',
+      // backend returns arrays; manual filter dropdowns are single-select — use first value
+      account: p.accounts?.length ? p.accounts[0] : 'all',
+      asset_type: p.asset_types?.length ? p.asset_types[0] : 'all',
+      booking_system: p.booking_systems?.length ? p.booking_systems[0] : 'all',
+      affirmation_system: p.affirmation_systems?.length ? p.affirmation_systems[0] : 'all',
+      clearing_house: p.clearing_houses?.length ? p.clearing_houses[0] : 'all',
+      // statuses is already an array — direct mapping
+      status: p.statuses ?? [],
+      date_from: p.date_from ?? '',
+      date_to: p.date_to ?? '',
+      with_exceptions_only: p.with_exceptions_only ?? false,
+      cleared_trades_only: p.cleared_trades_only ?? false,
+    }));
+
+    // Auto-expand the filter panel so the user can see the populated values
+    setShowFilters(true);
+  // Re-run only when a new NL query result arrives (identified by its unique query_id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchResponse?.query_id]);
 
