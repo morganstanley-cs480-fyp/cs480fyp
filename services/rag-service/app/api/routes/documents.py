@@ -331,11 +331,10 @@ async def find_similar_exceptions(
         for doc, explanation, solution in zip(similar_docs, explanations, solutions):
             similar_exceptions.append(
                 SimilarException(
-                    exception_id=doc["exception_id"],
-                    trade_id=doc["trade_id"],
+                    exception_id=str(doc["exception_id"]),
+                    trade_id=str(doc["trade_id"]),
                     similarity_score=doc["similarity_score"],
                     priority=doc["priority"],
-                    status=doc["status"],
                     asset_type=doc["asset_type"],
                     clearing_house=doc["clearing_house"],
                     exception_msg=doc["exception_msg"],
