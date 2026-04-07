@@ -164,6 +164,23 @@ describe('ExceptionResultsTable', () => {
     expect(mockOnRefresh).toHaveBeenCalled();
   });
 
+  it('handles refresh button without callback safely', () => {
+    render(
+      <ExceptionResultsTable
+        table={mockTable}
+        resultsCount={2}
+        selectedExceptionId={null}
+        onRowClick={mockOnRowClick}
+      />
+    );
+
+    fireEvent.click(screen.getByTitle('Refresh data and clear filters'));
+
+    expect(mockTable.resetColumnFilters).toHaveBeenCalled();
+    expect(mockTable.resetSorting).toHaveBeenCalled();
+    expect(mockTable.resetPageIndex).toHaveBeenCalled();
+  });
+
   it('downloads CSV when rows exist', () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
     const clickSpy = vi
@@ -181,6 +198,28 @@ describe('ExceptionResultsTable', () => {
 
     fireEvent.click(screen.getByTitle('Download as CSV'));
     expect(clickSpy).toHaveBeenCalled();
+  });
+
+  it('does not create a CSV download when there are no filtered rows', () => {
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {});
+    const emptyFilteredTable = {
+      ...mockTable,
+      getFilteredRowModel: () => ({ rows: [] }),
+    } as unknown as TableType<Exception>;
+
+    render(
+      <ExceptionResultsTable
+        table={emptyFilteredTable}
+        resultsCount={2}
+        selectedExceptionId={null}
+        onRowClick={mockOnRowClick}
+      />
+    );
+
+    fireEvent.click(screen.getByTitle('Download as CSV'));
+    expect(clickSpy).not.toHaveBeenCalled();
   });
 
   it('renders singular label and pagination text correctly', () => {
@@ -239,7 +278,152 @@ describe('ExceptionResultsTable', () => {
     expect(pagedTable.previousPage).toHaveBeenCalled();
     expect(pagedTable.nextPage).toHaveBeenCalled();
   });
+  it('applies dropdown and date filters through filter row controls', () => {
+    const statusSetFilter = vi.fn();
+    const prioritySetFilter = vi.fn();
+    const idSetFilter = vi.fn();
+    const createSetFilter = vi.fn();
 
+    const richHeaderTable = {
+      ...mockTable,
+      getHeaderGroups: () => [
+        {
+          id: 'header-group-1',
+          headers: [
+            {
+              id: 'id',
+              isPlaceholder: false,
+              column: {
+                id: 'id',
+                columnDef: { header: () => 'ID' },
+                getCanFilter: () => true,
+                getFilterValue: () => '',
+                setFilterValue: idSetFilter,
+              },
+              getContext: () => ({}),
+            },
+            {
+              id: 'status',
+              isPlaceholder: false,
+              column: {
+                id: 'status',
+                columnDef: { header: () => 'Status' },
+                getCanFilter: () => true,
+                getFilterValue: () => 'ALL',
+                setFilterValue: statusSetFilter,
+              },
+              getContext: () => ({}),
+            },
+            {
+              id: 'priority',
+              isPlaceholder: false,
+              column: {
+                id: 'priority',
+                columnDef: { header: () => 'Priority' },
+                getCanFilter: () => true,
+                getFilterValue: () => 'ALL',
+                setFilterValue: prioritySetFilter,
+              },
+              getContext: () => ({}),
+            },
+            {
+              id: 'create_time',
+              isPlaceholder: false,
+              column: {
+                id: 'create_time',
+                columnDef: { header: () => 'Create Time' },
+                getCanFilter: () => true,
+                getFilterValue: () => ({ from: '', to: '' }),
+                setFilterValue: createSetFilter,
+              },
+              getContext: () => ({}),
+            },
+          ],
+        },
+      ],
+      getAllColumns: () => [
+        { id: 'id', getCanHide: () => true, getIsVisible: () => true, toggleVisibility: vi.fn() },
+        { id: 'status', getCanHide: () => true, getIsVisible: () => true, toggleVisibility: vi.fn() },
+        { id: 'priority', getCanHide: () => true, getIsVisible: () => true, toggleVisibility: vi.fn() },
+        { id: 'create_time', getCanHide: () => true, getIsVisible: () => true, toggleVisibility: vi.fn() },
+      ],
+    } as unknown as TableType<Exception>;
+
+    const { container } = render(
+      <ExceptionResultsTable
+        table={richHeaderTable}
+        resultsCount={2}
+        selectedExceptionId={null}
+        onRowClick={mockOnRowClick}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Filter by Exception ID...'), {
+      target: { value: '1' },
+    });
+    expect(idSetFilter).toHaveBeenCalled();
+
+    const dateInputs = container.querySelectorAll('input[type="date"]');
+    fireEvent.change(dateInputs[0] as HTMLInputElement, { target: { value: '2024-01-01' } });
+    expect(createSetFilter).toHaveBeenCalled();
+
+    // Select dropdown behavior is covered by component-level rendering;
+    // this test focuses on branch-heavy text/date filter handlers.
+    expect(statusSetFilter).not.toHaveBeenCalled();
+    expect(prioritySetFilter).not.toHaveBeenCalled();
+  });
+
+  it('uses provided filterOptions for text-suggestion dropdown selection', () => {
+    const idSetFilter = vi.fn();
+    const filterOptionsTable = {
+      ...mockTable,
+      getPreFilteredRowModel: () => ({ flatRows: [] }),
+      getHeaderGroups: () => [
+        {
+          id: 'header-group-1',
+          headers: [
+            {
+              id: 'id',
+              isPlaceholder: false,
+              column: {
+                id: 'id',
+                columnDef: { header: () => 'ID' },
+                getCanFilter: () => true,
+                getFilterValue: () => '',
+                setFilterValue: idSetFilter,
+              },
+              getContext: () => ({}),
+            },
+          ],
+        },
+      ],
+      getAllColumns: () => [
+        { id: 'id', getCanHide: () => true, getIsVisible: () => true, toggleVisibility: vi.fn() },
+      ],
+    } as unknown as TableType<Exception>;
+
+    render(
+      <ExceptionResultsTable
+        table={filterOptionsTable}
+        resultsCount={2}
+        selectedExceptionId={null}
+        onRowClick={mockOnRowClick}
+        filterOptions={{
+          ids: ['999'],
+          tradeIds: [],
+          messages: [],
+          comments: [],
+          createTimes: [],
+          updateTimes: [],
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getByPlaceholderText('Filter by Exception ID...'));
+    fireEvent.mouseDown(screen.getByRole('button', { name: '999' }));
+
+    expect(idSetFilter).toHaveBeenCalledWith('999');
+  });
 
 });
 

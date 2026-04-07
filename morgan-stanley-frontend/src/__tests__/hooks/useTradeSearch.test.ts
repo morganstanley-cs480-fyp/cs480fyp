@@ -45,6 +45,17 @@ describe('useTradeSearch', () => {
       expect(result.current.error).toBeNull()
     })
 
+    it('should return null and not call API when refetch is triggered with null params', async () => {
+      const { result } = renderHook(() => useTradeSearch(null), {
+        wrapper: createWrapper(),
+      })
+
+      const response = await result.current.refetch()
+
+      expect(response.data).toBeNull()
+      expect(searchService.searchTrades).not.toHaveBeenCalled()
+    })
+
     it('should fetch data when natural language searchParams is provided', async () => {
       const mockResponse = {
         results: [

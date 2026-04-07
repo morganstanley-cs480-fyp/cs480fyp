@@ -547,11 +547,10 @@ describe("SearchHeader", () => {
         /Search by trade ID, counterparty, product type/i,
       );
       await user.click(searchInput);
+      expect(screen.getByText('test suggestion')).toBeInTheDocument();
 
       await user.keyboard("{Escape}");
-
-      // Implementation depends on your component behavior
-      // This test structure shows how you would test keyboard interactions
+      expect(screen.queryByText('test suggestion')).not.toBeInTheDocument();
     });
 
     it("should support arrow keys for suggestion navigation", async () => {
@@ -589,8 +588,7 @@ describe("SearchHeader", () => {
       await user.keyboard("{ArrowDown}");
       await user.keyboard("{ArrowDown}");
       await user.keyboard("{Enter}");
-
-      // Test would verify that the appropriate suggestion was selected
+      expect(defaultProps.onSearch).toHaveBeenCalled();
     });
   });
 
@@ -706,6 +704,21 @@ describe("SearchHeader", () => {
 
       await user.click(screen.getByRole('button', { name: /Sort: high → low/i }));
       expect(screen.getByRole('button', { name: /Sort: low → high/i })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /Switch to Pie/i }));
+      expect(screen.getByRole('button', { name: /Switch to Bar/i })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /Hide/i }));
+      expect(screen.getByRole('button', { name: /^Show$/i })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Show me more' }));
+      expect(defaultProps.onFollowUpPromptClick).toHaveBeenCalledWith('Show me more');
+    });
+
+    it('renders AI chat error panel when chatError is present', () => {
+      render(<SearchHeader {...defaultProps} chatError="AI service unavailable" />);
+      expect(screen.getByText('AI Chat Error')).toBeInTheDocument();
+      expect(screen.getByText('AI service unavailable')).toBeInTheDocument();
     });
   });
 });

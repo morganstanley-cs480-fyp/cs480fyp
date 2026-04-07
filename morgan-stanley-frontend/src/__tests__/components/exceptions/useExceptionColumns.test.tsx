@@ -99,6 +99,7 @@ describe('useExceptionColumns', () => {
     expect(createTimeCol?.filterFn?.(row as never, 'create_time', { from: '', to: '' }, () => undefined)).toBe(true);
     expect(createTimeCol?.filterFn?.(row as never, 'create_time', { from: '2024-01-10', to: '2024-01-20' }, () => undefined)).toBe(true);
     expect(createTimeCol?.filterFn?.(row as never, 'create_time', { from: '2024-01-16', to: undefined }, () => undefined)).toBe(false);
+    expect(createTimeCol?.filterFn?.(row as never, 'create_time', { from: undefined, to: '2024-01-10' }, () => undefined)).toBe(false);
     expect(createTimeCol?.filterFn?.(makeRow({ create_time: 'invalid-date' }) as never, 'create_time', { from: '2024-01-01', to: '2024-01-31' }, () => undefined)).toBe(false);
   });
 

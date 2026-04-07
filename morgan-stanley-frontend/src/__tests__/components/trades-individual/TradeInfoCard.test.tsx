@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TradeInfoCard } from '@/components/trades-individual/TradeInfoCard';
 import type { Exception, Trade, Transaction } from '@/lib/api/types';
@@ -177,6 +177,49 @@ describe('TradeInfoCard', () => {
     const cardButton = await screen.findByRole('button', { name: /Exception 100/i });
     cardButton.focus();
     fireEvent.keyDown(cardButton, { key: 'Enter' });
+
+    expect(await screen.findByTitle('Exception 100')).toBeInTheDocument();
+  });
+
+  it('opens modal on keyboard Space from exception card', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TradeInfoCard
+        trade={trade}
+        transactions={transactions}
+        exceptions={exceptions}
+        showTradeInfo
+        onToggle={vi.fn()}
+        getStatusBadgeClassName={() => 'status-class'}
+      />
+    );
+
+    await user.click(screen.getByRole('tab', { name: /Exceptions \(1\)/i }));
+    const cardButton = await screen.findByRole('button', { name: /Exception 100/i });
+    cardButton.focus();
+    fireEvent.keyDown(cardButton, { key: ' ' });
+
+    expect(await screen.findByTitle('Exception 100')).toBeInTheDocument();
+  });
+
+  it('opens modal from the view-exception button click', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TradeInfoCard
+        trade={trade}
+        transactions={transactions}
+        exceptions={exceptions}
+        showTradeInfo
+        onToggle={vi.fn()}
+        getStatusBadgeClassName={() => 'status-class'}
+      />
+    );
+
+    await user.click(screen.getByRole('tab', { name: /Exceptions \(1\)/i }));
+    const cardButton = await screen.findByRole('button', { name: /Exception 100/i });
+    await user.click(within(cardButton).getByRole('button', { name: /View exception/i }));
 
     expect(await screen.findByTitle('Exception 100')).toBeInTheDocument();
   });

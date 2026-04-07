@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TradeResultsTable } from '@/components/trades/TradeResultsTable';
 import type { Table as TableType } from '@tanstack/react-table';
@@ -16,12 +16,24 @@ vi.mock('@tanstack/react-router', () => ({
 describe('TradeResultsTable', () => {
   // Helper to create mock table
   const createMockTable = (overrides?: Partial<TableType<Trade>>) => {
+    const tradeIdSetFilterValue = vi.fn();
+    const accountSetFilterValue = vi.fn();
+    const createTimeSetFilterValue = vi.fn();
+
     const tradeIdColumn = {
       id: 'trade_id',
       columnDef: { header: 'Trade ID', cell: () => '1234' },
       getCanFilter: () => true,
       getFilterValue: () => '',
-      setFilterValue: vi.fn(),
+      setFilterValue: tradeIdSetFilterValue,
+    };
+
+    const accountColumn = {
+      id: 'account',
+      columnDef: { header: 'Account', cell: () => 'ACC1' },
+      getCanFilter: () => true,
+      getFilterValue: () => '',
+      setFilterValue: accountSetFilterValue,
     };
 
     const dateColumn = {
@@ -29,10 +41,15 @@ describe('TradeResultsTable', () => {
       columnDef: { header: 'Create Time', cell: () => '2024-01-01' },
       getCanFilter: () => true,
       getFilterValue: () => undefined,
-      setFilterValue: vi.fn(),
+      setFilterValue: createTimeSetFilterValue,
     };
 
     return {
+    __mocks: {
+      tradeIdSetFilterValue,
+      accountSetFilterValue,
+      createTimeSetFilterValue,
+    },
     getAllColumns: vi.fn().mockReturnValue([
       {
         id: 'trade_id',
@@ -41,16 +58,16 @@ describe('TradeResultsTable', () => {
         toggleVisibility: vi.fn(),
         getCanFilter: () => true,
         getFilterValue: () => '',
-        setFilterValue: vi.fn(),
+        setFilterValue: tradeIdSetFilterValue,
       },
       {
         id: 'account',
         getCanHide: () => true,
-        getIsVisible: () => false,
+        getIsVisible: () => true,
         toggleVisibility: vi.fn(),
         getCanFilter: () => true,
         getFilterValue: () => '',
-        setFilterValue: vi.fn(),
+        setFilterValue: accountSetFilterValue,
       },
       {
         id: 'create_time',
@@ -59,7 +76,7 @@ describe('TradeResultsTable', () => {
         toggleVisibility: vi.fn(),
         getCanFilter: () => true,
         getFilterValue: () => undefined,
-        setFilterValue: vi.fn(),
+        setFilterValue: createTimeSetFilterValue,
       },
     ]),
     getHeaderGroups: vi.fn().mockReturnValue([
@@ -69,6 +86,12 @@ describe('TradeResultsTable', () => {
           {
             id: 'trade_id',
             column: tradeIdColumn,
+            isPlaceholder: false,
+            getContext: () => ({}),
+          },
+          {
+            id: 'account',
+            column: accountColumn,
             isPlaceholder: false,
             getContext: () => ({}),
           },
@@ -241,6 +264,21 @@ describe('TradeResultsTable', () => {
     expect(clickSpy).toHaveBeenCalled();
   });
 
+  it('does not attempt CSV download when no filtered rows exist', async () => {
+    const mockTable = createMockTable({
+      getFilteredRowModel: vi.fn().mockReturnValue({ rows: [] }),
+    });
+    const user = userEvent.setup();
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {});
+
+    render(<TradeResultsTable {...defaultProps} table={mockTable} />);
+    await user.click(screen.getByTitle('Download as CSV'));
+
+    expect(clickSpy).not.toHaveBeenCalled();
+  });
+
   it('handles pagination buttons', async () => {
     const mockTable = createMockTable({
       getCanPreviousPage: vi.fn().mockReturnValue(true),
@@ -275,5 +313,155 @@ describe('TradeResultsTable', () => {
   it('renders rows when table has data', () => {
     render(<TradeResultsTable {...defaultProps} />);
     expect(screen.getByText('Showing results 0-1 out of 1')).toBeInTheDocument();
+  });
+
+  it('applies text filter and clears it via clear button', async () => {
+    const mockTable = createMockTable();
+    const user = userEvent.setup();
+
+    render(<TradeResultsTable {...defaultProps} table={mockTable} />);
+
+    const tradeIdInput = screen.getByPlaceholderText('Filter by Trade ID');
+    await user.type(tradeIdInput, '12');
+    expect((mockTable as unknown as { __mocks: { tradeIdSetFilterValue: ReturnType<typeof vi.fn> } }).__mocks.tradeIdSetFilterValue).toHaveBeenCalled();
+
+    const tableWithValue = createMockTable({
+      getHeaderGroups: vi.fn().mockReturnValue([
+        {
+          id: 'header-group-1',
+          headers: [
+            {
+              id: 'trade_id',
+              column: {
+                id: 'trade_id',
+                columnDef: { header: 'Trade ID', cell: () => '1234' },
+                getCanFilter: () => true,
+                getFilterValue: () => '12',
+                setFilterValue: (mockTable as unknown as { __mocks: { tradeIdSetFilterValue: ReturnType<typeof vi.fn> } }).__mocks.tradeIdSetFilterValue,
+              },
+              isPlaceholder: false,
+              getContext: () => ({}),
+            },
+            {
+              id: 'account',
+              column: {
+                id: 'account',
+                columnDef: { header: 'Account', cell: () => 'ACC1' },
+                getCanFilter: () => true,
+                getFilterValue: () => '',
+                setFilterValue: vi.fn(),
+              },
+              isPlaceholder: false,
+              getContext: () => ({}),
+            },
+            {
+              id: 'create_time',
+              column: {
+                id: 'create_time',
+                columnDef: { header: 'Create Time', cell: () => '2024-01-01' },
+                getCanFilter: () => true,
+                getFilterValue: () => undefined,
+                setFilterValue: vi.fn(),
+              },
+              isPlaceholder: false,
+              getContext: () => ({}),
+            },
+          ],
+        },
+      ]),
+    });
+
+    render(<TradeResultsTable {...defaultProps} table={tableWithValue} />);
+    await user.click(screen.getAllByTitle('Clear filter')[0]);
+    expect((mockTable as unknown as { __mocks: { tradeIdSetFilterValue: ReturnType<typeof vi.fn> } }).__mocks.tradeIdSetFilterValue).toHaveBeenCalledWith('');
+  });
+
+  it('opens account suggestion dropdown and selects an option', async () => {
+    const mockTable = createMockTable();
+    const user = userEvent.setup();
+
+    render(<TradeResultsTable {...defaultProps} table={mockTable} />);
+
+    const accountInput = screen.getAllByPlaceholderText('Filter...')[0];
+    await user.click(accountInput);
+    await user.click(screen.getAllByRole('button', { name: /ACC1/i })[0]);
+
+    expect((mockTable as unknown as { __mocks: { accountSetFilterValue: ReturnType<typeof vi.fn> } }).__mocks.accountSetFilterValue).toHaveBeenCalledWith('ACC1');
+  });
+
+  it('closes filter suggestions when Escape is pressed', async () => {
+    const mockTable = createMockTable();
+    const user = userEvent.setup();
+
+    render(<TradeResultsTable {...defaultProps} table={mockTable} />);
+
+    const accountInput = screen.getAllByPlaceholderText('Filter...')[0];
+    await user.click(accountInput);
+    expect(screen.getAllByRole('button', { name: /ACC1/i })[0]).toBeInTheDocument();
+
+    fireEvent.keyDown(accountInput, { key: 'Escape' });
+    expect(screen.queryByRole('button', { name: /ACC1/i })).not.toBeInTheDocument();
+  });
+
+  it('clears date range filter to undefined when both from/to become empty', async () => {
+    const setDateFilter = vi.fn();
+
+    const mockTable = createMockTable({
+      getHeaderGroups: vi.fn().mockReturnValue([
+        {
+          id: 'header-group-1',
+          headers: [
+            {
+              id: 'trade_id',
+              column: {
+                id: 'trade_id',
+                columnDef: { header: 'Trade ID', cell: () => '1234' },
+                getCanFilter: () => true,
+                getFilterValue: () => '',
+                setFilterValue: vi.fn(),
+              },
+              isPlaceholder: false,
+              getContext: () => ({}),
+            },
+            {
+              id: 'account',
+              column: {
+                id: 'account',
+                columnDef: { header: 'Account', cell: () => 'ACC1' },
+                getCanFilter: () => true,
+                getFilterValue: () => '',
+                setFilterValue: vi.fn(),
+              },
+              isPlaceholder: false,
+              getContext: () => ({}),
+            },
+            {
+              id: 'create_time',
+              column: {
+                id: 'create_time',
+                columnDef: { header: 'Create Time', cell: () => '2024-01-01' },
+                getCanFilter: () => true,
+                getFilterValue: () => ({ from: '2024-01-01', to: '' }),
+                setFilterValue: setDateFilter,
+              },
+              isPlaceholder: false,
+              getContext: () => ({}),
+            },
+          ],
+        },
+      ]),
+    });
+
+    const { container } = render(<TradeResultsTable {...defaultProps} table={mockTable} />);
+
+    const dateInputs = container.querySelectorAll('input[type="date"]');
+    const fromInput = dateInputs[0] as HTMLInputElement;
+    const toInput = dateInputs[1] as HTMLInputElement;
+
+    fireEvent.change(fromInput, { target: { value: '' } });
+    expect(setDateFilter).toHaveBeenCalledWith(undefined);
+
+    fireEvent.change(toInput, { target: { value: '' } });
+    expect(setDateFilter).toHaveBeenCalled();
   });
 });

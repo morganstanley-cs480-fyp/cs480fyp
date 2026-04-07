@@ -53,4 +53,17 @@ describe('useTransactions', () => {
     expect(result.current.transactions).toEqual([])
     expect(result.current.error).toBe(err.message)
   })
+
+  it('handles non-Error rejections with fallback message', async () => {
+    vi.mocked(tradeFlowService.getTransactionsByTradeId).mockRejectedValue('boom')
+
+    const { result } = renderHook(() => useTransactions(1001))
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    expect(result.current.transactions).toEqual([])
+    expect(result.current.error).toBe('Unknown error occurred')
+  })
 })

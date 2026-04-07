@@ -42,4 +42,21 @@ describe('FilterOptions', () => {
     await userEvent.click(searchBtn)
     expect(onSearch).toHaveBeenCalled()
   })
+
+  test('renders searching state with disabled search button', () => {
+    render(
+      <FilterOptions
+        withExceptionsOnly={false}
+        clearedTradesOnly={false}
+        searching={true}
+        onWithExceptionsChange={vi.fn()}
+        onClearedTradesChange={vi.fn()}
+        onClearFilters={vi.fn()}
+        onSearch={vi.fn()}
+      />
+    )
+
+    const searchingButton = screen.getByRole('button', { name: /Searching.../i })
+    expect(searchingButton).toBeDisabled()
+  })
 })
