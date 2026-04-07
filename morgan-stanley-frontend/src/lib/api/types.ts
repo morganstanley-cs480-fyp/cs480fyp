@@ -271,6 +271,7 @@ export interface AISuggestion {
   text?: string;
 
   // New fields from solution endpoint
+  solution_title?: string;
   solution_description?: string;
   exception_description?: string;
   solution_score?: number; // not displayed, this is the score given

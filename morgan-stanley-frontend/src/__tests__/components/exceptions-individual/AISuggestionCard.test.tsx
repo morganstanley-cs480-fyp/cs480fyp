@@ -49,6 +49,7 @@ describe('AISuggestionCard', () => {
       <AISuggestionCard
         suggestion={{
           ...baseSuggestion,
+          solution_title: 'INDEX VERSION',
           solution_description: 'Use retry memo flow',
           exception_description: 'Mismatch between systems',
         }}
@@ -56,7 +57,10 @@ describe('AISuggestionCard', () => {
       />
     );
 
+    expect(screen.getByText('Solution')).toBeInTheDocument();
+    expect(screen.getByText('Solution Title:')).toBeInTheDocument();
     expect(screen.getByText('Solution Description:')).toBeInTheDocument();
+    expect(screen.getByText('INDEX VERSION')).toBeInTheDocument();
     expect(screen.getByText('Use retry memo flow')).toBeInTheDocument();
     expect(screen.getByText('Exception Description:')).toBeInTheDocument();
     expect(screen.getByText('Mismatch between systems')).toBeInTheDocument();

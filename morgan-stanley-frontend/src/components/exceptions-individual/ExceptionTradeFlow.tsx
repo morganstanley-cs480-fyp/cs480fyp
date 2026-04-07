@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import type { Trade, Transaction } from '@/lib/api/types';
 import { tradeFlowService } from '@/lib/api/tradeFlowService';
+import { getStatusBadgeClassName } from '@/lib/tradeDetailUtils';
 
 interface ExceptionTradeFlowProps {
   transactionId: number;
@@ -97,7 +99,13 @@ export function ExceptionTradeFlow({
               </div>
               <div>
                 <p className="text-black/60">Status</p>
-                <p className="font-medium text-black wrap-break-word">{trade?.status ?? '-'}</p>
+                {trade?.status ? (
+                  <Badge variant="secondary" className={getStatusBadgeClassName(trade.status)}>
+                    {trade.status}
+                  </Badge>
+                ) : (
+                  <p className="font-medium text-black wrap-break-word">-</p>
+                )}
               </div>
               <div>
                 <p className="text-black/60">Account</p>
@@ -129,7 +137,13 @@ export function ExceptionTradeFlow({
               </div>
               <div>
                 <p className="text-black/60">Status</p>
-                <p className="font-medium text-black wrap-break-word">{transaction?.status ?? '-'}</p>
+                {transaction?.status ? (
+                  <Badge variant="secondary" className={getStatusBadgeClassName(transaction.status)}>
+                    {transaction.status}
+                  </Badge>
+                ) : (
+                  <p className="font-medium text-black wrap-break-word">-</p>
+                )}
               </div>
               <div>
                 <p className="text-black/60">Step</p>

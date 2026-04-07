@@ -43,7 +43,8 @@ export function useExceptionResolver(exceptionId: string) {
       explanation: similar.explanation,
       text: similar.text,
       // Solution fields will be populated when suggestion is selected
-      solution_description: undefined,
+        solution_title: undefined,
+        solution_description: undefined,
       exception_description: undefined,
       solution_score: undefined
     }));
@@ -56,6 +57,7 @@ export function useExceptionResolver(exceptionId: string) {
           const solutionDetails = await exceptionService.getSolution(suggestion.exception_id);
           return {
             ...suggestion,
+            solution_title: solutionDetails.title,
             solution_description: solutionDetails.solution_description,
             exception_description: solutionDetails.exception_description,
             solution_score: solutionDetails.scores,

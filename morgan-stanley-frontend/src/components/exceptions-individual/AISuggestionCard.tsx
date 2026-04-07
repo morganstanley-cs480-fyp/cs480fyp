@@ -2,7 +2,7 @@
 import type { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, TrendingUp, AlertCircle, Activity, Loader2 } from "lucide-react";
+import { Clock, TrendingUp, Activity, Loader2 } from "lucide-react";
 import type { AISuggestion } from "@/lib/api/types";
 
 interface AISuggestionCardProps {
@@ -24,7 +24,10 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
   };
 
   
-  const hasSolutionDetails = suggestion.solution_description && suggestion.exception_description;
+  const hasSolutionDetails =
+    !!suggestion.solution_title ||
+    !!suggestion.solution_description ||
+    !!suggestion.exception_description;
 
   function renderExceptionText(text: string) {
     // Treat numbered headings (e.g. "1. ") as section boundaries
@@ -193,28 +196,27 @@ export function AISuggestionCard({ suggestion, onClick, isSelected = false, isLo
           </div>
         )}        
 
-          {/* Solution Description */}
-        {suggestion.solution_description && (
+        {/* Solution details that will be reused when applying this suggestion */}
+        {hasSolutionDetails && (
           <div className="bg-green-50 border border-green-200 rounded p-3 mb-3">
-            <p className="text-xs font-semibold text-green-800 mb-1 flex items-center gap-1">
+            <p className="text-sm font-semibold text-green-900 mb-2 flex items-center gap-1">
               <Clock className="size-3" />
-              Solution Description:
+              Solution
             </p>
-            <p className="text-xs text-green-700">
-              {suggestion.solution_description}
-            </p>
-          </div>
-        )}    
 
-        {/* Exception Description */}
-        {suggestion.exception_description && (
-          <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-3">
-            <p className="text-xs font-semibold text-blue-800 mb-1 flex items-center gap-1">
-              <AlertCircle className="size-3" />
-              Exception Description:
+            <p className="text-xs font-semibold text-green-800 mb-1">Solution Title:</p>
+            <p className="text-xs text-green-700 mb-2">
+              {suggestion.solution_title || 'N/A'}
             </p>
-            <p className="text-xs text-blue-700">
-              {suggestion.exception_description}
+
+            <p className="text-xs font-semibold text-green-800 mb-1">Solution Description:</p>
+            <p className="text-xs text-green-700 mb-2 whitespace-pre-wrap">
+              {suggestion.solution_description || 'N/A'}
+            </p>
+
+            <p className="text-xs font-semibold text-green-800 mb-1">Exception Description:</p>
+            <p className="text-xs text-green-700 whitespace-pre-wrap">
+              {suggestion.exception_description || 'N/A'}
             </p>
           </div>
         )}

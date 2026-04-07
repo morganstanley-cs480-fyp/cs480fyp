@@ -24,6 +24,41 @@ export const Route = createFileRoute('/exceptions/$exceptionId')({
   component: ResolveExceptionPage,
 });
 
+function isNotFoundError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes('Exception service error (404)');
+}
+
+function isAlreadyExistsError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.message.includes('Exception service error (409)') || error.message.toLowerCase().includes('already exists'))
+  );
+}
+
+function normalizeToRetrievedSolution(
+  solution: RetrievedSolution | {
+    exception_id: number;
+    title: string;
+    exception_description: string;
+    reference_event: string;
+    solution_description: string;
+    scores: number;
+    id: number;
+    create_time: string;
+  }
+): RetrievedSolution {
+  return {
+    exception_id: solution.exception_id,
+    title: solution.title,
+    exception_description: solution.exception_description,
+    reference_event: solution.reference_event,
+    solution_description: solution.solution_description,
+    scores: solution.scores,
+    id: solution.id,
+    create_time: solution.create_time,
+  };
+}
+
 function ResolveExceptionPage() {
   const { exceptionId } = Route.useParams();
   const navigate = useNavigate();
@@ -117,6 +152,9 @@ function ResolveExceptionPage() {
     const loadExistingPendingSolution = async () => {
       if (!exception || exception.status !== 'PENDING') {
         setExistingPendingSolution(null);
+        setNewSolutionTitle('');
+        setNewExceptionDescription('');
+        setNewSolutionDescription('');
         setLoadingExistingPendingSolution(false);
         return;
       }
@@ -130,9 +168,17 @@ function ResolveExceptionPage() {
         setNewSolutionTitle(solution.title || '');
         setNewExceptionDescription(solution.exception_description || '');
         setNewSolutionDescription(solution.solution_description || '');
-      } catch {
+      } catch (fetchError) {
         if (!isActive) return;
         setExistingPendingSolution(null);
+        setNewSolutionTitle('');
+        setNewExceptionDescription('');
+        setNewSolutionDescription('');
+
+        // Missing pending solution is an expected state for new exceptions.
+        if (!isNotFoundError(fetchError)) {
+          console.error('❌ Failed to fetch pending solution details:', fetchError);
+        }
       } finally {
         if (isActive) {
           setLoadingExistingPendingSolution(false);
@@ -155,6 +201,27 @@ function ResolveExceptionPage() {
   const handleApplySolution = async () => {
     if (!exception) return;
 
+    if (selectedTab === 'new') {
+      const missingFields: string[] = [];
+
+      if (!newSolutionTitle.trim()) {
+        missingFields.push('Solution Title');
+      }
+      if (!newExceptionDescription.trim()) {
+        missingFields.push('Exception Description');
+      }
+      if (!newSolutionDescription.trim()) {
+        missingFields.push('Solution Description');
+      }
+
+      if (missingFields.length > 0) {
+        const reminder = `Please fill in required fields: ${missingFields.join(', ')}`;
+        setApplyError(reminder);
+        window.alert(reminder);
+        return;
+      }
+    }
+
     setIsApplying(true);
     setApplyError(null);
 
@@ -164,16 +231,40 @@ function ResolveExceptionPage() {
         console.log('✅ Saving existing solution template:', selectedSuggestion.title);
         console.log('Exception ID:', exception.id);
         console.log('Selected suggestion:', selectedSuggestion);
-        
-        // Create solution record using selected suggestion's details
-        const solutionResponse = await exceptionService.createSolution({
-          exception_id: exception.id,
-          title: selectedSuggestion.title,
+
+        const solutionPayload = {
+          title: selectedSuggestion.solution_title || selectedSuggestion.title,
           exception_description: selectedSuggestion.exception_description || selectedSuggestion.description,
           reference_event: '',
           solution_description: selectedSuggestion.solution_description,
           scores: selectedSuggestion.solution_score || Math.round(selectedSuggestion.similarity_score)
-        });
+        };
+
+        const hasExistingSolution = exception.status === 'PENDING' && !!existingPendingSolution;
+
+        const solutionResponse = hasExistingSolution
+          ? await exceptionService.updateSolution(existingPendingSolution.id, solutionPayload)
+          : await (async () => {
+              try {
+                return await exceptionService.createSolution({
+                  exception_id: exception.id,
+                  ...solutionPayload,
+                });
+              } catch (saveError) {
+                // Handle race/parallel save cases where a solution was created after page load.
+                if (isAlreadyExistsError(saveError)) {
+                  const existing = await exceptionService.getSolution(exception.id.toString());
+                  return exceptionService.updateSolution(existing.id, solutionPayload);
+                }
+                throw saveError;
+              }
+            })();
+
+        const normalizedSolution = normalizeToRetrievedSolution(solutionResponse);
+        setExistingPendingSolution(normalizedSolution);
+        setNewSolutionTitle(normalizedSolution.title || '');
+        setNewExceptionDescription(normalizedSolution.exception_description || '');
+        setNewSolutionDescription(normalizedSolution.solution_description || '');
 
         console.log('✅ Solution record created:', solutionResponse);
 
@@ -186,7 +277,7 @@ function ResolveExceptionPage() {
           exceptionId: exception.id,
           solutionId: solutionResponse.id
         });
-      } else if (selectedTab === 'new' && newSolutionTitle && newSolutionDescription) {
+      } else if (selectedTab === 'new' && newSolutionTitle && newExceptionDescription && newSolutionDescription) {
         const isUpdatingPendingSolution =
           exception.status === 'PENDING' && !!existingPendingSolution;
 
@@ -217,6 +308,12 @@ function ResolveExceptionPage() {
         if (isUpdatingPendingSolution) {
           setExistingPendingSolution(solutionResponse as RetrievedSolution);
         }
+
+        const normalizedSolution = normalizeToRetrievedSolution(solutionResponse);
+        setExistingPendingSolution(normalizedSolution);
+        setNewSolutionTitle(normalizedSolution.title || '');
+        setNewExceptionDescription(normalizedSolution.exception_description || '');
+        setNewSolutionDescription(normalizedSolution.solution_description || '');
         
         // Show success dialog with new solution details
         setResolutionDetails({
@@ -253,6 +350,39 @@ function ResolveExceptionPage() {
     }
 
     window.location.href = tradePath;
+  };
+
+  const syncPendingSolutionView = async () => {
+    if (!exception || exception.status !== 'PENDING') {
+      return;
+    }
+
+    setLoadingExistingPendingSolution(true);
+
+    try {
+      const latestSolution = await exceptionService.getSolution(exception.id.toString());
+      setExistingPendingSolution(latestSolution);
+      setNewSolutionTitle(latestSolution.title || '');
+      setNewExceptionDescription(latestSolution.exception_description || '');
+      setNewSolutionDescription(latestSolution.solution_description || '');
+    } catch (fetchError) {
+      if (!isNotFoundError(fetchError)) {
+        console.error('❌ Failed to sync pending solution view:', fetchError);
+      }
+      setExistingPendingSolution(null);
+      setNewSolutionTitle('');
+      setNewExceptionDescription('');
+      setNewSolutionDescription('');
+    } finally {
+      setLoadingExistingPendingSolution(false);
+    }
+  };
+
+  const handleSuccessDialogOpenChange = (open: boolean) => {
+    setShowSuccessDialog(open);
+    if (!open) {
+      void syncPendingSolutionView();
+    }
   };
 
   const handleBack = () => {
@@ -368,9 +498,9 @@ function ResolveExceptionPage() {
     );
   }
 
-  const canApplySolution = selectedTab === 'existing' 
+  const canApplySolution = selectedTab === 'existing'
     ? !!selectedSuggestion
-    : !!(newSolutionTitle && newSolutionDescription);
+    : true;
 
   return (
     <div className={isEmbedded ? 'p-4 max-w-450 mx-auto space-y-4' : 'p-6 max-w-400 mx-auto space-y-6'}>
@@ -564,7 +694,7 @@ function ResolveExceptionPage() {
       </div>
 
       {/* Success Dialog */}
-      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+      <Dialog open={showSuccessDialog} onOpenChange={handleSuccessDialogOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
@@ -629,11 +759,11 @@ function ResolveExceptionPage() {
                   return;
                 }
 
-                window.location.href = '/exceptions';
+                void syncPendingSolutionView();
               }}
               className="flex-1 bg-[#002B51] hover:bg-[#003a6b] text-white"
             >
-              {returnToTradeId ? 'Back to Trade' : 'Back to Exceptions'}
+              {returnToTradeId ? 'Back to Trade' : 'Back to Exception'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { Exception } from "@/lib/api/types";
+import { getExceptionStatusClassName, getPriorityBadgeClassName } from "@/lib/tradeDetailUtils";
 import type { ReactNode } from "react";
 
 interface ExceptionDetailSidebarProps {
@@ -52,14 +53,14 @@ export function ExceptionDetailSidebar({ exception, getPriorityColor, children }
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-black/75 mb-1">Priority</p>
-                  <Badge variant={getPriorityColor(exception.priority)}>
+                  <Badge variant={getPriorityColor(exception.priority)} className={getPriorityBadgeClassName(exception.priority)}>
                     {exception.priority}
                   </Badge>
                 </div>
 
                 <div>
                   <p className="text-sm text-black/75 mb-1">Status</p>
-                  <Badge variant={exception.status === 'CLOSED' ? 'default' : 'secondary'}>
+                  <Badge variant="secondary" className={getExceptionStatusClassName(exception.status)}>
                     {exception.status}
                   </Badge>
                 </div>
