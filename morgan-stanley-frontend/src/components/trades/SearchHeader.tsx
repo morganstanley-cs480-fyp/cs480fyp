@@ -216,48 +216,50 @@ export function SearchHeader({
       </p>
 
       {/* Search row */}
-      <div className="flex gap-2.5">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-black/50 z-10" />
-          <Input
-            placeholder="Search by trade ID, counterparty, product type etc. Please enter at least 3 characters or more."
-            className={`pl-10 pr-32 bg-white h-12 text-black ${
-              validationError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
-            }`}
-            value={searchQuery}
-            autoComplete="off"
-            onChange={(e) => handleQueryChange(e.target.value)}
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-            onKeyDown={handleKeyDown}
-          />
-          {/* Typeahead suggestions dropdown */}
-          {showSuggestions && suggestions.length > 0 && !validationError && (
-            <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-black/10 bg-white shadow-lg overflow-hidden">
-              {suggestions.map((s, i) => (
-                <button
-                  key={`${s.query_id}-${i}`}
-                  type="button"
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-black hover:bg-black/4 transition-colors"
-                  onMouseDown={(e) => {
-                    e.preventDefault(); // prevent blur before click registers
-                    setShowSuggestions(false);
-                    onSuggestionClick(s.query_text);
-                  }}
-                >
-                  <Search className="size-3.5 shrink-0 text-black/30" />
-                  <span className="truncate">{s.query_text}</span>
-                  {s.is_saved && <Star className="size-3 shrink-0 ml-auto text-yellow-500 fill-yellow-400" />}
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+      <div className="flex flex-col lg:flex-row gap-2.5">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-black/50 z-10" />
+            <Input
+              placeholder="Search by trade ID, counterparty, product type etc. Please enter at least 3 characters or more."
+              className={`pl-10 pr-4 bg-white h-12 text-black ${
+                validationError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+              }`}
+              value={searchQuery}
+              autoComplete="off"
+              onChange={(e) => handleQueryChange(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              onKeyDown={handleKeyDown}
+            />
+            {/* Typeahead suggestions dropdown */}
+            {showSuggestions && suggestions.length > 0 && !validationError && (
+              <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-black/10 bg-white shadow-lg overflow-hidden">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={`${s.query_id}-${i}`}
+                    type="button"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-black hover:bg-black/4 transition-colors"
+                    onMouseDown={(e) => {
+                      e.preventDefault(); // prevent blur before click registers
+                      setShowSuggestions(false);
+                      onSuggestionClick(s.query_text);
+                    }}
+                  >
+                    <Search className="size-3.5 shrink-0 text-black/30" />
+                    <span className="truncate">{s.query_text}</span>
+                    {s.is_saved && <Star className="size-3 shrink-0 ml-auto text-yellow-500 fill-yellow-400" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2 justify-start lg:justify-end">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleClearSearch}
-              className="h-8 px-2 text-black/60 hover:text-black hover:bg-black/5"
+              className="h-8 px-2 text-white/85 hover:text-white hover:bg-white/10"
               title="Clear search"
             >
               <Eraser className="size-4 mr-1" />
@@ -268,7 +270,7 @@ export function SearchHeader({
               size="sm"
               onClick={onSaveCurrentQuery}
               disabled={!canSaveQuery || !isQueryValid}
-              className="h-8 px-2 text-black/60 hover:text-black hover:bg-black/5 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="h-8 px-2 text-white/85 hover:text-white hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
               title={!isQueryValid ? "Query must be at least 3 characters to save" : "Save this query"}
             >
               <Star className="size-4 mr-1" />
@@ -279,7 +281,7 @@ export function SearchHeader({
         <Button
           onClick={handleSearch}
           disabled={searching || !isQueryValid}
-          className={`h-12 px-7 font-semibold text-sm shadow-sm border-0 ${
+          className={`h-12 px-7 font-semibold text-sm shadow-sm border-0 w-full sm:w-auto ${
             !isQueryValid 
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
               : 'bg-white text-[#002B51] hover:bg-white/90'
@@ -291,7 +293,7 @@ export function SearchHeader({
         <Button
           onClick={handleAskAI}
           disabled={chatLoading || !isQueryValid}
-          className={`h-12 px-7 font-semibold text-sm shadow-sm border-0 ${
+          className={`h-12 px-7 font-semibold text-sm shadow-sm border-0 w-full sm:w-auto ${
             !isQueryValid
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-[#002B51] text-white hover:bg-[#003a6b]'
@@ -303,7 +305,7 @@ export function SearchHeader({
         </Button>
         <Button
           onClick={onToggleFilters}
-          className="bg-white/10 text-white hover:bg-white/18 border border-white/18 h-12 px-5 text-sm font-medium"
+          className="bg-white/10 text-white hover:bg-white/18 border border-white/18 h-12 px-5 text-sm font-medium w-full sm:w-auto"
         >
           <Filter className="size-3.5 mr-2" />
           Manual Search
