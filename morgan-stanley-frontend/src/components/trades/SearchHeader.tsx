@@ -71,6 +71,7 @@ interface SearchHeaderProps {
   onClearSearch: () => void;
   onSuggestionClick: (query: string) => void;
   onFollowUpPromptClick: (query: string) => void;
+  onFollowUpChat: (message: string) => void;
   onDeleteSavedQuery: (queryId: number) => void;
 }
 
@@ -99,6 +100,7 @@ export function SearchHeader({
   onClearSearch,
   onSuggestionClick,
   onFollowUpPromptClick,
+  onFollowUpChat,
   onDeleteSavedQuery,
 }: SearchHeaderProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -106,6 +108,7 @@ export function SearchHeader({
   const [evidenceSortDirection, setEvidenceSortDirection] = useState<"desc" | "asc">("desc");
   const [chartTypeOverride, setChartTypeOverride] = useState<'bar' | 'line' | 'pie' | null>(null);
   const [chatResultsCollapsed, setChatResultsCollapsed] = useState(false);
+  const [followUpInput, setFollowUpInput] = useState("");
   const CHART_COLORS = ['#dc2626', '#f97316', '#eab308', '#22c55e', '#002B51', '#0ea5e9', '#8b5cf6'];
 
   const isQueryValid = searchQuery.trim().length >= 3;
@@ -557,6 +560,40 @@ export function SearchHeader({
             </div>
           )}
           </div>{/* end collapsible wrapper */}
+
+          {/* Follow-up chat input */}
+          <div className="mt-4 pt-3 border-t border-black/15">
+            <p className="text-xs uppercase tracking-wider text-black/50 font-medium mb-2">Continue the conversation</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Ask a follow-up question..."
+                className="flex-1 h-9 rounded-md border border-black/20 bg-white px-3 text-sm text-black placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-[#002B51]/30"
+                value={followUpInput}
+                onChange={(e) => setFollowUpInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && followUpInput.trim() && !chatLoading) {
+                    const msg = followUpInput.trim();
+                    setFollowUpInput("");
+                    onFollowUpChat(msg);
+                  }
+                }}
+                disabled={chatLoading}
+              />
+              <Button
+                size="sm"
+                className="h-9 px-4 bg-[#002B51] text-white hover:bg-[#003a6b] text-xs font-semibold disabled:opacity-40"
+                disabled={!followUpInput.trim() || chatLoading}
+                onClick={() => {
+                  const msg = followUpInput.trim();
+                  setFollowUpInput("");
+                  onFollowUpChat(msg);
+                }}
+              >
+                {chatLoading ? "..." : "Send"}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 

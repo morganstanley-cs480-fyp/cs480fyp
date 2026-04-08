@@ -608,9 +608,22 @@ class ChatService:
                             "dimension": S(
                                 type=T.STRING,
                                 description=(
-                                    "Dimension to group by: BookingSystem, ClearingHouse, "
+                                    "Primary dimension to group by: BookingSystem, ClearingHouse, "
                                     "AffirmationSystem, Counterparty, Account, AssetType, TradeStatus, TransactionStatus. "
                                     "Use Counterparty to group by the entity transactions are sent to or received from."
+                                ),
+                            ),
+                            "dimension_2": S(
+                                type=T.STRING,
+                                description=(
+                                    "Optional second dimension for cross-dimension (pathway) queries. "
+                                    "When provided alongside dimension, the query returns pairs of "
+                                    "(dimension_value, dimension_2_value) with trade/transaction counts — "
+                                    "e.g. dimension=Counterparty + dimension_2=ClearingHouse shows which "
+                                    "counterparties route trades through which clearing houses. "
+                                    "Supported pairs: Counterparty×ClearingHouse, Counterparty×BookingSystem, "
+                                    "ClearingHouse×BookingSystem, ClearingHouse×AssetType, "
+                                    "Counterparty×AssetType, BookingSystem×AssetType."
                                 ),
                             ),
                             "metric_target": S(
