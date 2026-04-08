@@ -488,6 +488,11 @@ function TradeSearchPage() {
   const handleAskAI = async () => {
     const message = searchQuery.trim();
     if (!message) return;
+    // Clear previous AI response so UI shows fresh loading state
+    setChatAnswer(null);
+    setChatEvidence(null);
+    setChatMode(null);
+    setFollowUpPrompts([]);
     await handleAskAIWithPrompt(message);
   };
 
@@ -704,6 +709,7 @@ function TradeSearchPage() {
         onClearSearch={handleClearSearch}
         onSuggestionClick={handleSuggestionClick}
         onFollowUpPromptClick={handleFollowUpPromptClick}
+        onFollowUpChat={(msg) => { void handleAskAIWithPrompt(msg); }}
         onDeleteSavedQuery={handleDeleteSavedQuery}
       />
 
