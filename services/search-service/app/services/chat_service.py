@@ -185,6 +185,7 @@ class ChatService:
             evidence=evidence if mode in ("analysis", "both") else None,
             follow_up_prompts=follow_up_prompts,
             execution_time_ms=execution_time_ms,
+            extracted_params=extracted_params,
         )
 
     def _infer_mode_from_tools(self, tools_called: set[str]) -> str:

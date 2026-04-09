@@ -6,7 +6,7 @@ from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from app.models.domain import Trade
+from app.models.domain import ExtractedParams, Trade
 
 
 class ChatMessage(BaseModel):
@@ -38,6 +38,7 @@ class ChatResponse(BaseModel):
     evidence: Optional[dict[str, Any]] = None
     follow_up_prompts: list[str] = Field(default_factory=list)
     execution_time_ms: Optional[float] = None
+    extracted_params: Optional[ExtractedParams] = None
 
 
 class ToolParameter(BaseModel):

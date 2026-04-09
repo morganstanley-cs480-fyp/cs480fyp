@@ -111,11 +111,11 @@ class ExceptionClient {
     this.baseUrl = baseUrl;
   }
 
-  async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  async request<T>(endpoint: string, options: RequestInit = {}, timeoutMs: number = API_TIMEOUT): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       const response = await fetch(url, {
@@ -152,8 +152,8 @@ class ExceptionClient {
     }
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'GET' });
+  async get<T>(endpoint: string, timeoutMs?: number): Promise<T> {
+    return this.request<T>(endpoint, { method: 'GET' }, timeoutMs);
   }
 
   async post<T>(endpoint: string, body?: unknown): Promise<T> {
@@ -210,7 +210,8 @@ export const exceptionService = {
 
   // NEW: Generate AI solution using Bedrock LLM
   async generateSolution(exceptionId: string): Promise<GeneratedSolution> {
-    return exceptionClient.get(`/api/rag/generate/${exceptionId}`);
+    // LLM calls can take >30s; use a dedicated longer timeout
+    return exceptionClient.get(`/api/rag/generate/${exceptionId}`, 120_000);
   },
 
   // NEW: Retrieve solution tied to a similar exception. Just grab exception_description and solution_description.
