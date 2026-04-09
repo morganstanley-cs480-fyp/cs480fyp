@@ -181,6 +181,7 @@ export interface ChatResponse {
   total_results: number;
   results?: Trade[] | null;
   ai_answer?: string | null;
+  extracted_params?: ExtractedParams | null;
   evidence?: {
     dimensions: string[];
     rows: Record<string, unknown>[];

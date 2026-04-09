@@ -629,6 +629,31 @@ function TradeSearchPage() {
         setPagination((prev) => ({ ...prev, pageIndex: 0 }));
       }
 
+      // Use the extracted_params the chat service already computed to populate
+      // the trade table — no second API call needed.
+      if (response.extracted_params) {
+        const p = response.extracted_params;
+        setSubmittedParams({
+          search_type: "manual",
+          user_id: userId,
+          filters: {
+            trade_id: p.trade_id != null ? String(p.trade_id) : undefined,
+            account: p.accounts?.[0] ?? undefined,
+            asset_type: p.asset_types?.[0] ?? undefined,
+            booking_system: p.booking_systems?.[0] ?? undefined,
+            affirmation_system: p.affirmation_systems?.[0] ?? undefined,
+            clearing_house: p.clearing_houses?.[0] ?? undefined,
+            status: p.statuses ?? undefined,
+            date_type: "update_time",
+            date_from: p.date_from ?? undefined,
+            date_to: p.date_to ?? undefined,
+            with_exceptions_only: p.with_exceptions_only ?? undefined,
+            cleared_trades_only: p.cleared_trades_only ?? undefined,
+          },
+        });
+        setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+      }
+
       await fetchSearchHistory();
     } catch (error) {
       const messageText =

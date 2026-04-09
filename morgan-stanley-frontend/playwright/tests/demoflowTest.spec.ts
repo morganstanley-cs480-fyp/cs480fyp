@@ -173,6 +173,7 @@ test('Exception - view associated trade', async ({ page }) => {
 });
 
 test('Exception - Create solution', async ({ page }) => {
+  test.setTimeout(120_000); // LLM solution generation can take >30s
   await page.getByRole('link', { name: 'Exceptions' }).click();
   await page.waitForTimeout(2000)
   await page.getByRole('combobox').first().click();
@@ -204,8 +205,8 @@ test('Exception - Create solution', async ({ page }) => {
 
     // await page.pause()
     await page.getByRole('button', { name: "Generate Solution Description"}).click()
-    const generatingBtn = page.locator('button:has-text("Generating...")');
-    await expect(generatingBtn).toHaveCount(0, { timeout: 30000});
+    const generatingBtn = page.locator('button:has-text("Generating...")'); 
+    await expect(generatingBtn).toHaveCount(0, { timeout: 90_000 });
 
     // const solDesc = await page.getByRole('textbox', { name: 'Solution Description' }).textContent();
     // expect(solDesc).toBe("")

@@ -100,7 +100,10 @@ class GeminiService:
             raise ValueError("Google API key is required. Set GOOGLE_API_KEY environment variable.")
 
         normalized_query = query.strip().lower()
-        cache_key = self._generate_cache_key(normalized_query)
+        # Include today's date so relative-date phrases ("this month", "last week")
+        # are never served a stale cached extraction from a previous day.
+        today_str = (current_date or datetime.now()).strftime("%Y-%m-%d")
+        cache_key = self._generate_cache_key(normalized_query, today_str)
 
         logger.info(
             "Extracting parameters from query (Gemini)",
@@ -303,9 +306,9 @@ class GeminiService:
 
         return validated
 
-    def _generate_cache_key(self, query: str) -> str:
+    def _generate_cache_key(self, query: str, date_str: str = "") -> str:
         """Generate cache key (same hash logic as BedrockService, different prefix)."""
-        hash_hex = hashlib.sha256(query.encode()).hexdigest()[:16]
+        hash_hex = hashlib.sha256(f"{query}|{date_str}".encode()).hexdigest()[:16]
         return f"gemini:extraction:{hash_hex}"
 
     async def _get_from_cache(self, cache_key: str) -> Optional[ExtractedParams]:
