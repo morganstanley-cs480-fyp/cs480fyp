@@ -198,17 +198,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>73972538</id>
-		<account>ACC024</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-01-03T16:37:53</create_time>
-		<update_time>2025-01-03T17:10:58</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>51259775</id>
 		<account>ACC044</account>
 		<asset_type>CDS</asset_type>
@@ -406,17 +395,6 @@
 		<update_time>2025-01-04T14:04:14</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>51259775</id>
-		<account>ACC044</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-01-04T13:40:01</create_time>
-		<update_time>2025-01-04T14:04:14</update_time>
-		<status>ALLEGED</status>
-	</trade>
 	<trade>
 		<id>38302945</id>
 		<account>ACC030</account>
@@ -616,17 +594,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>38302945</id>
-		<account>ACC030</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-01-04T14:59:29</create_time>
-		<update_time>2025-01-04T15:30:18</update_time>
-		<status>REJECTED</status>
-	</trade>
-	<trade>
 		<id>69690882</id>
 		<account>ACC084</account>
 		<asset_type>CDS</asset_type>
@@ -824,17 +791,6 @@
 		<update_time>2025-01-06T11:08:26</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>69690882</id>
-		<account>ACC084</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-01-06T10:33:00</create_time>
-		<update_time>2025-01-06T11:08:26</update_time>
-		<status>ALLEGED</status>
-	</trade>
 	<trade>
 		<id>69661274</id>
 		<account>ACC058</account>
@@ -1034,17 +990,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>69661274</id>
-		<account>ACC058</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-01-12T09:54:59</create_time>
-		<update_time>2025-01-12T10:19:40</update_time>
-		<status>REJECTED</status>
-	</trade>
-	<trade>
 		<id>29290419</id>
 		<account>ACC009</account>
 		<asset_type>CDS</asset_type>
@@ -1242,17 +1187,6 @@
 		<update_time>2025-01-13T01:21:42</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>29290419</id>
-		<account>ACC009</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-01-13T00:51:39</create_time>
-		<update_time>2025-01-13T01:21:42</update_time>
-		<status>REJECTED</status>
-	</trade>
 	<trade>
 		<id>87072563</id>
 		<account>ACC064</account>
@@ -1452,17 +1386,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>87072563</id>
-		<account>ACC064</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-01-13T09:12:41</create_time>
-		<update_time>2025-01-13T09:41:41</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>37158077</id>
 		<account>ACC076</account>
 		<asset_type>IRS</asset_type>
@@ -1660,17 +1583,6 @@
 		<update_time>2025-01-28T23:15:34</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>37158077</id>
-		<account>ACC076</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-01-28T22:43:30</create_time>
-		<update_time>2025-01-28T23:15:34</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>67447216</id>
 		<account>ACC071</account>
@@ -1870,17 +1782,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>67447216</id>
-		<account>ACC071</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-02-05T03:01:52</create_time>
-		<update_time>2025-02-05T03:28:55</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>44289340</id>
 		<account>ACC048</account>
 		<asset_type>CDS</asset_type>
@@ -2078,17 +1979,6 @@
 		<update_time>2025-02-05T04:03:53</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>44289340</id>
-		<account>ACC048</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-02-05T03:38:42</create_time>
-		<update_time>2025-02-05T04:03:53</update_time>
-		<status>ALLEGED</status>
-	</trade>
 	<trade>
 		<id>11380595</id>
 		<account>ACC033</account>
@@ -2288,17 +2178,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>11380595</id>
-		<account>ACC033</account>
-		<asset_type>FX</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-02-05T23:29:48</create_time>
-		<update_time>2025-02-05T23:59:22</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>29055274</id>
 		<account>ACC049</account>
 		<asset_type>FX</asset_type>
@@ -2496,17 +2375,6 @@
 		<update_time>2025-02-06T18:48:45</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>29055274</id>
-		<account>ACC049</account>
-		<asset_type>FX</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-02-06T18:23:08</create_time>
-		<update_time>2025-02-06T18:48:45</update_time>
-		<status>REJECTED</status>
-	</trade>
 	<trade>
 		<id>97897651</id>
 		<account>ACC021</account>
@@ -2706,17 +2574,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>97897651</id>
-		<account>ACC021</account>
-		<asset_type>FX</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-02-07T09:38:55</create_time>
-		<update_time>2025-02-07T10:06:46</update_time>
-		<status>REJECTED</status>
-	</trade>
-	<trade>
 		<id>26654809</id>
 		<account>ACC050</account>
 		<asset_type>FX</asset_type>
@@ -2914,17 +2771,6 @@
 		<update_time>2025-02-12T09:25:13</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>26654809</id>
-		<account>ACC050</account>
-		<asset_type>FX</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-02-12T08:58:36</create_time>
-		<update_time>2025-02-12T09:25:13</update_time>
-		<status>CANCELLED</status>
-	</trade>
 	<trade>
 		<id>66340127</id>
 		<account>ACC003</account>
@@ -3124,17 +2970,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>66340127</id>
-		<account>ACC003</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-02-14T16:59:03</create_time>
-		<update_time>2025-02-14T17:29:22</update_time>
-		<status>REJECTED</status>
-	</trade>
-	<trade>
 		<id>15149979</id>
 		<account>ACC008</account>
 		<asset_type>CDS</asset_type>
@@ -3332,17 +3167,6 @@
 		<update_time>2025-02-17T04:56:09</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>15149979</id>
-		<account>ACC008</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-02-17T04:26:56</create_time>
-		<update_time>2025-02-17T04:56:09</update_time>
-		<status>CANCELLED</status>
-	</trade>
 	<trade>
 		<id>44994216</id>
 		<account>ACC096</account>
@@ -3542,17 +3366,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>44994216</id>
-		<account>ACC096</account>
-		<asset_type>FX</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-02-18T17:15:26</create_time>
-		<update_time>2025-02-18T17:48:43</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>35526057</id>
 		<account>ACC057</account>
 		<asset_type>FX</asset_type>
@@ -3750,17 +3563,6 @@
 		<update_time>2025-02-22T16:16:35</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>35526057</id>
-		<account>ACC057</account>
-		<asset_type>FX</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-02-22T15:51:53</create_time>
-		<update_time>2025-02-22T16:16:35</update_time>
-		<status>ALLEGED</status>
-	</trade>
 	<trade>
 		<id>73001300</id>
 		<account>ACC078</account>
@@ -3960,17 +3762,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>73001300</id>
-		<account>ACC078</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-02-25T09:38:52</create_time>
-		<update_time>2025-02-25T10:00:47</update_time>
-		<status>CANCELLED</status>
-	</trade>
-	<trade>
 		<id>42198745</id>
 		<account>ACC0466</account>
 		<asset_type>IRS</asset_type>
@@ -4168,17 +3959,6 @@
 		<update_time>2025-02-28T14:50:46</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>42198745</id>
-		<account>ACC0466</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-02-28T14:20:45</create_time>
-		<update_time>2025-02-28T14:50:46</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>43458153</id>
 		<account>ACC018</account>
@@ -4378,17 +4158,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>43458153</id>
-		<account>ACC018</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-03-06T09:21:27</create_time>
-		<update_time>2025-03-06T09:48:20</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>64238205</id>
 		<account>ACC004</account>
 		<asset_type>IRS</asset_type>
@@ -4586,17 +4355,6 @@
 		<update_time>2025-03-13T01:34:15</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>64238205</id>
-		<account>ACC004</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-03-13T01:07:42</create_time>
-		<update_time>2025-03-13T01:34:15</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>21873774</id>
 		<account>ACC035</account>
@@ -4796,17 +4554,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>21873774</id>
-		<account>ACC035</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-03-14T00:34:13</create_time>
-		<update_time>2025-03-14T01:08:27</update_time>
-		<status>CANCELLED</status>
-	</trade>
-	<trade>
 		<id>35821903</id>
 		<account>ACC133</account>
 		<asset_type>FX</asset_type>
@@ -5004,17 +4751,6 @@
 		<update_time>2025-03-15T08:40:12</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>35821903</id>
-		<account>ACC133</account>
-		<asset_type>FX</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-03-15T08:15:22</create_time>
-		<update_time>2025-03-15T08:40:12</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>93739599</id>
 		<account>ACC042</account>
@@ -5214,17 +4950,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>93739599</id>
-		<account>ACC042</account>
-		<asset_type>FX</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-03-15T23:26:56</create_time>
-		<update_time>2025-03-15T23:58:51</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>70712244</id>
 		<account>ACC037</account>
 		<asset_type>FX</asset_type>
@@ -5422,17 +5147,6 @@
 		<update_time>2025-03-25T16:20:53</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>70712244</id>
-		<account>ACC037</account>
-		<asset_type>FX</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-03-25T15:58:54</create_time>
-		<update_time>2025-03-25T16:20:53</update_time>
-		<status>CANCELLED</status>
-	</trade>
 	<trade>
 		<id>67536228</id>
 		<account>ACC073</account>
@@ -5632,17 +5346,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>67536228</id>
-		<account>ACC073</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-03-31T13:20:44</create_time>
-		<update_time>2025-03-31T13:45:41</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>25246501</id>
 		<account>ACC010</account>
 		<asset_type>CDS</asset_type>
@@ -5840,17 +5543,6 @@
 		<update_time>2025-04-03T14:30:57</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>25246501</id>
-		<account>ACC010</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-04-03T14:02:02</create_time>
-		<update_time>2025-04-03T14:30:57</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>54580528</id>
 		<account>ACC029</account>
@@ -6050,17 +5742,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>54580528</id>
-		<account>ACC029</account>
-		<asset_type>FX</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-04-06T04:44:25</create_time>
-		<update_time>2025-04-06T05:15:44</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>30157884</id>
 		<account>ACC036</account>
 		<asset_type>FX</asset_type>
@@ -6258,17 +5939,6 @@
 		<update_time>2025-04-08T02:08:38</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>30157884</id>
-		<account>ACC036</account>
-		<asset_type>FX</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-04-08T01:47:11</create_time>
-		<update_time>2025-04-08T02:08:38</update_time>
-		<status>CANCELLED</status>
-	</trade>
 	<trade>
 		<id>87472545</id>
 		<account>ACC070</account>
@@ -6468,17 +6138,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>87472545</id>
-		<account>ACC070</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-04-08T13:29:00</create_time>
-		<update_time>2025-04-08T14:01:33</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>63244917</id>
 		<account>ACC022</account>
 		<asset_type>IRS</asset_type>
@@ -6676,17 +6335,6 @@
 		<update_time>2025-04-14T09:05:07</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>63244917</id>
-		<account>ACC022</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-04-14T08:36:51</create_time>
-		<update_time>2025-04-14T09:05:07</update_time>
-		<status>REJECTED</status>
-	</trade>
 	<trade>
 		<id>98860229</id>
 		<account>ACC063</account>
@@ -6886,17 +6534,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>98860229</id>
-		<account>ACC063</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-04-14T17:29:48</create_time>
-		<update_time>2025-04-14T18:04:12</update_time>
-		<status>REJECTED</status>
-	</trade>
-	<trade>
 		<id>51089450</id>
 		<account>ACC059</account>
 		<asset_type>FX</asset_type>
@@ -7094,17 +6731,6 @@
 		<update_time>2025-04-20T00:01:51</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>51089450</id>
-		<account>ACC059</account>
-		<asset_type>FX</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-04-19T23:28:52</create_time>
-		<update_time>2025-04-20T00:01:51</update_time>
-		<status>CANCELLED</status>
-	</trade>
 	<trade>
 		<id>54344649</id>
 		<account>ACC072</account>
@@ -7304,17 +6930,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>54344649</id>
-		<account>ACC072</account>
-		<asset_type>FX</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-04-24T13:47:38</create_time>
-		<update_time>2025-04-24T14:17:20</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>63209277</id>
 		<account>ACC062</account>
 		<asset_type>CDS</asset_type>
@@ -7512,17 +7127,6 @@
 		<update_time>2025-04-26T15:14:53</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>63209277</id>
-		<account>ACC062</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-04-26T14:44:31</create_time>
-		<update_time>2025-04-26T15:14:53</update_time>
-		<status>REJECTED</status>
-	</trade>
 	<trade>
 		<id>72840839</id>
 		<account>ACC026</account>
@@ -7722,17 +7326,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>72840839</id>
-		<account>ACC026</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-04-28T10:09:41</create_time>
-		<update_time>2025-04-28T10:31:42</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>40547985</id>
 		<account>ACC053</account>
 		<asset_type>CDS</asset_type>
@@ -7930,17 +7523,6 @@
 		<update_time>2025-05-05T03:51:26</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>40547985</id>
-		<account>ACC053</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-05-05T03:22:24</create_time>
-		<update_time>2025-05-05T03:51:26</update_time>
-		<status>ALLEGED</status>
-	</trade>
 	<trade>
 		<id>82105744</id>
 		<account>ACC039</account>
@@ -8140,17 +7722,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>82105744</id>
-		<account>ACC039</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-05-09T04:32:40</create_time>
-		<update_time>2025-05-09T04:59:52</update_time>
-		<status>REJECTED</status>
-	</trade>
-	<trade>
 		<id>61389948</id>
 		<account>ACC047</account>
 		<asset_type>FX</asset_type>
@@ -8348,17 +7919,6 @@
 		<update_time>2025-05-12T01:49:11</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>61389948</id>
-		<account>ACC047</account>
-		<asset_type>FX</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-05-12T01:17:40</create_time>
-		<update_time>2025-05-12T01:49:11</update_time>
-		<status>CANCELLED</status>
-	</trade>
 	<trade>
 		<id>50038309</id>
 		<account>ACC065</account>
@@ -8558,17 +8118,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>50038309</id>
-		<account>ACC065</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-05-14T05:44:23</create_time>
-		<update_time>2025-05-14T06:11:49</update_time>
-		<status>CANCELLED</status>
-	</trade>
-	<trade>
 		<id>49364118</id>
 		<account>ACC007</account>
 		<asset_type>IRS</asset_type>
@@ -8766,17 +8315,6 @@
 		<update_time>2025-05-15T11:56:16</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>49364118</id>
-		<account>ACC007</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-05-15T11:25:39</create_time>
-		<update_time>2025-05-15T11:56:16</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>22322060</id>
 		<account>ACC100</account>
@@ -8976,17 +8514,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>22322060</id>
-		<account>ACC100</account>
-		<asset_type>FX</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-05-19T22:33:39</create_time>
-		<update_time>2025-05-19T23:03:05</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>92282247</id>
 		<account>ACC061</account>
 		<asset_type>FX</asset_type>
@@ -9184,17 +8711,6 @@
 		<update_time>2025-05-20T09:39:55</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>92282247</id>
-		<account>ACC061</account>
-		<asset_type>FX</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-05-20T09:15:28</create_time>
-		<update_time>2025-05-20T09:39:55</update_time>
-		<status>ALLEGED</status>
-	</trade>
 	<trade>
 		<id>21309141</id>
 		<account>ACC014</account>
@@ -9394,17 +8910,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>21309141</id>
-		<account>ACC014</account>
-		<asset_type>FX</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-05-22T03:41:42</create_time>
-		<update_time>2025-05-22T04:13:58</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>87841659</id>
 		<account>ACC082</account>
 		<asset_type>FX</asset_type>
@@ -9602,17 +9107,6 @@
 		<update_time>2025-05-24T03:01:08</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>87841659</id>
-		<account>ACC082</account>
-		<asset_type>FX</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-05-24T02:34:28</create_time>
-		<update_time>2025-05-24T03:01:08</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>17881089</id>
 		<account>ACC090</account>
@@ -9812,17 +9306,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>17881089</id>
-		<account>ACC090</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-05-25T05:24:37</create_time>
-		<update_time>2025-05-25T05:52:59</update_time>
-		<status>CANCELLED</status>
-	</trade>
-	<trade>
 		<id>40745908</id>
 		<account>ACC095</account>
 		<asset_type>FX</asset_type>
@@ -10020,17 +9503,6 @@
 		<update_time>2025-05-26T06:55:03</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>40745908</id>
-		<account>ACC095</account>
-		<asset_type>FX</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-05-26T06:23:19</create_time>
-		<update_time>2025-05-26T06:55:03</update_time>
-		<status>ALLEGED</status>
-	</trade>
 	<trade>
 		<id>85631648</id>
 		<account>ACC020</account>
@@ -10230,17 +9702,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>85631648</id>
-		<account>ACC020</account>
-		<asset_type>FX</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-05-28T01:23:25</create_time>
-		<update_time>2025-05-28T01:54:22</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>37807798</id>
 		<account>ACC093</account>
 		<asset_type>CDS</asset_type>
@@ -10438,17 +9899,6 @@
 		<update_time>2025-06-01T22:26:58</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>37807798</id>
-		<account>ACC093</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-06-01T22:00:50</create_time>
-		<update_time>2025-06-01T22:26:58</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>87666057</id>
 		<account>ACC025</account>
@@ -10648,17 +10098,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>87666057</id>
-		<account>ACC025</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-06-06T06:06:41</create_time>
-		<update_time>2025-06-06T06:33:32</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>30461963</id>
 		<account>ACC079</account>
 		<asset_type>IRS</asset_type>
@@ -10856,17 +10295,6 @@
 		<update_time>2025-06-13T08:22:40</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>30461963</id>
-		<account>ACC079</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-06-13T07:55:00</create_time>
-		<update_time>2025-06-13T08:22:40</update_time>
-		<status>CANCELLED</status>
-	</trade>
 	<trade>
 		<id>84171052</id>
 		<account>ACC041</account>
@@ -11066,17 +10494,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>84171052</id>
-		<account>ACC041</account>
-		<asset_type>FX</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-06-20T13:12:13</create_time>
-		<update_time>2025-06-20T13:41:28</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>35141556</id>
 		<account>ACC055</account>
 		<asset_type>CDS</asset_type>
@@ -11274,17 +10691,6 @@
 		<update_time>2025-06-25T19:26:02</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>35141556</id>
-		<account>ACC055</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-06-25T18:55:37</create_time>
-		<update_time>2025-06-25T19:26:02</update_time>
-		<status>REJECTED</status>
-	</trade>
 	<trade>
 		<id>60494436</id>
 		<account>ACC066</account>
@@ -11484,17 +10890,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>60494436</id>
-		<account>ACC066</account>
-		<asset_type>FX</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>TRAI</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-06-26T12:42:56</create_time>
-		<update_time>2025-06-26T13:12:30</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>51883413</id>
 		<account>ACC089</account>
 		<asset_type>CDS</asset_type>
@@ -11692,17 +11087,6 @@
 		<update_time>2025-06-27T15:11:23</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>51883413</id>
-		<account>ACC089</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-06-27T14:42:57</create_time>
-		<update_time>2025-06-27T15:11:23</update_time>
-		<status>CANCELLED</status>
-	</trade>
 	<trade>
 		<id>48871459</id>
 		<account>ACC080</account>
@@ -11902,17 +11286,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>48871459</id>
-		<account>ACC080</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-06-28T20:29:29</create_time>
-		<update_time>2025-06-28T21:01:57</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>96565146</id>
 		<account>ACC017</account>
 		<asset_type>CDS</asset_type>
@@ -12110,17 +11483,6 @@
 		<update_time>2025-07-06T18:29:58</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>96565146</id>
-		<account>ACC017</account>
-		<asset_type>CDS</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-07-06T18:04:10</create_time>
-		<update_time>2025-07-06T18:29:58</update_time>
-		<status>ALLEGED</status>
-	</trade>
 	<trade>
 		<id>25200175</id>
 		<account>ACC098</account>
@@ -12320,17 +11682,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>25200175</id>
-		<account>ACC098</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>RED KEEP</booking_system>
-		<affirmation_system>BLM</affirmation_system>
-		<clearing_house>JSCC</clearing_house>
-		<create_time>2025-07-07T16:37:08</create_time>
-		<update_time>2025-07-07T17:03:52</update_time>
-		<status>ALLEGED</status>
-	</trade>
-	<trade>
 		<id>83728843</id>
 		<account>ACC068</account>
 		<asset_type>IRS</asset_type>
@@ -12528,17 +11879,6 @@
 		<update_time>2025-07-08T13:33:03</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>83728843</id>
-		<account>ACC068</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-07-08T13:03:08</create_time>
-		<update_time>2025-07-08T13:33:03</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>46902779</id>
 		<account>ACC002</account>
@@ -12738,17 +12078,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>46902779</id>
-		<account>ACC002</account>
-		<asset_type>FX</asset_type>
-		<booking_system>KINGSLANDING</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-07-10T06:53:24</create_time>
-		<update_time>2025-07-10T07:21:55</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>64428173</id>
 		<account>ACC051</account>
 		<asset_type>IRS</asset_type>
@@ -12946,17 +12275,6 @@
 		<update_time>2025-07-12T00:06:51</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>64428173</id>
-		<account>ACC051</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>OTCCHK</clearing_house>
-		<create_time>2025-07-11T23:31:34</create_time>
-		<update_time>2025-07-12T00:06:51</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>36629187</id>
 		<account>ACC088</account>
@@ -13156,17 +12474,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>36629187</id>
-		<account>ACC088</account>
-		<asset_type>FX</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>MARC</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-07-12T12:52:04</create_time>
-		<update_time>2025-07-12T13:17:10</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>81459852</id>
 		<account>ACC060</account>
 		<asset_type>IRS</asset_type>
@@ -13364,17 +12671,6 @@
 		<update_time>2025-07-16T06:21:18</update_time>
 		<step>17</step>
 	</transaction>
-	<trade>
-		<id>81459852</id>
-		<account>ACC060</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>HIGHGARDEN</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-07-16T05:53:38</create_time>
-		<update_time>2025-07-16T06:21:18</update_time>
-		<status>CLEARED</status>
-	</trade>
 	<trade>
 		<id>39461893</id>
 		<account>ACC099</account>
@@ -13574,17 +12870,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>39461893</id>
-		<account>ACC099</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>LCH</clearing_house>
-		<create_time>2025-07-19T20:30:19</create_time>
-		<update_time>2025-07-19T20:59:34</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>88020567</id>
 		<account>ACC069</account>
 		<asset_type>IRS</asset_type>
@@ -13783,17 +13068,6 @@
 		<step>17</step>
 	</transaction>
 	<trade>
-		<id>88020567</id>
-		<account>ACC069</account>
-		<asset_type>IRS</asset_type>
-		<booking_system>WINTERFELL</booking_system>
-		<affirmation_system>FIRELINK</affirmation_system>
-		<clearing_house>CME</clearing_house>
-		<create_time>2025-07-26T00:04:43</create_time>
-		<update_time>2025-07-26T00:32:49</update_time>
-		<status>CLEARED</status>
-	</trade>
-	<trade>
 		<id>98962729</id>
 		<account>ACC086</account>
 		<asset_type>CDS</asset_type>
@@ -13879,7 +13153,7 @@
 		<clearing_house>OTCCHK</clearing_house>
 		<create_time>2025-07-11T20:33:47</create_time>
 		<update_time>2025-08-05T15:15:08</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10031001</id>
@@ -13978,7 +13252,7 @@
 		<clearing_house>JSCC</clearing_house>
 		<create_time>2025-08-07T09:04:05</create_time>
 		<update_time>2025-08-07T09:04:05</update_time>
-		<status>ALLEGED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>86149349</id>
@@ -14033,7 +13307,7 @@
 		<clearing_house>CME</clearing_house>
 		<create_time>2025-08-09T03:00:44</create_time>
 		<update_time>2025-08-09T03:00:44</update_time>
-		<status>ALLEGED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>81466877</id>
@@ -14187,7 +13461,7 @@
 		<clearing_house>CME</clearing_house>
 		<create_time>2025-01-19T08:02:43</create_time>
 		<update_time>2025-08-17T03:43:01</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10039001</id>
@@ -14242,7 +13516,7 @@
 		<clearing_house>OTCCHK</clearing_house>
 		<create_time>2025-03-09T18:32:30</create_time>
 		<update_time>2025-08-19T00:51:22</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10032001</id>
@@ -14361,7 +13635,7 @@
 		<entity>CME</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
-		<status>ALLEGED</status>
+		<status>CLEARED</status>
 		<update_time>2025-08-19T12:31:00</update_time>
 		<step>4</step>
 	</transaction>
@@ -14748,7 +14022,7 @@
 		<clearing_house>JSCC</clearing_house>
 		<create_time>2025-08-28T04:55:52</create_time>
 		<update_time>2025-08-28T04:55:52</update_time>
-		<status>ALLEGED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>62291938</id>
@@ -14790,7 +14064,7 @@
 		<entity>CME</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
-		<status>ALLEGED</status>
+		<status>CLEARED</status>
 		<update_time>2025-08-28T05:10:36</update_time>
 		<step>4</step>
 	</transaction>
@@ -14878,7 +14152,7 @@
 		<entity>OCTCCHK</entity>
 		<direction>send</direction>
 		<type>CONSENT_GRANTED</type>
-		<status>ALLEGED</status>
+		<status>CLEARED</status>
 		<update_time>2025-08-31T18:32:39</update_time>
 		<step>4</step>
 	</transaction>
@@ -15023,7 +14297,7 @@
 		<clearing_house>CME</clearing_house>
 		<create_time>2025-02-06T07:32:56</create_time>
 		<update_time>2025-09-05T07:48:44</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10029001</id>
@@ -15100,7 +14374,7 @@
 		<clearing_house>JSCC</clearing_house>
 		<create_time>2025-04-09T08:41:20</create_time>
 		<update_time>2025-09-06T20:32:37</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10023001</id>
@@ -15243,7 +14517,7 @@
 		<clearing_house>OTCCHK</clearing_house>
 		<create_time>2025-06-21T15:49:46</create_time>
 		<update_time>2025-09-08T05:35:16</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10020001</id>
@@ -15320,7 +14594,7 @@
 		<clearing_house>JSCC</clearing_house>
 		<create_time>2025-03-15T06:02:15</create_time>
 		<update_time>2025-09-10T02:08:38</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10033001</id>
@@ -15452,7 +14726,7 @@
 		<clearing_house>LCH</clearing_house>
 		<create_time>2025-07-12T14:54:36</create_time>
 		<update_time>2025-09-11T04:42:38</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10035001</id>
@@ -15529,7 +14803,7 @@
 		<clearing_house>LCH</clearing_house>
 		<create_time>2025-02-22T18:10:17</create_time>
 		<update_time>2025-09-11T18:16:40</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10015001</id>
@@ -15738,7 +15012,7 @@
 		<clearing_house>OTCCHK</clearing_house>
 		<create_time>2025-07-22T12:49:59</create_time>
 		<update_time>2025-09-16T04:29:34</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10040001</id>
@@ -16112,7 +15386,7 @@
 		<clearing_house>OTCCHK</clearing_house>
 		<create_time>2025-06-28T20:24:44</create_time>
 		<update_time>2025-09-20T17:32:04</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10018001</id>
@@ -16332,7 +15606,7 @@
 		<clearing_house>CME</clearing_house>
 		<create_time>2025-05-04T09:45:44</create_time>
 		<update_time>2025-09-22T21:34:55</update_time>
-		<status>ALLEGED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10013001</id>
@@ -16552,7 +15826,7 @@
 		<clearing_house>LCH</clearing_house>
 		<create_time>2025-07-12T18:55:30</create_time>
 		<update_time>2025-10-02T22:14:05</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10038001</id>
@@ -16629,7 +15903,7 @@
 		<clearing_house>OTCCHK</clearing_house>
 		<create_time>2025-04-06T03:53:48</create_time>
 		<update_time>2025-10-08T00:29:04</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10025001</id>
@@ -16695,7 +15969,7 @@
 		<clearing_house>LCH</clearing_house>
 		<create_time>2025-06-06T21:03:05</create_time>
 		<update_time>2025-10-12T21:54:42</update_time>
-		<status>CANCELLED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10036001</id>
@@ -17223,7 +16497,7 @@
 		<clearing_house>JSCC</clearing_house>
 		<create_time>2025-05-30T08:01:26</create_time>
 		<update_time>2025-10-22T12:25:41</update_time>
-		<status>ALLEGED</status>
+		<status>REJECTED</status>
 	</trade>
 	<transaction>
 		<id>10014001</id>

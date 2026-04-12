@@ -350,7 +350,7 @@ module "ingestion_service" {
     { name = "SSM_PARAM_NAME", value = module.xml_pointer.parameter_name },
     { name = "AWS_REGION", value = var.region },
     { name = "DATA_PROCESSING_QUEUE_URL", value = module.data_processing_queue.sqs_queue_url },
-    { name = "BATCH_SIZE", value = "300" },
+    { name = "BATCH_SIZE", value = "100" },
   ]
   secrets = []
 }
