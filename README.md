@@ -11,6 +11,10 @@ The platform improves trade monitoring, exception handling, and investigation wo
 
 - Product Video: https://youtu.be/dKCmoeBax7A
 
+## Project Poster
+
+![SMUMS Project Poster](docs/images/smums-poster.png)
+
 ## Architecture Diagram
 
 ![Architecture Diagram ](docs/images/architecture-diagram.png)
