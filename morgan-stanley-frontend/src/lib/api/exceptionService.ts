@@ -98,7 +98,17 @@ function resolveExceptionApiBaseUrl(): string {
   return raw;
 }
 
+function resolveRagApiBaseUrl(): string {
+  const raw: string =
+    import.meta.env.VITE_RAG_API_BASE_URL || 'http://localhost:8004';
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    return raw.replace(/^http:\/\//, 'https://');
+  }
+  return raw;
+}
+
 const EXCEPTION_API_BASE_URL = resolveExceptionApiBaseUrl();
+const RAG_API_BASE_URL = resolveRagApiBaseUrl();
 const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000;
 
 /**
@@ -172,6 +182,7 @@ class ExceptionClient {
 }
 
 const exceptionClient = new ExceptionClient(EXCEPTION_API_BASE_URL);
+const ragClient = new ExceptionClient(RAG_API_BASE_URL);
 
 export const exceptionService = {
   /**
@@ -205,13 +216,13 @@ export const exceptionService = {
       limit: limit.toString(),
       explain: explain.toString()
     });
-    return exceptionClient.get(`/api/rag/documents/similar-exceptions/${exceptionId}?${params}`);
+    return ragClient.get(`/api/rag/documents/similar-exceptions/${exceptionId}?${params}`);
   },
 
   // NEW: Generate AI solution using Bedrock LLM
   async generateSolution(exceptionId: string): Promise<GeneratedSolution> {
     // LLM calls can take >30s; use a dedicated longer timeout
-    return exceptionClient.get(`/api/rag/generate/${exceptionId}`, 120_000);
+    return ragClient.get(`/api/rag/generate/${exceptionId}`, 120_000);
   },
 
   // NEW: Retrieve solution tied to a similar exception. Just grab exception_description and solution_description.
